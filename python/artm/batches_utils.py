@@ -2,10 +2,14 @@ import os
 import glob
 import uuid
 import shutil
+import numpy as np
+
+from six import iteritems
+from six.moves import range, zip
 
 from . import wrapper
-from wrapper import constants as const
-from wrapper import messages_pb2 as messages
+from .wrapper import constants as const
+from .wrapper import messages_pb2 as messages
 
 from .dictionary import Dictionary
 
@@ -19,7 +23,7 @@ GLOB_EPS = 1e-37
 
 class Batch(object):
     def __init__(self, filename):
-        self._filename = os.path.abspath(filename)
+        self._filename = filename
 
     def __repr__(self):
         return 'Batch({0})'.format(self._filename)
@@ -32,7 +36,7 @@ class Batch(object):
 class BatchVectorizer(object):
     def __init__(self, batches=None, collection_name=None, data_path='', data_format='batches',
                  target_folder=None, batch_size=1000, batch_name_type='code', data_weight=1.0,
-                 n_wd=None, vocabulary=None, gather_dictionary=True):
+                 n_wd=None, vocabulary=None, gather_dictionary=True, class_ids=None):
         """
         :param str collection_name: the name of text collection (required if data_format == 'bow_uci')
         :param str data_path: 1) if data_format == 'bow_uci' => folder containing\
@@ -57,25 +61,23 @@ class BatchVectorizer(object):
                               target_folder if not data_format == 'batches')\
                               should also be lists; one weight corresponds to\
                               one path from the data_path list;
-        :param array n_wd: numpy.array with n_wd counters
+        :param array n_wd: matrix with n_wd counters
         :param dict vocabulary: dict with vocabulary, key - index of n_wd, value - token
         :param bool gather_dictionary: create or not the default dictionary in vectorizer;\
                                        if data_format == 'bow_n_wd' - automatically set to True;\
                                        and if data_weight is list - automatically set to False
+        :param class_ids: list of class ids to parse and include in batches
+        :type class_ids: list of str
         """
         self._remove_batches = False
-        if data_format == 'bow_n_wd':
-            self._remove_batches = True
+        if data_format == 'bow_n_wd' or data_format == 'vowpal_wabbit' or data_format == 'bow_uci':
+            self._remove_batches = target_folder is None
         elif data_format == 'batches':
             self._remove_batches = False
-        elif data_format == 'vowpal_wabbit':
-            self._remove_batches = True if target_folder is None else False
-        elif data_format == 'bow_uci':
-            self._remove_batches = True if target_folder is None else False
 
         self._target_folder = target_folder
         if self._remove_batches:
-            self._target_folder = os.path.join(data_path, format(uuid.uuid1().urn).translate(None, ':'))
+            self._target_folder = os.path.join(data_path, format(uuid.uuid1().urn).replace(':', ''))
 
         self._batches_list = []
         self._weights = []
@@ -91,12 +93,13 @@ class BatchVectorizer(object):
         elif data_format == 'batches':
             self._parse_batches(data_weight=data_weight, batches=batches)
         elif data_format == 'vowpal_wabbit':
-            self._parse_uci_or_vw(data_weight=data_weight, format='vw')
+            self._parse_uci_or_vw(data_weight=data_weight, format='vw', class_ids=class_ids)
         elif data_format == 'bow_uci':
             self._parse_uci_or_vw(data_weight=data_weight,
                                   format='uci',
                                   col_name=collection_name,
-                                  batch_name_type=batch_name_type)
+                                  batch_name_type=batch_name_type,
+                                  class_ids=class_ids)
         else:
             raise IOError('Unknown data format')
 
@@ -113,7 +116,7 @@ class BatchVectorizer(object):
     def __del__(self):
         self.__dispose()
 
-    def _populate_data(self, data_weight):
+    def _populate_data(self, data_weight, is_batches=False):
         """
         This method create lists of input parameters for processing.
         It converts input scalars to lists if it is necessary.
@@ -123,7 +126,7 @@ class BatchVectorizer(object):
             if len(self._data_path) != len(data_weight):
                 raise IOError('Lists for data_path and data_weight should have the same length')
             data_weights = data_weight
-            if data_format == 'batches':
+            if is_batches:
                 target_folders = ['' for p in data_paths]
             else:
                 if len(self._data_path) != len(self._target_folder):
@@ -138,13 +141,17 @@ class BatchVectorizer(object):
 
         return data_paths, data_weights, target_folders
 
-    def _parse_uci_or_vw(self, data_weight=None, format=None, col_name=None, batch_name_type=None):
+    def _parse_uci_or_vw(self, data_weight=None, format=None, col_name=None, batch_name_type=None, class_ids=None):
         data_paths, data_weights, target_folders = self._populate_data(data_weight)
         for (data_p, data_w, target_f) in zip(data_paths, data_weights, target_folders):
             parser_config = messages.CollectionParserConfig()
 
             parser_config.num_items_per_batch = self._batch_size
             parser_config.target_folder = target_f
+
+            if class_ids is not None:
+                for class_id in class_ids:
+                    parser_config.class_id.append(class_id)
 
             if format == 'uci':
                 parser_config.docword_file_path = os.path.join(data_p, 'docword.{0}.txt'.format(col_name))
@@ -162,14 +169,14 @@ class BatchVectorizer(object):
             lib.ArtmParseCollection(parser_config)
             batch_filenames = glob.glob(os.path.join(target_f, '*.batch'))
             self._batches_list += [Batch(filename) for filename in batch_filenames]
-            self._weights += [data_w for i in xrange(len(batch_filenames))]
+            self._weights += [data_w for i in range(len(batch_filenames))]
 
             # next code will be processed only if for-loop has only one iteration
             if self._dictionary is not None:
                 self._dictionary.gather(data_path=target_f)
 
     def _parse_batches(self, data_weight=None, batches=None):
-        data_paths, data_weights, target_folders = self._populate_data(data_weight)
+        data_paths, data_weights, target_folders = self._populate_data(data_weight, True)
         for (data_p, data_w, target_f) in zip(data_paths, data_weights, target_folders):
             if batches is None:
                 batch_filenames = glob.glob(os.path.join(data_p, '*.batch'))
@@ -178,10 +185,10 @@ class BatchVectorizer(object):
                 if len(self._batches_list) < 1:
                     raise RuntimeError('No batches were found')
 
-                self._weights += [data_w for i in xrange(len(batch_filenames))]
+                self._weights += [data_w for i in range(len(batch_filenames))]
             else:
                 self._batches_list += [Batch(os.path.join(data_p, batch)) for batch in batches]
-                self._weights += [data_w for i in xrange(len(batches))]
+                self._weights += [data_w for i in range(len(batches))]
 
             # next code will be processed only if for-loop has only one iteration
             if self._dictionary is not None:
@@ -202,7 +209,8 @@ class BatchVectorizer(object):
             for key in global_vocab.keys():
                 global_vocab[key][2] = False  # all tokens haven't appeared in this item yet
 
-            for token_id, value in enumerate(column):
+            col = column if isinstance(column, type(np.zeros([0]))) else column.tolist()[0]
+            for token_id, value in enumerate(col):
                 if value > GLOB_EPS:
                     token = vocab[token_id]
                     if token not in global_vocab:
@@ -217,7 +225,7 @@ class BatchVectorizer(object):
                         batch.token.append(token)
 
                     item.token_id.append(batch_vocab[token])
-                    item.token_weight.append(value)
+                    item.token_weight.append(float(value))
 
             if ((item_id + 1) % self._batch_size == 0 and item_id != 0) or ((item_id + 1) == n_wd.shape[1]):
                 filename = os.path.join(self._target_folder, '{}.batch'.format(batch.id))
@@ -227,15 +235,15 @@ class BatchVectorizer(object):
 
         batch_filenames = glob.glob(os.path.join(self._target_folder, '*.batch'))
         self._batches_list += [Batch(filename) for filename in batch_filenames]
-        self._weights += [data_weight for i in xrange(len(batch_filenames))]
+        self._weights += [data_weight for i in range(len(batch_filenames))]
 
         dictionary_data = messages.DictionaryData()
-        dictionary_data.name = uuid.uuid1().urn.translate(None, ':')
-        for key, value in global_vocab.iteritems():
+        dictionary_data.name = uuid.uuid1().urn.replace(':', '')
+        for key, value in iteritems(global_vocab):
             dictionary_data.token.append(key)
-            dictionary_data.token_tf.append(value[0])
-            dictionary_data.token_df.append(value[1])
-            dictionary_data.token_value.append(value[0] / global_n)
+            dictionary_data.token_tf.append(int(value[0]))
+            dictionary_data.token_df.append(int(value[1]))
+            dictionary_data.token_value.append(float(value[0]) / global_n)
 
         self._dictionary.create(dictionary_data)
 
@@ -280,3 +288,7 @@ class BatchVectorizer(object):
         :return: Dictionary object, if parameter gather_dictionary was True, else None
         """
         return self._dictionary
+
+    def __repr__(self):
+        return 'artm.BatchVectorizer(data_path="{0}", num_batches={1})'.format(
+            self._data_path, self.num_batches)

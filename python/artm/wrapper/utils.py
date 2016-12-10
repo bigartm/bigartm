@@ -1,6 +1,8 @@
 """
 Auxiliary functions used in wrapper
 """
+from six import iteritems
+
 
 def dict_to_message(record, message_type):
     """Convert dict to protobuf message"""
@@ -9,12 +11,12 @@ def dict_to_message(record, message_type):
         if isinstance(values[0], dict):
             for v in values:
                 cmd = message.add()
-                parse_dict(v,cmd)
+                parse_dict(v, cmd)
         else:
             message.extend(values)
 
     def parse_dict(values, message):
-        for k, v in values.iteritems():
+        for k, v in iteritems(values):
             if isinstance(v, dict):
                 parse_dict(v, getattr(message, k))
             elif isinstance(v, list):

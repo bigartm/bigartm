@@ -1,8 +1,12 @@
+from __future__ import print_function
+
 import os
 import itertools
 import tempfile
 import shutil
 import pytest
+
+from six.moves import range, zip
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
@@ -11,7 +15,7 @@ import artm.master_component as mc
 
 def test_func():
     # Set some constants
-    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     dictionary_name = 'dictionary'
     pwt = 'pwt'
     nwt = 'nwt'
@@ -56,7 +60,7 @@ def test_func():
 
         # Initialize model
         master.initialize_model(model_name=pwt,
-                                topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
+                                topic_names=['topic_{}'.format(i) for i in range(num_topics)],
                                 dictionary_name=dictionary_name)
 
         # Get file names of batches to process
@@ -69,7 +73,7 @@ def test_func():
         # Perform iterations
         update_every = num_processors
         batches_to_process = []
-        for iter in xrange(num_outer_iterations):
+        for iter in range(num_outer_iterations):
             for batch_index, batch_filename in enumerate(batches):
                 batches_to_process.append(batch_filename)
                 if ((batch_index + 1) % update_every == 0) or ((batch_index + 1) == len(batches)):
@@ -86,19 +90,19 @@ def test_func():
                     print_string = 'Iteration = {0},'.format(iter)
                     print_string += 'Perplexity = {0:.3f}'.format(perplexity_score.value)
                     print_string += ', num batches = {0}'.format(len(batches_to_process))
-                    print print_string
+                    print(print_string)
                     batches_to_process = []
 
         # Retrieve and print top tokens score
         top_tokens_score = master.get_score('TopTokens')
 
-        print 'Top tokens per topic:'
+        print('Top tokens per topic:')
         top_tokens_triplets = zip(top_tokens_score.topic_index, zip(top_tokens_score.token, top_tokens_score.weight))
-        for topic_index, group in itertools.groupby(top_tokens_triplets, key=lambda (topic_index, _): topic_index):
+        for topic_index, group in itertools.groupby(top_tokens_triplets, key=lambda triplet: triplet[0]):
             print_string = 'Topic#{0} : '.format(topic_index)
             for _, (token, weight) in group:
                 print_string += ' {0}({1:.3f})'.format(token, weight)
                 assert abs(weight - top_tokens_value) < top_tokens_tol
-            print print_string
+            print(print_string)
     finally:
         shutil.rmtree(batches_folder)

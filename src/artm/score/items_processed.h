@@ -32,15 +32,9 @@ class ItemsProcessed : public ScoreCalculatorInterface {
   virtual void AppendScore(const Score& score, Score* target);
 
   virtual void AppendScore(
-      const Item& item,
-      const std::vector<artm::core::Token>& token_dict,
+      const Batch& batch,
       const artm::core::PhiMatrix& p_wt,
       const artm::ProcessBatchesArgs& args,
-      const std::vector<float>& theta,
-      Score* score);
-
-  virtual void AppendScore(
-      const Batch& batch,
       Score* score);
 
   virtual ScoreType score_type() const { return ::artm::ScoreType_ItemsProcessed; }

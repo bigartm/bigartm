@@ -9,7 +9,9 @@
 #include <map>
 #include <memory>
 #include <utility>
+#include <unordered_map>
 #include <iostream>  // NOLINT
+#include <future>  // NOLINT
 
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/predicate.hpp"
@@ -20,10 +22,12 @@
 #include "glog/logging.h"
 
 #include "artm/utility/ifstream_or_cin.h"
+#include "artm/utility/progress_printer.h"
 
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
+#include "artm/core/protobuf_helpers.h"
 
 using ::artm::utility::ifstream_or_cin;
 
@@ -58,14 +62,22 @@ std::string BatchNameGenerator::next_name(const Batch& batch) {
   return old_next_name;
 }
 
+static bool useClassId(const ClassId& class_id, const CollectionParserConfig& config) {
+  if (config.class_id_size() == 0) return true;
+  if (class_id.empty() || class_id == DefaultClass)
+    return is_member(std::string(), config.class_id()) || is_member(DefaultClass, config.class_id());
+  return is_member(class_id, config.class_id());
+}
+
 CollectionParser::CollectionParser(const ::artm::CollectionParserConfig& config)
     : config_(config) {}
 
-void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
+CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
   BatchNameGenerator batch_name_generator(kBatchNameLength,
     config_.name_type() == CollectionParserConfig_BatchNameType_Guid);
   ifstream_or_cin stream_or_cin(config_.docword_file_path());
   std::istream& docword = stream_or_cin.get_stream();
+  utility::ProgressPrinter progress(stream_or_cin.size());
 
   // Skip all lines starting with "%" and parse N, W, NNZ from the first line after that.
   auto pos = docword.tellg();
@@ -74,6 +86,8 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
     pos = docword.tellg();
     std::getline(docword, str);
     if (!boost::starts_with(str.c_str(), "%")) {
+      // FIXME (JeanPaulShapo) there can be failures when reading from standard input
+      // there's no guarantee that seekg successfully move stream pointer, especially with std::cin
       docword.seekg(pos);
       break;
     }
@@ -115,26 +129,29 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
   ::artm::Item* item = nullptr;
   int prev_item_id = -1;
 
-  int64_t total_token_weight = 0;
+  float total_token_weight = 0;
   int64_t total_items_count = 0;
-  int token_weight_zero = 0;
+  int64_t token_weight_zero = 0;
+  int64_t total_triples_count = 0;
+  int64_t num_batches = 0;
 
   int item_id, token_id;
   float token_weight;
-  int index = 1;
-  std::getline(docword, str);  // skip end of previos line
+  int line_no = 1;
+  std::getline(docword, str);  // skip end of previous line
 
   while (!docword.eof()) {
     std::getline(docword, str);
     boost::algorithm::trim(str);
-    ++index;
+    ++line_no;
+    progress.Set(docword.tellg());
     if (str.empty()) continue;
 
     std::vector<std::string> strs;
     boost::split(strs, str, boost::is_any_of("\t "));
     if (strs.size() != 3) {
       std::stringstream ss;
-      ss << "Error at line" << index << " or " << index + 2 << ", file " << config_.docword_file_path()
+      ss << "Error at line" << line_no << " or " << line_no + 2 << ", file " << config_.docword_file_path()
          << ". Expected format: item_id token_id n_wd";
       BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
     }
@@ -150,7 +167,7 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
       std::stringstream ss;
       ss << "Failed to parse line '" << item_id << " " << (token_id + 1) << " " << token_weight << "' in "
          << config_.docword_file_path();
-      if (token_id == -1) {
+      if (token_id == -1 && config_.use_unity_based_indices()) {
         ss << ". wordID column appears to be zero-based in the docword file being parsed. "
            << "UCI format defines wordID column to be unity-based. "
            << "Please, set CollectionParserConfig.use_unity_based_indices=false "
@@ -172,6 +189,7 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
       if (batch.item_size() >= config_.num_items_per_batch()) {
         batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
         ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
+        num_batches++;
         batch.Clear();
         batch_dictionary.clear();
       }
@@ -183,6 +201,10 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
       total_items_count++;
       LOG_IF(INFO, total_items_count % 100000 == 0) << total_items_count << " documents parsed.";
     }
+
+    // Skip token when it is not among modalities that user has requested to parse
+    if (!useClassId((*token_map)[token_id].class_id, config_))
+      continue;
 
     auto iter = batch_dictionary.find(token_id);
     if (iter == batch_dictionary.end()) {
@@ -197,6 +219,7 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
 
     // Increment statistics
     total_token_weight += token_weight;
+    total_triples_count++;
     (*token_map)[token_id].items_count++;
     (*token_map)[token_id].token_weight += token_weight;
   }
@@ -204,10 +227,33 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
   if (batch.item_size() > 0) {
     batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
     ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
+    num_batches++;
   }
 
   LOG_IF(WARNING, token_weight_zero > 0) << "Found " << token_weight_zero << " tokens with zero "
-                                        << "occurrencies. All these tokens were ignored.";
+    << "occurrencies. All these tokens were ignored.";
+  { // Count number of missed tokens
+    auto missed_tokens = std::count_if(token_map->begin(), token_map->end(),
+        [](const TokenMap::value_type &token_info) {
+          return !(token_info.second.items_count);
+        });
+    // Warn if some tokens are not included in any document
+    LOG_IF(WARNING, missed_tokens) << missed_tokens << " aren't present in parsed collection";
+  }
+  // Warn if possible number of parsed documents doesn't equal to expected one
+  LOG_IF(WARNING, num_docs != total_items_count) << "Expected " << num_docs << " documents to parse, found "
+    << total_items_count;
+  // Warn if number of triples doesn't equal to expected one
+  LOG_IF(WARNING, num_tokens != total_triples_count) << "Expected " << num_tokens
+    << " triples describing collection, found " << total_triples_count;
+
+  CollectionParserInfo parser_info;
+  parser_info.set_num_items(total_items_count);
+  parser_info.set_num_batches(num_batches);
+  parser_info.set_dictionary_size(token_map->size());
+  parser_info.set_num_tokens(total_triples_count);
+  parser_info.set_total_token_weight(total_token_weight);
+  return parser_info;
 }
 
 CollectionParser::TokenMap CollectionParser::ParseVocabBagOfWordsUci() {
@@ -221,7 +267,7 @@ CollectionParser::TokenMap CollectionParser::ParseVocabBagOfWordsUci() {
   int token_id = 0;
   while (!vocab.eof()) {
     std::getline(vocab, str);
-    if (vocab.eof())
+    if (vocab.eof() && str.empty())
       break;
 
     boost::algorithm::trim(str);
@@ -285,8 +331,9 @@ class CollectionParser::BatchCollector {
   Batch batch_;
   std::map<Token, int> local_map_;
   std::map<Token, CollectionParserTokenInfo> global_map_;
-  int64_t total_token_weight_;
+  float total_token_weight_;
   int64_t total_items_count_;
+  int64_t total_tokens_count_;
 
   void StartNewItem() {
     item_ = batch_.add_item();
@@ -294,9 +341,11 @@ class CollectionParser::BatchCollector {
   }
 
  public:
-  BatchCollector() : item_(nullptr), total_token_weight_(0), total_items_count_(0) {}
+  BatchCollector() : item_(nullptr), total_token_weight_(0), total_items_count_(0), total_tokens_count_(0) {
+    batch_.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
+  }
 
-  void Record(Token token, int token_weight) {
+  void Record(Token token, float token_weight) {
     if (global_map_.find(token) == global_map_.end())
       global_map_.insert(std::make_pair(token, CollectionParserTokenInfo(token.keyword, token.class_id)));
     if (local_map_.find(token) == local_map_.end()) {
@@ -315,6 +364,7 @@ class CollectionParser::BatchCollector {
     token_info.items_count++;
     token_info.token_weight += token_weight;
     total_token_weight_ += token_weight;
+    total_tokens_count_ += 1;
   }
 
   void FinishItem(int item_id, std::string item_title) {
@@ -331,10 +381,14 @@ class CollectionParser::BatchCollector {
     item_ = nullptr;
   }
 
-  Batch FinishBatch() {
+  Batch FinishBatch(CollectionParserInfo* info) {
+    info->set_num_items(info->num_items() + total_items_count_);
+    info->set_num_tokens(info->num_tokens() + total_tokens_count_);
+    info->set_total_token_weight(info->total_token_weight() + total_token_weight_);
+    info->set_num_batches(info->num_batches() + 1);
+
     Batch batch;
     batch.Swap(&batch_);
-    batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
     local_map_.clear();
     return batch;
   }
@@ -342,100 +396,176 @@ class CollectionParser::BatchCollector {
   const Batch& batch() { return batch_; }
 };
 
-void CollectionParser::ParseVowpalWabbit() {
-  BatchCollector batch_collector;
-
+CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
   BatchNameGenerator batch_name_generator(kBatchNameLength,
     config_.name_type() == CollectionParserConfig_BatchNameType_Guid);
   ifstream_or_cin stream_or_cin(config_.docword_file_path());
   std::istream& docword = stream_or_cin.get_stream();
+  utility::ProgressPrinter progress(stream_or_cin.size());
 
-  std::string str;
-  int line_no = 0;
-  while (!docword.eof()) {
-    std::getline(docword, str);
-    line_no++;
-    if (docword.eof())
-      break;
+  auto config = config_;
 
-    std::vector<std::string> strs;
-    boost::split(strs, str, boost::is_any_of(" \t\r"));
+  std::mutex lock;
+  int global_line_no = 0;
 
-    if (strs.size() <= 1) {
-      std::stringstream ss;
-      ss << "Error in " << config_.docword_file_path() << ":" << line_no << ", too few entries: " << str;
-      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-    }
+  std::unordered_map<Token, bool, TokenHasher> token_map;
+  CollectionParserInfo parser_info;
 
-    std::string item_title = strs[0];
+  // The function defined below works as follows:
+  // 1. Acquire lock for reading from docword file
+  // 2. Read num_items_per_batch lines from docword file, and store them in a local buffer (vector<string>)
+  // 3. Release the lock
+  // 4. Parse strings, form a batch, and save it to disk
+  // Steps 1-4 are repeated in a while loop until there is no content left in docword file.
+  // Multiple copies of the function can work in parallel.
+  auto func = [&docword, &global_line_no, &progress, &batch_name_generator, &lock,
+               &parser_info, &token_map, config]() {
+    while (true) {
+      // The following variable remembers at which line the batch has started.
+      // It helps to create informative error message (including line number)
+      // if later the code discovers a problem when parsing the line.
+      int first_line_no_for_batch = -1;
 
-    ClassId class_id = DefaultClass;
-    for (unsigned elem_index = 1; elem_index < strs.size(); ++elem_index) {
-      std::string elem = strs[elem_index];
-      if (elem.size() == 0)
-        continue;
-      if (elem[0] == '|') {
-        class_id = elem.substr(1);
-        if (class_id.empty())
-          class_id = DefaultClass;
-        continue;
+      std::vector<std::string> all_strs_for_batch;
+      std::string batch_name;
+      BatchCollector batch_collector;
+
+      {
+        std::lock_guard<std::mutex> guard(lock);
+        first_line_no_for_batch = global_line_no;
+        if (docword.eof())
+          return;
+
+        while (all_strs_for_batch.size() < config.num_items_per_batch()) {
+          std::string str;
+          std::getline(docword, str);
+          global_line_no++;
+          progress.Set(docword.tellg());
+          if (docword.eof())
+            break;
+
+          all_strs_for_batch.push_back(str);
+        }
+
+        if (all_strs_for_batch.size() > 0)
+          batch_name = batch_name_generator.next_name(batch_collector.batch());
       }
 
-      float token_weight = 1.0f;
-      std::string token = elem;
-      size_t split_index = elem.find(':');
-      if (split_index != std::string::npos) {
-        if (split_index == 0 || split_index == (elem.size() - 1)) {
+      for (int str_index = 0; str_index < all_strs_for_batch.size(); ++str_index) {
+        std::string str = all_strs_for_batch[str_index];
+        const int line_no = first_line_no_for_batch + str_index;
+
+        std::vector<std::string> strs;
+        boost::split(strs, str, boost::is_any_of(" \t\r"));
+
+        if (strs.size() <= 1) {
           std::stringstream ss;
-          ss << "Error in " << config_.docword_file_path() << ":" << line_no
-             << ", entries can not start or end with colon: " << elem;
+          ss << "Error in " << config.docword_file_path() << ":" << line_no
+             << " has too few entries: " << str;
           BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
         }
-        token = elem.substr(0, split_index);
-        std::string token_occurences_string = elem.substr(split_index + 1);
-        try {
-          token_weight = boost::lexical_cast<float>(token_occurences_string);
+
+        std::string item_title = strs[0];
+
+        ClassId class_id = DefaultClass;
+        for (unsigned elem_index = 1; elem_index < strs.size(); ++elem_index) {
+          std::string elem = strs[elem_index];
+          if (elem.size() == 0)
+            continue;
+          if (elem[0] == '|') {
+            class_id = elem.substr(1);
+            if (class_id.empty())
+              class_id = DefaultClass;
+            continue;
+          }
+
+          // Skip token when it is not among modalities that user has requested to parse
+          if (!useClassId(class_id, config))
+            continue;
+
+          float token_weight = 1.0f;
+          std::string token = elem;
+          size_t split_index = elem.find(':');
+          if (split_index != std::string::npos) {
+            if (split_index == 0 || split_index == (elem.size() - 1)) {
+              std::stringstream ss;
+              ss << "Error in " << config.docword_file_path() << ":" << line_no
+                 << ", entries can not start or end with colon: " << elem;
+              BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+            }
+            token = elem.substr(0, split_index);
+            std::string token_occurences_string = elem.substr(split_index + 1);
+            try {
+              token_weight = boost::lexical_cast<float>(token_occurences_string);
+            }
+            catch (boost::bad_lexical_cast &) {
+              std::stringstream ss;
+              ss << "Error in " << config.docword_file_path() << ":" << line_no
+                 << ", can not parse integer number of occurences: " << elem;
+              BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+            }
+          }
+
+          batch_collector.Record(artm::core::Token(class_id, token), token_weight);
         }
-        catch (boost::bad_lexical_cast &) {
-          std::stringstream ss;
-          ss << "Error in " << config_.docword_file_path() << ":" << line_no
-             << ", can not parse integer number of occurences: " << elem;
-          BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-        }
+
+        batch_collector.FinishItem(line_no, item_title);
       }
 
-      batch_collector.Record(artm::core::Token(class_id, token), token_weight);
+      if (all_strs_for_batch.size() > 0) {
+        artm::Batch batch;
+        {
+          std::lock_guard<std::mutex> guard(lock);
+          batch = batch_collector.FinishBatch(&parser_info);
+          for (int token_id = 0; token_id < batch.token_size(); ++token_id)
+            token_map[artm::core::Token(batch.class_id(token_id), batch.token(token_id))] = true;
+        }
+        ::artm::core::Helpers::SaveBatch(batch, config.target_folder(), batch_name);
+      }
     }
+  };
 
-    batch_collector.FinishItem(line_no, item_title);
-    if (batch_collector.batch().item_size() >= config_.num_items_per_batch()) {
-      artm::Batch batch = batch_collector.FinishBatch();
-      ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
+  int num_threads = config.num_threads();
+  if (!config.has_num_threads() || config.num_threads() < 0) {
+    unsigned int n = std::thread::hardware_concurrency();
+    if (n == 0) {
+      LOG(INFO) << "CollectionParserConfig.num_threads is set to 1 (default)";
+      num_threads = 1;
+    } else {
+      LOG(INFO) << "CollectionParserConfig.num_threads is automatically set to " << n;
+      num_threads = n;
     }
   }
 
-  if (batch_collector.batch().item_size() > 0) {
-    artm::Batch batch = batch_collector.FinishBatch();
-    ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
-  }
+  Helpers::CreateFolderIfNotExists(config.target_folder());
+
+  // The func may throw an exception if docword is malformed.
+  // This exception will be re-thrown on the main thread.
+  // http://stackoverflow.com/questions/14222899/exception-propagation-and-stdfuture
+  std::vector<std::shared_future<void>> tasks;
+  for (int i = 0; i < num_threads; i++)
+    tasks.push_back(std::move(std::async(std::launch::async, func)));
+
+  for (int i = 0; i < num_threads; i++)
+    tasks[i].get();
+
+  parser_info.set_dictionary_size(token_map.size());
+  return parser_info;
 }
 
-void CollectionParser::Parse() {
+CollectionParserInfo CollectionParser::Parse() {
   TokenMap token_map;
   switch (config_.format()) {
     case CollectionParserConfig_CollectionFormat_BagOfWordsUci:
       token_map = ParseVocabBagOfWordsUci();
-      ParseDocwordBagOfWordsUci(&token_map);
-      break;
+      return ParseDocwordBagOfWordsUci(&token_map);
 
     case CollectionParserConfig_CollectionFormat_MatrixMarket:
       token_map = ParseVocabMatrixMarket();
-      ParseDocwordBagOfWordsUci(&token_map);
-      break;
+      return ParseDocwordBagOfWordsUci(&token_map);
 
     case CollectionParserConfig_CollectionFormat_VowpalWabbit:
-      ParseVowpalWabbit();
-      break;
+      return ParseVowpalWabbit();
 
     default:
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
@@ -445,3 +575,4 @@ void CollectionParser::Parse() {
 
 }  // namespace core
 }  // namespace artm
+// vim: set ts=2 sw=2:

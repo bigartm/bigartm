@@ -1,3 +1,5 @@
+import warnings
+
 from . import exceptions
 from . import constants
 from . import messages_pb2 as messages
@@ -8,3 +10,7 @@ from .exceptions import (
     ARTM_SUCCESS,
     ARTM_STILL_WORKING,
 )
+
+
+# enable DeprecationWarnings
+warnings.filterwarnings('once', category=DeprecationWarning)

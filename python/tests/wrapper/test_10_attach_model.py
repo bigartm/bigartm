@@ -1,7 +1,11 @@
+from __future__ import print_function
+
 import os
 import tempfile
 import shutil
 import pytest
+
+from six.moves import range, zip
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
@@ -10,7 +14,7 @@ import artm.master_component as mc
 
 def test_func():
     # Set some constants
-    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     dictionary_name = 'dictionary'
     pwt = 'pwt'
     nwt = 'nwt'
@@ -45,7 +49,7 @@ def test_func():
 
         # Initialize model
         master.initialize_model(model_name=pwt,
-                                topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
+                                topic_names=['topic_{}'.format(i) for i in range(num_topics)],
                                 dictionary_name=dictionary_name)
 
         # Attach Pwt matrix
@@ -53,14 +57,14 @@ def test_func():
         numpy_matrix[:, index_to_zero] = 0
 
         # Perform iterations
-        for iter in xrange(num_outer_iterations):
+        for iter in range(num_outer_iterations):
             master.clear_score_cache()
             master.process_batches(pwt, nwt, num_document_passes, batches_folder)
             master.normalize_model(pwt, nwt) 
 
         theta_snippet_score = master.get_score('ThetaSnippet')
 
-        print 'ThetaSnippetScore.'
+        print('ThetaSnippetScore.')
          # Note that 5th topic is fully zero; this is because we performed "numpy_matrix[:, 4] = 0".
         snippet_tuples = zip(theta_snippet_score.values, theta_snippet_score.item_id)
         print_string = ''
@@ -70,7 +74,7 @@ def test_func():
                 if index == index_to_zero:
                     assert value < zero_tol
                 print_string += '{0:.3f}\t'.format(value)
-            print print_string
+            print(print_string)
             print_string = ''
     finally:
         shutil.rmtree(batches_folder)

@@ -2,7 +2,7 @@ Installation for Linux and Mac OS-X users
 =========================================
 
 Currently there is no distribution package of BigARTM for Linux.
-BigARTM had been tested on several Linux OS, and it is known to work well,
+BigARTM had been tested on several Linux distributions, and it is known to work well,
 but you have to get the source code and compile it locally on your machine.
 
 System dependencies
@@ -28,7 +28,7 @@ To simplify things, you may type:
   (for Fedora 22 or higher use ``dnf`` instead of ``yum``) 
 
 * **On Mac OS distributions**:
-  ``sudo brew install git cmake boost``
+  ``brew install git cmake boost``
 
 
 Download sources and build
@@ -48,7 +48,7 @@ and build it via CMake as in the following script.
 
 **Note for Linux users:** By default building
 binary executable ``bigartm`` requiers static versions of Boost, C and C++ libraries.
-To alter it, run ``cmake`` command with option ``-DBUILD_STATIC_BIGARTM=OFF``.
+To alter it, run ``cmake`` command with option ``-DBUILD_BIGARTM_CLI_STATIC=OFF``.
 
 
 System-wide installation
@@ -91,12 +91,12 @@ If you want to use only Python interface for BigARTM, you may run following comm
    sudo python setup.py install
 
    # Step 3 - point ARTM_SHARED_LIBRARY variable to libartm.so (libartm.dylib) location
-   export ARTM_SHARED_LIBRARY=~/bigartm/build/src/artm/libartm.so        # for linux
-   export ARTM_SHARED_LIBRARY=~/bigartm/build/src/artm/libartm.dylib     # for Mac OS X
+   export ARTM_SHARED_LIBRARY=~/bigartm/build/lib/libartm.so        # for linux
+   export ARTM_SHARED_LIBRARY=~/bigartm/build/lib/libartm.dylib     # for Mac OS X
 
 We strongly recommend system-wide installation as
 there is no need to keep BigARTM code after it, so you may safely
-remove folder ``~bigartm/``.
+remove folder ``~/bigartm/``.
 
 Troubleshooting
 ---------------
@@ -104,24 +104,6 @@ Troubleshooting
 If you build BigARTM in existing folder ``build`` (e.g. you built BigARTM before) and encounter any errors,
 it may be due to out-of-date file ``CMakeCache.txt`` in folder ``build``. In that case we strongly recommend
 to delete this file and try to build again.
-
-----------------
-
-While building BigARTM you can see lines similar to the following:
-
-.. code-block:: bash
-
-    Building python package protobuf 2.5.1-pre
-      File "/home/ubuntu/bigartm/3rdparty/protobuf/python/setup.py", line 52
-        print "Generating %s..." % output
-                                 ^
-    SyntaxError: Missing parentheses in call to 'print'
-
-This error may happen during google protobuf installation.
-It indicates that you are using ``Python 3``, which is not supported by BigARTM.
-(see `this <http://stackoverflow.com/questions/826948/syntax-error-on-print-with-python-3>`_ 
-question on StackOverflow for more details on the error around `print`).
-Please use ``Python 2.7`` (e.g ``Python 2.7.11``) to workaround this issue.
 
 ----------------
 

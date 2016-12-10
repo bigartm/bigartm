@@ -3,8 +3,8 @@ Downloads
 
 * **Windows**
 
-  * Latest 32 bit release: `BigARTM_v0.8.1_vs12_win32_RelWithDebInfo <https://github.com/bigartm/bigartm/releases/download/v0.8.1/BigARTM_v0.8.1_vs12_win32_RelWithDebInfo.7z>`_
-  * Latest 64 bit release: `BigARTM_v0.8.1_vs12_win64_RelWithDebInfo <https://github.com/bigartm/bigartm/releases/download/v0.8.1/BigARTM_v0.8.1_vs12_win64_RelWithDebInfo.7z>`_
+  * Latest 64 bit release: `BigARTM_v0.8.2_win64 <https://github.com/bigartm/bigartm/releases/download/v0.8.2/BigARTM_v0.8.2_win64.7z>`_
+  * Latest build from master branch: `BigARTM_master_win64.7z <https://ci.appveyor.com/api/projects/bigartm/bigartm/artifacts/BigARTM.7z?branch=master&job=Environment%3A%20JOB%3Dpython3%2C%20PYTHON_VERSION%3D3.5%2C%20MINICONDA%3DC%3A%5CMiniconda35-x64>`_ (warning, use this with caution)
   * All previous releases are available at https://github.com/bigartm/bigartm/releases
 
   Please refer to :doc:`tutorials/windows_basic` for step by step installation procedure.
@@ -19,37 +19,32 @@ Downloads
 
   Download one of the following datasets to start experimenting with BigARTM.
   See :doc:`formats` page for the description of input data formats.
+  Note that ``docword.*`` and ``vocab.*`` files indicate ``UCI BOW`` format,
+  while ``vw.*`` file indicate ``Vowpal Wabbit`` format.
   
-
     ========= ========= ======= ======= ==================================================================================================================
     Task      Source    #Words  #Items  Files
     ========= ========= ======= ======= ==================================================================================================================
     kos       `UCI`_    6906    3430    * `docword.kos.txt.gz (1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz>`_
                                         * `vocab.kos.txt (54 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt>`_      
-                                        * `kos_1k (700 KB)     <https://s3-eu-west-1.amazonaws.com/artm/kos_1k.7z>`_           
     nips      `UCI`_    12419   1500    * `docword.nips.txt.gz (2.1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nips.txt.gz>`_
                                         * `vocab.nips.txt (98 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nips.txt>`_
-                                        * `nips_200 (1.5 MB)   <https://s3-eu-west-1.amazonaws.com/artm/nips_200.7z>`_         
     enron     `UCI`_    28102   39861   * `docword.enron.txt.gz (11.7 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.enron.txt.gz>`_
                                         * `vocab.enron.txt (230 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.enron.txt>`_
-                                        * `enron_1k (7.1 MB)   <https://s3-eu-west-1.amazonaws.com/artm/enron_1k.7z>`_         
     nytimes   `UCI`_    102660  300000  * `docword.nytimes.txt.gz (223 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nytimes.txt.gz>`_
                                         * `vocab.nytimes.txt (1.2 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nytimes.txt>`_
-                                        * `nytimes_1k (131 MB) <https://s3-eu-west-1.amazonaws.com/artm/nytimes_1k.7z>`_
     pubmed    `UCI`_    141043  8200000 * `docword.pubmed.txt.gz (1.7 GB) <https://s3-eu-west-1.amazonaws.com/artm/docword.pubmed.txt.gz>`_
                                         * `vocab.pubmed.txt (1.3 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.pubmed.txt>`_
-                                        * `pubmed_10k (1 GB)   <https://s3-eu-west-1.amazonaws.com/artm/pubmed_10k.7z>`_
-    wiki      `Gensim`_ 100000  3665223 * `enwiki-20141208_10k (1.2 GB)   <https://s3-eu-west-1.amazonaws.com/artm/enwiki-20141208_10k.7z>`_
-                                        * `enwiki-20141208_1k (1.4 GB)    <https://s3-eu-west-1.amazonaws.com/artm/enwiki-20141208_1k.7z>`_
-    wiki_enru `Wiki`_   196749  216175  * `wiki_enru (282 MB)  <https://s3-eu-west-1.amazonaws.com/artm/wiki_enru.7z>`_
-                                        * namespaces: ``@english``, ``@russian``
-    lastfm    `lastfm`_         1k,     * `lastfm_1k ( MB)  <https://s3-eu-west-1.amazonaws.com/artm/lastfm_1k.7z>`_ (VW format)
-                                360k    * `lastfm_360k ( MB)  <https://s3-eu-west-1.amazonaws.com/artm/lastfm_360k.7z>`_ (VW format)
+    wiki      `Gensim`_ 100000  3665223 * `vw.wiki-en.txt.zip (1.8 GB) <https://s3-eu-west-1.amazonaws.com/artm/vw.wiki-en.txt.zip>`_
+    wiki_enru `Wiki`_   196749  216175  * `vw.wiki_enru.txt.zip (285 MB)  <https://s3-eu-west-1.amazonaws.com/artm/vw.wiki-enru.txt.zip>`_
+    eurlex    `eurlex`_ 19800   21000   * `vw.eurlex.txt.zip (13 MB) <https://s3-eu-west-1.amazonaws.com/artm/vw.eurlex.txt.zip>`_
+                                        * `vw.eurlex-test.txt.zip (13 MB) <https://s3-eu-west-1.amazonaws.com/artm/vw.eurlex-test.txt.zip>`_
+    lastfm    `lastfm`_         1k,     * `vw.lastfm_1k.txt.zip (100 MB)  <https://s3-eu-west-1.amazonaws.com/artm/vw.lastfm_1k.txt.zip>`_
+                                360k    * `vw.lastfm_360k.txt.zip (330 MB)  <https://s3-eu-west-1.amazonaws.com/artm/vw.lastfm_360k.txt.zip>`_
     mmro      `mmro`_   7805    1061    * `docword.mmro.txt.gz (500 KB) <https://s3-eu-west-1.amazonaws.com/artm/docword.mmro.txt.7z>`_
                                         * `vocab.mmro.txt (150 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.mmro.txt>`_
                                         * `pPMI_w100.mmro.txt.7z (23 MB) <https://s3-eu-west-1.amazonaws.com/artm/pPMI_w100.mmro.txt.7z>`_
                                         * `vw.mmro.txt.7z (1.4 MB) <https://s3-eu-west-1.amazonaws.com/artm/vw.mmro.txt.7z>`_
-    eurlex    `eurlex`_ 19800   21000   * `eurlex_1k (13 MB) <https://s3-eu-west-1.amazonaws.com/artm/eurlex_1k.zip>`_
     ========= ========= ======= ======= ==================================================================================================================
 
 .. _UCI: https://archive.ics.uci.edu/ml/datasets/Bag+of+Words

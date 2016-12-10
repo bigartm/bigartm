@@ -2,49 +2,48 @@ sudo: false
 
 language:
   - python
-  - cpp
+# Currently Travis doesn't support multiple values for language variable
+#  - cpp
 
-compiler:
-  - gcc
+# compiler:
+#  - gcc
 
 python:
   - "2.7"
-
-virtualenv:
-  system_site_packages: true
+  - "3.4"
 
 addons:
   apt:
     sources:
-      - boost-latest                # for boost 1.55
-      - ubuntu-toolchain-r-test     # for g++-4.9
+      - boost-latest                       # for boost 1.55
+      - ubuntu-toolchain-r-test            # for g++-4.9
+      - george-edison55-precise-backports  # for cmake 3
     packages:
       - cmake
+      - cmake-data
       - libboost1.55-all-dev
-      - python-numpy
-      - python-pandas
-      - python-virtualenv
       - g++-4.9
 
 env:
   - COMPILER=g++-4.9
 
 before_install:
-  - pip install pep8
-  - pip install -U pytest
+  # we need latest pip to work with only-binary option
+  - pip install -U pip
+  - pip install -U pytest pep8
+  - pip install -U numpy pandas tqdm --only-binary numpy pandas
+  - pip install protobuf==3.0.0
 
 install:
-  - ./codestyle_checks.sh
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then ./codestyle_checks.sh; fi
   - mkdir build
-  - pushd build && export CXX=$COMPILER && cmake -DBUILD_STATIC_BIGARTM=OFF .. && make -j2 && file ./src/bigartm/bigartm && popd
-  - pushd 3rdparty/protobuf/python && python setup.py install && popd
+  - pushd build && export CXX=$COMPILER && cmake -DBUILD_BIGARTM_CLI_STATIC=OFF .. && make -j2 && file ./bin/bigartm && popd
   - pushd python && python setup.py install && popd
 
 before_script:
-  - pushd python/tests && ./download_datasets.sh && popd
+  - pushd test_data && ./download_datasets.sh && popd
 
 script:
-  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.so
-  - pushd build/src/artm_tests && ./artm_tests && popd
-  - pushd python/tests/wrapper && py.test && popd
-  - pushd python/tests/artm && py.test && popd
+  - export ARTM_SHARED_LIBRARY=`pwd`/build/lib/libartm.so
+  - export BIGARTM_UNITTEST_DATA=`pwd`/test_data
+  - pushd build && make test ARGS="-V" && popd

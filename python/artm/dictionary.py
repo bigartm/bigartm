@@ -3,8 +3,10 @@ import os
 import glob
 import codecs
 
+from six.moves import range
+
 from . import wrapper
-from wrapper import messages_pb2 as messages
+from .wrapper import messages_pb2 as messages
 from . import master_component
 
 __all__ = [
@@ -84,7 +86,7 @@ class Dictionary(object):
             fout.write(u'name: {}\n'.format(dictionary_data.name))
             fout.write(u'token, class_id, token_value, token_tf, token_df\n')
 
-            for i in xrange(len(dictionary_data.token)):
+            for i in range(len(dictionary_data.token)):
                 fout.write(u'{0}, {1}, {2}, {3}, {4}\n'.format(dictionary_data.token[i],
                                                                dictionary_data.class_id[i],
                                                                dictionary_data.token_value[i],
@@ -102,8 +104,8 @@ class Dictionary(object):
         self._reset()
         dictionary_data = messages.DictionaryData()
         with codecs.open(dictionary_path, 'r', encoding) as fin:
-            dictionary_data.name = fin.next().split(' ')[1][0: -1]
-            fin.next()  # skip comment line
+            dictionary_data.name = fin.readline().split(' ')[1][0: -1]
+            fin.readline()  # skip comment line
 
             for line in fin:
                 line_list = line.split(' ')
@@ -131,10 +133,14 @@ class Dictionary(object):
                       represented as batches and load it in the lib
 
         :param str data_path: full path to batches folder
-        :param str cooc_file_path: full path to the file with cooc info
+        :param str cooc_file_path: full path to the file with cooc info. Cooc info is a file with three\
+                                   columns, first two a the zero-based indices of tokens in vocab file,\
+                                   and third one is a value of their coocurance in collection (or another)\
+                                   pairwise statistic.
         :param str vocab_file_path: full path to the file with vocabulary.\
                       If given, the dictionary token will have the same order, as in\
-                      this file, otherwise the order will be random
+                      this file, otherwise the order will be random.\
+                      If given, the tokens from batches, that are not presented in vocab, will be skipped.
         :param bool symmetric_cooc_values: if the cooc matrix should considered\
                       to be symmetric or not
         """
@@ -146,7 +152,7 @@ class Dictionary(object):
                                        symmetric_cooc_values=symmetric_cooc_values)
 
     def filter(self, class_id=None, min_df=None, max_df=None, min_df_rate=None, max_df_rate=None,
-               min_tf=None, max_tf=None):
+               min_tf=None, max_tf=None, max_dictionary_size=None):
         """
         :Description: filters the BigARTM dictionary of the collection, which\
                       was already loaded into the lib
@@ -160,6 +166,8 @@ class Dictionary(object):
         :param float max_df_rate: max df rate to pass the filter
         :param float min_tf: min tf value to pass the filter
         :param float max_tf: max tf value to pass the filter
+        :param float max_dictionary_size: give an easy option to limit dictionary size;
+                                          rare tokens will be excluded until dictionary reaches given size.
 
         :Note: the current dictionary will be replaced with filtered
         """
@@ -171,10 +179,15 @@ class Dictionary(object):
                                        min_df_rate=min_df_rate,
                                        max_df_rate=max_df_rate,
                                        min_tf=min_tf,
-                                       max_tf=max_tf)
+                                       max_tf=max_tf,
+                                       max_dictionary_size=max_dictionary_size)
 
     def copy():
         """
         :Description: returns a copy the dictionary loaded in lib with another name.
         """
         raise NotImplementedError()
+
+    def __repr__(self):
+        descr = next(x for x in self._master.get_info().dictionary if x.name == self.name)
+        return 'artm.Dictionary(name={0}, num_entries={1})'.format(descr.name, descr.num_entries)

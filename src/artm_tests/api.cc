@@ -2,6 +2,8 @@
 
 #include "artm_tests/api.h"
 
+#include "google/protobuf/util/json_util.h"
+
 namespace artm {
 namespace test {
 
@@ -9,10 +11,27 @@ inline char* StringAsArray(std::string* str) {
   return str->empty() ? NULL : &*str->begin();
 }
 
+static void ParseMessageFromString(const std::string& string, google::protobuf::Message* message) {
+  if (ArtmProtobufMessageFormatIsJson()) {
+    ::google::protobuf::util::JsonStringToMessage(string, message);
+  } else {
+    message->ParseFromString(string);
+  }
+}
+
+static void SerializeMessageToString(const google::protobuf::Message& message, std::string* output) {
+  if (ArtmProtobufMessageFormatIsJson()) {
+    ::google::protobuf::util::MessageToJsonString(message, output);
+  } else {
+    output->clear();
+    message.SerializeToString(output);
+  }
+}
+
 template<typename ArgsT, typename FuncT>
 int ArtmExecute(int master_id, const ArgsT& args, FuncT func) {
   std::string blob;
-  args.SerializeToString(&blob);
+  SerializeMessageToString(args, &blob);
   return HandleErrorCode(func(master_id, blob.size(), StringAsArray(&blob)));
 }
 
@@ -25,7 +44,7 @@ ResultT ArtmRequest(int master_id, const ArgsT& args, FuncT func) {
   HandleErrorCode(ArtmCopyRequestedMessage(length, StringAsArray(&result_blob)));
 
   ResultT result;
-  result.ParseFromString(result_blob);
+  ParseMessageFromString(result_blob, &result);
   return result;
 }
 
@@ -37,7 +56,7 @@ TopicModel Api::AttachTopicModel(const AttachModelArgs& args, Matrix* matrix) {
   TopicModel retval = master_model_.GetTopicModel(topic_args);
 
   std::string args_blob;
-  args.SerializeToString(&args_blob);
+  SerializeMessageToString(args, &args_blob);
 
   if (retval.num_topics() == 0)
     throw ArgumentOutOfRangeException("Unable to attach to topic model with zero topics");

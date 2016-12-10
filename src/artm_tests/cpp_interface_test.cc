@@ -6,18 +6,21 @@
 #include "boost/filesystem.hpp"
 #include "glog/logging.h"
 
+#include "google/protobuf/util/json_util.h"
+
 #include "artm/c_interface.h"
 #include "artm/cpp_interface.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/common.h"
+#include "artm/core/protobuf_helpers.h"
 
-#include "artm/core/internals.pb.h"
 #include "artm/core/helpers.h"
 
 #include "artm_tests/test_mother.h"
 #include "artm_tests/api.h"
 
 namespace fs = boost::filesystem;
+namespace pb = google::protobuf;
 
 TEST(CppInterface, Canary) {
 }
@@ -27,8 +30,12 @@ TEST(CppInterface, Version) {
   EXPECT_GT(version.size(), 0);
 }
 
-// artm_tests.exe --gtest_filter=CppInterface.BasicTest
-TEST(CppInterface, BasicTest) {
+void RunBasicTest(bool serialize_as_json) {
+  if (serialize_as_json)
+    ArtmSetProtobufMessageFormatToJson();
+  else
+    ArtmSetProtobufMessageFormatToBinary();
+
   artm::ConfigureLoggingArgs log_args;
   log_args.set_minloglevel(2);
   artm::ConfigureLogging(log_args);
@@ -49,7 +56,10 @@ TEST(CppInterface, BasicTest) {
   const int nTopics = master_config.topic_name_size();
 
   ::artm::ScoreConfig* score_config = master_config.add_score_config();
-  score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
+  if (serialize_as_json)
+    pb::util::MessageToJsonString(::artm::PerplexityScoreConfig(), score_config->mutable_config_json());
+  else
+    score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
   score_config->set_type(::artm::ScoreType_Perplexity);
   score_config->set_name("PerplexityScore");
 
@@ -63,14 +73,18 @@ TEST(CppInterface, BasicTest) {
   artm::DecorrelatorPhiConfig decor_config;
   reg_decor_config->set_name("decorrelator");
   reg_decor_config->set_type(artm::RegularizerType_DecorrelatorPhi);
-  reg_decor_config->set_config(decor_config.SerializeAsString());
+  if (serialize_as_json)
+    pb::util::MessageToJsonString(decor_config, reg_decor_config->mutable_config_json());
+  else
+    reg_decor_config->set_config(decor_config.SerializeAsString());
   reg_decor_config->set_tau(1.0);
 
   // Create master component
   artm::MasterModel master_component(master_config);
   ::artm::test::Api api(master_component);
 
-  EXPECT_EQ(master_component.info().score_size(), 1);
+  EXPECT_GT(master_component.info().score_size(), 1);
+  EXPECT_EQ(master_component.info().score(0).name(), "PerplexityScore");
   EXPECT_EQ(master_component.info().regularizer_size(), 1);
 
   // Load doc-token matrix
@@ -129,6 +143,7 @@ TEST(CppInterface, BasicTest) {
     ::artm::GetScoreValueArgs get_score_args;
     get_score_args.set_score_name("PerplexityScore");
     auto perplexity = master_component.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
+    if (serialize_as_json) EXPECT_FALSE(master_component.GetScore(get_score_args).data_json().empty());
 
     if (iter > 0)
       EXPECT_EQ(perplexity.value(), previous_perplexity);
@@ -256,6 +271,19 @@ TEST(CppInterface, BasicTest) {
 
   try { boost::filesystem::remove_all(target_path); }
   catch (...) {}
+}
+
+// artm_tests.exe --gtest_filter=CppInterface.BasicTest
+TEST(CppInterface, BasicTest) {
+  bool wasJson = ArtmProtobufMessageFormatIsJson();
+  try { RunBasicTest(false); } catch (...) {}
+  wasJson ? ArtmSetProtobufMessageFormatToJson() : ArtmSetProtobufMessageFormatToBinary();
+}
+
+TEST(CppInterface, BasicTestJson) {
+  bool wasJson = ArtmProtobufMessageFormatIsJson();
+  RunBasicTest(true);
+  wasJson ? ArtmSetProtobufMessageFormatToJson() : ArtmSetProtobufMessageFormatToBinary();
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.ProcessBatchesApi
@@ -391,6 +419,9 @@ TEST(CppInterface, ProcessBatchesApi) {
   master_info = master.info();
   ASSERT_EQ(master_info.dictionary_size(), 2);
   EXPECT_EQ(master_info.dictionary(0).num_entries(), 1);
+  ASSERT_GE(master_info.model_size(), 1);
+  for (auto& model_info : master_info.model())
+    EXPECT_GT(model_info.byte_size(), 0);
 
   {
     artm::MasterModel master_clone(api.Duplicate(::artm::DuplicateMasterComponentArgs()));
@@ -496,8 +527,8 @@ TEST(CppInterface, AttachModel) {
   // Verify that it is possible to modify the attached matrix
   for (int token_index = 0; token_index < nwt_merge_model.token_size(); ++token_index) {
     for (int topic_index = 0; topic_index < nwt_merge_model.num_topics(); ++topic_index) {
-      EXPECT_EQ(attached_nwt_merge(token_index, topic_index),
-                nwt_merge_model.token_weights(token_index).value(topic_index));
+      ASSERT_APPROX_EQ(attached_nwt_merge(token_index, topic_index),
+                       nwt_merge_model.token_weights(token_index).value(topic_index));
       attached_nwt_merge(token_index, topic_index) = 2.0f * token_index + 3.0f * topic_index;
     }
   }
@@ -505,8 +536,8 @@ TEST(CppInterface, AttachModel) {
   ::artm::TopicModel updated_model = master.GetTopicModel(get_model_args);
   for (int token_index = 0; token_index < nwt_merge_model.token_size(); ++token_index) {
     for (int topic_index = 0; topic_index < nwt_merge_model.num_topics(); ++topic_index) {
-      EXPECT_EQ(updated_model.token_weights(token_index).value(topic_index),
-                2.0f * token_index + 3.0f * topic_index);
+      ASSERT_APPROX_EQ(updated_model.token_weights(token_index).value(topic_index),
+                       2.0f * token_index + 3.0f * topic_index);
     }
   }
 
@@ -626,4 +657,106 @@ TEST(CppInterface, Dictionaries) {
 
   try { boost::filesystem::remove(import_args.file_name()); }
   catch (...) {}
+}
+
+// artm_tests.exe --gtest_filter=ProtobufMessages.Json
+TEST(ProtobufMessages, Json) {
+  ::artm::MasterModelConfig config, config2;
+  config.set_num_processors(12);
+  std::string json;
+  ASSERT_EQ(::google::protobuf::util::MessageToJsonString(config, &json),
+            ::google::protobuf::util::Status::OK);
+  ASSERT_EQ(::google::protobuf::util::JsonStringToMessage("{num_processors:12}", &config2),
+            ::google::protobuf::util::Status::OK);
+  ASSERT_EQ(config.num_processors(), config2.num_processors());
+}
+
+// artm_tests.exe --gtest_filter=CppInterface.ReconfigureTopics
+TEST(CppInterface, ReconfigureTopics) {
+  ::artm::MasterModelConfig config;
+  config.add_topic_name("t1"); config.add_topic_name("t2"); config.add_topic_name("t3");
+  ::artm::DictionaryData dict; dict.add_token("token"); dict.set_name("d");
+
+  ::artm::MasterModel mm(config);
+  mm.CreateDictionary(dict);
+
+  ::artm::InitializeModelArgs init; init.set_dictionary_name("d");
+  mm.InitializeModel(init);
+  auto m1 = mm.GetTopicModel();
+  ASSERT_TRUE(::artm::core::repeated_field_equals(m1.topic_name(), config.topic_name()));
+
+  config.clear_topic_name();
+  config.add_topic_name("t3"); config.add_topic_name("t1"); config.add_topic_name("t4");
+  mm.ReconfigureTopicName(config);
+  auto m2 = mm.GetTopicModel();
+  ASSERT_TRUE(::artm::core::repeated_field_equals(m2.topic_name(), config.topic_name()));
+  ASSERT_EQ(m2.token_weights(0).value(0), m1.token_weights(0).value(2));  // "t3"
+  ASSERT_EQ(m2.token_weights(0).value(1), m1.token_weights(0).value(0));  // "t1"
+  ASSERT_EQ(m2.token_weights(0).value(2), 0);  // "t4" (new topic)
+
+  ::artm::MergeModelArgs merge;
+  merge.add_topic_name("t4");  // used just to provide the set of tokens
+  merge.add_nwt_source_name(m1.name());
+  merge.set_nwt_target_name("tmp");
+  mm.MergeModel(merge);
+
+  init.clear_dictionary_name();
+  init.set_model_name("tmp");
+  mm.InitializeModel(init);
+  ::artm::GetTopicModelArgs get_model; get_model.set_model_name("tmp");
+  auto m3 = mm.GetTopicModel(get_model);
+  ASSERT_TRUE(::artm::core::repeated_field_equals(m3.topic_name(), merge.topic_name()));
+  ASSERT_NE(m3.token_weights(0).value(0), 0.0f);
+
+  merge.clear_topic_name();
+  merge.clear_nwt_source_name();
+  merge.add_nwt_source_name(m1.name());
+  merge.add_nwt_source_name("tmp");
+  merge.set_nwt_target_name(m1.name());
+  mm.MergeModel(merge);
+  auto m4 = mm.GetTopicModel();
+  ASSERT_TRUE(::artm::core::repeated_field_equals(m4.topic_name(), config.topic_name()));
+  ASSERT_EQ(m4.token_weights(0).value(0), m2.token_weights(0).value(0));  // t3, from m2
+  ASSERT_EQ(m4.token_weights(0).value(1), m2.token_weights(0).value(1));  // t1, from m2
+  ASSERT_EQ(m4.token_weights(0).value(2), m3.token_weights(0).value(0));  // t4, from m3
+}
+
+// artm_tests.exe --gtest_filter=CppInterface.MergeModelWithDictionary
+TEST(CppInterface, MergeModelWithDictionary) {
+  ::artm::MasterModelConfig config;
+  config.add_topic_name("t1");
+  ::artm::DictionaryData dict1; dict1.set_name("d1"); dict1.add_token("t1"); dict1.add_token("t2");
+  ::artm::DictionaryData dict2; dict2.set_name("d2"); dict2.add_token("t3"); dict2.add_token("t1");
+  ::artm::DictionaryData dict3; dict3.set_name("d3"); dict3.add_token("t1"); dict3.add_token("t4");
+  dict3.add_token("t2");
+
+  ::artm::MasterModel mm(config);
+  mm.CreateDictionary(dict1);
+  mm.CreateDictionary(dict2);
+  mm.CreateDictionary(dict3);
+
+  ::artm::InitializeModelArgs init;
+  init.set_dictionary_name("d1"); init.set_model_name("m1"); mm.InitializeModel(init);
+  init.set_dictionary_name("d2"); init.set_model_name("m2"); mm.InitializeModel(init);
+
+  ::artm::GetTopicModelArgs get_model;
+  get_model.set_model_name("m1"); auto m1 = mm.GetTopicModel(get_model);
+  get_model.set_model_name("m2"); auto m2 = mm.GetTopicModel(get_model);
+
+  ::artm::MergeModelArgs merge;
+  merge.add_nwt_source_name("m1");
+  merge.add_nwt_source_name("m2");
+  merge.set_nwt_target_name("m");
+  merge.set_dictionary_name("d3");
+  mm.MergeModel(merge);
+  get_model.set_model_name("m"); auto m = mm.GetTopicModel(get_model);
+
+  ASSERT_EQ(m.token_size(), 3);
+  ASSERT_EQ(m.token(0), "t1");
+  ASSERT_EQ(m.token(1), "t4");
+  ASSERT_EQ(m.token(2), "t2");
+
+  ASSERT_EQ(m.token_weights(0).value(0), m1.token_weights(0).value(0) + m2.token_weights(1).value(0));
+  ASSERT_EQ(m.token_weights(1).value(0), 0.0f);
+  ASSERT_EQ(m.token_weights(2).value(0), m1.token_weights(1).value(0));
 }

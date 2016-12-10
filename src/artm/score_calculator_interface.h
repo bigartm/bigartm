@@ -60,6 +60,8 @@ class ScoreCalculatorInterface {
 
   virtual void AppendScore(
       const Batch& batch,
+      const artm::core::PhiMatrix& p_wt,
+      const artm::ProcessBatchesArgs& args,
       Score* score) {}
 
   std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);

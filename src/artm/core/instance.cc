@@ -29,6 +29,8 @@
 #include "artm/regularizer/smooth_ptdw.h"
 #include "artm/regularizer/topic_selection_theta.h"
 #include "artm/regularizer/biterms_phi.h"
+#include "artm/regularizer/hierarchy_sparsing_theta.h"
+#include "artm/regularizer/topic_segmentation_ptdw.h"
 
 #include "artm/score/items_processed.h"
 #include "artm/score/sparsity_theta.h"
@@ -144,6 +146,7 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
     MasterComponentInfo::DictionaryInfo* info = master_info->add_dictionary();
     info->set_name(name);
     info->set_num_entries(dict->size());
+    info->set_byte_size(dict->ByteSize());
   }
 
   for (auto& name : batches_.keys()) {
@@ -165,6 +168,7 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
       info->set_num_tokens(p_wt->token_size());
       info->set_num_topics(p_wt->topic_size());
       info->set_type(typeid(*p_wt).name());
+      info->set_byte_size(p_wt->ByteSize());
     }
   }
 
@@ -259,6 +263,18 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
     case artm::RegularizerType_BitermsPhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::BitermsPhiConfig,
         ::artm::regularizer::BitermsPhi);
+      break;
+    }
+
+    case artm::RegularizerType_HierarchySparsingTheta: {
+      CREATE_OR_RECONFIGURE_REGULARIZER(::artm::HierarchySparsingThetaConfig,
+        ::artm::regularizer::HierarchySparsingTheta);
+      break;
+    }
+
+    case artm::RegularizerType_TopicSegmentationPtdw: {
+      CREATE_OR_RECONFIGURE_REGULARIZER(::artm::TopicSegmentationPtdwConfig,
+        ::artm::regularizer::TopicSegmentationPtdw);
       break;
     }
 
@@ -371,7 +387,7 @@ void Instance::Reconfigure(const MasterModelConfig& master_config) {
 
   if (!is_configured_) {
     // First reconfiguration.
-    cache_manager_.reset(new CacheManager());
+    cache_manager_.reset(new CacheManager(master_config.disk_cache_path()));
     score_manager_.reset(new ScoreManager(this));
     score_tracker_.reset(new ScoreTracker());
 

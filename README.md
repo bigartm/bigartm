@@ -5,6 +5,7 @@
 The state-of-the-art platform for topic modeling.
 
 [![Build Status](https://secure.travis-ci.org/bigartm/bigartm.png)](https://travis-ci.org/bigartm/bigartm)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/i18k840shuhr2jtk/branch/master?svg=true)](https://ci.appveyor.com/project/bigartm/bigartm)
 [![GitHub license](https://img.shields.io/badge/license-New%20BSD-blue.svg)](https://raw.github.com/bigartm/bigartm/master/LICENSE.txt)
 
   - [Full Documentation](http://docs.bigartm.org/)
@@ -15,7 +16,7 @@ The state-of-the-art platform for topic modeling.
 
 # What is BigARTM?
 
-BigARTM is a tool for [topic modeling](https://www.cs.princeton.edu/~blei/papers/Blei2012.pdf) based on a novel technique called Additive Regularization of Topic Models. This technique effectively builds multi-objective models by adding the weighted sums of regularizers to the optimization criterion. BigARTM is known to combine well very different objectives, including sparsing, smoothing, topics decorrelation and many others. Such combinations of regularizers significantly improves several quality measures at once almost without any loss of the perplexity.
+BigARTM is a tool for [topic modeling](https://www.cs.princeton.edu/~blei/papers/Blei2012.pdf) based on a novel technique called Additive Regularization of Topic Models. This technique effectively builds multi-objective models by adding the weighted sums of regularizers to the optimization criterion. BigARTM is known to combine well very different objectives, including sparsing, smoothing, topics decorrelation and many others. Such combination of regularizers significantly improves several quality measures at once almost without any loss of the perplexity.
 
 ### References
 
@@ -50,7 +51,7 @@ Check out [documentation for `bigartm`](http://docs.bigartm.org/en/latest/tutori
 
 Examples:
 
-* Basic model (20 topics, outputed to CSV-file, infered in 10 passes)
+* Basic model (20 topics, outputed to CSV-file, inferred in 10 passes)
 
 ```bash
 bigartm.exe -d docword.kos.txt -v vocab.kos.txt --write-model-readable model.txt
@@ -92,10 +93,10 @@ Refer to [tutorials](http://docs.bigartm.org/en/latest/tutorials/index.html) for
 # A stub
 import bigartm
 
-model = bigartm.ARTM(num_topics=15
-batch_vectorizer = artm.BatchVectorizer(data_format='bow_uci',
-                                        collection_name='kos',
-                                        target_folder='kos'))
+model = bigartm.ARTM(num_topics=15)
+batch_vectorizer = bigartm.BatchVectorizer(data_format='bow_uci',
+                                           collection_name='kos',
+                                           target_folder='kos')
 model.fit_offline(batches, passes=5)
 print model.phi_
 ```

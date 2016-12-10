@@ -5,7 +5,7 @@
    This class proceeds Theta matrix smoothing or sparsing.
    The formula of M-step is
    
-   p_td \propto n_td + tau * alpha_iter[iter] * f(p_td) * n_td,
+   p_td \propto n_td + tau * item_topic_multiplier[d][t] * alpha_iter[iter] * f(p_td) * n_td,
    
    where f is a transform function, which is p_wt multiplied on
    the derivative of function under KL-divergence, and alpha_iter
@@ -17,12 +17,17 @@
      KL-divergence)
    - alpha_iter (an array of floats with length == number of
      inner iterations)
+   - item_title (an array of string. If not empty => only items with
+     titles from this array will be regularized)
+   - item_topic_multiplier (an array of arrays of doubles. Should have
+     length 1 or equal to length of item_title)
 
 */
 
 #ifndef SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_THETA_H_
 #define SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_THETA_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -33,19 +38,31 @@
 namespace artm {
 namespace regularizer {
 
+typedef std::unordered_map<std::string, std::vector<double> > ItemTopicMultiplier;
+
 class SmoothSparseThetaAgent : public RegularizeThetaAgent {
  public:
-  explicit SmoothSparseThetaAgent(std::shared_ptr<artm::core::TransformFunction> func)
-    : transform_function_(func) { }
-  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta) const;
+  explicit SmoothSparseThetaAgent(const Batch& batch,
+                                  std::shared_ptr<artm::core::TransformFunction> func,
+                                  std::shared_ptr<ItemTopicMultiplier> item_topic_multiplier,
+                                  std::shared_ptr<std::vector<double> > universal_topic_multiplier)
+    : batch_(batch)
+    , transform_function_(func)
+    , item_topic_multiplier_(item_topic_multiplier)
+    , universal_topic_multiplier_(universal_topic_multiplier) { }
+
+  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const;
 
  private:
   friend class SmoothSparseTheta;
 
+  const Batch& batch_;
   std::vector<float> topic_weight;
   std::vector<float> alpha_weight;
 
   std::shared_ptr<artm::core::TransformFunction> transform_function_;
+  std::shared_ptr<ItemTopicMultiplier> item_topic_multiplier_;
+  std::shared_ptr<std::vector<double> > universal_topic_multiplier_;
 };
 
 class SmoothSparseTheta : public RegularizerInterface {
@@ -59,9 +76,13 @@ class SmoothSparseTheta : public RegularizerInterface {
 
   virtual bool Reconfigure(const RegularizerConfig& config);
 
+  void ReconfigureImpl();
+
  private:
   SmoothSparseThetaConfig config_;
   std::shared_ptr<artm::core::TransformFunction> transform_function_;
+  std::shared_ptr<ItemTopicMultiplier> item_topic_multiplier_;
+  std::shared_ptr<std::vector<double> > universal_topic_multiplier_;
 };
 
 }  // namespace regularizer

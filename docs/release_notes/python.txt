@@ -8,6 +8,43 @@ For this reason we recommend to review :doc:`messages`.
 For further reference about Python API refer to :doc:`/python_interface/artm_model`,
 `Q & A <https://github.com/bigartm/bigartm/wiki/Q&A>`_ or `tutorials <https://github.com/bigartm/bigartm-book/blob/master/README.md>`_.
 
+v0.8.2
+------
+
+.. warning::
+
+   BigARTM 3rdparty dependency had been upgraded from ``protobuf 2.6.1`` to ``protobuf 3.0.0``.
+   This may affect you upgrade from previous version of bigartm.
+   Pelase report any issues at `bigartm-users@googlegroups.com <https://groups.google.com/group/bigartm-users>`_.
+
+.. warning::
+
+   BigARTM now require you to install `tqdm <https://github.com/tqdm/tqdm>`_ library to visualize progress bars.
+   To install use ``pip install tqdm`` or ``conda install -c conda-forge tqdm``.
+
+
+* Add support for python 3.0
+* Add hARTM class to support hierarchy model
+* Add HierarchySparsingTheta for advanced inference of hierarchical models
+* Enable replacing regularizers in ARTM-like models:
+
+  .. code-block:: python
+
+    # using operator[]-like style
+    model.regularizers['somename'] = SomeRegularizer(...)
+    # using keyword argument overwrite in add function
+    model.regularizers.add(SomeRegularizer(name='somename', ...), overwrite=True)
+
+* Better error reporting: raise exception in fit_offline, fit_online and transform if there is no data to process)
+* Better support for changes in topic names, with reconfigure(), initialize() and merge_model()
+* Show progress bars in ``fit_offline``, ``fit_online`` and ``transform``.
+* Add ``ARTM.reshape_topics`` method to add/remove/reorder topics.
+* Add ``max_dictionary_size`` parameter to ``Dictionary.filter()``
+* Add ``class_ids`` parameter to ``BatchVectorizer.__init__()``
+* Add ``dictionary_name`` parameter to ``MasterComponent.merge_model()``
+* Add ``ARTM.transform_sparse()`` and ``ARTM.get_theta_sparse()`` for sparse retrieval of theta matrix
+* Add ``ARTM.get_phi_sparse()`` for sparse retrieval of phi matrix
+
 v0.8.1
 ------
 

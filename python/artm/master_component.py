@@ -2,79 +2,116 @@ import os
 import numpy
 import codecs
 
+from six import iteritems
+from six.moves import zip
+
 from .wrapper import messages_pb2 as messages
 from .wrapper import constants
 
 
+REGULARIZERS = (
+    (
+        messages.SmoothSparseThetaConfig,
+        constants.RegularizerType_SmoothSparseTheta
+    ), (
+        messages.SmoothSparsePhiConfig,
+        constants.RegularizerType_SmoothSparsePhi
+    ), (
+        messages.DecorrelatorPhiConfig,
+        constants.RegularizerType_DecorrelatorPhi
+    ), (
+        messages.LabelRegularizationPhiConfig,
+        constants.RegularizerType_LabelRegularizationPhi
+    ), (
+        messages.SpecifiedSparsePhiConfig,
+        constants.RegularizerType_SpecifiedSparsePhi
+    ), (
+        messages.ImproveCoherencePhiConfig,
+        constants.RegularizerType_ImproveCoherencePhi
+    ), (
+        messages.SmoothPtdwConfig,
+        constants.RegularizerType_SmoothPtdw
+    ), (
+        messages.TopicSelectionThetaConfig,
+        constants.RegularizerType_TopicSelectionTheta
+    ), (
+        messages.BitermsPhiConfig,
+        constants.RegularizerType_BitermsPhi
+    ), (
+        messages.HierarchySparsingThetaConfig,
+        constants.RegularizerType_HierarchySparsingTheta
+    ), (
+        messages.TopicSegmentationPtdwConfig,
+        constants.RegularizerType_TopicSegmentationPtdw
+    ),
+)
+
+SCORES = (
+    (
+        constants.ScoreType_Perplexity,
+        messages.PerplexityScoreConfig,
+        messages.PerplexityScore
+    ), (
+        constants.ScoreType_SparsityTheta,
+        messages.SparsityThetaScoreConfig,
+        messages.SparsityThetaScore
+    ), (
+        constants.ScoreType_SparsityPhi,
+        messages.SparsityPhiScoreConfig,
+        messages.SparsityPhiScore
+    ), (
+        constants.ScoreType_ItemsProcessed,
+        messages.ItemsProcessedScoreConfig,
+        messages.ItemsProcessedScore
+    ), (
+        constants.ScoreType_TopTokens,
+        messages.TopTokensScoreConfig,
+        messages.TopTokensScore
+    ), (
+        constants.ScoreType_ThetaSnippet,
+        messages.ThetaSnippetScoreConfig,
+        messages.ThetaSnippetScore
+    ), (
+        constants.ScoreType_TopicKernel,
+        messages.TopicKernelScoreConfig,
+        messages.TopicKernelScore
+    ), (
+        constants.ScoreType_TopicMassPhi,
+        messages.TopicMassPhiScoreConfig,
+        messages.TopicMassPhiScore
+    ), (
+        constants.ScoreType_ClassPrecision,
+        messages.ClassPrecisionScoreConfig,
+        messages.ClassPrecisionScore
+    ), (
+        constants.ScoreType_BackgroundTokensRatio,
+        messages.BackgroundTokensRatioScoreConfig,
+        messages.BackgroundTokensRatioScore
+    ),
+)
+
+
 def _regularizer_type(config):
-    if isinstance(config, messages.SmoothSparseThetaConfig):
-        return constants.RegularizerType_SmoothSparseTheta
-    elif isinstance(config, messages.SmoothSparsePhiConfig):
-        return constants.RegularizerType_SmoothSparsePhi
-    elif isinstance(config, messages.DecorrelatorPhiConfig):
-        return constants.RegularizerType_DecorrelatorPhi
-    elif isinstance(config, messages.LabelRegularizationPhiConfig):
-        return constants.RegularizerType_LabelRegularizationPhi
-    elif isinstance(config, messages.SpecifiedSparsePhiConfig):
-        return constants.RegularizerType_SpecifiedSparsePhi
-    elif isinstance(config, messages.ImproveCoherencePhiConfig):
-        return constants.RegularizerType_ImproveCoherencePhi
-    elif isinstance(config, messages.SmoothPtdwConfig):
-        return constants.RegularizerType_SmoothPtdw
-    elif isinstance(config, messages.TopicSelectionThetaConfig):
-        return constants.RegularizerType_TopicSelectionTheta
-    elif isinstance(config, messages.BitermsPhiConfig):
-        return constants.RegularizerType_BitermsPhi
+    for mcls, const in REGULARIZERS:
+        if isinstance(config, mcls):
+            return const
 
 
 def _score_type(config):
-    if isinstance(config, messages.PerplexityScoreConfig):
-        return constants.ScoreType_Perplexity
-    elif isinstance(config, messages.SparsityThetaScoreConfig):
-        return constants.ScoreType_SparsityTheta
-    elif isinstance(config, messages.SparsityPhiScoreConfig):
-        return constants.ScoreType_SparsityPhi
-    elif isinstance(config, messages.ItemsProcessedScoreConfig):
-        return constants.ScoreType_ItemsProcessed
-    elif isinstance(config, messages.TopTokensScoreConfig):
-        return constants.ScoreType_TopTokens
-    elif isinstance(config, messages.ThetaSnippetScoreConfig):
-        return constants.ScoreType_ThetaSnippet
-    elif isinstance(config, messages.TopicKernelScoreConfig):
-        return constants.ScoreType_TopicKernel
-    elif isinstance(config, messages.TopicMassPhiScoreConfig):
-        return constants.ScoreType_TopicMassPhi
-    elif isinstance(config, messages.ClassPrecisionScoreConfig):
-        return constants.ScoreType_ClassPrecision
-    elif isinstance(config, messages.BackgroundTokensRatioScoreConfig):
-        return constants.ScoreType_BackgroundTokensRatio
+    for const, ccls, _ in SCORES:
+        if isinstance(config, ccls):
+            return const
 
 
 def _score_data_func(score_data_type):
-    if score_data_type == constants.ScoreType_Perplexity:
-        return messages.PerplexityScore
-    elif score_data_type == constants.ScoreType_SparsityTheta:
-        return messages.SparsityThetaScore
-    elif score_data_type == constants.ScoreType_SparsityPhi:
-        return messages.SparsityPhiScore
-    elif score_data_type == constants.ScoreType_ItemsProcessed:
-        return messages.ItemsProcessedScore
-    elif score_data_type == constants.ScoreType_TopTokens:
-        return messages.TopTokensScore
-    elif score_data_type == constants.ScoreType_ThetaSnippet:
-        return messages.ThetaSnippetScore
-    elif score_data_type == constants.ScoreType_TopicKernel:
-        return messages.TopicKernelScore
-    elif score_data_type == constants.ScoreType_TopicMassPhi:
-        return messages.TopicMassPhiScore
-    elif score_data_type == constants.ScoreType_ClassPrecision:
-        return messages.ClassPrecisionScore
-    elif score_data_type == constants.ScoreType_BackgroundTokensRatio:
-        return messages.BackgroundTokensRatioScore
+    for const, _, mfunc in SCORES:
+        if score_data_type == const:
+            return mfunc
 
 
-def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors,
-                    pwt_name, nwt_name, num_document_passes, reuse_theta, cache_theta, args=None):
+def _prepare_config(topic_names=None, class_ids=None, scores=None, regularizers=None, num_processors=None,
+                    pwt_name=None, nwt_name=None, num_document_passes=None, reuse_theta=None, cache_theta=None,
+                    args=None):
         master_config = messages.MasterModelConfig()
 
         if args is not None:
@@ -88,13 +125,13 @@ def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors
         if class_ids is not None:
             master_config.ClearField('class_id')
             master_config.ClearField('class_weight')
-            for class_id, class_weight in class_ids.iteritems():
+            for class_id, class_weight in iteritems(class_ids):
                 master_config.class_id.append(class_id)
                 master_config.class_weight.append(class_weight)
 
         if scores is not None:
             master_config.ClearField('score_config')
-            for name, config in scores.iteritems():
+            for name, config in iteritems(scores):
                 score_config = master_config.score_config.add()
                 score_config.name = name
                 score_config.type = _score_type(config)
@@ -102,7 +139,7 @@ def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors
 
         if regularizers is not None:
             master_config.ClearField('regularizer_config')
-            for name, config_tau_gamma in regularizers.iteritems():
+            for name, config_tau_gamma in iteritems(regularizers):
                 regularizer_config = master_config.regularizer_config.add()
                 regularizer_config.name = name
                 regularizer_config.type = _regularizer_type(config)
@@ -186,6 +223,13 @@ class MasterComponent(object):
         self._config = master_config
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)
 
+    def reconfigure_topic_name(self, topic_names=None):
+        master_config = _prepare_config(topic_names=topic_names,
+                                        args=self._config)
+
+        self._config = master_config
+        self._lib.ArtmReconfigureTopicName(self.master_id, master_config)
+
     def import_dictionary(self, filename, dictionary_name):
         """
         :param str filename: full name of dictionary file
@@ -252,6 +296,7 @@ class MasterComponent(object):
                           min_df=None, max_df=None,
                           min_df_rate=None, max_df_rate=None,
                           min_tf=None, max_tf=None,
+                          max_dictionary_size=None,
                           args=None):
 
         """
@@ -264,6 +309,8 @@ class MasterComponent(object):
         :param float max_df_rate: max df rate to pass the filter
         :param float min_tf: min tf value to pass the filter
         :param float max_tf: max tf value to pass the filter
+        :param float max_dictionary_size: give an easy option to limit dictionary size;
+                                          rare tokens will be excluded until dictionary reaches given size.
         :param args: an instance of FilterDictionaryArgs
         """
         filter_args = messages.FilterDictionaryArgs()
@@ -287,6 +334,8 @@ class MasterComponent(object):
             filter_args.min_tf = min_tf
         if max_tf is not None:
             filter_args.max_tf = max_tf
+        if max_dictionary_size is not None:
+            filter_args.max_dictionary_size = max_dictionary_size
 
         self._lib.ArtmFilterDictionary(self.master_id, filter_args)
 
@@ -458,7 +507,7 @@ class MasterComponent(object):
 
         self._lib.ArtmNormalizeModel(self.master_id, args)
 
-    def merge_model(self, models, nwt, topic_names=None):
+    def merge_model(self, models, nwt, topic_names=None, dictionary_name=None):
         """
         Merge multiple nwt-increments together.
 
@@ -468,6 +517,7 @@ class MasterComponent(object):
                 The matrix will be created by this operation.
         :param topic_names: names of topics in the resulting model. By default model\
                 names are taken from the first model in the list.
+        :param dictionary_name: name of dictionary that defines which tokens to include in merged model
         :type topic_names: list of str
         """
         args = messages.MergeModelArgs(nwt_target_name=nwt)
@@ -475,7 +525,9 @@ class MasterComponent(object):
             args.ClearField('topic_name')
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
-        for nwt_source_name, source_weight in models.iteritems():
+        if dictionary_name is not None:
+            args.dictionary_name = dictionary_name
+        for nwt_source_name, source_weight in iteritems(models):
             args.nwt_source_name.append(nwt_source_name)
             args.source_weight.append(source_weight)
 
@@ -798,7 +850,7 @@ class MasterComponent(object):
         if predict_class_id is not None:
             args.predict_class_id = predict_class_id
 
-        if theta_matrix_type != constants.ThetaMatrixType_None:
+        if theta_matrix_type not in [constants.ThetaMatrixType_None, constants.ThetaMatrixType_Cache]:
             theta_matrix_info = self._lib.ArtmRequestTransformMasterModelExternal(self.master_id, args)
 
             num_rows = len(theta_matrix_info.item_id)
@@ -809,3 +861,4 @@ class MasterComponent(object):
             return theta_matrix_info, numpy_ndarray
         else:
             self._lib.ArtmRequestTransformMasterModel(self.master_id, args)
+            return None, None

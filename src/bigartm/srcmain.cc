@@ -2,12 +2,14 @@
 #include <algorithm>
 #include <chrono>
 #include <ctime>
+#include <fstream>
+#include <future>
 #include <cstring>
 #include <iostream>
 #include <iomanip>
-#include <vector>
 #include <set>
-#include <fstream>
+#include <thread>
+#include <vector>
 
 #include "boost/lexical_cast.hpp"
 #include "boost/tokenizer.hpp"
@@ -41,6 +43,15 @@ class CuckooWatch {
  private:
   std::chrono::time_point<std::chrono::system_clock> start_;
 };
+
+static std::string formatByteSize(long long bytes) {
+  std::stringstream ss;
+  int unit = 1024 * 1024;  // MB;
+  if (bytes < unit)
+    return "<1 MB";
+  ss << bytes / unit << " MB";
+  return ss.str();
+}
 
 std::vector<boost::filesystem::path> findFilesInDirectory(std::string root, std::string ext) {
   std::vector<boost::filesystem::path> retval;
@@ -85,17 +96,19 @@ class CsvEscape {
 
 class ProgressScope {
  public:
-   explicit ProgressScope(const std::string& message)  {
+   explicit ProgressScope(const std::string& message, std::string newline = "\n") : newline_(newline) {
      std::cerr << message << "... ";
    }
 
    ~ProgressScope() {
      if (std::uncaught_exception()) {
-       std::cerr << "Failed\n";
+       std::cerr << "Failed" << newline_;
      } else {
-       std::cerr << "OK.\n";
+       std::cerr << "OK.  " << newline_;  // the whitespaces are for a reason
      }
    }
+ private:
+  std::string newline_;
 };
 
 bool parseNumberOrPercent(std::string str, double* value, bool* fraction ) {
@@ -202,6 +215,8 @@ std::vector<std::string> parseTopics(const std::string& topics) {
 std::vector<std::string> parseTopics(const std::string& topics, const std::string& topic_groups) {
   std::vector<std::string> result;
 
+  auto all_topics = parseTopics(topic_groups);
+  auto all_topics_set = std::set<std::string>(all_topics.begin(), all_topics.end());
   std::vector<std::pair<std::string, std::vector<std::string>>> pairs = parseTopicGroups(topic_groups);
   std::vector<std::string> topic_names = parseTopics(topics);
   for (auto& topic_name : topic_names) {
@@ -216,7 +231,8 @@ std::vector<std::string> parseTopics(const std::string& topics, const std::strin
     }
 
     if (!found)
-      result.push_back(topic_name);
+      if (all_topics_set.find(topic_name) != all_topics_set.end())
+        result.push_back(topic_name);
   }
 
   return result;
@@ -230,20 +246,24 @@ struct artm_options {
   std::string read_cooc;
   std::string use_batches;
   int batch_size;
+  bool b_guid_batch_name;
 
   // Dictionary
   std::string use_dictionary;
   std::string dictionary_min_df;
   std::string dictionary_max_df;
+  int dictionary_size;
 
   // Model
   std::string load_model;
   std::string topics;
   std::string use_modality;
   std::string predict_class;
+  time_t rand_seed;
 
   // Learning
   int num_collection_passes;
+  int num_collection_passes_depr;
   int time_limit;
   int num_document_passes;
   int update_every;
@@ -264,6 +284,7 @@ struct artm_options {
   std::string write_predictions;
   std::string write_class_predictions;
   std::string write_scores;
+  std::string write_vw_corpus;
   std::string csv_separator;
   int score_level;
   std::vector<std::string> score;
@@ -279,6 +300,7 @@ struct artm_options {
   int log_level;
   bool b_paused;
   bool b_disable_avx_opt;
+  int profile;
 
   artm_options() {
     pwt_model_name = "pwt";
@@ -383,6 +405,7 @@ bool verifyOptions(const artm_options& options) {
   ok &= verifyWritableFile(options.write_dictionary_readable, options.force);
   ok &= verifyWritableFile(options.write_predictions, options.force);
   ok &= verifyWritableFile(options.write_class_predictions, options.force);
+  ok &= verifyWritableFile(options.write_vw_corpus, options.force);
 
   return ok;
 }
@@ -465,19 +488,25 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
     std::string elem = strs[i];
     if (elem.empty())
       continue;
-    if (elem[0] == '#')
+    if (elem[0] == '#') {
       topic_names = parseTopics(elem.substr(1, elem.size() - 1), topics);
-    else if (elem[0] == '@')
+      if (topic_names.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+    }  else if (elem[0] == '@') {
       class_ids = parseKeyValuePairs<float>(elem.substr(1, elem.size() - 1));
-    else if (elem[0] == '!')
+      if (class_ids.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+    } else if (elem[0] == '!') {
       dictionary_path = elem.substr(1, elem.size() - 1);
+      if (dictionary_path.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+    } else {
+      throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+    }
   }
 
   std::string dictionary_name = addToDictionaryMap(dictionary_map, dictionary_path);
 
   RegularizerConfig* config = master_config->add_regularizer_config();
 
-  // SmoothPhi, SparsePhi, SmoothTheta, SparseTheta, Decorrelation
+  // SmoothPhi, SparsePhi, SmoothTheta, SparseTheta, Decorrelation, TopicSelection, LabelRegularization, ImproveCoherence, Biterms
   std::string regularizer_type = boost::to_lower_copy(strs[1]);
   if (regularizer_type == "smooththeta" || regularizer_type == "sparsetheta") {
     ::artm::SmoothSparseThetaConfig specific_config;
@@ -518,9 +547,75 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
     config->set_type(::artm::RegularizerType_DecorrelatorPhi);
     config->set_config(specific_config.SerializeAsString());
     config->set_tau(tau);
+  }
+  else if (regularizer_type == "topicselection") {
+    ::artm::TopicSelectionThetaConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
+
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerType_TopicSelectionTheta);
+    config->set_config(specific_config.SerializeAsString());
+    config->set_tau(tau);
+
+    // Force disable opt_for_avx because it is incompatible with TopicSelection regularizer
+    master_config->set_opt_for_avx(false);
+  }
+  else if (regularizer_type == "labelregularization") {
+    ::artm::LabelRegularizationPhiConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
+    for (auto& class_id : class_ids)
+      specific_config.add_class_id(class_id.first);
+    if (!dictionary_name.empty())
+      specific_config.set_dictionary_name(dictionary_name);
+
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerType_LabelRegularizationPhi);
+    config->set_config(specific_config.SerializeAsString());
+    config->set_tau(tau);
+  }
+  else if (regularizer_type == "improvecoherence") {
+    ::artm::ImproveCoherencePhiConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
+    for (auto& class_id : class_ids)
+      specific_config.add_class_id(class_id.first);
+    if (!dictionary_name.empty())
+      specific_config.set_dictionary_name(dictionary_name);
+
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerType_ImproveCoherencePhi);
+    config->set_config(specific_config.SerializeAsString());
+    config->set_tau(tau);
+  }
+  else if (regularizer_type == "biterms") {
+    ::artm::BitermsPhiConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
+    for (auto& class_id : class_ids)
+      specific_config.add_class_id(class_id.first);
+    if (!dictionary_name.empty())
+      specific_config.set_dictionary_name(dictionary_name);
+
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerType_BitermsPhi);
+    config->set_config(specific_config.SerializeAsString());
+    config->set_tau(tau);
   } else {
     throw std::invalid_argument(std::string("Unknown regularizer type: " + strs[1]));
   }
+}
+
+void output_profile_information(const MasterModel& master) {
+  auto info = master.info();
+  for (auto& model : info.model())
+    std::cerr << "\tModel " << model.name() << ": " << formatByteSize(model.byte_size()) << ", |T|=" << model.num_topics() << ", |W| = " << model.num_tokens() << ";\n";
+  for (auto& dict : info.dictionary())
+    std::cerr << "\tDictionary " << dict.name() << ": " << formatByteSize(dict.byte_size()) << ", |W|=" << dict.num_entries() << ";\n";
+  int64_t cache_size = 0;
+  for (auto& cache_entity : info.cache_entry()) cache_size += cache_entity.byte_size();
+  std::cerr << "\tCache size: " << formatByteSize(cache_size) << " in total across " << info.cache_entry_size() << " entries;\n";
 }
 
 class ScoreHelper {
@@ -558,12 +653,18 @@ class ScoreHelper {
        std::string elem = strs[i];
        if (elem.empty())
          continue;
-       if (elem[0] == '#')
+       if (elem[0] == '#') {
          topic_names = parseTopics(elem.substr(1, elem.size() - 1), topics);
-       else if (elem[0] == '@')
+         if (topic_names.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+       } else if (elem[0] == '@') {
          class_ids = parseKeyValuePairs<float>(elem.substr(1, elem.size() - 1));
-       else if (elem[0] == '!')
+         if (class_ids.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+       } else if (elem[0] == '!') {
          dictionary_path = elem.substr(1, elem.size() - 1);
+         if (dictionary_path.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+       } else {
+         throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+       }
      }
 
      std::string dictionary_name = addToDictionaryMap(dictionary_map_, dictionary_path);
@@ -649,7 +750,7 @@ class ScoreHelper {
      score_name_.push_back(std::make_pair(score, score_config.type()));
    }
 
-   std::string showScore(std::string& score_name, ::artm::ScoreType type) {
+   std::string showScore(const std::string& score_name, ::artm::ScoreType type) {
      std::string retval;
      GetScoreValueArgs get_score_args;
      get_score_args.set_score_name(score_name);
@@ -723,10 +824,11 @@ class ScoreHelper {
      }
      else if (type == ::artm::ScoreType_PeakMemory) {
        auto score_data = master_->GetScoreAs< ::artm::PeakMemoryScore>(get_score_args);
-       std::cerr << "PeakMemory      = " << score_data.value() / 1024 << "KB";
+       std::cerr << "PeakMemory      = " << formatByteSize(score_data.value());
        if (boost::to_lower_copy(score_name) != "peakmemory") std::cerr << "\t(" << score_name << ")";
        std::cerr << "\n";
        retval = boost::lexical_cast<std::string>(score_data.value());
+       output_profile_information(*master_);
      }
      else {
        throw std::invalid_argument("Unknown score config type: " + boost::lexical_cast<std::string>(type));
@@ -749,8 +851,8 @@ class ScoreHelper {
      CsvEscape escape(artm_options_.csv_separator.size() == 1 ? artm_options_.csv_separator[0] : '\0');
      const std::string sep = artm_options_.csv_separator;
      output_ << "Iteration" << sep << "Time(ms)";
-     for (int i = 0; i < score_name_.size(); ++i) {
-       output_ << sep << escape.apply(score_name_[i].first);
+     for (const auto& score_name : score_name_) {
+       output_ << sep << escape.apply(score_name.first);
      }
      output_ << std::endl;
    }
@@ -759,17 +861,38 @@ class ScoreHelper {
      CsvEscape escape(artm_options_.csv_separator.size() == 1 ? artm_options_.csv_separator[0] : '\0');
      const std::string sep = artm_options_.csv_separator;
      if (output_.is_open()) output_ << iter << sep << elapsed_ms;
-     for (int i = 0; i < score_name_.size(); ++i) {
-       std::string score_value = showScore(score_name_[i].first, score_name_[i].second);
+     for (const auto& score_name: score_name_) {
+       std::string score_value = showScore(score_name.first, score_name.second);
        if (output_.is_open()) output_ << sep << score_value;
      }
      if (output_.is_open()) output_ << std::endl;
-     std::cerr << "================= Iteration " << iter << " took " << elapsed_ms << std::endl;
+     if (iter > 0)
+      std::cerr << "================= Iteration " << iter << " took " << formatMilliseconds(elapsed_ms) << std::endl;
    }
 
    void showScores() {
-     for (auto& score_name : score_name_)
+     for (const auto& score_name : score_name_)
        showScore(score_name.first, score_name.second);
+   }
+
+   static std::string formatMilliseconds(long long elapsed) {
+     if (elapsed < 0) {
+       return "<error>";
+     }
+     int ms = elapsed % 1000;
+     elapsed /= 1000;
+     int s = elapsed % 60;
+     elapsed /= 60;
+     int m = elapsed % 60;
+     elapsed /= 60;
+     int h = elapsed % 24;
+     int days = elapsed / 24;
+     char buffer[128] = {};
+     sprintf(buffer, "%02d:%02d:%02d.%03d", h, m, s, ms);
+     if (days > 0) {
+       return std::to_string(days) + " days " + buffer;
+     }
+     return buffer;
    }
 };
 
@@ -809,18 +932,33 @@ class BatchVectorizer {
       if (error)
         throw std::runtime_error(std::string("Unable to create batch folder: ") + batch_folder_);
 
-      ProgressScope scope("Parsing text collection");
-      ::artm::CollectionParserConfig collection_parser_config;
-      if (parse_uci_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_BagOfWordsUci);
-      else if (parse_vw_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_VowpalWabbit);
-      else throw std::runtime_error("Internal error in bigartm.exe - unable to determine CollectionParserConfig_CollectionFormat");
+      ::artm::CollectionParserInfo parser_info;
+      {
+        ProgressScope scope("Parsing text collection");
+        ::artm::CollectionParserConfig collection_parser_config;
+        if (parse_uci_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_BagOfWordsUci);
+        else if (parse_vw_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_VowpalWabbit);
+        else throw std::runtime_error("Internal error in bigartm.exe - unable to determine CollectionParserConfig_CollectionFormat");
 
-      collection_parser_config.set_docword_file_path(parse_vw_format ? options_.read_vw_corpus : options_.read_uci_docword);
-      if (!options_.read_uci_vocab.empty())
-        collection_parser_config.set_vocab_file_path(options_.read_uci_vocab);
-      collection_parser_config.set_target_folder(batch_folder_);
-      collection_parser_config.set_num_items_per_batch(options_.batch_size);
-      ::artm::ParseCollection(collection_parser_config);
+        collection_parser_config.set_docword_file_path(parse_vw_format ? options_.read_vw_corpus : options_.read_uci_docword);
+        if (!options_.read_uci_vocab.empty())
+          collection_parser_config.set_vocab_file_path(options_.read_uci_vocab);
+        collection_parser_config.set_target_folder(batch_folder_);
+        collection_parser_config.set_num_items_per_batch(options_.batch_size);
+        collection_parser_config.set_name_type(options_.b_guid_batch_name ? CollectionParserConfig_BatchNameType_Guid : CollectionParserConfig_BatchNameType_Code);
+
+        // If user specifies specific modalities "use_modality", pass it to collection parser to limit set of modalities available in batches
+        std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options_.use_modality);
+        for (auto& class_id : class_ids)
+          if (!class_id.first.empty())
+            collection_parser_config.add_class_id(class_id.first);
+
+        parser_info = ::artm::ParseCollection(collection_parser_config);
+      }
+
+      std::cerr << parser_info.num_batches() << " batches created with total of ";
+      std::cerr << parser_info.num_items() << " items, and " << parser_info.dictionary_size() << " words in the dictionary; ";
+      std::cerr << "NNZ = " << parser_info.num_tokens() << ", average token weight is " << parser_info.total_token_weight() / parser_info.num_tokens() << "\n";
     }
     else if (!options_.use_batches.empty()) {
       batch_folder_ = options_.use_batches;
@@ -918,6 +1056,55 @@ void WriteClassPredictions(const artm_options& options,
   }
 }
 
+void WriteVwCorpus(const artm_options& options, const std::string& batch_folder) {
+  ProgressScope scope(std::string("Saving batches as Vowpal Wabbit corpus ") + options.write_vw_corpus);
+  auto batch_file_names = findFilesInDirectory(batch_folder, ".batch");
+  if (batch_file_names.empty())
+    throw std::string("No batches found in ") + batch_folder + ", unabel to  active_class_id = defaultwrite VW corpus";
+
+  auto remove_spaces = [](const std::string& input) {
+    std::string retval = input;
+    std::replace_if(retval.begin(), retval.end(), boost::is_any_of(" \t"), '_');
+    return retval;
+  };
+
+  std::ofstream output(options.write_vw_corpus);
+  const std::string default_class_id = "@default_class";
+  for (auto batch_file_name : batch_file_names) {
+    Batch batch = artm::LoadBatch(batch_file_name.string());
+    std::string active_class_id = default_class_id;
+
+    for (auto& item : batch.item()) {
+      if (item.title().empty())
+        output << item.id();
+      else
+        output << remove_spaces(item.title());
+      for (int i = 0; i < item.token_id_size(); ++i) {
+        int token_id = item.token_id(i);
+        float token_weight = (item.token_weight_size() > 0) ? item.token_weight(i) : 1.0f;
+        std::string class_id = (batch.class_id_size() > 0) ? batch.class_id(token_id) : std::string();
+        if (class_id.empty()) class_id = default_class_id;
+        if (class_id != active_class_id) {
+          output << " |" << class_id;
+          active_class_id = class_id;
+        }
+        output << " " << remove_spaces(batch.token(token_id));
+        if (token_weight != 1.0f)
+          output << ":" << std::setprecision(2) << token_weight;
+      }
+      output << std::endl;
+    }
+  }
+}
+
+int get_dictionary_size(const MasterModel& master, std::string dictionary_name) {
+  auto info = master.info();
+  for (int i = 0; i < info.dictionary_size(); ++i)
+    if (info.dictionary(i).name() == dictionary_name)
+      return info.dictionary(i).num_entries();
+  return -1;
+}
+
 int execute(const artm_options& options, int argc, char* argv[]) {
   const std::string pwt_model_name = options.pwt_model_name;
 
@@ -971,46 +1158,57 @@ int execute(const artm_options& options, int argc, char* argv[]) {
   final_score_helper.setMasterModel(master_component.get());
 
   // Step 3.1. Parse or import the main dictionary
+  bool has_dictionary = false;
   if (!options.use_dictionary.empty()) {
-    ProgressScope scope(std::string("Loading dictionary file from ") + options.use_dictionary);
+    ProgressScope scope(std::string("Loading dictionary file from ") + options.use_dictionary, "");
     ImportDictionaryArgs import_dictionary_args;
     import_dictionary_args.set_file_name(options.use_dictionary);
     import_dictionary_args.set_dictionary_name(options.main_dictionary_name);
     master_component->ImportDictionary(import_dictionary_args);
+    has_dictionary = true;
   } else if (options.isDictionaryRequired()) {
-    ProgressScope scope(std::string("Gathering dictionary from batches"));
+    ProgressScope scope(std::string("Gathering dictionary from batches"), "");
     ::artm::GatherDictionaryArgs gather_dictionary_args;
     gather_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
     gather_dictionary_args.set_data_path(batch_vectorizer.batch_folder());
     if (!options.read_cooc.empty()) gather_dictionary_args.set_cooc_file_path(options.read_cooc);
     if (!options.read_uci_vocab.empty()) gather_dictionary_args.set_vocab_file_path(options.read_uci_vocab);
     master_component->GatherDictionary(gather_dictionary_args);
+    has_dictionary = true;
   }
+  if (has_dictionary)
+    std::cerr << "Dictionary size: " << get_dictionary_size(*master_component, options.main_dictionary_name) << "\n";
 
   // Step 3.2. Filter dictionary
-  if (!options.dictionary_max_df.empty() || !options.dictionary_min_df.empty()) {
-    ProgressScope scope("Filtering dictionary based on user thresholds");
-    ::artm::FilterDictionaryArgs filter_dictionary_args;
-    filter_dictionary_args.set_dictionary_name(options.main_dictionary_name);
-    filter_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
-    bool fraction;
-    double value;
-    if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction))  {
-      if (fraction) filter_dictionary_args.set_min_df_rate(value);
-      else filter_dictionary_args.set_min_df(value);
-    } else {
-      if (!options.dictionary_min_df.empty())
-        std::cerr << "Error in parameter 'dictionary_min_df', the option will be ignored (" << options.dictionary_min_df << ")\n";
-    }
-    if (parseNumberOrPercent(options.dictionary_max_df, &value, &fraction))  {
-      if (fraction) filter_dictionary_args.set_max_df_rate(value);
-      else filter_dictionary_args.set_max_df(value);
-    } else {
-      if (!options.dictionary_max_df.empty())
-        std::cerr << "Error in parameter 'dictionary_max_df', the option will be ignored (" << options.dictionary_max_df << ")\n";
-    }
+  if (!options.dictionary_max_df.empty() || !options.dictionary_min_df.empty() || (options.dictionary_size > 0)) {
+    {
+      ProgressScope scope("Filtering dictionary based on user thresholds", "");
+      ::artm::FilterDictionaryArgs filter_dictionary_args;
+      filter_dictionary_args.set_dictionary_name(options.main_dictionary_name);
+      filter_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
+      bool fraction;
+      double value;
+      if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction))  {
+        if (fraction) filter_dictionary_args.set_min_df_rate(value);
+        else filter_dictionary_args.set_min_df(value);
+      } else {
+        if (!options.dictionary_min_df.empty())
+          std::cerr << "Error in parameter 'dictionary_min_df', the option will be ignored (" << options.dictionary_min_df << ")\n";
+      }
+      if (parseNumberOrPercent(options.dictionary_max_df, &value, &fraction))  {
+        if (fraction) filter_dictionary_args.set_max_df_rate(value);
+        else filter_dictionary_args.set_max_df(value);
+      } else {
+        if (!options.dictionary_max_df.empty())
+          std::cerr << "Error in parameter 'dictionary_max_df', the option will be ignored (" << options.dictionary_max_df << ")\n";
+      }
 
-    master_component->FilterDictionary(filter_dictionary_args);
+      if (options.dictionary_size > 0)
+        filter_dictionary_args.set_max_dictionary_size(options.dictionary_size);
+
+      master_component->FilterDictionary(filter_dictionary_args);
+    }
+    std::cerr << "Dictionary size: " << get_dictionary_size(*master_component, options.main_dictionary_name) << "\n";
   }
 
   if (!options.save_dictionary.empty()) {
@@ -1018,7 +1216,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     ExportDictionaryArgs export_dictionary_args;
     export_dictionary_args.set_dictionary_name(options.main_dictionary_name);
     export_dictionary_args.set_file_name(options.save_dictionary);
-    if (options.force) boost::filesystem::remove(options.save_dictionary);
+    if (options.force) boost::filesystem::remove(options.save_dictionary + ".dict");
     master_component->ExportDictionary(export_dictionary_args);
   }
 
@@ -1040,12 +1238,56 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     import_model_args.set_model_name(pwt_model_name);
     import_model_args.set_file_name(options.load_model);
     master_component->ImportModel(import_model_args);
+
+    // Retrieve topic names and tokens of the imported model.
+    // Verify the model has all topic names, requested by the used.
+    // If not, find the remaining topics and initialize random matrix.
+    // Use "MergeModel" operation to join loaded model with randomly initialized "remainder".
+    // The tmp_dictionary ensures that both models have the same tokens in their dictionary.
+    ::artm::GetTopicModelArgs get_topic_model_args;
+    get_topic_model_args.set_eps(1.001f);
+    get_topic_model_args.set_matrix_layout(::artm::MatrixLayout_Sparse);
+    ::artm::TopicModel imported_model = master_component->GetTopicModel(get_topic_model_args);
+
+    std::set<std::string> remaining_topics;
+    for (auto& topic_name : master_config.topic_name()) remaining_topics.insert(topic_name);
+    for (auto& topic_name : imported_model.topic_name()) remaining_topics.erase(topic_name);
+    if (!remaining_topics.empty()) {
+      DictionaryData tmp_dictionary;
+      tmp_dictionary.set_name("cd85d76c-5869-41d9-93ca-f96f5f118fb8-temporary-dictionary");
+      for (int token_id = 0; token_id < imported_model.token_size(); token_id++) {
+        tmp_dictionary.add_token(imported_model.token(token_id));
+        tmp_dictionary.add_class_id(imported_model.class_id(token_id));
+      }
+      master_component->CreateDictionary(tmp_dictionary);
+
+      InitializeModelArgs tmp_model;
+      tmp_model.set_model_name("cd85d76c-5869-41d9-93ca-f96f5f118fb8-temporary-model");
+      for (auto& topic_name : remaining_topics) tmp_model.add_topic_name(topic_name);
+      tmp_model.set_dictionary_name(tmp_dictionary.name());
+      if (options.rand_seed != -1)
+        tmp_model.set_seed(static_cast< int >(options.rand_seed));
+      master_component->InitializeModel(tmp_model);
+
+      MergeModelArgs merge_model_args;
+      merge_model_args.add_nwt_source_name(pwt_model_name); merge_model_args.add_source_weight(1.0f);
+      merge_model_args.add_nwt_source_name(tmp_model.model_name()); merge_model_args.add_source_weight(1.0f);
+      merge_model_args.set_nwt_target_name(pwt_model_name);
+      merge_model_args.mutable_topic_name()->CopyFrom(master_config.topic_name());
+      master_component->MergeModel(merge_model_args);
+
+      master_component->DisposeDictionary(tmp_dictionary.name());
+      master_component->DisposeModel(tmp_model.model_name());
+    }
   } else if (options.isModelRequired()) {
     ProgressScope scope("Initializing random model from dictionary");
     InitializeModelArgs initialize_model_args;
     initialize_model_args.set_model_name(pwt_model_name);
     initialize_model_args.mutable_topic_name()->CopyFrom(master_config.topic_name());
     initialize_model_args.set_dictionary_name(options.main_dictionary_name);
+    // specify random seed
+    if (options.rand_seed != -1)
+      initialize_model_args.set_seed(static_cast< int >(options.rand_seed));
     master_component->InitializeModel(initialize_model_args);
 
     if (options.update_every > 0) {
@@ -1075,7 +1317,11 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     }
 
     CuckooWatch timer;
-    if (iter == 0) std::cerr << "================= Processing started.\n";
+    if (iter == 0) {
+      std::cerr << "================= Scores before processing.\n";
+      score_helper.showScores(0, 0);
+      std::cerr << "================= Processing started.\n";
+    }
 
     if (options.update_every > 0) {  // online algorithm
       FitOnlineMasterModelArgs fit_online_args;
@@ -1092,19 +1338,33 @@ int execute(const artm_options& options, int argc, char* argv[]) {
       for (auto& batch_file_name : batch_file_names)
         fit_online_args.add_batch_filename(batch_file_name.string());
 
-      master_component->FitOnlineModel(fit_online_args);
+      std::future<void> future = std::async(std::launch::async, [master_component, fit_online_args]() {
+        master_component->FitOnlineModel(fit_online_args);
+      });
+
+      const int timeout_sec = options.profile > 0 ? options.profile : 60;
+      while (future.wait_for(std::chrono::seconds(timeout_sec)) != std::future_status::ready) {
+        if (options.profile > 0) { output_profile_information(*master_component); std::cerr << "===========================================\n"; }
+      }
     } else {
       FitOfflineMasterModelArgs fit_offline_args;
       for (auto& batch_file_name : batch_file_names)
         fit_offline_args.add_batch_filename(batch_file_name.string());
 
-      master_component->FitOfflineModel(fit_offline_args);
+      std::future<void> future = std::async(std::launch::async, [master_component, fit_offline_args]() {
+        master_component->FitOfflineModel(fit_offline_args);
+      });
+
+      const int timeout_sec = options.profile > 0 ? options.profile : 60;
+      while (future.wait_for(std::chrono::seconds(timeout_sec)) != std::future_status::ready) {
+        if (options.profile > 0) { output_profile_information(*master_component); std::cerr << "===========================================\n"; }
+      }
     }
 
     score_helper.showScores(iter + 1, timer.elapsed_ms());
   }  // iter
 
-  if ((options.num_collection_passes > 0) || (options.time_limit > 0))
+  if ((options.num_collection_passes > 0) || (options.time_limit > 0) || (options.score_level == 0 && !options.final_score.empty()))
     final_score_helper.showScores();
 
   if (!options.save_model.empty()) {
@@ -1140,6 +1400,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     ProgressScope scope(std::string("Saving model in readable format to ") + options.write_model_readable);
     GetTopicModelArgs get_topic_model_args;
     get_topic_model_args.set_model_name(pwt_model_name);
+    get_topic_model_args.mutable_class_id()->CopyFrom(master_config.class_id());
     CsvEscape escape(options.csv_separator.size() == 1 ? options.csv_separator[0] : '\0');
     ::artm::Matrix matrix;
     ::artm::TopicModel model = master_component->GetTopicModel(get_topic_model_args, &matrix);
@@ -1191,6 +1452,9 @@ int execute(const artm_options& options, int argc, char* argv[]) {
       WriteClassPredictions(options, theta_metadata, theta_matrix);
   }
 
+  if (!options.write_vw_corpus.empty())
+    WriteVwCorpus(options, batch_vectorizer.batch_folder());
+
   return 0;
 }
 
@@ -1216,6 +1480,7 @@ int main(int argc, char * argv[]) {
     dictionary_options.add_options()
       ("dictionary-min-df", po::value(&options.dictionary_min_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary-max-df", po::value(&options.dictionary_max_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
+      ("dictionary-size", po::value(&options.dictionary_size)->default_value(0), "limit dictionary size by filtering out tokens with high document frequency")
       ("use-dictionary", po::value(&options.use_dictionary)->default_value(""), "filename of binary dictionary file to use")
     ;
 
@@ -1229,14 +1494,15 @@ int main(int argc, char * argv[]) {
 
     po::options_description learning_options("Learning");
     learning_options.add_options()
-      ("num_collection_passes,p", po::value(&options.num_collection_passes)->default_value(0), "number of outer iterations (passes through the collection)")
+      ("num_collection_passes", po::value(&options.num_collection_passes_depr)->default_value(0), "[deprecated]")
+      ("num-collection-passes,p", po::value(&options.num_collection_passes)->default_value(0), "number of outer iterations (passes through the collection)")
       ("num-document-passes", po::value(&options.num_document_passes)->default_value(10), "number of inner iterations (passes through the document)")
       ("update-every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
       ("tau0", po::value(&options.tau0)->default_value(1024), "[online algorithm] weight option from online update formula")
       ("kappa", po::value(&options.kappa)->default_value(0.7f), "[online algorithm] exponent option from online update formula")
       ("reuse-theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
-      ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken(), "regularizers (SmoothPhi,SparsePhi,SmoothTheta,SparseTheta,Decorrelation)")
-      ("threads", po::value(&options.threads)->default_value(0), "number of concurrent processors (default: auto-detect)")
+      ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken()->zero_tokens(), "regularizers (SmoothPhi,SparsePhi,SmoothTheta,SparseTheta,Decorrelation)")
+      ("threads", po::value(&options.threads)->default_value(-1), "number of concurrent processors (default: auto-detect)")
       ("async", po::bool_switch(&options.async)->default_value(false), "invoke asynchronous version of the online algorithm")
     ;
 
@@ -1250,6 +1516,7 @@ int main(int argc, char * argv[]) {
       ("write-predictions", po::value(&options.write_predictions)->default_value(""), "write prediction in a human-readable format")
       ("write-class-predictions", po::value(&options.write_class_predictions)->default_value(""), "write class prediction in a human-readable format")
       ("write-scores", po::value(&options.write_scores)->default_value(""), "write scores in a human-readable format")
+      ("write-vw-corpus", po::value(&options.write_vw_corpus)->default_value(""), "convert batches into plain text file in Vowpal Wabbit format")
       ("force", po::bool_switch(&options.force)->default_value(false), "force overwrite existing output files")
       ("csv-separator", po::value(&options.csv_separator)->default_value(";"), "columns separator for --write-model-readable and --write-predictions. Use \\t or TAB to indicate tab.")
       ("score-level", po::value< int >(&options.score_level)->default_value(2), "score level (0, 1, 2, or 3")
@@ -1260,10 +1527,13 @@ int main(int argc, char * argv[]) {
     po::options_description ohter_options("Other options");
     ohter_options.add_options()
       ("help,h", "display this help message")
+      ("rand-seed", po::value< time_t >(&options.rand_seed)->default_value(-1), "specify seed for random number generator")
+      ("guid-batch-name", po::bool_switch(&options.b_guid_batch_name)->default_value(false), "applies to save-batches and indicate that batch names should be guids (not sequential codes)")
       ("response-file", po::value<std::string>(&options.response_file)->default_value(""), "response file")
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "start paused and waits for a keystroke (allows to attach a debugger)")
       ("disk-cache-folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
       ("disable-avx-opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
+      ("profile", po::value(&options.profile)->default_value(0), "output diagnostics information; the value indicate frequency (in seconds)")
       ("time-limit", po::value(&options.time_limit)->default_value(0), "limit execution time in milliseconds")
       ("log-dir", po::value(&options.log_dir), "target directory for logging (GLOG_log_dir)")
       ("log-level", po::value(&options.log_level), "min logging level (GLOG_minloglevel; INFO=0, WARNING=1, ERROR=2, and FATAL=3)")
@@ -1284,6 +1554,9 @@ int main(int argc, char * argv[]) {
       std::cerr << "Press any key to continue. ";
       getchar();
     }
+
+    if (options.num_collection_passes_depr > 0 && options.num_collection_passes == 0)
+      options.num_collection_passes = options.num_collection_passes_depr;
 
     if (vm.count("response-file") && !options.response_file.empty()) {
       // Load the file and tokenize it
@@ -1319,6 +1592,7 @@ int main(int argc, char * argv[]) {
     // options.read_uci_vocab   = "D:\\datasets\\vocab.kos.txt";
 
     bool show_help = (vm.count("help") > 0);
+    bool show_help_regularizer = show_help && (vm.count("regularizer") > 0);
 
     // Show help if user neither provided batch folder, nor docword/vocab files
     if (options.read_vw_corpus.empty() &&
@@ -1327,6 +1601,39 @@ int main(int argc, char * argv[]) {
         options.load_model.empty() &&
         options.use_dictionary.empty())
       show_help = true;
+
+    if (show_help_regularizer) {
+      std::cerr << "List of regularizers available in BigARTM CLI:\n\n";
+      std::cerr << "\t--regularizer \"tau SmoothTheta #topics\"\n";
+      std::cerr << "\t--regularizer \"tau SparseTheta #topics\"\n";
+      std::cerr << "\t--regularizer \"tau SmoothPhi #topics @class_ids !dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau SparsePhi #topics @class_ids !dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau Decorrelation #topics @class_ids\"\n";
+      std::cerr << "\t--regularizer \"tau TopicSelection #topics\"\n";
+      std::cerr << "\t--regularizer \"tau LabelRegularization #topics @class_ids !dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau ImproveCoherence #topics @class_ids !dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau Biterms #topics @class_ids !dictionary\"\n";
+      std::cerr << "\nList of regularizers available in BigARTM, but not exposed in CLI:\n\n";
+      std::cerr << "\t--regularizer \"tau SpecifiedSparsePhi\"\n";
+      std::cerr << "\t--regularizer \"tau SmoothPtdw\"\n";
+      std::cerr << "\t--regularizer \"tau HierarchySparsingTheta\"\n\n";
+      std::cerr << "If you are interested to see any of these regularizers in BigARTM CLI please send a message to\n";
+      std::cerr << "\tbigartm-users@googlegroups.com.\n\n";
+      std::cerr << "By default all regularizers act on the full set of topics and modalities.\n";
+      std::cerr << "To limit action onto specific set of topics use hash sign (#), followed by\n";
+      std::cerr << "list of topics (for example, #topic1;topic2) or topic groups (#obj).\n";
+      std::cerr << "Similarly, to limit action onto specific set of class ids use at sign (@),\n";
+      std::cerr << "by the list of class ids (for example, @default_class).\n";
+      std::cerr << "Some regularizers accept a dictionary. To specify the dictionary use exclamation mark (!),\n";
+      std::cerr << "followed by the path to the dictionary(.dict file in your file system).\n";
+      std::cerr << "Depending on regularizer the dictinoary can be either optional or required.\n";
+      std::cerr << "Some regularizers expect an dictinoary with tokens and their frequencies;\n";
+      std::cerr << "Other regularizers expect an dictinoary with tokens co-occurencies;\n";
+      std::cerr << "For more information about regularizers refer to wiki-page:\n";
+      std::cerr << "\n\thttps://github.com/bigartm/bigartm/wiki/Implemented-regularizers\n\n";
+      std::cerr << "To get full help run `bigartm --help` without --regularizer switch.\n";
+      return 0;
+    }
 
     if (show_help) {
       std::cerr << all_options;
@@ -1337,15 +1644,22 @@ int main(int argc, char * argv[]) {
       std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt \n";
       std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt \n";
       std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vw.mmro.txt \n";
+      std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vw.wiki-enru.txt.zip \n";
       std::cerr << std::endl;
       std::cerr << "* Parse docword and vocab files from UCI bag-of-word format; then fit topic model with 20 topics:\n";
-      std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num_collection_passes 10\n";
+      std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num-collection-passes 10\n";
       std::cerr << std::endl;
       std::cerr << "* Parse VW format; then save the resulting batches and dictionary:\n";
       std::cerr << "  bigartm --read-vw-corpus vw.mmro.txt --save-batches mmro_batches --save-dictionary mmro.dict\n";
       std::cerr << std::endl;
       std::cerr << "* Parse VW format from standard input; note usage of single dash '-' after --read-vw-corpus:\n";
       std::cerr << "  cat vw.mmro.txt | bigartm --read-vw-corpus - --save-batches mmro2_batches --save-dictionary mmro2.dict\n";
+      std::cerr << std::endl;
+      std::cerr << "* Re-save batches back into VW format:\n";
+      std::cerr << "  bigartm --use-batches mmro_batches --write-vw-corpus vw.mmro.txt\n";
+      std::cerr << std::endl;
+      std::cerr << "* Parse only specific modalities from VW file, and save them as a new VW file:\n";
+      std::cerr << "  bigartm --read-vw-corpus vw.wiki-enru.txt --use-modality @russian --write-vw-corpus vw.wiki-ru.txt\n";
       std::cerr << std::endl;
       std::cerr << "* Load and filter the dictionary on document frequency; save the result into a new file:\n";
       std::cerr << "  bigartm --use-dictionary mmro.dict --dictionary-min-df 5 dictionary-max-df 40% --save-dictionary mmro-filter.dict\n";
@@ -1354,7 +1668,7 @@ int main(int argc, char * argv[]) {
       std::cerr << "  bigartm --use-dictionary mmro.dict --write-dictionary-readable mmro.dict.txt\n";
       std::cerr << std::endl;
       std::cerr << "* Use batches to fit a model with 20 topics; then save the model in a binary format:\n";
-      std::cerr << "  bigartm --use-batches mmro_batches --num_collection_passes 10 -t 20 --save-model mmro.model\n";
+      std::cerr << "  bigartm --use-batches mmro_batches --num-collection-passes 10 -t 20 --save-model mmro.model\n";
       std::cerr << std::endl;
       std::cerr << "* Load the model and export it in a human-readable format:\n";
       std::cerr << "  bigartm --load-model mmro.model --write-model-readable mmro.model.txt\n";
@@ -1363,19 +1677,19 @@ int main(int argc, char * argv[]) {
       std::cerr << "  bigartm --read-vw-corpus vw.mmro.txt --load-model mmro.model --write-predictions mmro.predict.txt\n";
       std::cerr << std::endl;
       std::cerr << "* Fit model with two modalities (@default_class and @target), and use it to predict @target label:\n";
-      std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --num_collection_passes 10 --save-model model.bin\n";
+      std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --num-collection-passes 10 --save-model model.bin\n";
       std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --load-model model.bin\n";
       std::cerr << "          --write-predictions pred.txt --csv-separator=tab\n";
       std::cerr << "          --predict-class @target --write-class-predictions pred_class.txt --score ClassPrecision\n";
       std::cerr << std::endl;
       std::cerr << "* Fit simple regularized model (increase sparsity up to 60-70%):\n";
       std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictionary-min-df 2\n";
-      std::cerr << "          --num_collection_passes 10 --batch-size 50 --topics 20 --write-model-readable model.txt\n";
+      std::cerr << "          --num-collection-passes 10 --batch-size 50 --topics 20 --write-model-readable model.txt\n";
       std::cerr << "          --regularizer \"0.05 SparsePhi\" \"0.05 SparseTheta\"\n";
       std::cerr << std::endl;
       std::cerr << "* Fit more advanced regularize model, with 10 sparse objective topics, and 2 smooth background topics:\n";
       std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictionary-min-df 2\n";
-      std::cerr << "          --num_collection_passes 10 --batch-size 50 --topics obj:10;background:2 --write-model-readable model.txt\n";
+      std::cerr << "          --num-collection-passes 10 --batch-size 50 --topics obj:10;background:2 --write-model-readable model.txt\n";
       std::cerr << "          --regularizer \"0.05 SparsePhi #obj\"\n";
       std::cerr << "          --regularizer \"0.05 SparseTheta #obj\"\n";
       std::cerr << "          --regularizer \"0.25 SmoothPhi #background\"\n";
@@ -1385,8 +1699,8 @@ int main(int argc, char * argv[]) {
       std::cerr << "  bigartm --use-batches old_folder --save-batches new_folder\n";
       std::cerr << std::endl;
       std::cerr << "* Configure logger to output into stderr:\n";
-      std::cerr << "  tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num_collection_passes 10\n";
-      return 1;
+      std::cerr << "  tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num-collection-passes 10\n";
+      return 0;
     }
 
     fixScoreLevel(&options);

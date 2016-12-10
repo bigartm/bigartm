@@ -13,7 +13,7 @@
 #include "boost/utility.hpp"
 
 #include "artm/core/common.h"
-#include "artm/core/internals.pb.h"
+#include "artm/core/dictionary.h"
 #include "artm/core/thread_safe_holder.h"
 
 namespace artm {
@@ -91,11 +91,11 @@ class MasterComponent : boost::noncopyable {
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
 
   void ReconfigureMasterModel(const MasterModelConfig& config);
+  void ReconfigureTopicName(const MasterModelConfig& config);
 
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
 
   void CreateDictionary(const DictionaryData& data);
-  void AppendDictionary(const DictionaryData& data);
 
   void AttachModel(const AttachModelArgs& args, int address_length, float* address);
 
@@ -110,7 +110,10 @@ class MasterComponent : boost::noncopyable {
                                  ScoreManager* score_manager,
                                  ::artm::ThetaMatrix* theta_matrix);
 
-  void CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure);
+  void CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure,
+                                          bool change_topic_name);
+
+  void AddDictionary(std::shared_ptr<Dictionary> dictionary);
 
   std::shared_ptr<Instance> instance_;
 };

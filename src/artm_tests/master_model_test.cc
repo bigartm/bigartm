@@ -108,7 +108,7 @@ void runBasicTest(bool skip_batch_dict) {
 
     auto perplexity_scores = master_model.GetScoreArrayAs< ::artm::PerplexityScore>(get_score_array_args);
     ASSERT_EQ(perplexity_scores.size(), (pass + 1));
-    ASSERT_EQ(perplexity_scores.back().value(), perplexity_score.value());
+    ASSERT_APPROX_EQ(perplexity_scores.back().value(), perplexity_score.value());
 
     auto sparsity_phi_scores = master_model.GetScoreArrayAs< ::artm::SparsityPhiScore>(get_score_array_args2);
     ASSERT_EQ(sparsity_phi_scores.size(), (pass + 1));

@@ -6,6 +6,8 @@
 
 #include <iostream>  // NOLINT
 
+#include "google/protobuf/util/json_util.h"
+
 #include "artm/cpp_interface.h"
 
 namespace artm {
@@ -18,7 +20,24 @@ inline std::string GetLastErrorMessage() {
   return std::string(ArtmGetLastErrorMessage());
 }
 
-int HandleErrorCode(int artm_error_code) {
+static void ParseMessageFromString(const std::string& string, google::protobuf::Message* message) {
+  if (ArtmProtobufMessageFormatIsJson()) {
+    ::google::protobuf::util::JsonStringToMessage(string, message);
+  } else {
+    message->ParseFromString(string);
+  }
+}
+
+static void SerializeMessageToString(const google::protobuf::Message& message, std::string* output) {
+  if (ArtmProtobufMessageFormatIsJson()) {
+    ::google::protobuf::util::MessageToJsonString(message, output);
+  } else {
+    output->clear();
+    message.SerializeToString(output);
+  }
+}
+
+int64_t HandleErrorCode(int64_t artm_error_code) {
   // All error codes are negative. Any non-negative value is a success.
   if (artm_error_code >= 0) {
     return artm_error_code;
@@ -49,43 +68,40 @@ int HandleErrorCode(int artm_error_code) {
 }
 
 template<typename ArgsT, typename FuncT>
-int ArtmExecute(const ArgsT& args, FuncT func) {
+int64_t ArtmExecute(const ArgsT& args, FuncT func) {
   std::string blob;
-  args.SerializeToString(&blob);
+  SerializeMessageToString(args, &blob);
   return HandleErrorCode(func(blob.size(), StringAsArray(&blob)));
 }
 
 template<typename ArgsT, typename FuncT>
-int ArtmExecute(int master_id, const ArgsT& args, FuncT func) {
+int64_t ArtmExecute(int master_id, const ArgsT& args, FuncT func) {
   std::string blob;
-  args.SerializeToString(&blob);
+  SerializeMessageToString(args, &blob);
   return HandleErrorCode(func(master_id, blob.size(), StringAsArray(&blob)));
+}
+
+template<typename ResultT>
+ResultT ArtmCopyResult(int64_t length) {
+  std::string result_blob;
+  result_blob.resize(length);
+  HandleErrorCode(ArtmCopyRequestedMessage(length, StringAsArray(&result_blob)));
+
+  ResultT result;
+  ParseMessageFromString(result_blob, &result);
+  return result;
 }
 
 template<typename ResultT, typename FuncT>
 ResultT ArtmRequest(int master_id, FuncT func) {
-  int length = func(master_id);
-
-  std::string result_blob;
-  result_blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestedMessage(length, StringAsArray(&result_blob)));
-
-  ResultT result;
-  result.ParseFromString(result_blob);
-  return result;
+  int64_t length = func(master_id);
+  return ArtmCopyResult<ResultT>(length);
 }
 
 template<typename ResultT, typename ArgsT, typename FuncT>
 ResultT ArtmRequest(int master_id, const ArgsT& args, FuncT func) {
-  int length = ArtmExecute(master_id, args, func);
-
-  std::string result_blob;
-  result_blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestedMessage(length, StringAsArray(&result_blob)));
-
-  ResultT result;
-  result.ParseFromString(result_blob);
-  return result;
+  int64_t length = ArtmExecute(master_id, args, func);
+  return ArtmCopyResult<ResultT>(length);
 }
 
 template<typename ResultT, typename ArgsT, typename FuncT>
@@ -99,16 +115,22 @@ void ArtmRequestMatrix(int no_rows, int no_cols, Matrix* matrix) {
 
   matrix->resize(no_rows, no_cols);
 
-  int length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
+  int64_t length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
   HandleErrorCode(ArtmCopyRequestedObject(length, reinterpret_cast<char*>(matrix->get_data())));
 }
 
-void ParseCollection(const CollectionParserConfig& config) {
-  ArtmExecute(config, ArtmParseCollection);
+CollectionParserInfo ParseCollection(const CollectionParserConfig& config) {
+  int64_t length = ArtmExecute(config, ArtmParseCollection);
+  return ArtmCopyResult<CollectionParserInfo>(length);
 }
 
 void ConfigureLogging(const ConfigureLoggingArgs& args) {
   ArtmExecute(args, ArtmConfigureLogging);
+}
+
+Batch LoadBatch(std::string filename) {
+  int64_t length = ArtmRequestLoadBatch(filename.c_str());
+  return ArtmCopyResult<Batch>(length);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -135,6 +157,10 @@ MasterModelConfig MasterModel::config() const {
 
 void MasterModel::Reconfigure(const MasterModelConfig& config) {
   ArtmExecute(id_, config, ArtmReconfigureMasterModel);
+}
+
+void MasterModel::ReconfigureTopicName(const MasterModelConfig& config) {
+  ArtmExecute(id_, config, ArtmReconfigureTopicName);
 }
 
 TopicModel MasterModel::GetTopicModel() {
@@ -261,6 +287,10 @@ void MasterModel::FitOnlineModel(const FitOnlineMasterModelArgs& args) {
 
 void MasterModel::FitOfflineModel(const FitOfflineMasterModelArgs& args) {
   ArtmExecute(id_, args, ArtmFitOfflineMasterModel);
+}
+
+void MasterModel::MergeModel(const MergeModelArgs& args) {
+  ArtmExecute(id_, args, ArtmMergeModel);
 }
 
 void MasterModel::DisposeBatch(const std::string& batch_name) {

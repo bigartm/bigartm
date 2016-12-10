@@ -4,6 +4,8 @@ import tempfile
 import os
 import pytest
 
+from six.moves import range
+
 import artm
 
 def test_func():
@@ -18,7 +20,7 @@ def test_func():
     num_docs = 3430
     zero_eps = 0.001
 
-    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     batches_folder = tempfile.mkdtemp()
 
     try:
@@ -36,9 +38,7 @@ def test_func():
         model_artm.regularizers.add(artm.SmoothSparseThetaRegularizer(name='SparseTheta', tau=alpha))
 
         model_artm.scores.add(artm.SparsityThetaScore(name='SparsityThetaScore'))
-        model_artm.scores.add(artm.PerplexityScore(name='PerplexityScore',
-                                                   use_unigram_document_model=False,
-                                                   dictionary=dictionary))
+        model_artm.scores.add(artm.PerplexityScore(name='PerplexityScore', dictionary=dictionary))
         model_artm.scores.add(artm.SparsityPhiScore(name='SparsityPhiScore'))
         model_artm.scores.add(artm.TopTokensScore(name='TopTokensScore', num_tokens=num_tokens))
 
@@ -51,24 +51,24 @@ def test_func():
         model_artm.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
         model_lda.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
 
-        for i in xrange(num_collection_passes):
+        for i in range(num_collection_passes):
             assert abs(model_artm.score_tracker['SparsityPhiScore'].value[i] - model_lda.sparsity_phi_value[i]) < zero_eps
 
-        for i in xrange(num_collection_passes):
+        for i in range(num_collection_passes):
             assert abs(model_artm.score_tracker['SparsityThetaScore'].value[i] - model_lda.sparsity_theta_value[i]) < zero_eps
 
-        for i in xrange(num_collection_passes):
+        for i in range(num_collection_passes):
             assert abs(model_artm.score_tracker['PerplexityScore'].value[i] - model_lda.perplexity_value[i]) < zero_eps
 
         lda_tt = model_lda.get_top_tokens(num_tokens=num_tokens)
         assert len(lda_tt) == num_topics
 
-        for i in xrange(num_topics):
-            for j in xrange(num_tokens):
+        for i in range(num_topics):
+            for j in range(num_tokens):
                 assert model_artm.score_tracker['TopTokensScore'].last_tokens[model_artm.topic_names[i]][j] == lda_tt[i][j]
 
         lda_tt = model_lda.get_top_tokens(num_tokens=num_tokens, with_weights=True)
-        for i in xrange(num_tokens):
+        for i in range(num_tokens):
             assert abs(model_artm.score_tracker['TopTokensScore'].last_weights[model_artm.topic_names[0]][i] - lda_tt[0][i][1]) < zero_eps
 
         model_lda.fit_online(batch_vectorizer=batch_vectorizer)

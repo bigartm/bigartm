@@ -64,7 +64,7 @@ bool BitermsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     auto token = n_wt.token(token_id);
     if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) continue;
 
-    auto cooc_tokens_info = dictionary_ptr->cooc_info(token);
+    auto cooc_tokens_info = dictionary_ptr->token_cooc_values(token);
     if (cooc_tokens_info == nullptr) continue;
 
     std::vector<float> n_t_p_wt(topic_size, 0.0f);  // n_t * p_wt

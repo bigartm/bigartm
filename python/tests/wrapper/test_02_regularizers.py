@@ -1,8 +1,12 @@
+from __future__ import print_function
+
 import os
 import itertools
 import tempfile
 import shutil
 import pytest
+
+from six.moves import range, zip
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
@@ -11,7 +15,7 @@ import artm.master_component as mc
 
 def test_func():
     # Set some constants
-    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     dictionary_name = 'dictionary'
     pwt = 'pwt'
     nwt = 'nwt'
@@ -97,10 +101,10 @@ def test_func():
 
         # Initialize model
         master.initialize_model(model_name=pwt,
-                                topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
+                                topic_names=['topic_{}'.format(i) for i in range(num_topics)],
                                 dictionary_name=dictionary_name)
 
-        for iter in xrange(num_outer_iterations):
+        for iter in range(num_outer_iterations):
             # Invoke one scan of the collection, regularize and normalize Phi
             master.clear_score_cache()
             master.process_batches(pwt=pwt,
@@ -123,7 +127,7 @@ def test_func():
             print_string += ': Perplexity = {0:.3f}'.format(perplexity_score.value)
             print_string += ', Phi sparsity = {0:.3f}'.format(sparsity_phi_score.value)
             print_string += ', Theta sparsity = {0:.3f}'.format(sparsity_theta_score.value)
-            print print_string
+            print(print_string)
 
             assert abs(perplexity_score.value - expected_perplexity_value_on_iteration[iter]) < perplexity_tol
             assert abs(sparsity_phi_score.value - expected_phi_sparsity_value_on_iteration[iter]) < sparsity_tol
@@ -132,12 +136,12 @@ def test_func():
         # Retrieve and print top tokens score
         top_tokens_score = master.get_score('TopTokens')
 
-        print 'Top tokens per topic:'
+        print('Top tokens per topic:')
         top_tokens_triplets = zip(top_tokens_score.topic_index, zip(top_tokens_score.token, top_tokens_score.weight))
-        for topic_index, group in itertools.groupby(top_tokens_triplets, key=lambda (topic_index, _): topic_index):
+        for topic_index, group in itertools.groupby(top_tokens_triplets, key=lambda triplet: triplet[0]):
             print_string = 'Topic#{0} : '.format(topic_index)
             for _, (token, weight) in group:
                 print_string += ' {0}({1:.3f})'.format(token, weight)
-            print print_string
+            print(print_string)
     finally:
         shutil.rmtree(batches_folder)

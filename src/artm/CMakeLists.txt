@@ -20,7 +20,7 @@ set(GENERATED_PROTO_FILES ${GENERATED_PROTO_FILES}
   ${CMAKE_CURRENT_LIST_DIR}/messages.pb.h
   ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.cc
   ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.h)
-    
+
 set_source_files_properties(${GENERATED_PROTO_FILES} PROPERTIES GENERATED TRUE)
 
 if (MSVC)
@@ -35,17 +35,29 @@ add_custom_target(proto_generation ALL
   DEPENDS
   ${GENERATED_PROTO_FILES})
 
-# The version number.
+# The version number, v0.8.2
 set(ARTM_VERSION_MAJOR 0)
 set(ARTM_VERSION_MINOR 8)
-set(ARTM_VERSION_PATCH 1)
+set(ARTM_VERSION_PATCH 2)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file (
   "${CMAKE_CURRENT_LIST_DIR}/version.h.in"
-  "${CMAKE_CURRENT_LIST_DIR}/version.h"
+  "${CMAKE_CURRENT_BINARY_DIR}/version.h"
   )
+
+configure_file (
+  "${CMAKE_CURRENT_LIST_DIR}/version.rc.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/version.rc"
+  @ONLY)
+
+configure_file(
+  "${CMAKE_CURRENT_LIST_DIR}/utility/progress_printer.cc.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/utility/progress_printer.cc"
+  )
+
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/..")
 
 # make separate objective files for every 'external' *.pb.cc file
 # rationale - compiling every *.pb.cc file for different targets
@@ -84,6 +96,8 @@ set(SRC_LIST
 	core/dense_phi_matrix.h
 	core/dictionary.cc
 	core/dictionary.h
+	core/dictionary_operations.cc
+	core/dictionary_operations.h
 	core/exceptions.h
 	core/helpers.cc
 	core/helpers.h
@@ -96,6 +110,8 @@ set(SRC_LIST
 	core/processor_input.cc
 	core/processor_input.h
 	core/protobuf_helpers.h
+	core/protobuf_serialization.h
+	core/protobuf_serialization.cc
 	core/phi_matrix.h
 	core/phi_matrix_operations.cc
 	core/phi_matrix_operations.h
@@ -127,6 +143,10 @@ set(SRC_LIST
 	regularizer/topic_selection_theta.h
 	regularizer/biterms_phi.cc
 	regularizer/biterms_phi.h
+	regularizer/hierarchy_sparsing_theta.cc
+	regularizer/hierarchy_sparsing_theta.h
+	regularizer/topic_segmentation_ptdw.cc
+	regularizer/topic_segmentation_ptdw.h
 	score/class_precision.cc
 	score/class_precision.h
 	score/items_processed.cc
@@ -152,6 +172,9 @@ set(SRC_LIST
 	utility/blas.cc
 	utility/blas.h
 	utility/ifstream_or_cin.h
+	utility/memory_usage.h
+	${CMAKE_CURRENT_BINARY_DIR}/utility/progress_printer.cc
+	utility/progress_printer.h
 )
 
 FILE(GLOB_RECURSE SRC_LIST_OTHER
@@ -190,7 +213,8 @@ set(ARTM_LIB_DEPS  artm-static
                    ${PROTOBUF_LIBRARIES}
                    ${GLOG_LIBRARIES})
 
-add_library(artm SHARED ${SRC_LIST})
+add_library(artm SHARED ${SRC_LIST}
+    ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 
 target_link_libraries(artm ${ARTM_LIB_DEPS})
 

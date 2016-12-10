@@ -1,8 +1,12 @@
+from __future__ import print_function
+
 import os
 import numpy
 import tempfile
 import shutil
 import pytest
+
+from six.moves import range
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
@@ -11,7 +15,7 @@ import artm.master_component as mc
 
 def test_func():
     # Set some constants
-    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     dictionary_name = 'dictionary'
     pwt = 'pwt'
     docword = 'docword.kos.txt'
@@ -47,7 +51,7 @@ def test_func():
 
         # Initialize topic model
         master.initialize_model(model_name=pwt,
-                                topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
+                                topic_names=['topic_{}'.format(i) for i in range(num_topics)],
                                 dictionary_name=dictionary_name + '__')
 
         # Extract topic model and print extracted data
@@ -55,7 +59,7 @@ def test_func():
         _, matrix = master.get_phi_matrix(model=pwt)
         assert len(info.token) == num_tokens
         assert numpy.count_nonzero(matrix) == matrix.size
-        print 'Number of tokens in Phi matrix = {0}'.format(len(info.token))
-        print matrix
+        print('Number of tokens in Phi matrix = {0}'.format(len(info.token)))
+        print(matrix)
     finally:
         shutil.rmtree(batches_folder)

@@ -5,6 +5,8 @@ import os
 import pytest
 import uuid
 
+from six.moves import range
+
 import artm
 
 
@@ -103,8 +105,8 @@ def test_func():
         assert abs(model.phi_.as_matrix()[0][0] - phi_first_elem) < phi_eps
     
         model.fit_offline(batch_vectorizer=batch_vectorizer)
-        for i in xrange(len(phi_values)):
-            for j in xrange(len(phi_values[0])):
+        for i in range(len(phi_values)):
+            for j in range(len(phi_values[0])):
                 assert abs(model.phi_.as_matrix()[i][j] - phi_values[i][j]) < phi_eps
     finally:
         shutil.rmtree(batches_folder)

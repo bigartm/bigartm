@@ -1,0 +1,10 @@
+hARTM
+=====
+
+This page describes hARTM class.
+
+.. automodule:: artm
+
+.. autoclass:: hARTM
+   :members:
+   :special-members: __init__

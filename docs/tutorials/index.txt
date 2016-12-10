@@ -13,5 +13,6 @@ Tutorial references
 
    bigartm_cli
    python_api
+   ../ref/c_interface
 
 .. vim:ft=rst

@@ -4,6 +4,8 @@ import tempfile
 import os
 import pytest
 
+from six.moves import range
+
 import artm
 
 def test_func():
@@ -19,7 +21,7 @@ def test_func():
     vocab_size = 6906
     num_docs = 3430
 
-    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     batches_folder = tempfile.mkdtemp()
 
     sp_zero_eps = 0.001
@@ -42,7 +44,7 @@ def test_func():
                             2265, 2015, 1967, 1807, 1747,
                             1713, 1607, 1632, 1542, 1469]
 
-    top_zero_eps= 0.0001
+    top_zero_eps = 0.0001
     top_tokens_num_tokens = [num_tokens * num_topics] * num_collection_passes
     top_tokens_topic_0_tokens = [u'party', u'state', u'campaign', u'tax',
                                  u'political',u'republican', u'senate', u'candidate',
@@ -76,7 +78,7 @@ def test_func():
         dictionary = artm.Dictionary()
         dictionary.gather(data_path=batch_vectorizer.data_path)
 
-        model = artm.ARTM(topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
+        model = artm.ARTM(topic_names=['topic_{}'.format(i) for i in range(num_topics)],
                           dictionary=dictionary.name,
                           cache_theta=True)
 
@@ -84,9 +86,7 @@ def test_func():
         model.regularizers.add(artm.DecorrelatorPhiRegularizer(name='DecorrelatorPhi', tau=decor_tau))
 
         model.scores.add(artm.SparsityThetaScore(name='SparsityThetaScore'))
-        model.scores.add(artm.PerplexityScore(name='PerplexityScore',
-                                              use_unigram_document_model=False,
-                                              dictionary=dictionary))
+        model.scores.add(artm.PerplexityScore(name='PerplexityScore', dictionary=dictionary))
         model.scores.add(artm.SparsityPhiScore(name='SparsityPhiScore'))
         model.scores.add(artm.TopTokensScore(name='TopTokensScore', num_tokens=num_tokens))
         model.scores.add(artm.TopicKernelScore(name='TopicKernelScore',
@@ -96,19 +96,19 @@ def test_func():
         model.num_document_passes = num_document_passes
         model.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
 
-        for i in xrange(num_collection_passes):
+        for i in range(num_collection_passes):
             assert abs(model.score_tracker['SparsityPhiScore'].value[i] - sparsity_phi_value[i]) < sp_zero_eps
 
-        for i in xrange(num_collection_passes):
+        for i in range(num_collection_passes):
             assert abs(model.score_tracker['SparsityThetaScore'].value[i] - sparsity_theta_value[i]) < sp_zero_eps
 
-        for i in xrange(num_collection_passes):
+        for i in range(num_collection_passes):
             assert abs(model.score_tracker['PerplexityScore'].value[i] - perplexity_value[i]) < perp_zero_eps
 
-        for i in xrange(num_collection_passes):
+        for i in range(num_collection_passes):
             assert model.score_tracker['TopTokensScore'].num_tokens[i] == top_tokens_num_tokens[i]
 
-        for i in xrange(num_tokens):
+        for i in range(num_tokens):
             assert model.score_tracker['TopTokensScore'].last_tokens[model.topic_names[0]][i] == top_tokens_topic_0_tokens[i]
             assert abs(model.score_tracker['TopTokensScore'].last_weights[model.topic_names[0]][i] - top_tokens_topic_0_weights[i]) < top_zero_eps
 
@@ -118,7 +118,7 @@ def test_func():
         assert abs(topic_kernel_topic_0_purity - model.score_tracker['TopicKernelScore'].last_purity[model.topic_names[0]]) < ker_zero_eps
         assert abs(topic_kernel_topic_0_size - model.score_tracker['TopicKernelScore'].last_size[model.topic_names[0]]) < ker_zero_eps
 
-        for i in xrange(num_collection_passes):
+        for i in range(num_collection_passes):
             assert abs(model.score_tracker['TopicKernelScore'].average_size[i] - topic_kernel_average_size[i]) < ker_zero_eps
             assert abs(model.score_tracker['TopicKernelScore'].average_contrast[i] - topic_kernel_average_contrast[i]) < ker_zero_eps
             assert abs(model.score_tracker['TopicKernelScore'].average_purity[i] - topic_kernel_average_purity[i]) < ker_zero_eps
@@ -128,7 +128,7 @@ def test_func():
         info = model.info
         assert info is not None
         assert len(info.config.topic_name) == num_topics
-        assert len(info.score) == len(model.score_tracker)
+        assert len(info.score) >= len(model.score_tracker)
         assert len(info.regularizer) == len(model.regularizers.data)
         assert len(info.cache_entry) > 0
 
@@ -151,18 +151,16 @@ def test_func():
         model.regularizers.add(artm.DecorrelatorPhiRegularizer(name='DecorrelatorPhi', tau=decor_rel_tau))
         model.regularizers['DecorrelatorPhi'].gamma = 0.0
 
-        model.scores.add(artm.PerplexityScore(name='PerplexityScore',
-                                              use_unigram_document_model=False,
-                                              dictionary=dictionary))
+        model.scores.add(artm.PerplexityScore(name='PerplexityScore', dictionary=dictionary))
         model.scores.add(artm.SparsityPhiScore(name='SparsityPhiScore'))
 
         model.num_document_passes = num_document_passes
         model.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
 
-        for i in xrange(num_collection_passes):
+        for i in range(num_collection_passes):
             assert abs(model.score_tracker['SparsityPhiScore'].value[i] - sparsity_phi_rel_value[i]) < sp_zero_eps
 
-        for i in xrange(num_collection_passes):
+        for i in range(num_collection_passes):
             assert abs(model.score_tracker['PerplexityScore'].value[i] - perplexity_rel_value[i]) < perp_zero_eps
     finally:
         shutil.rmtree(batches_folder)

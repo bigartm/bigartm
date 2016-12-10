@@ -1,3 +1,4 @@
+syntax = "proto2";
 // File messages.proto defines all messages that can be transefer in or out from BigARTM library.
 package artm;
 
@@ -82,6 +83,8 @@ enum RegularizerType {
   RegularizerType_SmoothPtdw = 7;
   RegularizerType_TopicSelectionTheta = 8;
   RegularizerType_BitermsPhi = 9;
+  RegularizerType_HierarchySparsingTheta = 10;
+  RegularizerType_TopicSegmentationPtdw = 11;
   RegularizerType_Unknown = 9999;
 }
 
@@ -92,6 +95,7 @@ message RegularizerConfig {
   optional bytes config = 3;
   optional float tau = 4;
   optional double gamma = 5;
+  optional string config_json = 6;
 }
 
 // Represents a configuration of a SmoothSparse Theta regularizer
@@ -99,6 +103,8 @@ message SmoothSparseThetaConfig {
   repeated string topic_name = 1;
   repeated float alpha_iter = 2;
   optional TransformConfig transform_config = 3;
+  repeated string item_title = 4;
+  repeated DoubleArray item_topic_multiplier = 5;
 }
 
 // Represents a configuration of a SmoothSparse Phi regularizer
@@ -171,6 +177,20 @@ message BitermsPhiConfig {
   optional string dictionary_name = 3;
 }
 
+// Represents a configuration of a HierarchySparsing Theta regularizer
+message HierarchySparsingThetaConfig {
+  repeated string topic_name = 1;
+  repeated float parent_topic_proportion = 2;  // user counted value p(supertopic), optional
+  repeated float alpha_iter = 3;
+}
+
+// Represents a configuration of a Topic Segmentation regularizer
+message TopicSegmentationPtdwConfig {
+  repeated string background_topic_names = 1;
+  optional int32 window = 3 [default = 10];
+  optional double threshold = 4 [default = 0.5];
+}
+
 // Represents the transform functions
 message TransformConfig {
   enum TransformType {
@@ -205,6 +225,7 @@ message ScoreConfig {
   optional ScoreType type = 2 [default = ScoreType_Unknown];
   optional bytes config = 3;
   optional string model_name = 4;
+  optional string config_json = 5;
 }
 
 // Represents a result of score calculation
@@ -212,6 +233,7 @@ message ScoreData {
   optional string name = 1;
   optional ScoreType type = 2 [default = ScoreType_Unknown];
   optional bytes data = 3;
+  optional string data_json = 4;
 }
 
 message ScoreArray {
@@ -272,6 +294,8 @@ message ItemsProcessedScoreConfig {
 message ItemsProcessedScore {
   optional int32 value = 1 [default = 0];
   optional int32 num_batches = 2 [default = 0];
+  optional double token_weight = 3 [default = 0];
+  optional double token_weight_in_effect = 4 [default = 0];
 }
 
 // Represents a configuration of a top tokens score
@@ -280,6 +304,7 @@ message TopTokensScoreConfig {
   optional string class_id = 2 [default = "@default_class"];
   repeated string topic_name = 3;
   optional string cooccurrence_dictionary_name = 4;
+  optional float eps = 5 [default = 1e-37];
 }
 
 // Represents a result of calculation of a top tokens score
@@ -386,6 +411,7 @@ message TopicModel {
   repeated FloatArray token_weights = 5;
   repeated string class_id = 6;
   repeated IntArray topic_indices = 8;
+  optional int64 num_values = 9;  // NNZ for sparse retrieval
 }
 
 // Represents a theta matrix.
@@ -396,6 +422,7 @@ message ThetaMatrix {
   optional int32 num_topics = 5;
   repeated string item_title = 6;
   repeated IntArray topic_indices = 7;
+  optional int64 num_values = 8;  // NNZ for sparse retrieval
 }
 
 // Represents a configuration of a collection parser.
@@ -418,6 +445,17 @@ message CollectionParserConfig {
   optional int32 num_items_per_batch = 5 [default = 1000];
   optional bool use_unity_based_indices = 6 [default = true];
   optional BatchNameType name_type = 7 [default = Guid];
+  optional int32 num_threads = 8;
+  repeated string class_id = 9;
+}
+
+// Misc statistics produced by collection parser
+message CollectionParserInfo {
+  optional int64 num_items = 1;
+  optional int64 num_batches = 2;
+  optional int64 dictionary_size = 3;
+  optional int64 num_tokens = 4;
+  optional float total_token_weight = 5;
 }
 
 // Represents an argument of 'initialize model' operation
@@ -439,6 +477,9 @@ message DictionaryData {
   repeated int32 cooc_first_index = 7;
   repeated int32 cooc_second_index = 8;
   repeated float cooc_value = 9;
+  optional int64 num_items_in_collection = 10;  // number of documents in the collection
+  repeated float cooc_tf = 11; // these two arrays should be either empty or with size
+  repeated float cooc_df = 12; // equal to cooc_value and consistent with cooc indices
 }
 
 message FilterDictionaryArgs {
@@ -452,6 +493,8 @@ message FilterDictionaryArgs {
   optional float max_df_rate = 7;
   optional float min_tf = 8;
   optional float max_tf = 9;
+
+  optional int64 max_dictionary_size = 10;
 }
 
 message GatherDictionaryArgs {
@@ -549,6 +592,7 @@ message MergeModelArgs {
   repeated string nwt_source_name = 2;
   repeated float source_weight = 3;
   repeated string topic_name = 4;
+  optional string dictionary_name = 5;
 }
 
 message RegularizeModelArgs {
@@ -595,6 +639,7 @@ message MasterComponentInfo {
   message DictionaryInfo {
     optional string name = 1;
     optional int64 num_entries = 2;
+    optional int64 byte_size = 3;
   }
 
   message BatchInfo {
@@ -608,6 +653,7 @@ message MasterComponentInfo {
     optional string type = 2;
     optional int32 num_topics = 3;
     optional int32 num_tokens = 4;
+    optional int64 byte_size = 5;
   }
 
   message CacheEntryInfo {

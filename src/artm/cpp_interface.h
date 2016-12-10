@@ -55,12 +55,13 @@ DEFINE_EXCEPTION_TYPE(InvalidOperationException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(DiskReadException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(DiskWriteException, std::runtime_error);
 
-int HandleErrorCode(int artm_error_code);
+int64_t HandleErrorCode(int64_t artm_error_code);
 
 #undef DEFINE_EXCEPTION_TYPE
 
-void ParseCollection(const CollectionParserConfig& config);
+CollectionParserInfo ParseCollection(const CollectionParserConfig& config);
 void ConfigureLogging(const ConfigureLoggingArgs& args);
+Batch LoadBatch(std::string filename);
 
 class Matrix {
  public:
@@ -96,6 +97,7 @@ class MasterModel {
 
   MasterModelConfig config() const;
   void Reconfigure(const MasterModelConfig& config);
+  void ReconfigureTopicName(const MasterModelConfig& config);
 
   // Operations to work with dictionary through disk
   void GatherDictionary(const GatherDictionaryArgs& args);
@@ -119,6 +121,7 @@ class MasterModel {
   void ExportModel(const ExportModelArgs& args);
   void FitOnlineModel(const FitOnlineMasterModelArgs& args);
   void FitOfflineModel(const FitOfflineMasterModelArgs& args);
+  void MergeModel(const MergeModelArgs& args);
   void DisposeModel(const std::string& model_name);
 
   // Apply model to batches

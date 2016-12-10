@@ -1,6 +1,25 @@
 Changes in BigARTM CLI
 ======================
 
+v0.8.2
+------
+
+* added option ``--rand-seed`` to initialize random number generator; without this options, RNG will be set using system time
+* added option ``--write-vw-corpus`` to convert batches into plain text file in Vowpal Wabbit format
+* change the naming scheme of the batches, saved with ``--save-batches`` option.
+  Previously file names were guid-based, while new format will look like this: ``aabcde.batch``.
+  New format ensures the ordering of the documents in the collection is be preserved, given that user scans batches alphabetically.
+* added switch ``--guid-batch-name`` to enable old naming scheme of batches (guid-based names).
+  This option is useful if you launch multiple instances of BigARTM CLI to concurrently generate batches.
+* speedup parsing large files in VowpalWabbit format
+* when ``--use-modality`` is specified, the batches saved with ``--save-batches`` will only include tokens from these modalities.
+  Other tokens will be ignored during parsing. This option is implemented for both VW and UCI BOW formats.
+* implement ``TopicSelection``, ``LabelRegularization``, ``ImproveCoherence``, ``Biterms`` regularizer in BigARTM CLI
+* added option ``--dictionary-size`` to give user an easy option to limit his dictionary size
+* add more diagnostics information about dictionary size (before and after filtering)
+* add strict verification of scores and regularizers; for example, BigARTM CLI will raise an exception for this input:
+  ``bigartm -t obj:10,back:5 --regularizer "0.5 SparsePhi #obj*"``. There shouldn't be star sign in ``#obj*``.
+
 v0.8.0
 ------
 

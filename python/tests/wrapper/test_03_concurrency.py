@@ -1,9 +1,13 @@
+from __future__ import print_function
+
 import time
 import os
 import itertools
 import tempfile
 import shutil
 import pytest
+
+from six.moves import range
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
@@ -12,7 +16,7 @@ import artm.master_component as mc
 
 def test_func():
     # Set some constants
-    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     dictionary_name = 'dictionary'
     pwt = 'pwt'
     nwt = 'nwt'
@@ -56,11 +60,11 @@ def test_func():
 
             # Initialize model
             master.initialize_model(model_name=pwt,
-                                    topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
+                                    topic_names=['topic_{}'.format(i) for i in range(num_topics)],
                                     dictionary_name=dictionary_name)
 
             times = []
-            for iter in xrange(num_outer_iterations):
+            for iter in range(num_outer_iterations):
                 start = time.time()
                 
                 # Invoke one scan of the collection and normalize Phi
@@ -76,8 +80,8 @@ def test_func():
                 times.append(end - start)
                 string = 'Iter#{0}'.format(iter)
                 string += ': Perplexity = {0:.3f}, Time = {1:.3f}'.format(perplexity_score.value, end - start)
-                print string
+                print(string)
 
-            print 'Average time per iteration = {0:.3f}'.format(float(sum(times)) / len(times))
+            print('Average time per iteration = {0:.3f}'.format(float(sum(times)) / len(times)))
     finally:
         shutil.rmtree(batches_folder)

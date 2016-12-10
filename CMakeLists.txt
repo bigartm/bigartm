@@ -4,11 +4,11 @@ project(BigARTM)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-if (WIN32)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-endif (WIN32)
+enable_testing()
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 set(3RD_PARTY_DIR ${CMAKE_SOURCE_DIR}/3rdparty)
 
@@ -23,6 +23,7 @@ if (MSVC)
   add_definitions("-D_SCL_SECURE_NO_WARNINGS")
   add_definitions("/wd4251")
   add_definitions("/MP")
+  add_definitions("/EHsc")
 else (MSVC)
   if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
@@ -30,9 +31,19 @@ else (MSVC)
   message("-- Build type: ${CMAKE_BUILD_TYPE}")
 endif (MSVC)
 
-if (UNIX AND NOT APPLE)
-  option(BUILD_STATIC_BIGARTM "Request build of static executable bigartm (for Linux only)" ON)
-endif (UNIX AND NOT APPLE)
+option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
+option(BUILD_BIGARTM_CLI "Indicates whether to build bigartm-CLI executable" ON)
+option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
+
+if (MSVC OR APPLE)
+set(PYTHON python CACHE INTERNAL "Python command")
+else (MSVC OR APPLE)
+set(PYTHON python2 CACHE INTERNAL "Python command")
+endif (MSVC OR APPLE)
+
+if (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
+  option(BUILD_BIGARTM_CLI_STATIC "Request build of static executable bigartm (for Linux only)" ON)
+endif (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
 
 if (APPLE)
   set(CMAKE_MACOSX_RPATH 1)
@@ -44,12 +55,16 @@ set(BUILD_gflags_LIB ON)
 set(BUILD_gflags_nothreads_LIB OFF)
 set(rpcz_build_static ON)
 set(rpcz_build_shared ON)
+set(protobuf_BUILD_TESTS OFF)
+
+include(CheckIncludeFiles)
+check_include_files(unistd.h HAVE_UNISTD_H)
 
 # set compiler flags
 if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
     ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread -fPIC")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -Werror")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -Wall")
   set(GFLAGS_INTTYPES_FORMAT "C99")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   set(Boost_USE_MULTITHREADED ON)

@@ -1,9 +1,10 @@
 import uuid
 import random
+import warnings
 
 from . import wrapper
-from wrapper import messages_pb2 as messages
-from wrapper import constants as const
+from .wrapper import messages_pb2 as messages
+from .wrapper import constants as const
 
 
 __all__ = [
@@ -17,6 +18,8 @@ __all__ = [
     'SmoothPtdwRegularizer',
     'TopicSelectionThetaRegularizer',
     'BitermsPhiRegularizer',
+    'HierarchySparsingThetaRegularizer',
+    'TopicSegmentationPtdwRegularizer',
 ]
 
 
@@ -25,15 +28,13 @@ def _reconfigure_field(obj, field, field_name, proto_field_name=None):
         proto_field_name = field_name
     setattr(obj, '_{0}'.format(field_name), field)
 
-    config = obj._config_message()
-    config.CopyFrom(obj._config)
     if isinstance(field, list):
-        config.ClearField(proto_field_name)
+        obj._config.ClearField(proto_field_name)
         for value in field:
-            getattr(config, proto_field_name).append(value)
+            getattr(obj._config, proto_field_name).append(value)
     else:
-        setattr(config, proto_field_name, field)
-    obj._master.reconfigure_regularizer(obj.name, obj.config, obj.tau, obj.gamma)
+        setattr(obj._config, proto_field_name, field)
+    obj._master.reconfigure_regularizer(obj.name, obj._config, obj.tau, obj.gamma)
 
 
 class KlFunctionInfo(object):
@@ -49,19 +50,15 @@ class KlFunctionInfo(object):
         self.power_value = power_value
 
     def _update_config(self, obj, first=False):
-        config = obj._config_message()
-        config.CopyFrom(obj._config)
-
         if self.function_type == 'log':
-            config.transform_config.type = const.TransformConfig_TransformType_Constant
+            obj._config.transform_config.type = const.TransformConfig_TransformType_Constant
         elif self.function_type == 'pol':
-            config.transform_config.type = const.TransformConfig_TransformType_Polynomial
-            config.transform_config.n = self.power_value  # power_value - 1, but *x gives no change
-            config.transform_config.a = self.power_value
+            obj._config.transform_config.type = const.TransformConfig_TransformType_Polynomial
+            obj._config.transform_config.n = self.power_value  # power_value - 1, but *x gives no change
+            obj._config.transform_config.a = self.power_value
 
-        obj._config = config
         if not first:
-            obj._master.reconfigure_regularizer(obj.name, obj.config, obj.tau, obj.gamma)
+            obj._master.reconfigure_regularizer(obj.name, obj._config, obj.tau, obj.gamma)
 
 
 class Regularizers(object):
@@ -69,11 +66,17 @@ class Regularizers(object):
         self._data = {}
         self._master = master
 
-    def add(self, regularizer):
-        if regularizer.name not in self._data:
-            self._master.create_regularizer(regularizer.name, regularizer.config, regularizer.tau, regularizer.gamma)
-            regularizer._master = self._master
-            self._data[regularizer.name] = regularizer
+    def add(self, regularizer, overwrite=False):
+        name = regularizer.name
+        if name in self._data and not overwrite:
+            raise AttributeError("Unable to replace existing regularizer.\
+                                  If you really want to do it use overwrite=True argument")
+        # next statement represents ternary operator
+        register_func = (self._master.create_regularizer if name not in self._data else
+                         self._master.reconfigure_regularizer)
+        register_func(name, regularizer.config, regularizer.tau, regularizer.gamma)
+        regularizer._master = self._master
+        self._data[name] = regularizer
 
     def __getitem__(self, name):
         if name in self._data:
@@ -81,12 +84,31 @@ class Regularizers(object):
         else:
             raise KeyError('No regularizer with name {0}'.format(name))
 
+    def __setitem__(self, name, regularizer):
+        # typical usecase:
+        # regs[name] = SomeRegularizer(name=None, arguments)
+        # or
+        # regs[name] = SomeRegularizer(arguments)
+        # reset name of regularizer
+        # hack to make name substitution: we directly use _name
+        regularizer._name = name
+        self.add(regularizer, overwrite=True)
+
     def size(self):
+        warnings.warn(DeprecationWarning(
+            "Function 'size' is deprecated and will be removed soon,\
+ use built-in function 'len' instead"))
+        return len(self._data.keys())
+
+    def __len__(self):
         return len(self._data.keys())
 
     @property
     def data(self):
         return self._data
+
+    def __repr__(self):
+        return '[{0}]'.format(', '.join(self._data))
 
 
 class BaseRegularizer(object):
@@ -255,16 +277,16 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
         :param float tau: the coefficient of regularization for this regularizer
         :param float gamma: the coefficient of relative regularization for this regularizer
         :param class_ids: list of class_ids to regularize, will\
-                                     regularize all classes if not specified
+                          regularize all classes if not specified
         :type class_ids: list of str
         :param topic_names: list of names of topics to regularize,\
-                                     will regularize all topics if not specified
+                            will regularize all topics if not specified
         :type topic_names: list of str
         :param dictionary: BigARTM collection dictionary,\
-                                     won't use dictionary if not specified
+                           won't use dictionary if not specified
         :type dictionary: str or reference to Dictionary object
         :param kl_function_info: class with additional info about\
-                                     function under KL-div in regularizer
+                                 function under KL-div in regularizer
         :type kl_function_info: KlFunctionInfo object
         :param config: the low-level config of this regularizer
         :type config: protobuf object
@@ -297,8 +319,8 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
     _config_message = messages.SmoothSparseThetaConfig
     _type = const.RegularizerType_SmoothSparseTheta
 
-    def __init__(self, name=None, tau=1.0, topic_names=None,
-                 alpha_iter=None, kl_function_info=None, config=None):
+    def __init__(self, name=None, tau=1.0, topic_names=None, alpha_iter=None,
+                 kl_function_info=None, doc_titles=None, doc_topic_coef=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
@@ -311,6 +333,21 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
         :param kl_function_info: class with additional info about\
                                      function under KL-div in regularizer
         :type kl_function_info: KlFunctionInfo object
+        :param doc_titles: list of titles of documents to be processed by this regularizer.\
+                           Default empty value means processing of all documents.\
+                           User should guarantee the existence and correctness of\
+                           document titles in batches (e.g. in src files with data, like WV).
+        :type doc_titles: list of strings
+        :param doc_topic_coef: Two cases: 1) list of doubles with length equal to num of topics.\
+                               Means additional multiplier in M-step formula besides alpha and\
+                               tau, unique for each topic, but general for all processing documents.\
+                               2) list of lists of doubles with outer list length equal to length\
+                               of doc_titles, and each inner list length equal to num of topics.\
+                               Means case 1 with unique list of additional multipliers for each\
+                               document from doc_titles. Other documents will not be regularized\
+                               according to description of doc_titles parameter.\
+                               Note, that doc_topic_coef and topic_names are both using.
+        :type doc_topic_coef: list of doubles or list of lists of doubles
         :param config: the low-level config of this regularizer
         :type config: protobuf object
         """
@@ -326,6 +363,23 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
             self._kl_function_info = kl_function_info
         self._kl_function_info._update_config(self, first=True)
 
+        self._doc_titles = []
+        if doc_titles is not None:
+            self._config.ClearField('item_title')
+            for title in doc_titles:
+                self._config.item_title.append(title)
+                self._doc_titles.append(title)
+
+        self._doc_topic_coef = []
+        if doc_topic_coef is not None:
+            real_doc_topic_coef = doc_topic_coef if isinstance(doc_topic_coef[0], list) else [doc_topic_coef]
+            self._config.ClearField('item_topic_multiplier')
+            for topic_coef in real_doc_topic_coef:
+                ref = self._config.item_topic_multiplier.add()
+                for coef in topic_coef:
+                    ref.value.append(coef)
+            self._doc_topic_coef = doc_topic_coef
+
     @property
     def kl_function_info(self):
         return self._kl_function_info
@@ -334,6 +388,32 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
     def kl_function_info(self, kl_function_info):
         self._kl_function_info = kl_function_info
         kl_function_info._update_config(self)
+
+    @property
+    def doc_titles(self):
+        return self._doc_titles
+
+    @property
+    def doc_topic_coef(self):
+        return self._doc_topic_coef
+
+    @doc_titles.setter
+    def doc_titles(self, doc_titles):
+        _reconfigure_field(self, doc_titles, 'item_title')
+
+    @doc_topic_coef.setter
+    def doc_topic_coef(self, doc_topic_coef):
+        real_doc_topic_coef = doc_topic_coef if isinstance(doc_topic_coef[0], list) else [doc_topic_coef]
+        config = self._config_message()
+        config.CopyFrom(self._config)
+
+        self._config.ClearField('item_topic_multiplier')
+        for topic_coef in real_doc_topic_coef:
+            ref = self._config.item_topic_multiplier.add()
+            for coef in topic_coef:
+                ref.value.append(coef)
+        self._doc_topic_coef = doc_topic_coef
+        self._master.reconfigure_regularizer(self.name, self._config, self.tau, self.gamma)
 
 
 class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
@@ -623,3 +703,72 @@ class BitermsPhiRegularizer(BaseRegularizerPhi):
                                     topic_names=topic_names,
                                     class_ids=class_ids,
                                     dictionary=dictionary)
+
+
+class HierarchySparsingThetaRegularizer(BaseRegularizerTheta):
+    _config_message = messages.HierarchySparsingThetaConfig
+    _type = const.RegularizerType_HierarchySparsingTheta
+
+    def __init__(self, name=None, tau=1.0, topic_names=None,
+                 alpha_iter=None,
+                 parent_topic_proportion=None, config=None):
+        """
+        :description: this regularizer affects psi matrix that contains p(topic|supertopic) values.
+
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param alpha_iter: list of additional coefficients of regularization on each iteration\
+                           over document. Should have length equal to model.num_document_passes
+        :type alpha_iter: list of str
+        :param topic_names: list of names of topics to regularize,\
+                                     will regularize all topics if not specified
+        :type topic_names: list of str
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        :param parent_topic_proportion: list of p(supertopic) values
+                           that are p(topic) of parent level model
+        :type parent_topic_proportion: list of float
+        """
+        BaseRegularizerTheta.__init__(self,
+                                      name=name,
+                                      tau=tau,
+                                      config=config,
+                                      topic_names=topic_names,
+                                      alpha_iter=alpha_iter)
+        if parent_topic_proportion is not None:
+            for elem in parent_topic_proportion:
+                self._config.parent_topic_proportion.append(elem)
+
+
+class TopicSegmentationPtdwRegularizer(BaseRegularizer):
+    _config_message = messages.TopicSegmentationPtdwConfig
+    _type = const.RegularizerType_TopicSegmentationPtdw
+
+    def __init__(self, name=None, window=None, threshold=None, background_topic_names=None, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param int window: a number of words to the one side over which smoothing will be performed
+        :param float threshold: probability threshold for a word to be a topic-changing word
+        :param background_topic_names: list of names of topics to be considered background,\
+                                will not consider background topics if not specified
+        :type background_topic_names: list of str
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
+
+        BaseRegularizer.__init__(self,
+                                 name=name,
+                                 tau=1.0,
+                                 gamma=None,
+                                 config=config)
+        if window is not None:
+            self._config.window = window
+            self._window = window
+
+        if threshold is not None:
+            self._config.threshold = threshold
+            self._threshold = threshold
+
+        if background_topic_names is not None:
+            for topic_name in background_topic_names:
+                self._config.background_topic_names.append(topic_name)

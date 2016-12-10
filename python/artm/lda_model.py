@@ -1,3 +1,5 @@
+from six.moves import range, zip
+
 from .artm_model import ARTM
 
 from .regularizers import SmoothSparsePhiRegularizer, SmoothSparseThetaRegularizer
@@ -73,9 +75,7 @@ class LDA(object):
         if self._dictionary is None:
             self._internal_model.scores.add(PerplexityScore(name=self._perp_score_name))
         else:
-            self._internal_model.scores.add(PerplexityScore(name=self._perp_score_name,
-                                                            use_unigram_document_model=False,
-                                                            dictionary=self._dictionary))
+            self._internal_model.scores.add(PerplexityScore(name=self._perp_score_name, dictionary=self._dictionary))
 
         self._internal_model.scores.add(SparsityThetaScore(name=self._sp_theta_score_name))
         self._internal_model.scores.add(SparsityPhiScore(name=self._sp_phi_score_name))
@@ -330,13 +330,13 @@ class LDA(object):
 
         tokens = []
         global_token_index = 0
-        for topic_index in xrange(self.num_topics):
+        for topic_index in range(self.num_topics):
             if not with_weights:
                 tokens.append(result.token[global_token_index: (global_token_index + num_tokens)])
             else:
                 result_token = result.token[global_token_index: (global_token_index + num_tokens)]
                 result_weight = result.weight[global_token_index: (global_token_index + num_tokens)]
-                tokens.append(zip(result_token, result_weight))
+                tokens.append(list(zip(result_token, result_weight)))
             global_token_index += num_tokens
 
         return tokens

@@ -4,12 +4,17 @@ import uuid
 import glob
 import shutil
 import tempfile
+import numpy
 
 from pandas import DataFrame
+from six import iteritems
+from six.moves import range, zip
+from multiprocessing.pool import ThreadPool
+import tqdm
 
 from . import wrapper
-from wrapper import constants as const
-from wrapper import messages_pb2
+from .wrapper import constants as const
+from .wrapper import messages_pb2 as messages
 from . import master_component as mc
 
 from .regularizers import Regularizers
@@ -30,9 +35,17 @@ SCORE_TRACKER = {
 }
 
 
+def _run_from_ipython():
+    try:
+        get_ipython().config
+        return True
+    except:
+        return False
+
+
 def _topic_selection_regularizer_func(self, regularizers):
     topic_selection_regularizer_name = []
-    for name, regularizer in regularizers.data.iteritems():
+    for name, regularizer in iteritems(regularizers.data):
         if regularizer.type == const.RegularizerType_TopicSelectionTheta:
             topic_selection_regularizer_name.append(name)
 
@@ -42,7 +55,8 @@ def _topic_selection_regularizer_func(self, regularizers):
         if no_score:
             self._internal_topic_mass_score_name = 'ITMScore_{}'.format(str(uuid.uuid4()))
             self.scores.add(TopicMassPhiScore(name=self._internal_topic_mass_score_name,
-                                              class_id='@default_class'))  # ugly hack!
+                                              class_id='@default_class',
+                                              model_name=self.model_nwt))  # ugly hack!
 
         if not self._synchronizations_processed or no_score:
             phi = self.get_phi(class_ids=['@default_class'])  # ugly hack!
@@ -110,11 +124,12 @@ class ARTM(object):
         self._reuse_theta = True
         self._theta_columns_naming = 'id'
         self._seed = -1
+        self._pool = ThreadPool(processes=1)
 
         if topic_names is not None:
             self._topic_names = topic_names
         elif num_topics is not None:
-            self._topic_names = ['topic_{}'.format(i) for i in xrange(num_topics)]
+            self._topic_names = ['topic_{}'.format(i) for i in range(num_topics)]
         else:
             raise ValueError('Either num_topics or topic_names parameter should be set')
 
@@ -228,6 +243,24 @@ class ARTM(object):
 
     @property
     def topic_names(self):
+        """
+        :Description: Gets or sets the list of topic names of the model.
+
+        :Note:
+          * Setting topic name allows you to put new labels on the existing topics.
+            To add, remove or reorder topics use ARTM.reshape_topics() method.
+          * In ARTM topic names are used just as string identifiers,
+            which give a unique name to each column of the phi matrix.
+            Typically you want to set topic names as something like "topic0", "topic1", etc.
+            Later operations like get_phi() allow you to specify which topics you need to retrieve.
+            Most regularizers allow you to limit the set of topics they act upon.
+            If you configure a rich set of regularizers it is important design
+            your topic names according to how they are regularizerd. For example,
+            you may use names obj0, obj1, ..., objN for *objective* topics
+            (those where you enable sparsity regularizers),
+            and back0, back1, ..., backM for *background* topics
+            (those where you enable smoothing regularizers).
+        """
         return self._topic_names
 
     @property
@@ -360,6 +393,22 @@ class ARTM(object):
         else:
             self._seed = seed
 
+    # ========== PRIVATE METHODS ==========
+    def _wait_for_batches_processed(self, async_result, num_batches):
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            progress = tqdm.tqdm_notebook if _run_from_ipython() else tqdm.tqdm
+            with progress(total=num_batches, desc='Batch', leave=False) as batch_tqdm:
+                previous_num_batches = 0
+                while not async_result.ready():
+                    async_result.wait(1)
+                    current_num_batches = self.master.get_score(
+                        score_name='^^^ItemsProcessedScore^^^').num_batches
+                    batch_tqdm.update(current_num_batches - previous_num_batches)
+                    previous_num_batches = current_num_batches
+                return async_result.get()
+
     # ========== METHODS ==========
     def fit_offline(self, batch_vectorizer=None, num_collection_passes=1):
         """
@@ -377,19 +426,25 @@ class ARTM(object):
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         # outer cycle is needed because of TopicSelectionThetaRegularizer
         # and current ScoreTracker implementation
-        for _ in xrange(num_collection_passes):
-            # temp code for easy using of TopicSelectionThetaRegularizer from Python
-            _topic_selection_regularizer_func(self, self._regularizers)
 
-            self._synchronizations_processed += 1
-            self.master.fit_offline(batch_filenames=batches_list,
-                                    batch_weights=batch_vectorizer.weights,
-                                    num_collection_passes=1)
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            progress = tqdm.tnrange if _run_from_ipython() else tqdm.trange
+            for _ in progress(num_collection_passes, desc='Pass'):
+                # temp code for easy using of TopicSelectionThetaRegularizer from Python
+                _topic_selection_regularizer_func(self, self._regularizers)
 
-            for name in self.scores.data.keys():
-                if name not in self.score_tracker:
-                    self.score_tracker[name] =\
-                        SCORE_TRACKER[self.scores[name].type](self.scores[name])
+                self._synchronizations_processed += 1
+                self._wait_for_batches_processed(
+                    self._pool.apply_async(func=self.master.fit_offline,
+                                           args=(batches_list, batch_vectorizer.weights, 1, None)),
+                    len(batches_list))
+
+                for name in self.scores.data.keys():
+                    if name not in self.score_tracker:
+                        self.score_tracker[name] =\
+                            SCORE_TRACKER[self.scores[name].type](self.scores[name])
 
         self._phi_cached = None
 
@@ -435,11 +490,12 @@ class ARTM(object):
         if (update_after is None) or (apply_weight is None) or (decay_weight is None):
             update_after_final = range(update_every, batch_vectorizer.num_batches + 1, update_every)
             if len(update_after_final) == 0 or (update_after_final[-1] != batch_vectorizer.num_batches):
+                update_after_final = list(update_after_final)
                 update_after_final.append(batch_vectorizer.num_batches)
 
             for _ in update_after_final:
                 self._num_online_processed_batches += update_every
-                update_count = self._num_online_processed_batches / update_every
+                update_count = self._num_online_processed_batches // update_every
                 rho = pow(tau0 + update_count, -kappa)
                 apply_weight_final.append(rho)
                 decay_weight_final.append(1 - rho)
@@ -451,12 +507,12 @@ class ARTM(object):
         # temp code for easy using of TopicSelectionThetaRegularizer from Python
         _topic_selection_regularizer_func(self, self._regularizers)
 
-        self.master.fit_online(batch_filenames=batches_list,
-                               batch_weights=batch_vectorizer.weights,
-                               update_after=update_after_final,
-                               apply_weight=apply_weight_final,
-                               decay_weight=decay_weight_final,
-                               async=async)
+        self._wait_for_batches_processed(
+            self._pool.apply_async(func=self.master.fit_online,
+                                   args=(batches_list, batch_vectorizer.weights,
+                                         update_after_final, apply_weight_final,
+                                         decay_weight_final, async)),
+            len(batches_list))
 
         for name in self.scores.data.keys():
             if name not in self.score_tracker:
@@ -565,9 +621,65 @@ class ARTM(object):
 
         return phi_data_frame
 
+    def get_phi_sparse(self, topic_names=None, class_ids=None, model_name=None, eps=None):
+        """
+        :Description: get phi matrix in sparse format
+
+        :param topic_names: list with topics to extract, None value means all topics
+        :type topic_names: list of str
+        :param class_ids: list with class ids to extract, None means all class ids
+        :type class_ids: list of str
+        :param str model_name: self.model_pwt by default, self.model_nwt is also\
+                      reasonable to extract unnormalized counters
+        :param float eps: threshold to consider values as zero
+
+        :return:
+          * a 3-tuple of (data, rows, columns), where
+          * data --- scipy.sparse.csr_matrix with values
+          * columns --- the names of topics in topic model;
+          * rows --- the tokens of topic model;
+        """
+        from scipy import sparse
+
+        if not self._initialized:
+            raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
+
+        args = messages.GetTopicModelArgs()
+        args.matrix_layout = wrapper.constants.MatrixLayout_Sparse
+        if model_name is not None:
+            args.model_name = model_name
+        if eps is not None:
+            args.eps = eps
+        if topic_names is not None:
+            for topic_name in topic_names:
+                args.topic_name.append(topic_name)
+        if class_ids is not None:
+            for class_id in class_ids:
+                args.class_id.append(class_id)
+
+        topic_model = self._lib.ArtmRequestTopicModelExternal(self.master.master_id, args)
+
+        numpy_ndarray = numpy.zeros(shape=(3 * topic_model.num_values, 1), dtype=numpy.float32)
+        self._lib.ArtmCopyRequestedObject(numpy_ndarray)
+
+        row_ind = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.int32,
+                                   count=topic_model.num_values, offset=0)
+        col_ind = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.int32,
+                                   count=topic_model.num_values, offset=4*topic_model.num_values)
+        data = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.float32,
+                                count=topic_model.num_values, offset=8*topic_model.num_values)
+
+        # Rows correspond to tokens; get tokens from topic_model.token
+        # Columns correspond to topics; get topic names from topic_model.topic_name
+        data = sparse.csr_matrix((data, (row_ind, col_ind)),
+                                 shape=(len(topic_model.token), len(topic_model.topic_name)))
+        rows = list(topic_model.topic_name)
+        columns = list(topic_model.token)
+        return data, rows, columns
+
     def get_theta(self, topic_names=None):
         """
-        :Description: get Theta matrix for training set of documents
+        :Description: get Theta matrix for training set of documents (or cached after transform)
 
         :param topic_names: list with topics to extract, None means all topics
         :type topic_names: list of str
@@ -600,6 +712,54 @@ class ARTM(object):
                                      index=use_topic_names)
         return theta_data_frame
 
+    def get_theta_sparse(self, topic_names=None, eps=None):
+        """
+        :Description: get Theta matrix in sparse format
+
+        :param topic_names: list with topics to extract, None means all topics
+        :type topic_names: list of str
+        :param float eps: threshold to consider values as zero
+
+        :return:
+          * a 3-tuple of (data, rows, columns), where
+          * data --- scipy.sparse.csr_matrix with values
+          * columns --- the ids of documents;
+          * rows --- the names of topics in topic model;
+        """
+        from scipy import sparse
+
+        if self.cache_theta is False:
+            raise ValueError('cache_theta == False. Set ARTM.cache_theta = True')
+        if not self._initialized:
+            raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
+
+        args = messages.GetThetaMatrixArgs()
+        args.matrix_layout = wrapper.constants.MatrixLayout_Sparse
+        if eps is not None:
+            args.eps = eps
+        if topic_names is not None:
+            for topic_name in topic_names:
+                args.topic_name.append(topic_name)
+        theta = self._lib.ArtmRequestThetaMatrixExternal(self.master.master_id, args)
+
+        numpy_ndarray = numpy.zeros(shape=(3 * theta.num_values, 1), dtype=numpy.float32)
+        self._lib.ArtmCopyRequestedObject(numpy_ndarray)
+
+        col_ind = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.int32,
+                                   count=theta.num_values, offset=0)
+        row_ind = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.int32,
+                                   count=theta.num_values, offset=4*theta.num_values)
+        data = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.float32,
+                                count=theta.num_values, offset=8*theta.num_values)
+
+        # Rows correspond to topics; get topic names from theta.topic_name
+        # Columns correspond to items; get item IDs from theta.item_id
+        data = sparse.csr_matrix((data, (row_ind, col_ind)),
+                                 shape=(len(theta.topic_name), len(theta.item_id)))
+        rows = list(theta.topic_name)
+        columns = list(theta.item_title) if self._theta_columns_naming == 'title' else list(theta.item_id)
+        return data, rows, columns
+
     def remove_theta(self):
         """
         :Description: removes cached theta matrix
@@ -621,7 +781,7 @@ class ARTM(object):
 
         :param object_reference batch_vectorizer: an instance of BatchVectorizer class
         :param str theta_matrix_type: type of matrix to be returned, possible values:
-                'dense_theta', 'dense_ptdw', None, default='dense_theta'
+                'dense_theta', 'dense_ptdw', 'cache', None, default='dense_theta'
         :param str predict_class_id: class_id of a target modality to predict.\
                 When this option is enabled the resulting columns of theta matrix will\
                 correspond to unique labels of a target modality. The values will represent\
@@ -658,13 +818,17 @@ class ARTM(object):
         elif theta_matrix_type == 'sparse_ptdw':
             theta_matrix_type_real = const.ThetaMatrixType_SparsePtdw
             raise NotImplementedError('Sparse format is currently unavailable from Python')
+        elif theta_matrix_type == 'cache':
+            theta_matrix_type_real = const.ThetaMatrixType_Cache
 
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
 
-        if theta_matrix_type is not None:
-            theta_info, numpy_ndarray = self.master.transform(batch_filenames=batches_list,
-                                                              theta_matrix_type=theta_matrix_type_real,
-                                                              predict_class_id=predict_class_id)
+        theta_info, numpy_ndarray = self._wait_for_batches_processed(
+            self._pool.apply_async(func=self.master.transform,
+                                   args=(None, batches_list, theta_matrix_type_real, predict_class_id)),
+            len(batches_list))
+
+        if theta_matrix_type is not None and theta_matrix_type != 'cache':
             document_ids = []
             if self._theta_columns_naming == 'title':
                 document_ids = [item_title for item_title in theta_info.item_title]
@@ -676,10 +840,26 @@ class ARTM(object):
                                          columns=document_ids,
                                          index=topic_names)
             return theta_data_frame
-        else:
-            self.master.transform(batch_filenames=batches_list,
-                                  theta_matrix_type=theta_matrix_type_real,
-                                  predict_class_id=predict_class_id)
+
+    def transform_sparse(self, batch_vectorizer, eps=None):
+        """
+        :Description: find Theta matrix for new documents as sparse scipy matrix
+
+        :param object_reference batch_vectorizer: an instance of BatchVectorizer class
+        :param float eps: threshold to consider values as zero
+
+        :return:
+          * a 3-tuple of (data, rows, columns), where
+          * data --- scipy.sparse.csr_matrix with values
+          * columns --- the ids of documents;
+          * rows --- the names of topics in topic model;
+        """
+        old_cache_theta = self.cache_theta
+        self.cache_theta = True
+        self.transform(batch_vectorizer=batch_vectorizer, theta_matrix_type='cache')
+        data, rows, columns = self.get_theta_sparse(eps=eps)
+        self.cache_theta = old_cache_theta
+        return data, rows, columns
 
     def initialize(self, dictionary=None):
         """
@@ -711,6 +891,26 @@ class ARTM(object):
         self._synchronizations_processed = 0
         self._num_online_processed_batches = 0
         self._phi_cached = None
+
+    def reshape_topics(self, topic_names):
+        """
+        :Description: update topic names of the model.
+
+        Adds, removes, and reorders columns of phi matrices
+        according to the new set of topic names.
+        New topics are initialized with zeros.
+        """
+        if not topic_names:
+            raise IOError('Number of topic names should be non-negative')
+        else:
+            self.master.reconfigure_topic_name(topic_names=topic_names)
+            self._topic_names = topic_names
+
+    def __repr__(self):
+        num_tokens = next((x.num_tokens for x in self.info.model if x.name == self._model_pwt), None)
+        class_ids = ', class_ids={0}'.format(list(self.class_ids.keys())) if self.class_ids else ''
+        return 'artm.ARTM(num_topics={0}, num_tokens={1}{2})'.format(
+            self.num_topics, num_tokens, class_ids)
 
 
 def version():

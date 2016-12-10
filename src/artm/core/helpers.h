@@ -50,6 +50,8 @@ class Helpers {
   static void LoadMessage(const std::string& filename, const std::string& disk_path,
                           ::google::protobuf::Message* message);
 
+  static void CreateFolderIfNotExists(const std::string& disk_path);
+
   // Saves protobuf message to disk.
   static void SaveMessage(const std::string& full_filename,
                           const ::google::protobuf::Message& message);

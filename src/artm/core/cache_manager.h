@@ -9,14 +9,26 @@
 #include <vector>
 
 #include "boost/utility.hpp"
-#include "boost/uuid/uuid.hpp"
 
 #include "artm/core/common.h"
-#include "artm/core/internals.pb.h"
 #include "artm/core/thread_safe_holder.h"
 
 namespace artm {
 namespace core {
+
+class ThetaCacheEntry : boost::noncopyable {
+ public:
+  ThetaCacheEntry();
+  ~ThetaCacheEntry();
+
+  std::shared_ptr<ThetaMatrix> theta_matrix() { return theta_matrix_; }
+  const std::string& filename() const { return filename_; }
+  std::string* mutable_filename() { return &filename_; }
+
+ private:
+  std::shared_ptr<ThetaMatrix> theta_matrix_;
+  std::string filename_;
+};
 
 // CacheManager class is responsible for caching ThetaMatrix in between calls to different APIs.
 // This class is used when the user calls FitOffline / FitOnline / Transfor to store the resulting theta matrix.
@@ -26,18 +38,19 @@ namespace core {
 // The key in the cache corresponds to 'batch.id' field.
 class CacheManager : boost::noncopyable {
  public:
-  CacheManager();
+  explicit CacheManager(const std::string& disk_path);
   virtual ~CacheManager();
 
   void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
   void Clear();
   void RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                           ::artm::ThetaMatrix* theta_matrix) const;
-  std::shared_ptr<DataLoaderCacheEntry> FindCacheEntry(const boost::uuids::uuid& batch_uuid) const;
-  void UpdateCacheEntry(std::shared_ptr<DataLoaderCacheEntry> cache_entry) const;
+  std::shared_ptr<ThetaMatrix> FindCacheEntry(const std::string& batch_id) const;
+  void UpdateCacheEntry(const std::string& batch_id, const ThetaMatrix& theta_matrix) const;
 
  private:
-  mutable ThreadSafeCollectionHolder<boost::uuids::uuid, DataLoaderCacheEntry> cache_;
+  std::string disk_path_;
+  mutable ThreadSafeCollectionHolder<std::string, ThetaCacheEntry> cache_;
 };
 
 }  // namespace core

@@ -24,6 +24,8 @@ class Dictionary;
 // The key (std::string) corresponds to the name of the dictionary.
 typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
 
+typedef std::unordered_map<int, std::unordered_map<int, float> > CoocMap;
+
 // DictionaryEntry represents one entry in the dictionary, associated with a specific token.
 class DictionaryEntry {
  public:
@@ -50,44 +52,65 @@ class DictionaryEntry {
 // Dictionary also stores a co-occurence data, used by Coherence score and regularizer.
 class Dictionary {
  public:
-  explicit Dictionary(const artm::DictionaryData& data);
-  Dictionary() { }
+  explicit Dictionary(const std::string& name) : name_(name) { }
 
-  static std::vector<std::shared_ptr<artm::DictionaryData> > ImportData(const ImportDictionaryArgs& args);
+  // SECTION OF SETTERS
+  void AddEntry(const DictionaryEntry& entry);
 
-  static void Export(const ExportDictionaryArgs& args,
-                     ThreadSafeDictionaryCollection* dictionaries);
+  void AddCoocValue(const Token& token_1, const Token& token_2, float value);
+  void AddCoocTf(const Token& token_1, const Token& token_2, float value);
+  void AddCoocDf(const Token& token_1, const Token& token_2, float value);
 
-  static std::pair<std::shared_ptr<DictionaryData>, std::shared_ptr<DictionaryData> >
-    Gather(const GatherDictionaryArgs& args, const ThreadSafeCollectionHolder<std::string, Batch>& mem_batches);
+  void AddCoocValue(int index_1, int index_2, float value);
+  void AddCoocTf(int index_1, int index_2, float value);
+  void AddCoocDf(int index_1, int index_2, float value);
 
-  static std::pair<std::shared_ptr<DictionaryData>, std::shared_ptr<DictionaryData> >
-    Filter(const FilterDictionaryArgs& args, ThreadSafeDictionaryCollection* dictionaries);
+  void SetNumItems(int num_items) { num_items_in_collection_ = num_items; }
 
-  void Append(const DictionaryData& dict);
+  bool HasToken(const Token& token) const { return token_index_.find(token) != token_index_.end(); }
 
-  std::shared_ptr<Dictionary> Duplicate() const;
-    // Note: the data should be allocated, and the whole dictionary will be put
-    // into it (so the method is unsafe according to 1GB limitation on proto-message size)
-    // Also note, that it saves only token info, without cooc
-  void StoreIntoDictionaryData(DictionaryData* data) const;
-
+  // SECTION OF GETTERS
   // general method to return all cooc tokens with their values for given token
-  const std::unordered_map<int, float>* cooc_info(const Token& token) const;
+  const std::unordered_map<int, float>* token_cooc_values(const Token& token) const;
+  const std::unordered_map<int, float>* token_cooc_tfs(const Token& token) const;
+  const std::unordered_map<int, float>* token_cooc_dfs(const Token& token) const;
 
   const DictionaryEntry* entry(const Token& token) const;
   const DictionaryEntry* entry(int index) const;
-  inline size_t size() const { return entries_.size(); }
-  inline const std::unordered_map<Token, int, TokenHasher>& token_index() const { return token_index_; }
-  inline const std::vector<DictionaryEntry>& entries() const { return entries_; }
-  inline const std::unordered_map<int, std::unordered_map<int, float> >& cooc_values() const { return cooc_values_; }
 
+  size_t size() const { return entries_.size(); }
+  size_t num_items() const { return num_items_in_collection_; }
+  const std::string& name() const { return name_; }
+  bool has_valid_cooc_state() const;
+  int64_t ByteSize() const;
+
+  const std::vector<DictionaryEntry>& entries() const { return entries_; }
+  const std::unordered_map<Token, int, TokenHasher>& token_index() const { return token_index_; }
+
+  const std::unordered_map<int, std::unordered_map<int, float> >& cooc_values() const { return cooc_values_; }
+  const std::unordered_map<int, std::unordered_map<int, float> >& cooc_tfs() const { return cooc_tfs_; }
+  const std::unordered_map<int, std::unordered_map<int, float> >& cooc_dfs() const { return cooc_dfs_; }
+
+  // SECTION OF OPERATIONS
   float CountTopicCoherence(const std::vector<core::Token>& tokens_to_score);
 
+  std::shared_ptr<Dictionary> Duplicate() const;
+
+  void clear();
+  void clear_cooc();
+
  private:
+  std::string name_;
   std::vector<DictionaryEntry> entries_;
   std::unordered_map<Token, int, TokenHasher> token_index_;
-  std::unordered_map<int, std::unordered_map<int, float> > cooc_values_;
+  CoocMap cooc_values_;
+  CoocMap cooc_tfs_;
+  CoocMap cooc_dfs_;
+  size_t num_items_in_collection_;
+
+  void AddCoocImpl(const Token& token_1, const Token& token_2, float value, CoocMap* cooc_map);
+  void AddCoocImpl(int index_1, int index_2, float value, CoocMap* cooc_map);
+  const std::unordered_map<int, float>* cooc_info_impl(const Token& token, const CoocMap& cooc_map) const;
 };
 
 }  // namespace core

@@ -1,6 +1,35 @@
 Changes in c_interface
 ======================
 
+v0.8.2
+------
+
+.. warning::
+
+   BigARTM 3rdparty dependency had been upgraded from ``protobuf 2.6.1`` to ``protobuf 3.0.0``.
+   This may affect you upgrade from previous version of bigartm.
+   Pelase report any issues at `bigartm-users@googlegroups.com <https://groups.google.com/group/bigartm-users>`_.
+
+* Change ``ArtmParseCollection`` to return ``CollectionParserInfo`` message
+* Add APIs to enable JSON serialization for all input and output protobuf messages
+
+  - ``ArtmSetProtobufMessageFormatToJson()``
+  - ``ArtmSetProtobufMessageFormatToBinary()``
+  - ``ArtmProtobufMessageFormatIsJson()``
+
+  The default setting is, as before, to serialize all message into binary buffer.
+  Note that for with json serialization one should use ``RegularizerConfig.config_json``,
+  ``ScoreConfig.config_json`` and ``ScoreData.data_json`` instead of
+  ``RegularizerConfig.config``, ``ScoreConfig.config`` and ``ScoreData.data``.
+
+* Revisit documentation for c_interface
+* Change integer types in c_interface from ``int`` to ``int64_t`` (from ``stdint.h``).
+  This allows to validate 2 GB limit for protobuf messages,
+  and also to passing larger objects in ``ArtmCopyRequestedObject``.
+* Add ``ArtmReconfigureTopicName`` method to add/remove/reorder topic names
+* Support sparse format for external retrieval of theta and phi matrices
+
+
 v0.8.0
 ------
 

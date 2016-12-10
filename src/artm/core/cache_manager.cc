@@ -15,50 +15,47 @@ namespace fs = boost::filesystem;
 namespace artm {
 namespace core {
 
-CacheManager::CacheManager() : cache_() {}
+ThetaCacheEntry::ThetaCacheEntry()
+    : theta_matrix_(std::make_shared<ThetaMatrix>()), filename_() {}
+
+ThetaCacheEntry::~ThetaCacheEntry() {
+  if (!filename_.empty()) {
+    try { fs::remove(fs::path(filename_)); }
+    catch (...) {}
+  }
+}
+
+CacheManager::CacheManager(const std::string& disk_path)
+    : disk_path_(disk_path), cache_() {}
 
 CacheManager::~CacheManager() {
-  auto keys = cache_.keys();
-  for (auto &key : keys) {
-    auto cache_entry = cache_.get(key);
-    if (cache_entry != nullptr && cache_entry->has_filename()) {
-      try { fs::remove(fs::path(cache_entry->filename())); } catch(...) {}
-    }
-  }
+  cache_.clear();
+}
+
+void CacheManager::Clear() {
+  cache_.clear();
 }
 
 void CacheManager::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
   for (auto& key : cache_.keys()) {
-    std::shared_ptr<DataLoaderCacheEntry> entry = cache_.get(key);
+    std::shared_ptr<ThetaCacheEntry> entry = cache_.get(key);
     if (entry == nullptr)
       continue;
 
     MasterComponentInfo::CacheEntryInfo* info = master_info->add_cache_entry();
     info->set_key(boost::lexical_cast<std::string>(key));
-    info->set_byte_size(entry->ByteSize());
+    info->set_byte_size(entry->theta_matrix()->ByteSize());
   }
-}
-
-void CacheManager::Clear() {
-  auto keys = cache_.keys();
-  for (auto &key : keys) {
-    auto cache_entry = cache_.get(key);
-    if (cache_entry != nullptr && cache_entry->has_filename()) {
-      try { fs::remove(fs::path(cache_entry->filename())); } catch(...) {}
-    }
-  }
-
-  cache_.clear();
 }
 
 // ToDo(sashafrey): this method has grown too big and complicated.
 // It needs to be refactored.
-static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
+static bool PopulateThetaMatrixFromCacheEntry(const ThetaMatrix& cache,
                                               const GetThetaMatrixArgs& get_theta_args,
                                               ::artm::ThetaMatrix* theta_matrix) {
   auto& args_topic_name = get_theta_args.topic_name();
   const bool has_sparse_format = get_theta_args.matrix_layout() == MatrixLayout_Sparse;
-  const bool sparse_cache = cache.topic_index_size() > 0;
+  const bool sparse_cache = cache.topic_indices_size() > 0;
   bool use_all_topics = false;
 
   std::vector<int> topics_to_use;
@@ -109,12 +106,12 @@ static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
     if (has_title) theta_matrix->add_item_title(cache.item_title(item_index));
     ::artm::FloatArray* theta_vec = theta_matrix->add_item_weights();
 
-    const artm::FloatArray& item_theta = cache.theta(item_index);
+    const artm::FloatArray& item_theta = cache.item_weights(item_index);
     if (!has_sparse_format) {
       if (sparse_cache) {
         // dense output -- sparse cache
         for (unsigned index = 0; index < topics_to_use.size(); ++index) {
-          int topic_index = repeated_field_index_of(cache.topic_index(item_index).value(), topics_to_use[index]);
+          int topic_index = repeated_field_index_of(cache.topic_indices(item_index).value(), topics_to_use[index]);
           theta_vec->add_value(topic_index != -1 ? item_theta.value(topic_index) : 0.0f);
         }
       } else {
@@ -126,8 +123,8 @@ static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
       ::artm::IntArray* sparse_topic_indices = theta_matrix->add_topic_indices();
       if (sparse_cache) {
         // sparse output -- sparse cache
-        for (int index = 0; index < cache.topic_index(item_index).value_size(); ++index) {
-          int topic_index = cache.topic_index(item_index).value(index);
+        for (int index = 0; index < cache.topic_indices(item_index).value_size(); ++index) {
+          int topic_index = cache.topic_indices(item_index).value(index);
           if (use_all_topics) {
             theta_vec->add_value(item_theta.value(index));
             sparse_topic_indices->add_value(topic_index);
@@ -162,31 +159,22 @@ void CacheManager::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                                       ::artm::ThetaMatrix* theta_matrix) const {
   auto keys = cache_.keys();
   for (auto &key : keys) {
-    std::shared_ptr<DataLoaderCacheEntry> cache = cache_.get(key);
-    if (cache == nullptr)
-      continue;
-
-    if (cache->has_filename()) {
-      DataLoaderCacheEntry cache_reloaded;
-      Helpers::LoadMessage(cache->filename(), &cache_reloaded);
-      PopulateThetaMatrixFromCacheEntry(cache_reloaded, get_theta_args, theta_matrix);
-    } else {
-      PopulateThetaMatrixFromCacheEntry(*cache, get_theta_args, theta_matrix);
-    }
+    std::shared_ptr<ThetaMatrix> cached_theta = FindCacheEntry(key);
+    if (cached_theta != nullptr)
+      PopulateThetaMatrixFromCacheEntry(*cached_theta, get_theta_args, theta_matrix);
   }
 }
 
-std::shared_ptr<DataLoaderCacheEntry> CacheManager::FindCacheEntry(
-    const boost::uuids::uuid& batch_uuid) const {
-  std::shared_ptr<DataLoaderCacheEntry> retval = cache_.get(batch_uuid);
-  if (retval == nullptr || !retval->has_filename())
-    return retval;
+std::shared_ptr<ThetaMatrix> CacheManager::FindCacheEntry(const std::string& batch_id) const {
+  std::shared_ptr<ThetaCacheEntry> retval = cache_.get(batch_id);
+  if (retval == nullptr)
+    return nullptr;
+  if (retval->filename().empty())
+    return retval->theta_matrix();
 
   try {
-    std::shared_ptr<DataLoaderCacheEntry> copy(std::make_shared<DataLoaderCacheEntry>());
-    copy->CopyFrom(*retval);
+    std::shared_ptr<ThetaMatrix> copy(std::make_shared<ThetaMatrix>());
     Helpers::LoadMessage(retval->filename(), copy.get());
-    // copy->clear_filename();
     return copy;
   } catch(...) {
     LOG(ERROR) << "Unable to reload cache for " << retval->filename();
@@ -195,14 +183,24 @@ std::shared_ptr<DataLoaderCacheEntry> CacheManager::FindCacheEntry(
   return nullptr;
 }
 
-void CacheManager::UpdateCacheEntry(std::shared_ptr<DataLoaderCacheEntry> cache_entry) const {
-  std::string uuid_str = cache_entry->batch_uuid();
-  boost::uuids::uuid uuid(boost::uuids::string_generator()(uuid_str.c_str()));
-  std::shared_ptr<DataLoaderCacheEntry> old_entry = cache_.get(uuid);
-  cache_.set(uuid, cache_entry);
-  if (old_entry != nullptr && old_entry->has_filename()) {
-    try { fs::remove(fs::path(old_entry->filename())); } catch(...) {}
+void CacheManager::UpdateCacheEntry(const std::string& batch_id, const ThetaMatrix& theta_matrix) const {
+  std::shared_ptr<ThetaCacheEntry> new_entry(std::make_shared<ThetaCacheEntry>());
+  if (disk_path_.empty()) {
+    new_entry->theta_matrix()->CopyFrom(theta_matrix);
+  } else {
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    fs::path file(boost::lexical_cast<std::string>(uuid) + ".cache");
+    try {
+      Helpers::SaveMessage(file.string(), disk_path_, theta_matrix);
+      new_entry->mutable_filename()->assign((fs::path(disk_path_) / file).string());
+    } catch (...) {
+      LOG(ERROR) << "Unable to save cache entry to " << disk_path_;
+      cache_.set(batch_id, nullptr);
+      return;
+    }
   }
+
+  cache_.set(batch_id, new_entry);
 }
 
 }  // namespace core

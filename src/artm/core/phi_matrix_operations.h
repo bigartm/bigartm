@@ -24,7 +24,7 @@ class PhiMatrixOperations {
 
   // Apply protobuf message 'topic_model' to phi_matrix
   static void ApplyTopicModelOperation(
-    const ::artm::TopicModel& topic_model, float apply_weight, PhiMatrix* phi_matrix);
+    const ::artm::TopicModel& topic_model, float apply_weight, bool add_missing_tokens, PhiMatrix* phi_matrix);
 
   // Calculate phi matrix regularizers (r_wt)
   static void InvokePhiRegularizers(
@@ -43,6 +43,7 @@ class PhiMatrixOperations {
   // Checks whether two PhiMatrix instances has same set of tokens and topic names.
   // The order of the tokens and topics must also match.
   static bool HasEqualShape(const PhiMatrix& first, const PhiMatrix& second);
+  static void AssignValue(float value, PhiMatrix* phi_matrix);
 };
 
 }  // namespace core
