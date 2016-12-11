@@ -25,6 +25,7 @@ If you intent is to contribute to the development BigARTM, please proceed to the
    devguide/ipython_windows.txt
    devguide/dev_build_linux.txt
    devguide/code_style.txt
+   devguide/release.txt
 
 Wiki pages:
 
