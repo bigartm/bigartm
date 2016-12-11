@@ -1,0 +1,36 @@
+Installation as Docker container
+================================
+
+On any OS it is possible to run BigARTM as docker container.
+
+1. Get the image from DockerHub
+  
+  .. code-block:: bash
+     
+     docker pull ofrei/bigartm
+
+2. Run CLI
+
+  .. code-block:: bash
+
+     docker run -t -i ofrei/bigartm bigartm
+
+3. Try Python API (use ``ipython2`` or ``ipython3`` depending on which python version you prefer)
+
+  .. code-block:: bash
+
+     $ docker run -t -i ofrei/bigartm ipython2
+     Python 2.7.6 (default, Jun 22 2015, 17:58:13) 
+     Type "copyright", "credits" or "license" for more information.
+     
+     IPython 3.2.1 -- An enhanced Interactive Python.
+     ?         -> Introduction and overview of IPython's features.
+     %quickref -> Quick reference.
+     help      -> Python's own help system.
+     object?   -> Details about 'object', use 'object??' for extra details.
+     
+     In [1]: import artm
+     
+     In [2]: model = artm.ARTM()
+
+See `bigartm-docker <https://github.com/bigartm/bigartm-docker>`_ repo for more information.
