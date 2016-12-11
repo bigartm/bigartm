@@ -10,6 +10,7 @@ Installation
 
    windows
    linux
+   docker
 
 
 .. vim:ft=rst
