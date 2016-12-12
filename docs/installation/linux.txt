@@ -1,15 +1,27 @@
 Installation for Linux and Mac OS-X users
 =========================================
 
-Currently there is no distribution package of BigARTM for Linux.
-BigARTM had been tested on several Linux distributions, and it is known to work well,
-but you have to get the source code and compile it locally on your machine.
-You may also try BigARTM from pre-built docker container, as described in :doc:`docker`.
 
-Script to install BigARTM
--------------------------
+BigARTM had been tested on several Linux and MAC distributions, and it is known to work well on
+
+* Ubuntu 16.04.1
+* Linux Mint 18
+* Ubuntu 14.04.5
+* Linux Mint 17.3
+* Arch Linux
+* Manjaro
+* Fedora 24
+* openSUSE Leap 42.1
+
+To install BigARTM you should build it from source code.
+Or, you may run BigARTM from pre-built docker container, as described in :doc:`docker`.
+If you are looking for old instructions, refer to :doc:`/devguide/dev_build_linux`.
+
+Script to install BigARTM on Ubuntu
+-----------------------------------
 
 The following script is tested with Ubuntu 14.04.
+Scroll further below for more OS-specific insructinos.
 
 .. code-block:: bash
 
@@ -43,137 +55,138 @@ The following script is tested with Ubuntu 14.04.
 Now you should be able to use BigARTM command line utility (try ``bigartm --help``),
 or run BigARTM from python, like this: ``import artm; print(artm.version()); print(artm.ARTM(num_topics=10).info)``.
 
-**On rpm-based distributions** replace first step of the script with
+Step 1. Install system dependencies
+-----------------------------------
+
+**Ubuntu, Linux Mint:**
 
 .. code-block:: bash
 
-   sudo yum install git make cmake gcc-c++ glibc-static libstdc++-static boost boost-static python
-   
+   sudo apt-get install git build-essential libboost-all-dev
+   sudo apt-get install cmake  # For Ubuntu 16.04 and Linux Mint 18
 
-For Fedora 22 or higher use ``dnf`` instead of ``yum``.
-
-**On Mac OS distributions** replace first step with ``brew install git cmake boost``.
-At step 4 replace ``libartm.so`` with ``libartm.dylib``.
-
-If the instructions above did not work for you please let us know
-(either create an `issue <https://github.com/bigartm/bigartm/issues/new>`_
-or send e-mail to `bigartm-users@googlegroups.com <https://groups.google.com/group/bigartm-users>`_).
-
-System dependencies
--------------------
-
-Building BigARTM requires the following components:
-
-    * `git <https://git-scm.org>`_ (any recent version) -- for obtaining source code;
-    * `cmake <https://cmake.org>`_ (at least of version 2.8), *make*,
-      *g++* or *clang* compiler with c++11 support,
-      `boost <boost.org>`_ (at least of version 1.40) --
-      for building library and binary executable;
-    * `python <https://python.org>`_ (version 2.7 or 3.4) --
-      for building Python API for BigARTM.
-
-
-Building C++ code with CMake
-----------------------------
-
-BigARTM is hosted at github repository, with two branches --- ``stable`` and ``master``.
-``stable`` contains latest stable release, while ``master`` is the latest version of the code.
-Normally ``master`` is also quite stable, so do not hesitate to try this branch.
-
-Build is built  via CMake, as in the following script.
+For Ubuntu 14.04 and Linux Mint 17.3 ubstakk cmake from PPA:
 
 .. code-block:: bash
 
-   cd ~
+   sudo add-apt-repository ppa:george-edison55/cmake-3.x
+   sudo apt-get update && sudo apt-get install cmake
+
+**Arch Linux, Manjaro**
+
+Ensure that Python and base-devel packages are installed,
+and current user has root priveledges (e.g. can run sudo):
+
+.. code-block:: bash
+
+   sudo pacman -S git boost cmake
+
+**Fedora**
+
+.. code-block:: bash
+
+   sudo dnf install gcc-c++ glibc-static libstdc++-static
+   sudo dnf install git boost boost-static cmake
+
+**openSUSE:**
+
+.. code-block:: bash
+
+   sudo zypper install gcc gcc-c++ glibc-devel-static git cmake
+
+Currently openSUSE require to install Boost from sources:
+
+.. code-block:: bash
+
+   sudo zypper install libbz2-devel python-devel
+   wget http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz
+   tar -xf boost_1_60_0.tar.gz
+   cd boost_1_60_0
+   ./bootstrap.sh
+   ./b2 link=static,shared cxxflags="-std=c++11 -fPIC"
+   sudo ./b2 install
+
+**Mac OS distributions** 
+
+.. code-block:: bash
+
+   brew install git cmake boost
+
+Step 2. Python packages
+----------------------------------------------------------------
+BigARTM require Python packages ``numpy``, ``pandas``, ``protobuf`` and ``tqdm``.
+We recommend to install them with recent versino of ``pip``.
+
+If ``pip`` is not available, install system package ``python-pip`` or ``python3-pip``
+depending on your prefered Python version.
+For Arch Linux and Manjaro use ``python2-pip`` and ``python-pip``.
+
+Verify that you use latest version of ``pip``:
+
+.. code-block:: bash
+
+   sudo pip2 install -U pip  # Python 2
+   sudo pip3 install -U pip  # Python 3
+
+Then install required python packages:
+
+.. code-block:: bash
+
+   sudo pip2 install -U numpy pandas protobuf==3.0.0 tqdm # Python 2
+   sudo pip3 install -U numpy pandas protobuf==3.0.0 tqdm # Python 3
+
+Step 3. Build and install BigARTM library
+-----------------------------------------
+
+.. code-block:: bash
+
    git clone --branch=stable https://github.com/bigartm/bigartm.git
-   cd bigartm
-   mkdir build && cd build
-   cmake ..
-   make
+   cd bigartm && mkdir build && cd build
 
-**Note for Linux users:** By default building
-binary executable ``bigartm`` requiers static versions of Boost, C and C++ libraries.
-To alter it, run ``cmake`` command with option ``-DBUILD_BIGARTM_CLI_STATIC=OFF``.
+Next step is to run ``cmake``. The following options are available.
 
+* ``-DPYTHON=python3`` - to use Python 3 instead of Python 2;
+* ``-DCMAKE_INSTALL_PREFIX=xxx`` - for custom install location instead of default ``/usr/local``;
+* ``-DBoost_USE_STATIC_LIBS=ON`` — required on openSUSE.
 
-System-wide installation
-------------------------
-
-To install command-line utility, shared library module and Python interface for BigARTM,
-you can type:
+Example:
 
 .. code-block:: bash
 
+   cmake -DPYTHON=python3 -DCMAKE_INSTALL_PREFIX=/opt/bigartm ..
+
+Now build and install the library:
+
+.. code-block:: bash
+
+   make
    sudo make install
 
-Normally this will install:
+Step 4. Register ``libartm.so`` / ``libartm.dylib``
+---------------------------------------------------
 
-- ``bigartm`` utility into folder ``/usr/local/bin/``;
-- shared library ``libartm.so`` (``artm.dylib`` for Max OS-X)
-  into folder ``/usr/local/lib/``;
-- Python interface for BigARTM into Python-specific system directories, along
-  with necessary dependencies.
-
-If you want to alter target folders for binary and shared library objects,
-you may specify common prefix while running ``cmake`` command
-via option ``-DCMAKE_INSTALL_PREFIX=path_to_folder``.
-By default ``CMAKE_INSTALL_PREFIX=/usr/local/``.
-
-
-Configure BigARTM Python API
-----------------------------
-
-Python's interface of BigARTM is normally configured by running ``make install``.
-As an alternative you may configure it manually as described below, however you still need to build native code of BigARTM with ``make``.
+Register shared library ``libartm.so`` (or ``libartm.dylib``):
 
 .. code-block:: bash
 
-   # Step 1 - install Google Protobuf as dependency
-   # (this can be replaced by "pip install protobuf")
-   cd ~/bigartm/3rdparty/protobuf/python
-   sudo python setup.py install
+   echo /usr/local/lib | sudo tee /etc/ld.so.conf.d/artm.conf
+   sudo ldconfig
 
-   # Step 2 - install Python interface for BigARTM
-   cd ~/bigartm/python
-   sudo python setup.py install
+If you've installed to another location than ``/usr/local``
+update the first command with new path.
 
-   # Step 3 - point ARTM_SHARED_LIBRARY variable to libartm.so (libartm.dylib) location
-   export ARTM_SHARED_LIBRARY=~/bigartm/build/lib/libartm.so        # for linux
-   export ARTM_SHARED_LIBRARY=~/bigartm/build/lib/libartm.dylib     # for Mac OS X
+As an alternative you may set up ``ARTM_SHARED_LIBRARY`` system variable
 
-We strongly recommend system-wide installation (e.g. ``make install``) as
-there is no need to keep BigARTM code after it, so you may safely
-remove folder ``~/bigartm/``.
+.. code-block:: bash
 
-Troubleshooting
----------------
+   export ARTM_SHARED_LIBRARY=/usr/local/lib/libartm.so     # Linux / Unix
+   export ARTM_SHARED_LIBRARY=/usr/local/lib/libartm.dylib  # Mac
 
-If you build BigARTM in existing folder ``build`` (e.g. you built BigARTM before) and encounter any errors,
-it may be due to out-of-date file ``CMakeCache.txt`` in folder ``build``. In that case we strongly recommend
-to delete this file and try to build again.
-
+Step 5. Enjoy!!!
 ----------------
-
-Using BigARTM Python API you can encounter this error:
-
-.. code-block:: bash
-
-    Traceback (most recent call last):
-    File "<stdin>", line 1, in <module>
-    File "build/bdist.linux-x86_64/egg/artm/wrapper/api.py", line 19, in __init__
-    File "build/bdist.linux-x86_64/egg/artm/wrapper/api.py", line 53, in _load_cdll
-    OSError: libartm.so: cannot open shared object file: No such file or directory
-    Failed to load artm shared library. Try to add the location of `libartm.so` file into your LD_LIBRARY_PATH system variable, or to set ARTM_SHARED_LIBRARY - a specific system variable which may point to `libartm.so` file, including the full path. 
- 
-This error indicates that BigARTM's python interface can not locate libartm.so (libartm.dylib) files.
-In such case type ``export ARTM_SHARED_LIBRARY=path_to_artm_shared_library``.
-
-BigARTM on Travis-CI
---------------------
-
-To get a live usage example of BigARTM you may check BigARTM's
-`.travis.yml <https://raw.githubusercontent.com/bigartm/bigartm/master/.travis.yml>`_
-script and the latest `continuous integration build
-<https://travis-ci.org/bigartm/bigartm>`_.
+   
+If the instructions above did not work for you please let us know,
+either create an `issue <https://github.com/bigartm/bigartm/issues/new>`_
+or send e-mail to `bigartm-users@googlegroups.com <https://groups.google.com/group/bigartm-users>`_.
 
 .. vim:ft=rst
