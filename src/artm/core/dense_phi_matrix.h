@@ -119,14 +119,14 @@ class PackedValues {
   std::vector<int> ptr_;
 };
 
-// DensePhiMatrix class implements PhiMatrix interface as a dense matrix.
+// SparsePhiMatrix class implements PhiMatrix interface as a sparse matrix.
 // The class owns the memory allocated to store the elements.
-class DensePhiMatrix : public PhiMatrixFrame {
+class SparsePhiMatrix : public PhiMatrixFrame {
  public:
-  explicit DensePhiMatrix(const ModelName& model_name,
-                          const google::protobuf::RepeatedPtrField<std::string>& topic_name);
+  explicit SparsePhiMatrix(const ModelName& model_name,
+                           const google::protobuf::RepeatedPtrField<std::string>& topic_name);
 
-  virtual ~DensePhiMatrix() { Clear(); }
+  virtual ~SparsePhiMatrix() { Clear(); }
   virtual int64_t ByteSize() const;
 
   virtual std::shared_ptr<PhiMatrix> Duplicate() const;
@@ -145,14 +145,46 @@ class DensePhiMatrix : public PhiMatrixFrame {
 
  private:
   friend class AttachedPhiMatrix;
-  DensePhiMatrix(const DensePhiMatrix& rhs);
-  explicit DensePhiMatrix(const AttachedPhiMatrix& rhs);
-  DensePhiMatrix& operator=(const PhiMatrixFrame&);
+  SparsePhiMatrix(const SparsePhiMatrix& rhs);
+  explicit SparsePhiMatrix(const AttachedPhiMatrix& rhs);
+  SparsePhiMatrix& operator=(const PhiMatrixFrame&);
 
   std::vector<PackedValues> values_;
 };
 
 // DensePhiMatrix class implements PhiMatrix interface as a dense matrix.
+// The class owns the memory allocated to store the elements.
+class DensePhiMatrix : public PhiMatrixFrame {
+ public:
+  explicit DensePhiMatrix(const ModelName& model_name,
+                          const google::protobuf::RepeatedPtrField<std::string>& topic_name);
+
+  virtual ~DensePhiMatrix() { Clear(); }
+  virtual int64_t ByteSize() const;
+
+  virtual std::shared_ptr<PhiMatrix> Duplicate() const;
+
+  virtual float get(int token_id, int topic_id) const { return values_[token_id][topic_id]; }
+  virtual void get(int token_id, std::vector<float>* buffer) const;
+  virtual void set(int token_id, int topic_id, float value) { values_[token_id][topic_id] = value; }
+  virtual void increase(int token_id, int topic_id, float increment) { values_[token_id][topic_id] += increment; }
+  virtual void increase(int token_id, const std::vector<float>& increment);  // must be thread-safe
+
+  virtual void Clear();
+  virtual int AddToken(const Token& token);
+
+  void Reset();
+  void Reshape(const PhiMatrix& phi_matrix);
+
+ private:
+  friend class AttachedPhiMatrix;
+  DensePhiMatrix(const DensePhiMatrix& rhs);
+  explicit DensePhiMatrix(const AttachedPhiMatrix& rhs);
+  DensePhiMatrix& operator=(const PhiMatrixFrame&);
+
+  std::vector<float*> values_;
+};
+// AttachedPhiMatrix class implements PhiMatrix interface as a dense matrix.
 // The class DOES NOT own the memory, allocated to store the elements.
 // Instead the memory is provided by external code.
 // Typically it will be stored in a numpy matrix in the Python interface.
@@ -175,6 +207,7 @@ class AttachedPhiMatrix : boost::noncopyable, public PhiMatrixFrame {
 
  private:
   friend class DensePhiMatrix;
+  friend class SparsePhiMatrix;
   std::vector<float*> values_;
 };
 
