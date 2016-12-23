@@ -1,4 +1,5 @@
 import uuid
+import warnings
 
 from . import wrapper
 from .wrapper import messages_pb2 as messages
@@ -45,13 +46,19 @@ class Scores(object):
         self._model_pwt = model_pwt
         self._model_nwt = model_nwt
 
-    def add(self, score):
-        if score.name not in self._data:
-            self._master.create_score(score.name, score.config, score._model_name)
-            score._model_pwt = self._model_pwt
-            score._model_nwt = self._model_nwt
-            score._master = self._master
-            self._data[score.name] = score
+    def add(self, score, overwrite=False):
+        name = score.name
+        if name in self._data and not overwrite:
+            raise AttributeError("Unable to replace existing score.\
+                                  If you really want to do it use overwrite=True argument")
+        # next statement represents ternary operator
+        register_func = (self._master.create_score if name not in self._data else
+                         self._master.reconfigure_score)
+        register_func(name, score.config, score._model_name)
+        score._model_pwt = self._model_pwt
+        score._model_nwt = self._model_nwt
+        score._master = self._master
+        self._data[name] = score
 
     def __getitem__(self, name):
         if name in self._data:
@@ -59,7 +66,23 @@ class Scores(object):
         else:
             raise KeyError('No score with name {0}'.format(name))
 
+    def __setitem__(self, name, score):
+        # typical usecase:
+        # regs[name] = SomeScore(name=None, arguments)
+        # or
+        # regs[name] = SomeScore(arguments)
+        # reset name of score
+        # hack to make name substitution: we directly use _name
+        score._name = name
+        self.add(score, overwrite=True)
+
     def size(self):
+        warnings.warn(DeprecationWarning(
+            "Function 'size' is deprecated and will be removed soon,\
+ use built-in function 'len' instead"))
+        return len(self._data.keys())
+
+    def __len__(self):
         return len(self._data.keys())
 
     @property

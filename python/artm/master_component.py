@@ -636,13 +636,15 @@ class MasterComponent(object):
 
         return scores
 
-    def reconfigure_score(self, name, config):
+    def reconfigure_score(self, name, config, model_name=None):
         master_config = messages.MasterModelConfig()
         master_config.CopyFrom(self._config)
 
         for index, score_config in enumerate(master_config.score_config):
             if score_config.name == name:
                 master_config.score_config[index].config = config.SerializeToString()
+            if model_name is not None:
+                score_config.model_name = model_name
 
         self._config = master_config
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)
