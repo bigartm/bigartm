@@ -325,7 +325,8 @@ class LDA(object):
             natural order, if with_weights == False, or list, or list of lists\
             of tules, each tuple is (str, float)
         """
-        self._internal_model.scores.add(TopTokensScore(name=self._tt_score_name, num_tokens=num_tokens))
+        self._internal_model.scores.add(
+            TopTokensScore(name=self._tt_score_name, num_tokens=num_tokens), overwrite=True)
         result = self._internal_model.get_score(self._tt_score_name)
 
         tokens = []
