@@ -182,6 +182,8 @@ class BaseRegularizerPhi(BaseRegularizer):
         self._class_ids = []
         if class_ids is not None:
             self._config.ClearField('class_id')
+            if not isinstance(class_ids, list):
+                class_ids = [class_ids]
             for class_id in class_ids:
                 self._config.class_id.append(class_id)
                 self._class_ids.append(class_id)
@@ -189,6 +191,8 @@ class BaseRegularizerPhi(BaseRegularizer):
         self._topic_names = []
         if topic_names is not None:
             self._config.ClearField('topic_name')
+            if not isinstance(topic_names, list):
+                topic_names = [topic_names]
             for topic_name in topic_names:
                 self._config.topic_name.append(topic_name)
                 self._topic_names.append(topic_name)
@@ -242,6 +246,8 @@ class BaseRegularizerTheta(BaseRegularizer):
         self._topic_names = []
         if topic_names is not None:
             self._config.ClearField('topic_name')
+            if not isinstance(topic_names, list):
+                topic_names = [topic_names]
             for topic_name in topic_names:
                 self._config.topic_name.append(topic_name)
                 self._topic_names.append(topic_name)
@@ -276,12 +282,12 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
         :param float gamma: the coefficient of relative regularization for this regularizer
-        :param class_ids: list of class_ids to regularize, will\
-                          regularize all classes if not specified
-        :type class_ids: list of str
-        :param topic_names: list of names of topics to regularize,\
-                            will regularize all topics if not specified
-        :type topic_names: list of str
+        :param class_ids: list of class_ids or single class_id to regularize, will\
+                          regularize all classes if empty or None
+        :type class_ids: list of str or str or None
+        :param topic_names: list of names or single name of topic to regularize,\
+                            will regularize all topics if empty or None
+        :type topic_names: list of str or single str or None
         :param dictionary: BigARTM collection dictionary,\
                            won't use dictionary if not specified
         :type dictionary: str or reference to Dictionary object
@@ -327,9 +333,9 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
         :param alpha_iter: list of additional coefficients of regularization on each iteration\
                            over document. Should have length equal to model.num_document_passes
         :type alpha_iter: list of str
-        :param topic_names: list of names of topics to regularize,\
-                                     will regularize all topics if not specified
-        :type topic_names: list of str
+        :param topic_names: list of names or single name of topic to regularize,\
+                            will regularize all topics if empty or None
+        :type topic_names: list of str or single str or None
         :param kl_function_info: class with additional info about\
                                      function under KL-div in regularizer
         :type kl_function_info: KlFunctionInfo object
@@ -425,12 +431,12 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
         :param float gamma: the coefficient of relative regularization for this regularizer
-        :param class_ids: list of class_ids to regularize, will\
-                                     regularize all classes if not specified
-        :type class_ids: list of str
-        :param topic_names: list of names of topics to regularize,\
-                                     will regularize all topics if not specified
-        :type topic_names: list of str
+        :param class_ids: list of class_ids or single class_id to regularize, will\
+                          regularize all classes if empty or None
+        :type class_ids: list of str or str or None
+        :param topic_names: list of names or single name of topic to regularize,\
+                            will regularize all topics if empty or None
+        :type topic_names: list of str or single str or None
         :param config: the low-level config of this regularizer
         :type config: protobuf object
         """
@@ -462,12 +468,12 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
         :param float gamma: the coefficient of relative regularization for this regularizer
-        :param class_ids: list of class_ids to regularize, will\
-                                     regularize all classes if not specified
-        :type class_ids: list of str
-        :param topic_names: list of names of topics to regularize,\
-                                     will regularize all topics if not specified
-        :type topic_names: list of str
+        :param class_ids: list of class_ids or single class_id to regularize, will\
+                          regularize all classes if empty or None
+        :type class_ids: list of str or str or None
+        :param topic_names: list of names or single name of topic to regularize,\
+                            will regularize all topics if empty or None
+        :type topic_names: list of str or single str or None
         :param dictionary: BigARTM collection dictionary,\
                                      won't use dictionary if not specified
         :type dictionary: str or reference to Dictionary object
@@ -495,9 +501,9 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         :param float tau: the coefficient of regularization for this regularizer
         :param float gamma: the coefficient of relative regularization for this regularizer
         :param class_id: class_id to regularize
-        :param topic_names: list of names of topics to regularize,\
-                                     will regularize all topics if not specified
-        :type topic_names: list of str
+        :param topic_names: list of names or single name of topic to regularize,\
+                            will regularize all topics if empty or None
+        :type topic_names: list of str or single str or None
         :param int num_max_elements: number of elements to save in row/column
         :param float probability_threshold: if m elements in row/column sum into value >=\
                                      probability_threshold, m < n => only these elements would\
@@ -605,13 +611,13 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
         :param float gamma: the coefficient of relative regularization for this regularizer
-        :param class_ids: list of class_ids to regularize, will\
-                                     regularize all classes if not specified,
-                                     dictionaty should contain pairwise tokens coocurancy info
-        :type class_ids: list of str
-        :param topic_names: list of names of topics to regularize,\
-                                     will regularize all topics if not specified
-        :type topic_names: list of str
+        :param class_ids: list of class_ids or single class_id to regularize, will\
+                          regularize all classes if empty or None\
+                          dictionaty should contain pairwise tokens coocurancy info
+        :type class_ids: list of str or str or None
+        :param topic_names: list of names or single name of topic to regularize,\
+                            will regularize all topics if empty or None
+        :type topic_names: list of str or single str or None
         :param dictionary: BigARTM collection dictionary, won't use dictionary if not\
                                      specified, in this case regularizer is useless
         :type dictionary: str or reference to Dictionary object
@@ -658,9 +664,9 @@ class TopicSelectionThetaRegularizer(BaseRegularizerTheta):
         :param alpha_iter: list of additional coefficients of regularization on each iteration\
                            over document. Should have length equal to model.num_document_passes
         :type alpha_iter: list of str
-        :param topic_names: list of names of topics to regularize,\
-                                     will regularize all topics if not specified
-        :type topic_names: list of str
+        :param topic_names: list of names or single name of topic to regularize,\
+                            will regularize all topics if empty or None
+        :type topic_names: list of str or single str or None
         :param config: the low-level config of this regularizer
         :type config: protobuf object
         """
@@ -682,12 +688,12 @@ class BitermsPhiRegularizer(BaseRegularizerPhi):
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
         :param float gamma: the coefficient of relative regularization for this regularizer
-        :param class_ids: list of class_ids to regularize, will\
-                                     regularize all classes if not specified
-        :type class_ids: list of str
-        :param topic_names: list of names of topics to regularize,\
-                                     will regularize all topics if not specified
-        :type topic_names: list of str
+        :param class_ids: list of class_ids or single class_id to regularize, will\
+                          regularize all classes if empty or None
+        :type class_ids: list of str or str or None
+        :param topic_names: list of names or single name of topic to regularize,\
+                            will regularize all topics if empty or None
+        :type topic_names: list of str or single str or None
         :param dictionary: BigARTM collection dictionary, won't use dictionary if not\
                                      specified, in this case regularizer is useless,
                                      dictionaty should contain pairwise tokens coocurancy info
@@ -720,9 +726,9 @@ class HierarchySparsingThetaRegularizer(BaseRegularizerTheta):
         :param alpha_iter: list of additional coefficients of regularization on each iteration\
                            over document. Should have length equal to model.num_document_passes
         :type alpha_iter: list of str
-        :param topic_names: list of names of topics to regularize,\
-                                     will regularize all topics if not specified
-        :type topic_names: list of str
+        :param topic_names: list of names or single name of topic to regularize,\
+                            will regularize all topics if empty or None
+        :type topic_names: list of str or single str or None
         :param config: the low-level config of this regularizer
         :type config: protobuf object
         :param parent_topic_proportion: list of p(supertopic) values
@@ -749,9 +755,9 @@ class TopicSegmentationPtdwRegularizer(BaseRegularizer):
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param int window: a number of words to the one side over which smoothing will be performed
         :param float threshold: probability threshold for a word to be a topic-changing word
-        :param background_topic_names: list of names of topics to be considered background,\
-                                will not consider background topics if not specified
-        :type background_topic_names: list of str
+        :param background_topic_names: list of names or single name of topic to be considered background,\
+                                will not consider background topics if empty or None
+        :type background_topic_names: list of str or str or None
         :param config: the low-level config of this regularizer
         :type config: protobuf object
         """
@@ -770,5 +776,7 @@ class TopicSegmentationPtdwRegularizer(BaseRegularizer):
             self._threshold = threshold
 
         if background_topic_names is not None:
+            if not isinstance(background_topic_names, list):
+                background_topic_names = [background_topic_names]
             for topic_name in background_topic_names:
                 self._config.background_topic_names.append(topic_name)

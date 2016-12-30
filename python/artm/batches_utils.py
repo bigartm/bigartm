@@ -66,8 +66,8 @@ class BatchVectorizer(object):
         :param bool gather_dictionary: create or not the default dictionary in vectorizer;\
                                        if data_format == 'bow_n_wd' - automatically set to True;\
                                        and if data_weight is list - automatically set to False
-        :param class_ids: list of class ids to parse and include in batches
-        :type class_ids: list of str
+        :param class_ids: list of class_ids or single class_id to parse and include in batches
+        :type class_ids: list of str or str
         """
         self._remove_batches = False
         if data_format == 'bow_n_wd' or data_format == 'vowpal_wabbit' or data_format == 'bow_uci':
@@ -150,6 +150,8 @@ class BatchVectorizer(object):
             parser_config.target_folder = target_f
 
             if class_ids is not None:
+                if not isinstance(class_ids, list):
+                    class_ids = [class_ids]
                 for class_id in class_ids:
                     parser_config.class_id.append(class_id)
 

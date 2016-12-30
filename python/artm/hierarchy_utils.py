@@ -478,8 +478,8 @@ class hARTM(object):
         """
         :Description: get level-wise horizontally stacked Phi matrices
 
-        :param class_ids: list with class ids to extract, None means all class ids
-        :type class_ids: list of str
+        :param class_ids: list with class_ids or single class_id to extract, None means all class ids
+        :type class_ids: list of str or str
         :param str model_name: self.model_pwt by default, self.model_nwt is also\
                       reasonable to extract unnormalized counters
 

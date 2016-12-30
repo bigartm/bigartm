@@ -110,6 +110,8 @@ class BaseScore(object):
         self._topic_names = []
         if topic_names is not None:
             config.ClearField('topic_name')
+            if not isinstance(topic_names, list):
+                topic_names = [topic_names]
             for topic_name in topic_names:
                 config.topic_name.append(topic_name)
                 self._topic_names.append(topic_name)
@@ -189,9 +191,9 @@ class SparsityPhiScore(BaseScore):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score
-        :param topic_names: list of names of topics to regularize, will\
-                            score all topics if not specified
-        :type topic_names: list of str
+        :param topic_names: list of names or single name of topic to regularize, will\
+                            score all topics if empty or None
+        :type topic_names: list of str or str or None
         :param model_name: phi-like matrix to be scored (typically 'pwt' or 'nwt'), 'pwt'\
                            if not specified
         :param float eps: the tolerance const, everything < eps considered to be zero
@@ -223,9 +225,9 @@ class SparsityThetaScore(BaseScore):
     def __init__(self, name=None, topic_names=None, eps=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
-        :param topic_names: list of names of topics to regularize, will\
-                            score all topics if not specified
-        :type topic_names: list of str
+        :param topic_names: list of names or single name of topic to regularize, will\
+                            score all topics if empty or None
+        :type topic_names: list of str or str or None
         :param float eps: the tolerance const, everything < eps considered to be zero
         """
         BaseScore.__init__(self,
@@ -395,9 +397,9 @@ class TopTokensScore(BaseScore):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score
-        :param topic_names: list of names of topics to regularize, will\
-                            score all topics if not specified
-        :type topic_names: list of str
+        :param topic_names: list of names or single name of topic to regularize, will\
+                            score all topics if empty or None
+        :type topic_names: list of str or str or None
         :param int num_tokens: number of tokens with max probability in each topic
         :param dictionary: BigARTM collection dictionary, won't use\
                             dictionary if not specified
@@ -527,9 +529,9 @@ class TopicKernelScore(BaseScore):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score
-        :param topic_names: list of names of topics to regularize, will\
-                            score all topics if not specified
-        :type topic_names: list of str
+        :param topic_names: list of names or single name of topic to regularize, will\
+                            score all topics if empty or None
+        :type topic_names: list of str or str or None
         :param float probability_mass_threshold: the threshold for p(t|w) values to get\
                             token into topic kernel. Should be in (0, 1)
         :param dictionary: BigARTM collection dictionary, won't use\
@@ -602,9 +604,9 @@ class TopicMassPhiScore(BaseScore):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score
-        :param topic_names: list of names of topics to regularize, will\
-                            score all topics if not specified
-        :type topic_names: list of str
+        :param topic_names: list of names or single name of topic to regularize, will\
+                            score all topics if empty or None
+        :type topic_names: list of str or str or None
         :param model_name: phi-like matrix to be scored (typically 'pwt' or 'nwt'), 'pwt'\
                            if not specified
         :param float eps: the tolerance const, everything < eps considered to be zero
