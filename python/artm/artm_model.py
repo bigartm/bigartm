@@ -587,10 +587,10 @@ class ARTM(object):
         :Description: get custom Phi matrix of model. The extraction of the\
                       whole Phi matrix expects ARTM.phi_ call.
 
-        :param topic_names: list with topics to extract, None value means all topics
-        :type topic_names: list of str
-        :param class_ids: list with class ids to extract, None means all class ids
-        :type class_ids: list of str
+        :param topic_names: list with topics or single topic to extract, None value means all topics
+        :type topic_names: list of str or str or None
+        :param class_ids: list with class_ids or single class_id to extract, None means all class ids
+        :type class_ids: list of str or str or None
         :param str model_name: self.model_pwt by default, self.model_nwt is also\
                       reasonable to extract unnormalized counters
 
@@ -606,6 +606,11 @@ class ARTM(object):
         valid_model_name = self.model_pwt if model_name is None else model_name
 
         topics_and_tokens_info = self.master.get_phi_info(valid_model_name)
+
+        if topic_names is not None and not isinstance(topic_names, list):
+            topic_names = [topic_names]
+        if class_ids is not None and not isinstance(class_ids, list):
+            class_ids = [class_ids]
 
         _, nd_array = self.master.get_phi_matrix(model=valid_model_name,
                                                  topic_names=topic_names,
@@ -625,10 +630,10 @@ class ARTM(object):
         """
         :Description: get phi matrix in sparse format
 
-        :param topic_names: list with topics to extract, None value means all topics
-        :type topic_names: list of str
-        :param class_ids: list with class ids to extract, None means all class ids
-        :type class_ids: list of str
+        :param topic_names: list with topics or single topic to extract, None value means all topics
+        :type topic_names: list of str or str or None
+        :param class_ids: list with class_ids or single class_id to extract, None means all class ids
+        :type class_ids: list of str or str or None
         :param str model_name: self.model_pwt by default, self.model_nwt is also\
                       reasonable to extract unnormalized counters
         :param float eps: threshold to consider values as zero
@@ -651,9 +656,13 @@ class ARTM(object):
         if eps is not None:
             args.eps = eps
         if topic_names is not None:
+            if not isinstance(topic_names, list):
+                topic_names = [topic_names]        
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
         if class_ids is not None:
+            if not isinstance(class_ids, list):
+                class_ids = [class_ids]
             for class_id in class_ids:
                 args.class_id.append(class_id)
 
@@ -681,8 +690,8 @@ class ARTM(object):
         """
         :Description: get Theta matrix for training set of documents (or cached after transform)
 
-        :param topic_names: list with topics to extract, None means all topics
-        :type topic_names: list of str
+        :param topic_names: list with topics or single topic to extract, None means all topics
+        :type topic_names: list of str or str or None
 
         :return:
           * pandas.DataFrame: (data, columns, rows), where:
@@ -704,6 +713,8 @@ class ARTM(object):
             column_names = [item_id for item_id in theta_info.item_id]
 
         all_topic_names = [topic_name for topic_name in theta_info.topic_name]
+        if topic_names is not None and not isinstance(topic_names, list):
+            topic_names = [topic_names]
         use_topic_names = topic_names if topic_names is not None else all_topic_names
         _, nd_array = self.master.get_theta_matrix(topic_names=use_topic_names)
 
@@ -716,8 +727,8 @@ class ARTM(object):
         """
         :Description: get Theta matrix in sparse format
 
-        :param topic_names: list with topics to extract, None means all topics
-        :type topic_names: list of str
+        :param topic_names: list with topics or single topic to extract, None means all topics
+        :type topic_names: list of str or str or None
         :param float eps: threshold to consider values as zero
 
         :return:
@@ -738,6 +749,8 @@ class ARTM(object):
         if eps is not None:
             args.eps = eps
         if topic_names is not None:
+            if not isinstance(topic_names, list):
+                topic_names = [topic_names]
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
         theta = self._lib.ArtmRequestThetaMatrixExternal(self.master.master_id, args)
