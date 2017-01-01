@@ -1,4 +1,5 @@
 // Copyright 2017, Additive Regularization of Topic Models.
+
 #include <memory>
 
 #include "gtest/gtest.h"
