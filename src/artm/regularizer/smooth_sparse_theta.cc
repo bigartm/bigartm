@@ -15,7 +15,7 @@ namespace regularizer {
 
 void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter,
                                    int topics_size, const float* n_td, float* r_td) const {
-  assert(item_index > 0 && item_index <= batch_.item_size());
+  assert(item_index >= 0 && item_index < batch_.item_size());
   assert(topics_size == topic_weight.size());
   assert(inner_iter < alpha_weight.size());
   if (topics_size != topic_weight.size()) return;
