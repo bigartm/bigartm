@@ -41,7 +41,15 @@ void TopicSegmentationPtdwAgent::Apply(int item_index, int inner_iter,
   double right_weights = 0.0;
   int l_topic, r_topic;  // topic ids on which maximum of the distribution is reached
   bool changes_topic = false;
-  int main_topic = std::distance(&(*ptdw)(0, 0), std::max_element(&(*ptdw)(0, 0), &(*ptdw)(0, num_topics)));  //NOLINT
+  int main_topic = 0;
+  auto main_topic_density = (*ptdw)(0, 0);
+  for (int k = 0; k < num_topics; ++k) {
+    auto cur_topic_density = (*ptdw)(0, k);
+    if (main_topic_density < cur_topic_density) {
+      main_topic_density = cur_topic_density;
+      main_topic = k;
+    }
+  }
   for (int k = 0; k < num_topics; ++k) {
     if (k == main_topic) {
       (*ptdw)(0, k) = 1;

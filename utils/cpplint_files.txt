@@ -56,6 +56,7 @@ src/artm_tests/multiple_classes_test.cc
 src/artm_tests/supcry_test.cc
 src/artm_tests/test_mother.cc
 src/artm_tests/thread_safe_holder_test.cc
+src/artm_tests/topic_seg_test.cc
 src/artm/regularizer_interface.h
 src/artm/score_calculator_interface.h
 src/artm/cpp_interface.h
