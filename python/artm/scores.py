@@ -5,6 +5,7 @@ from . import wrapper
 from .wrapper import messages_pb2 as messages
 from .wrapper import constants as const
 
+from six import string_types
 
 GLOB_EPS = 1e-37
 
@@ -110,7 +111,7 @@ class BaseScore(object):
         self._topic_names = []
         if topic_names is not None:
             config.ClearField('topic_name')
-            if not isinstance(topic_names, list):
+            if isinstance(topic_names, string_types):
                 topic_names = [topic_names]
             for topic_name in topic_names:
                 config.topic_name.append(topic_name)

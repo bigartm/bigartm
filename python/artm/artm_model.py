@@ -7,7 +7,7 @@ import tempfile
 import numpy
 
 from pandas import DataFrame
-from six import iteritems
+from six import iteritems, string_types
 from six.moves import range, zip
 from multiprocessing.pool import ThreadPool
 import tqdm
@@ -607,9 +607,9 @@ class ARTM(object):
 
         topics_and_tokens_info = self.master.get_phi_info(valid_model_name)
 
-        if topic_names is not None and not isinstance(topic_names, list):
+        if isinstance(topic_names, string_types):
             topic_names = [topic_names]
-        if class_ids is not None and not isinstance(class_ids, list):
+        if isinstance(class_ids, string_types):
             class_ids = [class_ids]
 
         _, nd_array = self.master.get_phi_matrix(model=valid_model_name,
@@ -656,12 +656,12 @@ class ARTM(object):
         if eps is not None:
             args.eps = eps
         if topic_names is not None:
-            if not isinstance(topic_names, list):
-                topic_names = [topic_names]        
+            if isinstance(topic_names, string_types):
+                topic_names = [topic_names]
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
         if class_ids is not None:
-            if not isinstance(class_ids, list):
+            if isinstance(class_ids, string_types):
                 class_ids = [class_ids]
             for class_id in class_ids:
                 args.class_id.append(class_id)
@@ -713,7 +713,7 @@ class ARTM(object):
             column_names = [item_id for item_id in theta_info.item_id]
 
         all_topic_names = [topic_name for topic_name in theta_info.topic_name]
-        if topic_names is not None and not isinstance(topic_names, list):
+        if isinstance(topic_names, string_types):
             topic_names = [topic_names]
         use_topic_names = topic_names if topic_names is not None else all_topic_names
         _, nd_array = self.master.get_theta_matrix(topic_names=use_topic_names)
@@ -749,7 +749,7 @@ class ARTM(object):
         if eps is not None:
             args.eps = eps
         if topic_names is not None:
-            if not isinstance(topic_names, list):
+            if isinstance(topic_names, string_types):
                 topic_names = [topic_names]
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)

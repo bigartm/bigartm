@@ -6,6 +6,7 @@ from . import wrapper
 from .wrapper import messages_pb2 as messages
 from .wrapper import constants as const
 
+from six import string_types
 
 __all__ = [
     'KlFunctionInfo',
@@ -182,7 +183,7 @@ class BaseRegularizerPhi(BaseRegularizer):
         self._class_ids = []
         if class_ids is not None:
             self._config.ClearField('class_id')
-            if not isinstance(class_ids, list):
+            if isinstance(class_ids, string_types):
                 class_ids = [class_ids]
             for class_id in class_ids:
                 self._config.class_id.append(class_id)
@@ -191,7 +192,7 @@ class BaseRegularizerPhi(BaseRegularizer):
         self._topic_names = []
         if topic_names is not None:
             self._config.ClearField('topic_name')
-            if not isinstance(topic_names, list):
+            if isinstance(topic_names, string_types):
                 topic_names = [topic_names]
             for topic_name in topic_names:
                 self._config.topic_name.append(topic_name)
@@ -246,7 +247,7 @@ class BaseRegularizerTheta(BaseRegularizer):
         self._topic_names = []
         if topic_names is not None:
             self._config.ClearField('topic_name')
-            if not isinstance(topic_names, list):
+            if isinstance(topic_names, string_types):
                 topic_names = [topic_names]
             for topic_name in topic_names:
                 self._config.topic_name.append(topic_name)
@@ -776,7 +777,7 @@ class TopicSegmentationPtdwRegularizer(BaseRegularizer):
             self._threshold = threshold
 
         if background_topic_names is not None:
-            if not isinstance(background_topic_names, list):
+            if isinstance(background_topic_names, string_types):
                 background_topic_names = [background_topic_names]
             for topic_name in background_topic_names:
                 self._config.background_topic_names.append(topic_name)

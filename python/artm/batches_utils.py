@@ -4,7 +4,7 @@ import uuid
 import shutil
 import numpy as np
 
-from six import iteritems
+from six import iteritems, string_types
 from six.moves import range, zip
 
 from . import wrapper
@@ -150,7 +150,7 @@ class BatchVectorizer(object):
             parser_config.target_folder = target_f
 
             if class_ids is not None:
-                if not isinstance(class_ids, list):
+                if isinstance(class_ids, string_types):
                     class_ids = [class_ids]
                 for class_id in class_ids:
                     parser_config.class_id.append(class_id)
