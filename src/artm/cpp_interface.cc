@@ -308,22 +308,22 @@ Matrix::Matrix(int no_rows, int no_columns) : no_rows_(no_rows), no_columns_(no_
   if (no_rows <= 0 || no_columns <= 0)
     throw ArgumentOutOfRangeException("no_rows and no_columns must be positive");
 
-  data_.resize(no_rows_ * no_columns_);
+  data_.resize(static_cast<int64_t>(no_rows_) * no_columns_);
 }
 
 float& Matrix::operator() (int index_row, int index_col) {
-  return data_[index_row * no_columns_ + index_col];
+  return data_[static_cast<int64_t>(index_row) * no_columns_ + index_col];
 }
 
 const float& Matrix::operator() (int index_row, int index_col) const {
-  return data_[index_row * no_columns_ + index_col];
+  return data_[static_cast<int64_t>(index_row) * no_columns_ + index_col];
 }
 
 void Matrix::resize(int no_rows, int no_columns) {
   no_rows_ = no_rows;
   no_columns_ = no_columns;
   if (no_rows > 0 && no_columns > 0)
-    data_.resize(no_rows_ * no_columns_);
+    data_.resize(static_cast<int64_t>(no_rows_) * no_columns_);
 }
 
 int Matrix::no_rows() const { return no_rows_; }
