@@ -41,9 +41,9 @@ static void HandleExternalTopicModelRequest(::artm::TopicModel* topic_model, std
   lm->resize(sizeof(float) * topic_model->token_size() * topic_model->num_topics());
   char* lm_ptr = &(*lm)[0];
   float* lm_float = reinterpret_cast<float*>(lm_ptr);
-  for (int token_index = 0; token_index < topic_model->token_size(); ++token_index) {
-    for (int topic_index = 0; topic_index < topic_model->num_topics(); ++topic_index) {
-      int index = token_index * topic_model->num_topics() + topic_index;
+  for (int64_t token_index = 0; token_index < topic_model->token_size(); ++token_index) {
+    for (int64_t topic_index = 0; topic_index < topic_model->num_topics(); ++topic_index) {
+      int64_t index = token_index * topic_model->num_topics() + topic_index;
       lm_float[index] = topic_model->token_weights(token_index).value(topic_index);
     }
   }
@@ -55,9 +55,9 @@ static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, 
   lm->resize(sizeof(float) * theta_matrix->item_id_size() * theta_matrix->num_topics());
   char* lm_ptr = &(*lm)[0];
   float* lm_float = reinterpret_cast<float*>(lm_ptr);
-  for (int topic_index = 0; topic_index < theta_matrix->num_topics(); ++topic_index) {
-    for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
-      int index = item_index * theta_matrix->num_topics() + topic_index;
+  for (int64_t topic_index = 0; topic_index < theta_matrix->num_topics(); ++topic_index) {
+    for (int64_t item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
+      int64_t index = item_index * theta_matrix->num_topics() + topic_index;
       lm_float[index] = theta_matrix->item_weights(item_index).value(topic_index);
     }
   }
