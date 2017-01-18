@@ -1,0 +1,5 @@
+Basic usage of BigARTM Python API 
+===============================
+
+More information can be found in :doc:`python_userguide/index` and here: https://github.com/bigartm/bigartm-book
+

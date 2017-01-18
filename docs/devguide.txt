@@ -10,7 +10,7 @@ BigARTM Developer's Guide
 
 These pages describe the development process of BigARTM library.
 If your intent to use BigARTM as a typical user, please proceed to
-:doc:`/tutorials/windows_basic` or :doc:`/tutorials/linux_basic`,
+:doc:`/installation/windows` or :doc:`/installation/linux`,
 depending on your operating system.
 If you intent is to contribute to the development BigARTM, please proceed to the links below.
 

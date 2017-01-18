@@ -5,14 +5,14 @@
 
 .. _tutorial:
 
-Tutorial references
+User's Guide
 =========
 
 .. toctree::
    :maxdepth: 2
 
    bigartm_cli
-   python_api
-   ../ref/c_interface
+   python_tutorial
+   python_userguide/index
 
 .. vim:ft=rst

@@ -1,5 +1,7 @@
-Formats
+Loading data
 =======
+
+**Formats**
 
 This page describes input data formats compatible with BigARTM.
 Currently all formats correspond to `Bag-of-words representation <https://en.wikipedia.org/wiki/Bag-of-words_model>`_,

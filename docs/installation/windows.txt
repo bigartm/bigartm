@@ -47,8 +47,8 @@ Configure BigARTM Python API
     Remember to change ``C:\BigARTM`` if you unpack to another location.
 
 4. Now you can used BigARTM from Python shell or from ipython notebook.
-   Refer to :doc:`/tutorials/python_api` for examples,
-   or to :doc:`/python_interface` for documentation.
+   Refer to :doc:`/tutorials/python_tutorial` or :doc:`/tutorials/python_userguide/index`  for examples,
+   or to :doc:`/api_references/python_interface` for documentation.
 
 If you are getting errors when configuring or using Python API,
 please refer to Troubleshooting chapter in :doc:`/installation/linux`.

@@ -5,7 +5,7 @@ This page describes recent changes in BigARTM's Python API.
 Note that the API might be affected by changes in the underlying protobuf messages.
 For this reason we recommend to review :doc:`messages`.
 
-For further reference about Python API refer to :doc:`/python_interface/artm_model`,
+For further reference about Python API refer to :doc:`/api_references/python_interface/artm_model`,
 `Q & A <https://github.com/bigartm/bigartm/wiki/Q&A>`_ or `tutorials <https://github.com/bigartm/bigartm-book/blob/master/README.md>`_.
 
 v0.8.2

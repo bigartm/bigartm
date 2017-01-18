@@ -10,7 +10,7 @@ Introduction
 The goal of low level API is to expose all functionality of the library
 in a set of simple functions written in plain C language.
 This makes it easier to consume BigARTM from various programming environments.
-For example, the :doc:`../python_interface` of BigARTM uses `ctypes <https://docs.python.org/2/library/ctypes.html>`_
+For example, the :doc:`python_interface` of BigARTM uses `ctypes <https://docs.python.org/2/library/ctypes.html>`_
 module to call the low level BigARTM interface.
 Most programming environments also have similar functionality:
 `PInvoke <http://msdn.microsoft.com/en-us/library/aa288468(v=vs.71).aspx>`_ in C#,
