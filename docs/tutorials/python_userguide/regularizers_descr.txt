@@ -1,2 +1,2 @@
-Regularizers
+Regularizers Detailed Description
 =========

@@ -1,5 +1,10 @@
-Basic usage of BigARTM Python API 
+Python Tutorial
 ===============================
+
+**LDA (most simple)**
+
+
+**ARTM**
 
 More information can be found in :doc:`python_userguide/index` and here: https://github.com/bigartm/bigartm-book
 

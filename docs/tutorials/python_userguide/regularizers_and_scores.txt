@@ -1,0 +1,2 @@
+3. Regularizers and Scores Usage
+=========
