@@ -22,6 +22,7 @@ If you intent is to contribute to the development BigARTM, please proceed to the
    devguide/dev_build_windows.txt
    devguide/python_windows.txt
    devguide/proto_windows.txt
+   devguide/messages.txt
    devguide/ipython_windows.txt
    devguide/dev_build_linux.txt
    devguide/code_style.txt
