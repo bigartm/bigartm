@@ -5,7 +5,7 @@
 
 .. _tutorial:
 
-API references
+API References
 =========
 
 .. toctree::

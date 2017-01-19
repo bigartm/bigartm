@@ -1,5 +1,5 @@
 ==================
-Low-level API in C
+C Interface
 ==================
 
 This document explains all public methods of the low level BigARTM interface, written in plain C language.
@@ -30,7 +30,7 @@ accept a serialized binary representation of some Google Protocol Buffer message
 From BigARTM v0.8.2 it is also possible to pass JSON-serialized protobuf message.
 This might be useful if you are planing to use low-level C interface from environment where
 configuring protobuf libraries would be challenging.
-Please, refer to :doc:`messages` for more details about each particular message,
+Please, refer to :doc:`../devguide/messages` for more details about each particular message,
 and `Protobuf documentation <https://developers.google.com/protocol-buffers/docs/proto3#json>`_ regarding JSON mapping.
 
 Note that this documentation is incomplete.

@@ -12,8 +12,12 @@ Python Guide
    :maxdepth: 2
 
    loading_data
-   modeling
-   other_chapter
+   base_plsa
+   regularizers_and_scores
+   m_artm
+   phi_theta_extraction
+   coherence
+   attach_model
    regularizers_descr
    scores_descr
 
