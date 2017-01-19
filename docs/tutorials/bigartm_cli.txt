@@ -1,5 +1,5 @@
 ============================
-BigARTM command line utility
+BigARTM Command Line Utility
 ============================
 
 This document provides an overview of ``bigartm``
