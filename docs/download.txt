@@ -7,13 +7,10 @@ Downloads
   * Latest build from master branch: `BigARTM_master_win64.7z <https://ci.appveyor.com/api/projects/bigartm/bigartm/artifacts/BigARTM.7z?branch=stable&job=Environment%3A%20PYTHON_VERSION%3D3.5%2C%20MINICONDA%3DC%3A%5CMiniconda35-x64>`_ (warning, use this with caution)
   * All previous releases are available at https://github.com/bigartm/bigartm/releases
 
-  Please refer to :doc:`tutorials/windows_basic` for step by step installation procedure.
-
 * **Linux, Mac OS-X**
 
   To run BigARTM on Linux and Mac OS-X you need to clone BigARTM repository
-  (https://github.com/bigartm/bigartm) and build it as described in 
-  :doc:`tutorials/linux_basic`.
+  (https://github.com/bigartm/bigartm).
 
 * **Docker container**
 
@@ -22,7 +19,7 @@ Downloads
 * **Datasets**
 
   Download one of the following datasets to start experimenting with BigARTM.
-  See :doc:`formats` page for the description of input data formats.
+  See :doc:`tutorials/python_userguide/loading_data` page for the description of input data formats.
   Note that ``docword.*`` and ``vocab.*`` files indicate ``UCI BOW`` format,
   while ``vw.*`` file indicate ``Vowpal Wabbit`` format.
   

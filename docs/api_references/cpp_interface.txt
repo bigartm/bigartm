@@ -64,11 +64,6 @@ or open a new `issue <https://github.com/bigartm/bigartm/issues>`_.
    What follows below in this page is really outdated.
 
 
-In addition to this page consider to look at :doc:`c_interface`, 
-:doc:`python_interface` or :doc:`messages`.
-These documentation files are also to certain degree relevant for C++ interface,
-because C++ interface is quite similar to Python interface and share the same Protobuf messages.
-
 .. cpp:namespace:: artm
 
 MasterComponent

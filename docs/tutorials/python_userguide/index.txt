@@ -3,18 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. _reference:
+.. _python_userguide:
 
-BigARTM Reference
-=================
+Python Guide
+=========
 
 .. toctree::
    :maxdepth: 2
 
-   messages
-   python_interface
-   c_interface
-   cpp_interface
-   windows_distribution
+   loading_data
+   modeling
+   other_chapter
+   regularizers_descr
+   scores_descr
 
-
+.. vim:ft=rst
