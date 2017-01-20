@@ -5,7 +5,7 @@
    This class proceeds topic selection according to Theta matrix.
    The formula of M-step is
    
-   p_td \propto n_td - tau * n_td * topic_value[t],
+   p_td \propto n_td - tau * n_td * topic_value[t] * alpha_iter[iter],
    
    where topic_value[t] = n / (n_t * |T|) --- shuld be defined
    by user for each topic, and alpha_iter is an array of

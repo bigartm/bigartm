@@ -1,0 +1,45 @@
+Scores Detailed Description
+=========
+
+This page describes the scores, that have already been implemented in the core of BigARTM library. Detailed description of parameters of the scores in the Python API can be seen in :doc:`../api_references/python_interface/scores`.
+
+Examples of the usage of the scores can be found in :doc:`python_tutorial` and in :doc:`python_userguide/index`.
+
+Perplexity
+-------------
+
+
+Sparsity Phi
+-------------
+
+
+Sparsity Theta
+-------------
+
+
+Topic Kernel Scores
+-------------
+
+
+Top Tokens
+-------------
+
+
+Topic Mass
+-------------
+
+
+Class Presicion
+-------------
+
+
+Background Tokens Ratio
+-------------
+
+
+Items Processed (technical)
+-------------
+
+
+Theta Snippet (technical)
+-------------

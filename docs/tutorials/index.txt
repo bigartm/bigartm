@@ -15,5 +15,7 @@ User's Guide
    bigartm_cli
    python_tutorial
    python_userguide/index
+   regularizers_descr
+   scores_descr
 
 .. vim:ft=rst

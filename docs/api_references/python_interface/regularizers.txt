@@ -3,7 +3,7 @@ Regularizers
 
 This page describes *KlFunctionInfo* and *Regularizer* classes.
 
-See `detailed description of regularizers <https://github.com/bigartm/bigartm/wiki/Implemented-regularizers>`_ for understanding their sense.
+See detailed description of regularizers :doc:`../../tutorials/regularizers_descr` for understanding their sense.
 
 .. automodule:: artm
 
