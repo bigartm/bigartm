@@ -18,7 +18,5 @@ Python Guide
    phi_theta_extraction
    coherence
    attach_model
-   regularizers_descr
-   scores_descr
 
 .. vim:ft=rst
