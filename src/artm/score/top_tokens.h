@@ -4,7 +4,7 @@
             Murat Apishev (great-mel@yandex.ru)
    
    This class returns the most probable tokens in each topic in Phi matrix.
-   Also it can count the coherency of topics using top tokens.
+   Also it can count the coherence of topics using top tokens.
    
    Parameters:
    - num_tokens (the number of top tokens to extract from each topic) 

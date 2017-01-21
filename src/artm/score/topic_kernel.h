@@ -4,7 +4,7 @@
    
    This class for each topic in Phi matrix counts the kernel
    characteristics --- purity, contrast and size.
-   Also it can count the coherency of topics using kernel tokens.
+   Also it can count the coherence of topics using kernel tokens.
    
    The token is kernel for topic if its p(t|w) > threshold.
    

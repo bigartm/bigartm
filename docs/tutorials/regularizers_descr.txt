@@ -1,4 +1,4 @@
-Regularizers Detailed Description
+Regularizers Description
 =========
 
 This page describes the features and cases of usage of the regularizers, that have already been implemented in the core of BigARTM library. Detailed description of parameters of the regularizers in the Python API can be seen in :doc:`../api_references/python_interface/regularizers`.
@@ -121,7 +121,7 @@ Improve Coherence Phi
 
 * **M-step formula:**
 
-``p_wt`` :math:`\propto` ``n_wt`` + ``tau`` * :math:`\sum_{v \in W}` ``cooc_dict[w][v]`` * n_vt``
+``p_wt`` :math:`\propto` ``n_wt`` + ``tau`` * :math:`\sum_{v \in W}` ``cooc_dict[w][v]`` * ``n_vt``
 
 
 Smooth Ptdw
