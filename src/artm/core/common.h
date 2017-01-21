@@ -1,5 +1,5 @@
-// Copyright 2014, Additive Regularization of Topic Models.
-//
+// Copyright 2017, Additive Regularization of Topic Models.
+
 // File 'common.h' contains constants, helpers and typedefs used across the entire library.
 // The goal is to keep this file as short as possible.
 

@@ -1,4 +1,4 @@
-// Copyright 2015, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #ifndef SRC_ARTM_UTILITY_IFSTREAM_OR_CIN_H_
 #define SRC_ARTM_UTILITY_IFSTREAM_OR_CIN_H_

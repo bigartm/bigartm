@@ -1,3 +1,5 @@
+# Copyright 2017, Additive Regularization of Topic Models.
+
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function

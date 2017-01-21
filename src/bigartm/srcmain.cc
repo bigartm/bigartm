@@ -1,3 +1,5 @@
+// Copyright 2017, Additive Regularization of Topic Models.
+
 #include <stdlib.h>
 #include <algorithm>
 #include <chrono>

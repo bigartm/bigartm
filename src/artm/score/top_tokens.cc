@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 // Authors: Marina Suvorova (m.dudarenko@gmail.com)
 //          Murat Apishev (great-mel@yandex.ru)

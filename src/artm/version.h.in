@@ -1,4 +1,5 @@
-// Copyright 2016, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
+
 #ifndef SRC_ARTM_VERSION_H_
 #define SRC_ARTM_VERSION_H_
 
