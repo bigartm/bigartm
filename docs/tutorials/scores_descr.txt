@@ -32,7 +32,7 @@ Computes the ratio of elements of :math:`\Phi` matrix (or it's part) that are le
 
 * **Usage:**
 
-One of the goals of regularization is to archive a sparse structure of :math:`\Phi` matrix using different sparsing regularizers. This scores allows to control this process. While using different regularization stratgies in different parts of model you can create a score per each part and one for whole model to have detailed and whole values.
+One of the goals of regularization is to achive a sparse structure of :math:`\Phi` matrix using different sparsing regularizers. This scores allows to control this process. While using different regularization stratgies in different parts of model you can create a score per each part and one for whole model to have detailed and whole values.
 
 
 Sparsity Theta
@@ -44,7 +44,7 @@ Computes the ratio of elements of :math:`\Theta` matrix (or it's part) that are 
 
 * **Usage:**
 
-One of the goals of regularization is to archive a sparse structure of :math:`\Theta` matrix using different sparsing regularizers. This scores allows to control this process. While using different regularization stratgies in different parts of :math:`\Theta` you can create a score per each part and one for whole matrix to have detailed and whole values.
+One of the goals of regularization is to achive a sparse structure of :math:`\Theta` matrix using different sparsing regularizers. This scores allows to control this process. While using different regularization stratgies in different parts of :math:`\Theta` you can create a score per each part and one for whole matrix to have detailed and whole values.
 
 
 Top Tokens
@@ -71,7 +71,7 @@ Topic Kernel Scores
 
 * **Description:**
 
-This score was created as one more way to control the inpretability of the topics. Let's define the `topic kernel` as :math:`W_t = big\{ w \in W | p(t|w) > \mathrm{threashold}  big\}`, and determine several measures, based on it:
+This score was created as one more way to control the inpretability of the topics. Let's define the `topic kernel` as :math:`W_t = \big\{ w \in W | p(t|w) > \mathrm{threashold}  \big\}`, and determine several measures, based on it:
 
   - :math:`\sum_{w \in W_t} p(w|t)` - the `purity` of the topic (higher values corresponds better topics);
   - :math:`\cfrac{1}{|W_t|}\sum_{w \in W_t} p(t|w)` - `contrast` of the topic (higher values corresponds better topics);
@@ -91,7 +91,7 @@ Topic Mass
 
 * **Description:**
 
-Computes the :math:`n_t` values for each requested topic in :math:`Phi` matrix.
+Computes the :math:`n_t` values for each requested topic in :math:`\Phi` matrix.
 
 * **Usage:**
 
