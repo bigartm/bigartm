@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #ifndef SRC_ARTM_CORE_CALL_ON_DESTRUCTION_H_
 #define SRC_ARTM_CORE_CALL_ON_DESTRUCTION_H_

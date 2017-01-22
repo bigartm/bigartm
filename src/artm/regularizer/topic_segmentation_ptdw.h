@@ -1,8 +1,8 @@
-/* Copyright 2016, Additive Regularization of Topic Models.
+/* Copyright 2017, Additive Regularization of Topic Models.
 
    Author: Anastasia Bayandina
 
-   Description will be updated later
+   ToDo: Description will be updated later
 */
 
 #ifndef SRC_ARTM_REGULARIZER_TOPIC_SEGMENTATION_PTDW_H_

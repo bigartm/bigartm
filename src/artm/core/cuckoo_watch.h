@@ -1,4 +1,4 @@
-// Copyright 2015, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #ifndef SRC_ARTM_CORE_CUCKOO_WATCH_H_
 #define SRC_ARTM_CORE_CUCKOO_WATCH_H_

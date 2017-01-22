@@ -1,4 +1,5 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
+
 // This file defines public API methods of BigARTM library.
 // All methods must be inside "extern "C"" scope. All complex data structures should be passed in
 // as Google Protobuf Messages, defined in messages.proto.

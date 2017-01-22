@@ -1,3 +1,5 @@
+# Copyright 2017, Additive Regularization of Topic Models.
+
 from six.moves import range, zip
 
 from .artm_model import ARTM

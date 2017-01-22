@@ -1,4 +1,4 @@
-// Copyright 2016, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #ifndef SRC_ARTM_UTILITY_PROGRESS_PRINTER_H_
 #define SRC_ARTM_UTILITY_PROGRESS_PRINTER_H_

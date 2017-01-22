@@ -1,3 +1,5 @@
+# Copyright 2017, Additive Regularization of Topic Models.
+
 """
 Exceptions corresponding to BigARTM error codes
 """

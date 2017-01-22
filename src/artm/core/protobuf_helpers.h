@@ -1,4 +1,5 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
+
 // This file contains several helper methods to work with protobuf messages.
 // Most common tasks are to search for a value (or values) in a repeated protobuf field.
 // The name 'is_member' is motivated by MatLab method (http://se.mathworks.com/help/matlab/ref/ismember.html)

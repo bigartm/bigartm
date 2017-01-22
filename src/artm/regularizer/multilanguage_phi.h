@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #ifndef SRC_ARTM_REGULARIZER_MULTILANGUAGE_PHI_H_
 #define SRC_ARTM_REGULARIZER_MULTILANGUAGE_PHI_H_
