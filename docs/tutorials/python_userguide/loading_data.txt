@@ -3,9 +3,11 @@
 
 Detailed description of all parameters and methods of BigARTM Python API classes can be found in :doc:`../../api_references/python_interface`.
 
+* **BatchVectorizer**:
+
 Before starting modeling we need to convert you data in the library format. At first you need to read about supporting formats for source data in :doc:`../datasets`. It's your task to prepare your data in one of these formats. As you had transformed your data into one of source formats, you can convert them in the BigARTM internal format (batches of documents) using ``BatchVectorizer`` class object.
 
-Really you have one more simple way to process your collection, if it is not too big and you don't need to store it in batches. To use it you need to archive two variables: numpy.ndarray ``n_wd`` with :math:`n_{wd}` counters and corresponding Python dict with vocabulary (key - index of numpy.ndarray, value - corresponding token). The simpliest way to get these data is sklearn ``CountVectorizer`` usage (or some similar class from sklearn).
+Really you have one more simple way to process your collection, if it is not too big and you don't need to store it in batches. To use it you need to archive two variables: ``numpy.ndarray`` ``n_wd`` with :math:`n_{wd}` counters and corresponding Python dict with vocabulary (key - index of ``numpy.ndarray``, value - corresponding token). The simpliest way to get these data is sklearn ``CountVectorizer`` usage (or some similar class from sklearn).
 
 If you have archived described variables run following code:
 
@@ -15,7 +17,7 @@ If you have archived described variables run following code:
                                            n_wd=n_wd,
                                            vocabulary=vocabulary)
 
-Well, if you have data in UCI format (e.g. ``vocab.my_collection.txt`` and ``docword.my_collection.txt`` files), that were put into the same directory with your script or notebook (in our case - with this notebook), you can create batches using next code:
+Well, if you have data in UCI format (e.g. ``vocab.my_collection.txt`` and ``docword.my_collection.txt`` files), that were put into the same directory with your script or notebook, you can create batches using next code:
 
 .. code-block:: python
 
@@ -44,6 +46,8 @@ The result is fully the same, as it was described above.
    
 	batch_vectorizer = artm.BatchVectorizer(data_path='my_collection_batches',
                                                 data_format='batches')
+
+* **Dictionary**:
 
 The next step is to create ``Dictionary``. This is a data structure containing the information about all unique tokens in the collection. The dictionary is generating outside the model, and this operation can be done in different ways (load, create, gather). The most basic case is to gather dictionary using batches directory. You need to do this operation only once when starting working with new collection. Use the following code:
 
