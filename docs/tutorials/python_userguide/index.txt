@@ -18,5 +18,7 @@ Python Guide
    phi_theta_extraction
    coherence
    attach_model
+   ptdw
+   different
 
 .. vim:ft=rst
