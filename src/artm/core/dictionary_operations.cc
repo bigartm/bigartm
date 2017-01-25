@@ -182,7 +182,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Import(const ImportDictionaryA
       BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
 
     // move data from DictionaryData into dictionary
-    if (dict_data.token_size() > 0 == dict_data.cooc_value_size() > 0)
+    if ((dict_data.token_size() > 0) == (dict_data.cooc_value_size() > 0))
       BOOST_THROW_EXCEPTION(CorruptedMessageException("Error while reading from " + args.file_name()));
 
     // part with main dictionary
@@ -433,7 +433,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
   std::vector<float> df_values;
   int accepted_tokens_count = 0;
 
-  for (int entry_index = 0; entry_index < src_entries.size(); entry_index++) {
+  for (int entry_index = 0; entry_index < (ssize_t) src_entries.size(); entry_index++) {
     auto& entry = src_entries[entry_index];
     if (!args.has_class_id() || (entry.token().class_id == args.class_id())) {
       if (args.has_min_df() && entry.token_df() < args.min_df()) continue;
@@ -451,18 +451,20 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
   }
 
   // Handle max_dictionary_size
-  if (args.has_max_dictionary_size() && (args.max_dictionary_size() < df_values.size())) {
+  if (args.has_max_dictionary_size() &&
+          ((ssize_t) args.max_dictionary_size() < df_values.size())) {
     std::sort(df_values.begin(), df_values.end(), std::greater<float>());
     float min_df_due_to_size = df_values[args.max_dictionary_size()];
 
-    for (int entry_index = 0; entry_index < src_entries.size(); entry_index++) {
+    for (int entry_index = 0; entry_index < (ssize_t) src_entries.size();
+            entry_index++) {
       auto& entry = src_entries[entry_index];
       if (entry.token_df() <= min_df_due_to_size)
         entries_mask[entry_index] = false;
     }
   }
 
-  for (int entry_index = 0; entry_index < src_entries.size(); entry_index++) {
+  for (int entry_index = 0; entry_index < (ssize_t) src_entries.size(); entry_index++) {
     if (!entries_mask[entry_index])
       continue;
 
@@ -497,7 +499,7 @@ void DictionaryOperations::StoreIntoDictionaryData(const Dictionary& dict, Dicti
   data->set_name(dict.name());
   data->set_num_items_in_collection(dict.num_items());
   auto& entries = dict.entries();
-  for (int i = 0; i < dict.size(); ++i) {
+  for (int i = 0; i < (ssize_t) dict.size(); ++i) {
     data->add_token(entries[i].token().keyword);
     data->add_class_id(entries[i].token().class_id);
     data->add_token_value(entries[i].token_value());
