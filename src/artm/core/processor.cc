@@ -119,7 +119,7 @@ static void CreateThetaCacheEntry(ThetaMatrix* new_cache_entry_ptr,
     const Item& item = batch.item(item_index);
     new_cache_entry_ptr->add_item_id(item.id());
     new_cache_entry_ptr->add_item_title(item.has_title() ? item.title() : std::string());
-    FloatArray* cached_theta = new_cache_entry_ptr->add_item_weights();
+    new_cache_entry_ptr->add_item_weights();
   }
 
   if (!args.has_predict_class_id()) {
@@ -493,7 +493,6 @@ InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, 
 
   const int num_topics = p_wt.topic_size();
   const int docs_count = theta_matrix->num_items();
-  const int tokens_count = batch.token_size();
 
   std::vector<int> token_id(batch.token_size(), -1);
   for (int token_index = 0; token_index < batch.token_size(); ++token_index)
