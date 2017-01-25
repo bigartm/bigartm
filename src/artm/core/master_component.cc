@@ -453,11 +453,11 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
     }
 
     new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), args.topic_name());
-    for (int index = 0; index < dict->size(); ++index) {
+    for (int index = 0; index < (int64_t) dict->size(); ++index) {
       ::artm::core::Token token = dict->entry(index)->token();
       if (config->class_id_size() > 0 && !is_member(token.class_id, config->class_id()))
         continue;
-      int token_id = new_ttm->AddToken(token);
+      new_ttm->AddToken(token);
     }
 
     excluded_tokens = dict->size() - new_ttm->token_size();
@@ -618,6 +618,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
   bool return_theta = false;
   bool return_ptdw = false;
+
   CacheManager* ptdw_cache_manager_ptr = nullptr;
   CacheManager* theta_cache_manager_ptr = nullptr;
   switch (args.theta_matrix_type()) {
@@ -742,7 +743,8 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
         merge_model_args.dictionary_name() + " does not exist or has no tokens"));
     }
 
-    for (int token_index = 0; token_index < dictionary->size(); token_index++)
+    for (int token_index = 0; token_index < (int64_t) dictionary->size();
+            token_index++)
       nwt_target->AddToken(dictionary->entry(token_index)->token());
   }
 
