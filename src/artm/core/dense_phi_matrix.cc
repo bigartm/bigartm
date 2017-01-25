@@ -194,7 +194,7 @@ float PackedValues::get(int index) const {
 void PackedValues::get(std::vector<float>* buffer) const {
   if (is_packed()) {
     buffer->assign(buffer->size(), 0.0f);
-    for (int i = 0; i < ptr_.size(); i++)
+    for (int i = 0; i < (ssize_t) ptr_.size(); i++)
       buffer->at(ptr_[i]) = values_[i];
   } else {
     buffer->assign(values_.begin(), values_.end());
@@ -231,7 +231,7 @@ void PackedValues::pack() {
       num_zeros++;
 
   // pack iff at 60% of elements (or more) are zeros
-  if (num_zeros < (3 * values_.size() / 5))
+  if (num_zeros < (ssize_t) (3 * values_.size() / 5))
     return;
 
   bitmask_.resize(values_.size(), false);
@@ -239,7 +239,7 @@ void PackedValues::pack() {
   std::vector<float> values(values_.size() - num_zeros, 0.0f);
 
   int sparse_index = 0;
-  for (int i = 0; i < values_.size(); ++i) {
+  for (int i = 0; i < (ssize_t) values_.size(); ++i) {
     if (values_[i] == 0)
       continue;
 
@@ -263,7 +263,6 @@ int64_t PackedValues::ByteSize() const {
          ::artm::utility::getMemoryUsage(bitmask_) +
          ::artm::utility::getMemoryUsage(ptr_);
 }
-
 
 // =======================================================
 // DensePhiMatrix methods
@@ -367,7 +366,7 @@ AttachedPhiMatrix::AttachedPhiMatrix(int address_length, float* address, PhiMatr
   int topic_size = source->topic_size();
   int token_size = source->token_size();
 
-  if (topic_size * token_size * sizeof(float) != address_length) {
+  if ((ssize_t) topic_size * token_size * sizeof(float) != address_length) {
     std::stringstream ss;
     ss << "Pointer " << address_length << " (" << address_length << "bytes) is incompatible with model "
        << source->model_name() << " (|T|=" << topic_size << ", |W|=" << token_size << ")";
