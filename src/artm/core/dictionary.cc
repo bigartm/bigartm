@@ -122,7 +122,7 @@ const DictionaryEntry* Dictionary::entry(const Token& token) const {
 }
 
 const DictionaryEntry* Dictionary::entry(int index) const {
-  if (index < 0 || index >= entries_.size()) return nullptr;
+  if (index < 0 || index >= (ssize_t) entries_.size()) return nullptr;
   return &entries_[index];
 }
 
