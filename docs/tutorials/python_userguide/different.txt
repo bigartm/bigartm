@@ -66,11 +66,14 @@ First two fields are the vocabulary of the batch, e.g. the set of all unique tok
      repeated float token_weight = 5;
    }
 
-First field of it is the identifier, second is obsoleted, third is the title. You need to specify et least first one, or both ``id`` and ``title``. ``token_id`` is a list of indices of the tokens in this item from ``Batch.token`` vocabulary. ``token_weight`` is the list of corresponding counters. In case of Bag-of-Words ``token_id`` should contain unique indices, in case of sequential text ``token_weight`` should contain only 1.0. But really you can fill these fields as you like, the only limitation is to keep their lengths equal.
+First field of it is the identifier, second is obsoleted, third is the title. You need to specify at least first one, or both ``id`` and ``title``. ``token_id`` is a list of indices of the tokens in this item from ``Batch.token`` vocabulary. ``token_weight`` is the list of corresponding counters. In case of Bag-of-Words ``token_id`` should contain unique indices, in case of sequential text ``token_weight`` should contain only 1.0. But really you can fill these fields as you like, the only limitation is to keep their lengths equal.
 
 Now let's create a simple batch for collection without modalities (it is quite simple to modify the code to use them). If you have list ``vocab`` with all uniqie tokens, and also have a list of lists ``documents``, where each internal list is a document in it's natural represenatation, you can ran the following code to create batch:
 
 .. code-block:: python
+
+   import artm
+   import uuid
 
    vocab = ['aaa', 'bbb', 'ccc', 'ddd']
 
@@ -80,6 +83,7 @@ Now let's create a simple batch for collection without modalities (it is quite s
                ]
 
    batch = artm.messages.Batch()
+   batch.id = str(uuid.uuid4())
    dictionary = {}
    use_bag_of_words = True
 
