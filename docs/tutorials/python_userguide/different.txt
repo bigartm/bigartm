@@ -39,3 +39,83 @@ The model will be saved in binary format. To use it later you need to load it's 
    The model after loading will only contain :math:`\Phi` and :math:`n_{wt}` matrices and some associated information (like number of topics, their names, the names of the modalities (without weights!) and some other data). So you need to restore all necessary scores, regularizers, modality weights and all important parameters, like ``cache_theta``.
 
 You can use ``save/load`` methods pair in case of long fitting, when restoring parameters is much more easier than model re-fitting.
+
+* **Creating batches manually**:
+
+There're some cases where you may need to create your own batches without using vowpal wabbit/UCI files. To do it from Python you should create ``artm.messages.Batch`` object and fill it. The parameters of this meassage can be found in :doc:`../../devguide/messages`, it looks like this:
+
+.. code-block:: none
+
+   message Batch {
+     repeated string token = 1;
+     repeated string class_id = 2;
+     repeated Item item = 3;
+     optional string description = 4;
+     optional string id = 5;
+   }
+
+First two fields are the vocabulary of the batch, e.g. the set of all unique tokens from it's documents (items). In case of no modalities or only one modality you may skip ``class_id`` field. Last two fileds are not very important, you can skip them. Third field is the set of the documents. The ``Item`` message has the next structure:
+
+.. code-block:: none
+
+   message Item {
+     optional int32 id = 1;
+     repeated Field field = 2;  // obsolete in BigARTM v0.8.0
+     optional string title = 3;
+     repeated int32 token_id = 4;
+     repeated float token_weight = 5;
+   }
+
+First field of it is the identifier, second is obsoleted, third is the title. You need to specify et least first one, or both ``id`` and ``title``. ``token_id`` is a list of indices of the tokens in this item from ``Batch.token`` vocabulary. ``token_weight`` is the list of corresponding counters. In case of Bag-of-Words ``token_id`` should contain unique indices, in case of sequential text ``token_weight`` should contain only 1.0. But really you can fill these fields as you like, the only limitation is to keep their lengths equal.
+
+Now let's create a simple batch for collection without modalities (it is quite simple to modify the code to use them). If you have list ``vocab`` with all uniqie tokens, and also have a list of lists ``documents``, where each internal list is a document in it's natural represenatation, you can ran the following code to create batch:
+
+.. code-block:: python
+
+   vocab = ['aaa', 'bbb', 'ccc', 'ddd']
+
+   documents = [
+                ['aaa', 'ccc', 'aaa', 'ddd'],
+                ['bbb', 'ccc', 'aaa', 'bbb', 'bbb'],
+               ]
+
+   batch = artm.messages.Batch()
+   dictionary = {}
+   use_bag_of_words = True
+
+   # first step: fill the general batch vocabulary
+   for i, token in enumerate(vocab):
+       batch.token.append(token)
+       dictionary[token] = i
+
+   # second step: fill the items
+   for doc in documents:
+       item = batch.item.add()
+
+       if use_bag_of_words:
+	   local_dict = {}
+           for token in doc:
+               if not token in local_dict:
+                   local_dict[token] = 0
+               local_dict[token] += 1
+
+           for k, v in local_dict.iteritems():
+               item.token_id.append(dictionary[k])
+               item.token_weight.append(v)
+
+        else:
+            for token in doc:
+                item.token_id.append(dictionary[token])
+                item.token_weight.append(1.0)
+
+   # save batch into the file
+   with open('my_batch.batch', 'wb') as fout:
+       fout.write(batch.SerializeToString())
+
+   # you can read it back using the next code
+   #batch2 = artm.messages.Batch()
+   #with open('my_batch.batch', 'rb') as fin:
+   #    batch2.ParseFromString(fin.read())
+
+   # to print your batch run
+   print batch
