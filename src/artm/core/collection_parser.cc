@@ -375,7 +375,6 @@ class CollectionParser::BatchCollector {
 
     LOG_IF(INFO, total_items_count_ % 100000 == 0) << total_items_count_ << " documents parsed.";
 
-
     // Item is already included in the batch;
     // Set item_ to nullptr to finish it; then next Record() will create a new item;
     item_ = nullptr;
@@ -440,7 +439,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
           std::string str;
           std::getline(docword, str);
           global_line_no++;
-          progress.Set(docword.tellg());
+          progress.Set((size_t) docword.tellg());
           if (docword.eof())
             break;
 
