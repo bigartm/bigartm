@@ -14,7 +14,9 @@ using namespace std;
 enum {
   BLOCK_SIZE = 65536,
   ITEMS_PER_BATCH = 10000,
-  WINDOW_WIDTH = 5
+  WINDOW_WIDTH = 5,
+  STARTING_SIZE = 65536,
+  MAX_LEN_NAME = 20,
 };
 
 typedef struct quad_int {
@@ -67,6 +69,50 @@ void FetchVocab(const char *path_to_vocab, std::unordered_map<std::string, int> 
   }
   free(ptr);
   fclose(vocab);
+}
+
+void FormName(int num, std::string &name) {
+  char num_str[20] = "";
+  sprintf(num_str,"%d", num);
+  name = string("cooccurrence");
+  std::string str2 = string(num_str);
+  std::string str3 = string(".bin");
+  name += str2 + str3;
+}
+
+// Optimize copy in arr
+void UploadOnDisk(std::map<int, std::vector<quad_int>> &cooc) {
+  // This function creates in a special directory a binary file wth all
+  // content of the map (batch)
+  // Durring the upload process elements are being deleted from the map
+  static int batch_num = 0;
+  batch_num++;
+  std::string name;
+  FormName(batch_num, name);
+  const char *cname = name.c_str();
+  // Make a folder for them
+  FILE *out = fopen(cname, "wb");
+  int arr_size = STARTING_SIZE;
+  int *arr = (int *) malloc(arr_size * sizeof *arr);
+  int end_of_arr = 0;
+  for (auto iter = cooc.begin(); iter != cooc.end(); ++iter) {
+    int needed_size = (iter->second).size() * 3 + 2;
+    if (needed_size > arr_size - end_of_arr) {
+      arr_size <<= 1;
+      arr = (int *) realloc(arr, arr_size * sizeof *arr);
+    }
+    arr[end_of_arr++] = (needed_size - 1) * sizeof(int);
+    arr[end_of_arr++] = iter->first;
+    for (auto iter2 = (iter->second).begin();
+             iter2 != (iter->second).end(); ++iter2) {
+      arr[end_of_arr++] = iter2->token_id;
+      arr[end_of_arr++] = iter2->cooc_value;
+      arr[end_of_arr++] = iter2->doc_quan;
+    }
+  }
+  fwrite(arr, sizeof *arr, end_of_arr, out);
+  fclose(out);
+  free(arr);
 }
 
 // create a class to make dependencies clearer
@@ -150,6 +196,7 @@ void ParseVowpalWabbitDoc(const char *path_to_wv,
         }
       }
     }
+    //UploadOnDisk(cooccurrences);
   }
 }
 
