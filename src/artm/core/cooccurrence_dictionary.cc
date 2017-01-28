@@ -17,6 +17,10 @@ enum {
   WINDOW_WIDTH = 5
 };
 
+typedef struct quad_int {
+  int token_id, cooc_value, doc_quan, prev_doc_id;
+} quad_int;
+
 // use boost to split words
 void FetchVocab(const char *path_to_vocab, std::unordered_map<std::string, int> &dictionary) {
   // if number of words in vocab is grater than 2^32, which is unlikely,
@@ -79,6 +83,7 @@ void ParseVowpalWabbitDoc(const char *path_to_wv,
     exit(1);
   }
   std::istream VowpalWabbitDoc(&fb);
+
   // The key in this map is first_token_id
   // The 1st elem of the tuple is token_id of token which occured together
   // with first token
@@ -86,18 +91,18 @@ void ParseVowpalWabbitDoc(const char *path_to_wv,
   // The 3rd is quantity of documents in which the following pair of tokens
   // occurred together
   // The 4th is number of the last doccument where the pair occurred
-  typedef struct quad_int {
-    int token_id, cooc_value, doc_quan, prev_doc_id;
-  } quad_int;
+
   std::map<int, std::vector<quad_int>> cooccurrences;
   std::vector<std::string> portion;
-  while(true) {
+
+  for (int portion_num = 0, global_doc_num = 0; ; ++portion_num,
+          global_doc_num += ITEMS_PER_BATCH) {
     for (int i = 0; i < ITEMS_PER_BATCH; ++i) {
       getline(VowpalWabbitDoc, portion[i]);
       if (VowpalWabbitDoc.eof())
         break;
     }
-    for (int doc_id = 0; i < (int64_t) portion.size(); ++doc_id) {
+    for (int doc_id = 0; doc_id < (int64_t) portion.size(); ++doc_id) {
       std::vector<std::string> doc;
       boost::split(doc, portion[doc_id], boost::is_any_of(" \t\r"));
       if (doc.size() <= 1)
@@ -117,7 +122,7 @@ void ParseVowpalWabbitDoc(const char *path_to_wv,
           // think about insertaion with constant time
           if (map_record == cooccurrences.end()) {
             quad_int tmp_quad;
-            form_quad(tmp_quad, second_token_id, doc_id);
+            form_quad(tmp_quad, second_token_id, global_doc_num + doc_id);
             std::vector<quad_int> tmp_vector;
             tmp_vector.push_back(tmp_quad);
             cooccurrences.insert(std::pair<int, std::vector<quad_int>>
@@ -128,8 +133,8 @@ void ParseVowpalWabbitDoc(const char *path_to_wv,
             for (auto iter = vect_ptr->begin(); iter != vect_ptr->end(); ++iter) {
               if (iter->token_id == second_token_id) {
                 iter->cooc_value++;
-                if (iter->prev_doc_id != doc_id) {
-                  iter->prev_doc_id = doc_id;
+                if (iter->prev_doc_id != global_doc_num + doc_id) {
+                  iter->prev_doc_id = global_doc_num + doc_id;
                   iter->doc_quan++;
                 }
                 inserted_flag = 1;
@@ -138,7 +143,7 @@ void ParseVowpalWabbitDoc(const char *path_to_wv,
             }
             if (!inserted_flag) {
               quad_int tmp_quad;
-              form_quad(tmp_quad, second_token_id, doc_id);
+              form_quad(tmp_quad, second_token_id, global_doc_num + doc_id);
               vect_ptr->push_back(tmp_quad);
             }
           }
@@ -154,6 +159,6 @@ int main(int argc, char **argv) {
   // throw an exception if file openning failed
   // In unordered map we keep a pair: token and its id
   std::unordered_map<string, int> dictionary;
-  FetchVocab(argv[2], dictionary);
+  //FetchVocab(argv[2], dictionary);
   ParseVowpalWabbitDoc(argv[1], dictionary);
 }
