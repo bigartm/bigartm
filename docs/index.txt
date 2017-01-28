@@ -42,6 +42,7 @@ Welcome to BigARTM's documentation!
    installation/index
    tutorials/index
    api_references/index
+   visartm/index
    release_notes/index
 
 .. toctree::
