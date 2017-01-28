@@ -3,5 +3,8 @@ VisARTM
 
 .. toctree::
    :maxdepth: 2
-
-   intro 
+ 
+   installation
+   research
+   visualizations
+   
