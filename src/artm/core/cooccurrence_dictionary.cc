@@ -154,6 +154,6 @@ int main(int argc, char **argv) {
   // throw an exception if file openning failed
   // In unordered map we keep a pair: token and its id
   std::unordered_map<string, int> dictionary;
-  //FetchVocab(argv[2], dictionary);
+  FetchVocab(argv[2], dictionary);
   ParseVowpalWabbitDoc(argv[1], dictionary);
 }
