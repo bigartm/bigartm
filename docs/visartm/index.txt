@@ -5,6 +5,7 @@ VisARTM
    :maxdepth: 2
  
    installation
-   research
+   datasets
+   models
    visualizations
    
