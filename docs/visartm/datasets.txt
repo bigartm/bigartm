@@ -1,0 +1,20 @@
+Datasets
+====================
+
+Object model
+-----------------------------------
+**Dataset** is a collection of **documents**. It contains vocabulary (set of **terms**) and **documents**.
+
+Documents technically are multisets or lists of terms. Also they can contain *raw text*.
+
+Each term belongs to **modality**. If **modalities** are undefined, all terms belongs to **modality** @default_class.
+
+**ArtmModel** is topic model.
+
+Dataset creating
+-----------------------------------
+
+Go to folder **visartm/data/datasets**. There create a folder, named after your dataset. Put there single file named **vw.txt**, which describes your dataset in Vowpal Vabbit format. This file is necessary and enough to go on.
+
+Then go to **Datasets**, click on **Create new dataset**, choose tab **Local**, select in combo-box **Folder** folder, that yo have created and click **Create**. 
+ 
