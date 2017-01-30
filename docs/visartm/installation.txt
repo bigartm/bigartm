@@ -21,7 +21,7 @@ You can deploy VisARTM locally on your computer. It supports any OS: Windows, Li
 
    git clone https://github.com/bigartm/visartm.git
    
-8. Now link database created in step 5 with VisARTM. For that, open file **visartm/settings.py** and find following lines:
+8. Now link database created in step 5 with VisARTM. For that, open file **visartm/settings.py** and lines like these:
 
 .. code-block:: python 
 

@@ -4,6 +4,7 @@ VisARTM
 .. toctree::
    :maxdepth: 2
  
+   intro
    installation
    datasets
    models
