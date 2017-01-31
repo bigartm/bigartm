@@ -150,7 +150,6 @@ inline void UploadResultOnDisk(const std::map<int, std::vector<triple_int>> &mer
   ;
 }
 
-// ToDo: create a class to make dependencies clearer
 inline void form_quad(quad_int &tmp_quad, int second_token_id, int doc_id) {
   tmp_quad.token_id = second_token_id;
   tmp_quad.cooc_value = tmp_quad.doc_quan = 1;
@@ -304,6 +303,7 @@ inline void CheckCooccurrenceFreq(std::list<std::pair<int, std::list<triple_int>
     result.pop_back();
 }
 
+// ToDo: Implement with sorted in ascending order forward list
 inline void MergeListsWithAddition(triple_int *addr, int triples_num, std::list<triple_int> &tmp_list) {
   auto iter2 = tmp_list.begin();
   int iter1 = 0;
@@ -327,7 +327,6 @@ inline FILE *CreateResFile() {
   return fopen("Co-occurrenceDictionary.txt", "r");
 }
 
-// ToDo: optimize - write forward list by yourself
 inline void ReadAndMergeBatches() {
   std::vector<batch_struct> arr_batch (batch_num);
   ArrBatchInitialization(arr_batch);
