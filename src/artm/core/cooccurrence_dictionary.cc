@@ -6,21 +6,25 @@
 #include <fstream>
 #include <map>
 #include <vector>
-
+#include <list>
 #include "boost/algorithm/string.hpp"
 
 using namespace std;
 
+// ToDo: replace it with variables
 enum {
   BLOCK_SIZE = 65536,
-  ITEMS_PER_BATCH = 10000,
+  ITEMS_PER_BATCH = 2 /*10000*/,
   WINDOW_WIDTH = 5,
   BATCH_STARTING_SIZE = 65536,
   CELL_STARTING_SIZE = 4096,
-  MAX_LEN_NAME = 20,
+  MAX_NAME_LEN = 30,
+  OUTPUT_BUF_SIZE = 67108864, // 2 ^ 26
+  MIN_COOC_VALUE = 0,
 };
 
 static int batch_num = 0;
+static int max_needed_size = 0;
 
 typedef struct triple_int {
   int token_id, cooc_value, doc_quan;
@@ -35,7 +39,7 @@ inline void FetchVocab(const char *path_to_vocab, std::unordered_map<std::string
 
   // 1. If number of words in vocab is grater than 2^32, which is unlikely,
   // long long will be needed
-  // 2. Vocab file mustn't contain lines, that consist from tabs or spaces
+  // 2. Vocab file mustn't contain lines, that consist of tabs or spaces
   // only (otherwise undefined behavior)
 
   std::string str;
@@ -46,8 +50,8 @@ inline void FetchVocab(const char *path_to_vocab, std::unordered_map<std::string
   char *ptr = (char *) calloc(BLOCK_SIZE, sizeof *ptr);
 
   for (int bgn_pos = 0; ;) {
-    int read_bytes = (int) fread(ptr + bgn_pos, sizeof *ptr, BLOCK_SIZE - bgn_pos, vocab);
-    if (!read_bytes) {
+    int read_items = (int) fread(ptr + bgn_pos, sizeof *ptr, BLOCK_SIZE - bgn_pos, vocab);
+    if (!read_items) {
       if (bgn_pos) {
         ptr[bgn_pos] = '\0';
         str = string(ptr);
@@ -56,7 +60,7 @@ inline void FetchVocab(const char *path_to_vocab, std::unordered_map<std::string
       break;
     }
     int prev_pos = 0;
-    for (int i = 0; i < bgn_pos + read_bytes; ++i) {
+    for (int i = 0; i < bgn_pos + read_items; ++i) {
       if (ptr[i] == '\n') {
         if (i == prev_pos) {
           prev_pos = i + 1;
@@ -77,7 +81,7 @@ inline void FetchVocab(const char *path_to_vocab, std::unordered_map<std::string
     }
     int prev_bgn_pos = bgn_pos;
     bgn_pos = 0;
-    for (; prev_pos < read_bytes + prev_bgn_pos; ++bgn_pos, ++prev_pos)
+    for (; prev_pos < read_items + prev_bgn_pos; ++bgn_pos, ++prev_pos)
       ptr[bgn_pos] = ptr[prev_pos];
   }
   free(ptr);
@@ -85,20 +89,29 @@ inline void FetchVocab(const char *path_to_vocab, std::unordered_map<std::string
 }
 
 inline void FormName(int num, std::string &name) {
-  char num_str[20] = "";
+  char num_str[MAX_NAME_LEN] = "";
   sprintf(num_str,"%d", num);
-  name = string("cooccurrence");
+  name = string("Co-occurrenceBatch");
   std::string str2 = string(num_str);
   std::string str3 = string(".bin");
   name += str2 + str3;
 }
 
 // ToDo: optimize copy in arr
-// ToDo: make posibility to work with vector of triples, and to
+// ToDo: make posibility to work with vector of triples (polymorphism), and to
 // adjust the name if it's specified as an argument
 inline void UploadBatchOnDisk(std::map<int, std::vector<quad_int>> &cooc) {
+
   // This function creates in a special directory a binary file wth all
   // content from the map (batch)
+  // Every node of the map is stored in a cell as seqence of ints (4 bytes).
+  // There are two ints and sequence of triples of ints.
+  // First elem of a cell is number of triples.
+  // Second element is token_id of the first token.
+  // Then go triples, every triple consist of token id of the second token,
+  // cooc_value and quantity of documents in which the folowing pair of
+  // tokens occurred together.
+
   std::string name;
   FormName(batch_num, name);
   const char *cname = name.c_str();
@@ -110,29 +123,23 @@ inline void UploadBatchOnDisk(std::map<int, std::vector<quad_int>> &cooc) {
   int *arr = (int *) malloc(arr_size * sizeof *arr);
   int end_of_arr = 0;
 
-  // Every node of the map is stored in a cell as seqence of ints (4 bytes)
-  // First elem of a cell is size of rest of a cell
-  // Second element is token_id of the first token
-  // Then go triples, every triple consist of token id of the second token,
-  // cooc_value and quantity of documents in which the folowing pair of
-  // tokens occurred together
-
   for (auto iter = cooc.begin(); iter != cooc.end(); ++iter) {
-    int needed_size = (iter->second).size() * 3 + 2;
-    if (needed_size > arr_size - end_of_arr + 1) {
+    int needed_size = (iter->second).size() * 3;
+    while (needed_size + 2 > arr_size - end_of_arr) {
       arr_size <<= 1;
       arr = (int *) realloc(arr, arr_size * sizeof *arr);
     }
-    arr[end_of_arr++] = (needed_size - 1) * sizeof(int);
+    // value max_needed_size will be useful later
+    if (needed_size > max_needed_size)
+      max_needed_size = needed_size;
+    arr[end_of_arr++] = needed_size / 3; // number of triples
     arr[end_of_arr++] = iter->first;
-    for (auto iter2 = (iter->second).begin();
-             iter2 != (iter->second).end(); ++iter2) {
+    for (auto iter2 = (iter->second).begin(); iter2 != (iter->second).end(); ++iter2) {
       arr[end_of_arr++] = iter2->token_id;
       arr[end_of_arr++] = iter2->cooc_value;
       arr[end_of_arr++] = iter2->doc_quan;
     }
   }
-  arr[end_of_arr] = 0;
   fwrite(arr, sizeof *arr, end_of_arr, out);
   fclose(out);
   free(arr);
@@ -247,58 +254,148 @@ inline void ParseVowpalWabbitDoc(const char *path_to_wv, const
   }
 }
 
-// ToDo: delete batches
-inline void ReadAndMergeBatches(const std::unordered_map<string, int> &dictionary) {
-  typedef struct batch_struct {
-    int storage_size; // how many elements, not bytes
-    int cell_size; // size of useful memory
-    int *storage;
-    FILE *file;
-  } batch_struct;
+typedef struct batch_struct {
+  FILE *file;
+  int cell_size; // size of useful memory
+  int first_token_id;
+} batch_struct;
 
-  std::vector<batch_struct> arr_batches (batch_num);
+struct BatchHeapComparator {
+  int operator() (const batch_struct &left, const batch_struct &right) const {
+    return left.first_token_id > right.first_token_id;
+  }
+};
 
-  // Here storage is a pointer to memory which will keep one cell from a
-  // batch. Memory all the cells will be allocked once and later in a
-  // case of lack it'll be increased (realloc).
-  // Plus of this allocation is that calls of malloc and realloc will happen
-  // very few times.
-  // Minus: internal fragmentation could be high enough.
-  // Binary files (batches) must be safe, because of the size value kept in
-  // there. That is how many bytes are needed to be read. Not more, not less.
+inline int ReadCellHeader(std::vector<batch_struct> &arr_batch, int ind) {
+  const int items_to_read = 2;
+  int tmp_buf[items_to_read];
+  int read_items = fread(tmp_buf, sizeof(int), items_to_read, arr_batch[ind].file);
+  arr_batch[ind].cell_size = tmp_buf[0];
+  arr_batch[ind].first_token_id = tmp_buf[1];
+  return read_items == items_to_read;
+}
 
-  for (int i = 0; i < batch_num; ++i) { // initialization
+inline void ArrBatchInitialization(std::vector<batch_struct> &arr_batch) {
+  for (int i = 0; i < (int64_t) arr_batch.size(); ++i) {
     std::string name;
     FormName(i, name);
-    arr_batches[i].file = fopen(name.c_str(), "rb");
-    if (!arr_batches[i].file)
+    arr_batch[i].file = fopen(name.c_str(), "rb");
+    if (!arr_batch[i].file)
       exit(1);
-    int size = CELL_STARTING_SIZE;
-    int needed_size = 0;
-    fread(&needed_size, sizeof(int), 1, arr_batches[i].file);
-    arr_batches[i].cell_size = needed_size;
-    while (size < needed_size)
-      size <<= 1;
-    arr_batches[i].storage_size = size;
-    arr_batches[i].storage = (int *) malloc(size * sizeof(int));
-    fread(arr_batches[i].storage + 1, sizeof(int), needed_size / sizeof(int), arr_batches[i].file);
+    ReadCellHeader(arr_batch, i);
   }
-  std::map<int, std::vector<triple_int>> merged_batch;
+}
 
-  ;
+inline void FormListFromTriples(triple_int *addr, int triples_num, std::list<triple_int> &res) {
+  for (int i = 0; i < triples_num; ++i)
+    res.push_back(addr[i]);
+}
 
-  UploadResultOnDisk(merged_batch);
+inline void CheckCooccurrenceFreq(std::list<std::pair<int, std::list<triple_int>>> &result) {
+  auto tmp_iter = result.rend();
+  tmp_iter++;
+  for (auto iter = (tmp_iter->second).begin(); iter != (tmp_iter->second).end(); ) {
+    if (iter->cooc_value < MIN_COOC_VALUE) {
+      (tmp_iter->second).erase(iter++);
+    } else
+      iter++;
+  }
+  if ((tmp_iter->second).empty())
+    result.pop_back();
+}
+
+inline void MergeListsWithAddition(triple_int *addr, int triples_num, std::list<triple_int> &tmp_list) {
+  auto iter2 = tmp_list.begin();
+  int iter1 = 0;
+  for (; iter1 < triples_num && iter2 != tmp_list.end(); ) {
+    if (addr[iter1].token_id == iter2->token_id) {
+      iter2->cooc_value += addr[iter1].cooc_value;
+      iter2->doc_quan += addr[iter1].doc_quan;
+      iter1++;
+      iter2++;
+    } else if (addr[iter1].token_id > iter2->token_id)
+      iter2++;
+    else
+      tmp_list.insert(iter2, addr[iter1++]);
+  }
+  for (; iter1 < triples_num; ) {
+    tmp_list.push_back(addr[iter1++]);
+  }
+}
+
+inline FILE *CreateResFile() {
+  return fopen("Co-occurrenceDictionary.txt", "r");
+}
+
+// ToDo: optimize - write forward list by yourself
+inline void ReadAndMergeBatches() {
+  std::vector<batch_struct> arr_batch (batch_num);
+  ArrBatchInitialization(arr_batch);
+  std::make_heap(arr_batch.begin(), arr_batch.end(), BatchHeapComparator());
+
+  // Standard k-way merge as external sort
+
+  int end_of_buf = 0;
+
+  // From output_buf data will be loaded in resulting file
+  //int *output_buf = (int *) malloc(OUTPUT_BUF_SIZE * sizeof *output_buf);
+
+  // Data will be load in tmp_buf from batches and then into a forward list
+  int *tmp_buf = (int *) malloc(max_needed_size * sizeof(int));
+
+  std::list<std::pair<int, std::list<triple_int>>> result;
+  while (!arr_batch.empty()) {
+    // It's guaranteed that batches aren't empty (look ParseVowpalWabbitDoc func)
+    fread(tmp_buf, sizeof(triple_int), arr_batch[0].cell_size, arr_batch[0].file);
+
+    auto rev_iter = result.rend();
+    rev_iter++;
+    std::list<triple_int> tmp_list;
+    if (result.empty()) {
+      FormListFromTriples((triple_int *) tmp_buf, arr_batch[0].cell_size, tmp_list);
+      result.push_back(std::pair<int, std::list<triple_int>>
+              (arr_batch[0].first_token_id, tmp_list));
+    } else if (rev_iter->first == arr_batch[0].first_token_id) {
+      MergeListsWithAddition((triple_int *) tmp_buf, arr_batch[0].cell_size, rev_iter->second);
+    } else {
+      CheckCooccurrenceFreq(result);
+      FormListFromTriples((triple_int *) tmp_buf, arr_batch[0].cell_size, tmp_list);
+      result.push_back(std::pair<int, std::list<triple_int>>
+              (arr_batch[0].first_token_id, tmp_list));
+    }
+
+    std::pop_heap(arr_batch.begin(), arr_batch.end(), BatchHeapComparator());
+    if (ReadCellHeader(arr_batch, arr_batch.size() - 1))
+      std::push_heap(arr_batch.begin(), arr_batch.end(), BatchHeapComparator());
+    else {
+      fclose(arr_batch[arr_batch.size() - 1].file);
+      arr_batch.pop_back();
+    }
+    // ToDo: delete batch from disk here
+    // ToDo: define when to dump whole list in buf
+  }
+  //CreateResFile();
+  //UploadResultOnDisk();
+  //free(tmp_buf);
+  //free(output_buf);
 }
 
 // command line interface:
 // ./main path/to/VowpalWabbitDoc path/to/vocab
 int main(int argc, char **argv) {
-  // ToDo: throw exceptions in places where are exit(1) or write to stderr
+  // ToDo: throw exceptions in places where exit(1) is or write to stderr
   // ToDo: add threads
+  // ToDo: replace native ptr
   // In unordered map we keep a pair: token and its id
+  // If no co-occurrence found or it's too low an empty file is created
   std::unordered_map<string, int> dictionary;
   FetchVocab("vocab", dictionary);
   ParseVowpalWabbitDoc("VW", dictionary);
-  ReadAndMergeBatches(dictionary);
+  if (batch_num)
+    ReadAndMergeBatches();
+  /*else {
+    FILE *res_file = CreateResFile();
+    fclose(res_file);
+  }*/
   return 0;
 }
