@@ -1,4 +1,4 @@
-Introduction to VisARTM
+Introduction
 ====================
 
-This is introduction.
+VisARTM is a web-based tool for operating with text collection and topics models.
