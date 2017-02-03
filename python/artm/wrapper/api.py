@@ -31,6 +31,9 @@ class LibArtm(object):
         if logging_config is not None:
             self.ArtmConfigureLogging(logging_config)
 
+    def __deepcopy__(self, memo):
+        return self
+
     def _load_cdll(self, lib_name):
         # choose default library name
         default_lib_name = 'libartm.so'

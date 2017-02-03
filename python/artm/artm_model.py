@@ -12,6 +12,7 @@ from pandas import DataFrame
 from six import iteritems, string_types
 from six.moves import range, zip
 from multiprocessing.pool import ThreadPool
+from copy import deepcopy
 import tqdm
 
 from . import wrapper
@@ -78,6 +79,17 @@ def _topic_selection_regularizer_func(self, regularizers):
             self.regularizers[name].config = config
 
 
+class ArtmThreadPool(object):
+    def __init__(self):
+        self._pool = ThreadPool(processes=1)
+
+    def apply_async(self, func, args):
+        return self._pool.apply_async(func, args)
+
+    def __deepcopy__(self, memo):
+        return self
+
+
 class ARTM(object):
     def __init__(self, num_topics=None, topic_names=None, num_processors=None, class_ids=None,
                  scores=None, regularizers=None, num_document_passes=10, reuse_theta=False,
@@ -133,7 +145,7 @@ class ARTM(object):
         self._theta_columns_naming = 'id'
         self._seed = -1
         self._show_progress_bars = show_progress_bars
-        self._pool = ThreadPool(processes=1)
+        self._pool = ArtmThreadPool()
 
         if topic_names is not None:
             self._topic_names = topic_names
@@ -224,6 +236,19 @@ class ARTM(object):
 
     def __del__(self):
         self.dispose()
+
+    def clone(self):
+        """
+        :Description: returns a deep copy of the artm.ARTM object
+
+        :Note: you must use this method instead of copy.deepcopy
+        because it also copies internal C++ state of the artm.ARTM object.
+        """
+        master_id = self._lib.ArtmDuplicateMasterComponent(
+            self.master.master_id, messages.DuplicateMasterComponentArgs())
+        obj = deepcopy(self)
+        obj.master.master_id = master_id
+        return obj
 
     # ========== PROPERTIES ==========
     @property
