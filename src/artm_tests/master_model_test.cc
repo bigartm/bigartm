@@ -184,3 +184,70 @@ TEST(MasterModel, TestEmptyMasterModel) {
   auto info = model.info();
   EXPECT_EQ(info.num_processors(), 0);
 }
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=MasterModel.TestClone
+TEST(MasterModel, TestClone) {
+  // Configure MasterModel
+  ::artm::MasterModelConfig config;
+  config.set_num_processors(2);
+  config.set_cache_theta(true);
+  config.add_topic_name("topic1"); config.add_topic_name("topic2");
+  ::artm::ScoreConfig* score_config = config.add_score_config();
+  score_config->set_type(::artm::ScoreType_Perplexity);
+  score_config->set_name("Perplexity");
+  score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
+
+  ::artm::GetScoreValueArgs get_score_args;
+  get_score_args.set_score_name("Perplexity");
+
+  ::artm::GetScoreArrayArgs get_score_array_args;
+  get_score_array_args.set_score_name("Perplexity");
+
+  // Create MasterModel
+  ::artm::MasterModel master_model(config);
+  ::artm::test::Api api(master_model);
+
+  // Generate batches and load them into MasterModel
+  ::artm::DictionaryData dictionary_data;
+  const int nBatches = 20;
+  const int nTokens = 30;
+  auto batches = ::artm::test::TestMother::GenerateBatches(nBatches, nTokens, &dictionary_data);
+
+  ::artm::ImportBatchesArgs import_batches_args;
+  ::artm::GatherDictionaryArgs gather_args;
+  for (auto& batch : batches) {
+    import_batches_args.add_batch()->CopyFrom(*batch);
+    gather_args.add_batch_path(batch->id());
+  }
+  master_model.ImportBatches(import_batches_args);
+
+  // Create dictionary
+  dictionary_data.set_name("dictionary");
+  master_model.CreateDictionary(dictionary_data);
+
+  // Initialize model
+  ::artm::InitializeModelArgs initialize_model_args;
+  initialize_model_args.set_dictionary_name("dictionary");
+  initialize_model_args.set_model_name(master_model.config().pwt_name());
+  initialize_model_args.mutable_topic_name()->CopyFrom(master_model.config().topic_name());
+  master_model.InitializeModel(initialize_model_args);
+
+  // Execute offline algorithm
+  ::artm::FitOfflineMasterModelArgs fit_offline_args;
+  fit_offline_args.mutable_batch_filename()->CopyFrom(gather_args.batch_path());
+  fit_offline_args.set_num_collection_passes(4);
+  master_model.FitOfflineModel(fit_offline_args);
+  
+  int master_id = api.Duplicate(::artm::DuplicateMasterComponentArgs());
+  artm::MasterModel master_clone(master_id);
+ 
+  ASSERT_TRUE(master_clone.GetThetaMatrix().SerializeAsString() == master_model.GetThetaMatrix().SerializeAsString());
+  ASSERT_TRUE(master_clone.GetTopicModel().SerializeAsString() == master_model.GetTopicModel().SerializeAsString());
+  ASSERT_TRUE(
+    master_clone.GetScore(get_score_args).SerializeAsString() ==
+    master_model.GetScore(get_score_args).SerializeAsString());
+  ASSERT_TRUE(
+    master_clone.GetScoreArray(get_score_array_args).SerializeAsString() ==
+    master_model.GetScoreArray(get_score_array_args).SerializeAsString());
+}
