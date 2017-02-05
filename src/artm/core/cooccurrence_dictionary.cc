@@ -19,12 +19,12 @@
 
 // ToDo: in all places we throw exception, we need to call destructor of
 // BatchManager
+// ToDo: remove frptinf(stderr) and exit(1)
 // ToDo: write removal of files, creation of dir, recording batches in dir
 // (boost)
 // ToDo: optimize io operations with files
 // ToDo: replace FILE *
 // ToDo: make fclose of FILE * in class, make FILE *file private
-// ToDo: line 220
 using namespace std;
 //using namespace boost::filesystem;
 
