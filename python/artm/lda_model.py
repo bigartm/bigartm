@@ -1,6 +1,7 @@
 # Copyright 2017, Additive Regularization of Topic Models.
 
 from six.moves import range, zip
+from copy import deepcopy
 
 from .artm_model import ARTM
 
@@ -64,6 +65,16 @@ class LDA(object):
         self._tt_score_name = 'tt_score'
 
         self._create_regularizers_and_scores()
+
+    def clone(self):
+        """
+        :Description: returns a deep copy of the artm.LDA object
+
+        :Note:
+          * This method is equivalent to copy.deepcopy() of your artm.LDA object.
+            For more information refer to artm.ARTM.clone() method.
+        """
+        return deepcopy(self)
 
     def _create_regularizers_and_scores(self):
         self._internal_model.regularizers.add(SmoothSparseThetaRegularizer(name=self._theta_reg_name, tau=self._alpha))

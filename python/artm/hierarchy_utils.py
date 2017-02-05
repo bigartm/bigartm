@@ -502,6 +502,16 @@ class hARTM(object):
             str.cat(phi.columns, sep="_")
         return phi
 
+    def clone(self):
+        """
+        :Description: returns a deep copy of the artm.hARTM object
+
+        :Note:
+          * This method is equivalent to copy.deepcopy() of your artm.hARTM object.
+            For more information refer to artm.ARTM.clone() method.
+        """
+        return copy.deepcopy(self)
+
 
 class ARTM_Level(artm.ARTM):
 
@@ -651,3 +661,13 @@ class ARTM_Level(artm.ARTM):
             ids_list = [item_id for item_id in theta_info.item_id]
             theta_data_frame.columns = np.array(ids_list)[item_idxs]
         return theta_data_frame
+
+    def clone(self):
+        """
+        :Description: returns a deep copy of the artm.ARTM_Level object
+
+        :Note:
+          * This method is equivalent to copy.deepcopy() of your artm.ARTM_Level object.
+            For more information refer to artm.ARTM.clone() method.
+        """
+        return copy.deepcopy(self)

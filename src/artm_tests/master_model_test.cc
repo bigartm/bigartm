@@ -238,10 +238,10 @@ TEST(MasterModel, TestClone) {
   fit_offline_args.mutable_batch_filename()->CopyFrom(gather_args.batch_path());
   fit_offline_args.set_num_collection_passes(4);
   master_model.FitOfflineModel(fit_offline_args);
-  
+
   int master_id = api.Duplicate(::artm::DuplicateMasterComponentArgs());
   artm::MasterModel master_clone(master_id);
- 
+
   ASSERT_TRUE(master_clone.GetThetaMatrix().SerializeAsString() == master_model.GetThetaMatrix().SerializeAsString());
   ASSERT_TRUE(master_clone.GetTopicModel().SerializeAsString() == master_model.GetTopicModel().SerializeAsString());
   ASSERT_TRUE(

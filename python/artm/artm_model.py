@@ -241,14 +241,15 @@ class ARTM(object):
         """
         :Description: returns a deep copy of the artm.ARTM object
 
-        :Note: you must use this method instead of copy.deepcopy
-        because it also copies internal C++ state of the artm.ARTM object.
+        :Note:
+          * This method is equivalent to copy.deepcopy() of your artm.ARTM object.
+            Both methods perform deep copy of the object,
+            including a complete copy of its internal C++ state
+            (e.g. a copy of all phi and theta matrices, scores and regularizers,
+            as well as ScoreTracker information with history of the scores).
+          * Attached phi matrices are copied as dense phi matrices.
         """
-        master_id = self._lib.ArtmDuplicateMasterComponent(
-            self.master.master_id, messages.DuplicateMasterComponentArgs())
-        obj = deepcopy(self)
-        obj.master.master_id = master_id
-        return obj
+        return deepcopy(self)
 
     # ========== PROPERTIES ==========
     @property
