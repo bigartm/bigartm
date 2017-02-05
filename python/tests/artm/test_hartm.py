@@ -61,6 +61,8 @@ def test_func():
         on_python_35 = abs(support - 0.1522 < zero_eps)
         assert(on_python_27 or on_python_35)
         
+        assert(level1.clone() is not None)
+        assert(hier.clone() is not None)
     finally:
         shutil.rmtree(batches_folder)
         shutil.rmtree(parent_batch_folder)

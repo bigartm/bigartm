@@ -184,11 +184,8 @@ class Dictionary(object):
                                        max_tf=max_tf,
                                        max_dictionary_size=max_dictionary_size)
 
-    def copy():
-        """
-        :Description: returns a copy the dictionary loaded in lib with another name.
-        """
-        raise NotImplementedError()
+    def __deepcopy__(self, memo):
+        return self
 
     def __repr__(self):
         descr = next(x for x in self._master.get_info().dictionary if x.name == self.name)

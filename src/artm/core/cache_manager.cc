@@ -203,5 +203,12 @@ void CacheManager::UpdateCacheEntry(const std::string& batch_id, const ThetaMatr
   cache_.set(batch_id, new_entry);
 }
 
+void CacheManager::CopyFrom(const CacheManager& cache_manager) {
+  disk_path_ = cache_manager.disk_path_;
+  auto keys = cache_manager.cache_.keys();
+  for (auto key : keys)
+    cache_.set(key, cache_manager.cache_.get(key));
+}
+
 }  // namespace core
 }  // namespace artm

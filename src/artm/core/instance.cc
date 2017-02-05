@@ -73,6 +73,7 @@ Instance::Instance(const MasterModelConfig& config)
       processor_queue_(),
       cache_manager_(),
       score_manager_(),
+      score_tracker_(),
       processors_() {
   Reconfigure(config);
 }
@@ -87,6 +88,7 @@ Instance::Instance(const Instance& rhs)
       processor_queue_(),
       cache_manager_(),
       score_manager_(),
+      score_tracker_(),
       processors_() {
   Reconfigure(*rhs.config());
 
@@ -103,6 +105,10 @@ Instance::Instance(const Instance& rhs)
     if (value != nullptr)
       this->SetPhiMatrix(key, value->Duplicate());
   }
+
+  cache_manager_->CopyFrom(*rhs.cache_manager_);
+  score_manager_->CopyFrom(*rhs.score_manager_);
+  score_tracker_->CopyFrom(*rhs.score_tracker_);
 }
 
 Instance::~Instance() { }

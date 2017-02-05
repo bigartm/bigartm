@@ -47,6 +47,7 @@ class CacheManager : boost::noncopyable {
                           ::artm::ThetaMatrix* theta_matrix) const;
   std::shared_ptr<ThetaMatrix> FindCacheEntry(const std::string& batch_id) const;
   void UpdateCacheEntry(const std::string& batch_id, const ThetaMatrix& theta_matrix) const;
+  void CopyFrom(const CacheManager& cache_manager);
 
  private:
   std::string disk_path_;

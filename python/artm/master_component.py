@@ -3,6 +3,7 @@
 import os
 import numpy
 import codecs
+import copy
 
 from six import iteritems
 from six.moves import zip
@@ -172,9 +173,9 @@ def _prepare_config(topic_names=None, class_ids=None, scores=None, regularizers=
 
 
 class MasterComponent(object):
-    def __init__(self, library, topic_names=None, class_ids=None, scores=None, regularizers=None,
+    def __init__(self, library=None, topic_names=None, class_ids=None, scores=None, regularizers=None,
                  num_processors=None, pwt_name=None, nwt_name=None, num_document_passes=None,
-                 reuse_theta=None, cache_theta=False):
+                 reuse_theta=None, cache_theta=False, config=None, master_id=None):
         """
 
         :param library: an instance of LibArtm
@@ -202,10 +203,16 @@ class MasterComponent(object):
                                         nwt_name=nwt_name,
                                         num_document_passes=num_document_passes,
                                         reuse_theta=reuse_theta,
-                                        cache_theta=cache_theta)
+                                        cache_theta=cache_theta,
+                                        args=config)
 
         self._config = master_config
-        self.master_id = self._lib.ArtmCreateMasterModel(master_config)
+        self.master_id = master_id if master_id is not None else self._lib.ArtmCreateMasterModel(master_config)
+
+    def __deepcopy__(self, memo):
+        new_master_id = self._lib.ArtmDuplicateMasterComponent(
+            self.master_id, messages.DuplicateMasterComponentArgs())
+        return MasterComponent(self._lib, config=self._config, master_id=new_master_id)
 
     def reconfigure(self, topic_names=None, class_ids=None, scores=None, regularizers=None,
                     num_processors=None, pwt_name=None, nwt_name=None, num_document_passes=None,
