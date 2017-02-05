@@ -22,7 +22,7 @@
 // ToDo: remove frptinf(stderr) and exit(1)
 // ToDo: write removal of files, creation of dir, recording batches in dir
 // (boost)
-// ToDo: optimize io operations with files
+// ToDo: optimize io operations with binary files
 // ToDo: replace FILE *
 // ToDo: make fclose of FILE * in class, make FILE *file private
 using namespace std;
@@ -156,6 +156,7 @@ class ResultingBuffer {
   std::vector<Triple> rec;
   std::ofstream cooc_dictionary;
   std::ofstream doc_quan_dictionary;
+  std::stringstream cooc_buf, doc_quan_buf;
 
   void MergeWithExistingCell(const Batch &batch) {
     std::vector<Triple> new_vector;
@@ -185,11 +186,10 @@ class ResultingBuffer {
   void PopPreviousContent() {
     for (int i = 0; i < (int) rec.size(); ++i)
       if (rec[i].cooc_value > min_cooc_value) {
-        cooc_dictionary << first_token_id << " "
-                     << rec[i].second_token_id << " "
-                     << (int) rec[i].cooc_value << endl;
-        doc_quan_dictionary << first_token_id << " "
-                << rec[i].second_token_id << " " << rec[i].doc_quan << endl;
+        cooc_buf << first_token_id << " " << rec[i].second_token_id << " "
+                 << (int) rec[i].cooc_value << endl;
+        doc_quan_buf << first_token_id << " " << rec[i].second_token_id
+                 << " " << rec[i].doc_quan << endl;
       }
   }
   void AddNewCellInBuffer(const Batch &batch) {
@@ -215,8 +215,8 @@ class ResultingBuffer {
   }
   ~ResultingBuffer() {
     PopPreviousContent();
-    cooc_dictionary.close();
-    doc_quan_dictionary.close();
+    cooc_dictionary << cooc_buf.str();
+    doc_quan_dictionary << doc_quan_buf.str();
   }
   void AddInBuffer(const Batch &batch) {
     if (first_token_id == batch.cell.first_token_id)
@@ -247,6 +247,8 @@ inline void FetchVocab(const char *path_to_vocab, std::unordered_map<std::string
     getline(vocab, str);
     if (vocab.eof())
       break;
+    if (str.size() && str[str.size() - 1] == '\r')
+      str.resize(str.size() - 1);
     dictionary.insert(std::make_pair(str, last_token_id++));
   }
 }
