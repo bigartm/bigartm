@@ -39,7 +39,6 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Loc
 
     // 2. prepare ptdw copy and smoothing profile
     int h = config_.window() / 2;
-    double tau = tau_;
     ::artm::utility::LocalPhiMatrix<float> copy_ptdw(*ptdw);
     ::artm::utility::LocalPhiMatrix<float> smoothed(1, num_topics);
     smoothed.InitializeZeros();
@@ -55,7 +54,6 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Loc
     // 3. regularize
     for (int i = 0; i < local_token_size; ++i) {
       if (is_background[i]) continue;
-      const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
       float* local_ptdw_ptr = &(*ptdw)(i, 0);  // NOLINT
       for (int k = 0; k < num_topics; ++k) {
         local_ptdw_ptr[k] += tau_ * smoothed_ptr[k];
@@ -71,7 +69,6 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Loc
   if (config_.type() == SmoothPtdwConfig_SmoothType_MovingProduct) {
     ::artm::utility::LocalPhiMatrix<float> copy_ptdw(*ptdw);
     for (int i = 0; i < local_token_size; ++i) {
-      const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
       float* local_ptdw_ptr = &(*ptdw)(i, 0);  // NOLINT
       for (int k = 0; k < num_topics; ++k) {
         if (i + 1 < local_token_size)

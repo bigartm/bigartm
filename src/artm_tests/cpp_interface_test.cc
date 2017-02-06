@@ -188,7 +188,7 @@ void RunBasicTest(bool serialize_as_json) {
         sum += weight;
       }
 
-      EXPECT_LE(abs(sum - 1), 0.001);
+      EXPECT_LE(std::abs(sum - 1), 0.001);
     }
 
     ::artm::GetThetaMatrixArgs get_theta_args;
@@ -599,7 +599,7 @@ TEST(CppInterface, AsyncProcessBatches) {
 
 // artm_tests.exe --gtest_filter=CppInterface.Dictionaries
 TEST(CppInterface, Dictionaries) {
-  int nTopics = 17, nBatches = 5;
+  int nBatches = 5;
   std::string target_folder = artm::test::Helpers::getUniqueString();
   ::artm::test::TestMother::GenerateBatches(nBatches, 50, target_folder);
   artm::MasterModelConfig master_config;

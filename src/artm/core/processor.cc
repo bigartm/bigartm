@@ -719,7 +719,6 @@ void Processor::ThreadFunction() {
           }
         }
 
-        int topic_size = p_wt.topic_size();
         std::shared_ptr<const PhiMatrix> nwt_target;
         if (part->has_nwt_target_name()) {
           nwt_target = instance_->GetPhiMatrix(part->nwt_target_name());
