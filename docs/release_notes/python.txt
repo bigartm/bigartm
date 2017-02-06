@@ -12,6 +12,7 @@ v0.8.3
 ------
 
 * Enable copying of ARTM, LDA, hARTM and ARTM_Level objects with ``clone()`` method and ``copy.deepcopy(obj)``.
+* Experimental support for import/export/editing of theta matrices; for more details see python reference of ``ARTM.__init__(ptd_name='ptd')``.
 
 v0.8.2
 ------

@@ -8,6 +8,8 @@
 #include "boost/uuid/uuid_generators.hpp"
 
 #include "artm/core/helpers.h"
+#include "artm/core/instance.h"
+#include "artm/core/dense_phi_matrix.h"
 #include "artm/core/protobuf_helpers.h"
 
 namespace fs = boost::filesystem;
@@ -25,8 +27,10 @@ ThetaCacheEntry::~ThetaCacheEntry() {
   }
 }
 
-CacheManager::CacheManager(const std::string& disk_path)
-    : disk_path_(disk_path), cache_() {}
+CacheManager::CacheManager(const std::string& disk_path, Instance* instance)
+    : lock_(), disk_path_(disk_path), instance_(instance), cache_() {
+  Clear();
+}
 
 CacheManager::~CacheManager() {
   cache_.clear();
@@ -34,6 +38,11 @@ CacheManager::~CacheManager() {
 
 void CacheManager::Clear() {
   cache_.clear();
+  std::string ptd_name = (instance_ != nullptr) ? instance_->config()->ptd_name() : std::string();
+  if (!ptd_name.empty()) {
+    std::shared_ptr<PhiMatrix> ptd(new DensePhiMatrix(ptd_name, instance_->config()->topic_name()));
+    instance_->SetPhiMatrix(ptd_name, ptd);
+  }
 }
 
 void CacheManager::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
@@ -157,12 +166,60 @@ static bool PopulateThetaMatrixFromCacheEntry(const ThetaMatrix& cache,
 
 void CacheManager::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                                       ::artm::ThetaMatrix* theta_matrix) const {
+  std::string ptd_name = (instance_ != nullptr) ? instance_->config()->ptd_name() : std::string();
+  if (!ptd_name.empty()) {
+    boost::lock_guard<boost::mutex> guard(lock_);
+    std::shared_ptr<const ::artm::core::PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(ptd_name);
+    ThetaMatrix cached_theta;
+    cached_theta.mutable_topic_name()->CopyFrom(phi_matrix->topic_name());
+    std::vector<float> values; values.resize(phi_matrix->topic_size());
+    for (int token_id = 0; token_id < phi_matrix->token_size(); token_id++) {
+      Token token = phi_matrix->token(token_id);
+      cached_theta.add_item_title(token.keyword);
+      cached_theta.add_item_id(-1);  // not available
+      ::artm::FloatArray* item_weights = cached_theta.add_item_weights();
+      phi_matrix->get(token_id, &values);
+      for (int topic_index = 0; topic_index < phi_matrix->topic_size(); topic_index++)
+        item_weights->add_value(values[topic_index]);
+    }
+
+    PopulateThetaMatrixFromCacheEntry(cached_theta, get_theta_args, theta_matrix);
+    return;
+  }
+
   auto keys = cache_.keys();
   for (auto &key : keys) {
     std::shared_ptr<ThetaMatrix> cached_theta = FindCacheEntry(key);
     if (cached_theta != nullptr)
       PopulateThetaMatrixFromCacheEntry(*cached_theta, get_theta_args, theta_matrix);
   }
+}
+
+std::shared_ptr<ThetaMatrix> CacheManager::FindCacheEntry(const Batch& batch) const {
+  std::string ptd_name = (instance_ != nullptr) ? instance_->config()->ptd_name() : std::string();
+  if (!ptd_name.empty()) {
+    boost::lock_guard<boost::mutex> guard(lock_);
+    std::shared_ptr<const ::artm::core::PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(ptd_name);
+    auto cached_theta = std::make_shared<ThetaMatrix>();
+    cached_theta->mutable_topic_name()->CopyFrom(phi_matrix->topic_name());
+    std::vector<float> values; values.resize(phi_matrix->topic_size());
+    for (int item_id = 0; item_id < batch.item_size(); item_id++) {
+      Token token(batch.id(), batch.item(item_id).title());
+      if (token.keyword.empty()) continue;
+      int token_index = phi_matrix->token_index(token);
+      if (token_index < 0) continue;
+      cached_theta->add_item_title(batch.item(item_id).title());
+      cached_theta->add_item_id(batch.item(item_id).id());
+      ::artm::FloatArray* item_weights = cached_theta->add_item_weights();
+      phi_matrix->get(token_index, &values);
+      for (int topic_index = 0; topic_index < phi_matrix->topic_size(); topic_index++)
+        item_weights->add_value(values[topic_index]);
+    }
+
+    return cached_theta;
+  }
+
+  return FindCacheEntry(batch.id());
 }
 
 std::shared_ptr<ThetaMatrix> CacheManager::FindCacheEntry(const std::string& batch_id) const {
@@ -184,6 +241,21 @@ std::shared_ptr<ThetaMatrix> CacheManager::FindCacheEntry(const std::string& bat
 }
 
 void CacheManager::UpdateCacheEntry(const std::string& batch_id, const ThetaMatrix& theta_matrix) const {
+  std::string ptd_name = (instance_ != nullptr) ? instance_->config()->ptd_name() : std::string();
+  if (!ptd_name.empty()) {
+    boost::lock_guard<boost::mutex> guard(lock_);
+    std::shared_ptr<const ::artm::core::PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(ptd_name);
+    PhiMatrix* mutable_phi_matrix = const_cast<PhiMatrix*>(phi_matrix.get());
+    for (int i = 0; i < theta_matrix.item_title_size(); i++) {
+      Token token(batch_id, theta_matrix.item_title(i));
+      int token_id = phi_matrix->token_index(token);
+      if (token_id < 0) token_id = mutable_phi_matrix->AddToken(token);
+      for (int topic_index = 0; topic_index < theta_matrix.topic_name_size(); topic_index++)
+        mutable_phi_matrix->set(token_id, topic_index, theta_matrix.item_weights(i).value(topic_index));
+    }
+    return;
+  }
+
   std::shared_ptr<ThetaCacheEntry> new_entry(std::make_shared<ThetaCacheEntry>());
   if (disk_path_.empty()) {
     new_entry->theta_matrix()->CopyFrom(theta_matrix);

@@ -750,7 +750,7 @@ void Processor::ThreadFunction() {
 
         std::shared_ptr<ThetaMatrix> cache;
         if (part->has_reuse_theta_cache_manager())
-          cache = part->reuse_theta_cache_manager()->FindCacheEntry(batch.id());
+          cache = part->reuse_theta_cache_manager()->FindCacheEntry(batch);
         std::shared_ptr<LocalThetaMatrix<float>> theta_matrix =
           InitializeTheta(p_wt.topic_size(), batch, args, cache.get());
 
