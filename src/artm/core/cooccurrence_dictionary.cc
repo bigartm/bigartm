@@ -22,9 +22,9 @@
 // ToDo: remove frptinf(stderr) and exit(1)
 // ToDo: write removal of files, creation of dir, recording batches in dir
 // (boost)
-// ToDo: optimize io operations with binary files
 // ToDo: replace FILE *
 // ToDo: make fclose of FILE * in class, make FILE *file private
+// ToDo: on the last step make maps
 using namespace std;
 //using namespace boost::filesystem;
 
@@ -81,7 +81,6 @@ class Batch {
   ~Batch() {
     //fclose(file);
   }
-  // ToDo: think how to optimize copy in cell
   void FormNewCell(std::map<int, std::map<int, Pair>>::iterator &map_node) {
     cell.first_token_id = map_node->first;
     cell.records.resize(0);
@@ -175,11 +174,8 @@ class ResultingBuffer {
       else
         new_vector.push_back(*se_iter);
     }
-    // ToDo: memcpy can be used here
-    while (fi_iter != rec.end())
-      new_vector.push_back(*fi_iter);
-    while (se_iter != batch.cell.records.end())
-      new_vector.push_back(*se_iter);
+    std::copy(fi_iter, rec.end(), std::back_inserter(new_vector));
+    std::copy(se_iter, batch.cell.records.end(), std::back_inserter(new_vector));
     rec = new_vector;
   }
   // Note: here is cast to int
@@ -283,7 +279,6 @@ inline void ModifyCoocMapNode(int second_token_id, int doc_num,
     iter->second.cooc_value++;
 }
 
-// ToDo: can be optimized
 inline void MergeMaps(std::vector<std::map<int, std::map<int, Pair>>> &vector_maps) {
   for (int i = vector_maps.size() - 1; i > 0; --i)
     for (auto iter = vector_maps[i].begin(); iter != vector_maps[i].end(); ++iter) {
@@ -355,7 +350,6 @@ inline void ReadVowpalWabbit(const char *path_to_vw, const int window_width,
 
       // First elem in external map is first_token_id, in internal it's
       // second_token_id
-      // ToDo: maybe would be better to use map of sorted lists here
       std::vector<std::map<int, std::map<int, Pair>>> vector_maps(portion.size());
 
       for (int doc_id = 0; doc_id < (int64_t) portion.size(); ++doc_id) {
