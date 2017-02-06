@@ -599,7 +599,6 @@ TEST(CppInterface, AsyncProcessBatches) {
 
 // artm_tests.exe --gtest_filter=CppInterface.Dictionaries
 TEST(CppInterface, Dictionaries) {
-  //int nTopics = 17, nBatches = 5;
   int nBatches = 5;
   std::string target_folder = artm::test::Helpers::getUniqueString();
   ::artm::test::TestMother::GenerateBatches(nBatches, 50, target_folder);
