@@ -217,8 +217,8 @@ InitializeTheta(int topic_size, const Batch& batch, const ProcessBatchesArgs& ar
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
     int index_of_item = -1;
     if ((cache != nullptr) && args.reuse_theta()) {
-      index_of_item = repeated_field_index_of(cache->item_id(),
-        batch.item(item_index).id());
+      index_of_item = repeated_field_index_of(cache->item_title(),
+        batch.item(item_index).title());
     }
 
     if ((index_of_item != -1) && args.reuse_theta()) {
