@@ -577,6 +577,11 @@ inline void FixMessage(::artm::Batch* message) {
 
     item.clear_field();
   }
+
+  // For items without title set title to item id
+  for (auto& item : *message->mutable_item())
+    if (!item.has_title() && item.has_id())
+      item.set_title(boost::lexical_cast<std::string>(item.id()));
 }
 
 template<>
