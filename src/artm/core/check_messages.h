@@ -655,6 +655,8 @@ inline void FixMessage(::artm::MasterModelConfig* message) {
   items_processed_score->set_name("^^^ItemsProcessedScore^^^");
   items_processed_score->set_type(ScoreType_ItemsProcessed);
   items_processed_score->set_config(::artm::ItemsProcessedScore().SerializeAsString());
+
+  if (message->topic_name_size() == 0) message->set_ptd_name(std::string());
 }
 
 template<>

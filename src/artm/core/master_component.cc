@@ -163,6 +163,9 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
     if (!change_topic_name && (old_config->topic_name_size() != config.topic_name_size()))
       BOOST_THROW_EXCEPTION(InvalidOperation(
         "ArtmReconfigureMasterModel can not change number of topics; use ArtmReconfigureTopicName"));
+    if (old_config->ptd_name() != config.ptd_name())
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "ArtmReconfigureMasterModel can not change MasterModelConfig.ptd_name"));
 
     instance_->Reconfigure(config);
 
@@ -614,7 +617,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   // The code below must not use cache_manger in async mode.
   // Since cache_manager lives on stack it will be destroyed once we return from this function.
   // Therefore, no pointers to cache_manager should exist upon return from RequestProcessBatchesImpl.
-  CacheManager cache_manager("");
+  CacheManager cache_manager("", nullptr);
 
   bool return_theta = false;
   bool return_ptdw = false;

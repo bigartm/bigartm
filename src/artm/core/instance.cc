@@ -393,7 +393,7 @@ void Instance::Reconfigure(const MasterModelConfig& master_config) {
 
   if (!is_configured_) {
     // First reconfiguration.
-    cache_manager_.reset(new CacheManager(master_config.disk_cache_path()));
+    cache_manager_.reset(new CacheManager(master_config.disk_cache_path(), this));
     score_manager_.reset(new ScoreManager(this));
     score_tracker_.reset(new ScoreTracker());
 
@@ -435,7 +435,8 @@ Instance::GetPhiMatrixSafe(ModelName model_name) const {
 
 void Instance::SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix) {
   models_.erase(model_name);
-  return models_.set(model_name, phi_matrix);
+  if (phi_matrix != nullptr)
+    models_.set(model_name, phi_matrix);
 }
 
 }  // namespace core
