@@ -77,7 +77,6 @@ TEST(RepeatableResult, RandomGenerator) {
 
 // artm_tests.exe --gtest_filter=RepeatableResult.TokenHasher
 TEST(RepeatableResult, TokenHasher) {
-  auto token_hasher = artm::core::TokenHasher();
   ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("class_id_1", ""))[0], 0.245338);
   ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("1_class_id", ""))[0], 0.319662);
   ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("", "token_1"))[0], 0.341962);

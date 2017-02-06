@@ -49,7 +49,6 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
   auto kernel_purity = topic_kernel_score->mutable_kernel_purity();
   auto kernel_contrast = topic_kernel_score->mutable_kernel_contrast();
   auto kernel_coherence = topic_kernel_score->mutable_coherence();
-  auto need_topics = topic_kernel_score->mutable_topic_name();
   float average_kernel_coherence = 0.0f;
 
   for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
