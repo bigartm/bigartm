@@ -7,21 +7,26 @@ You can deploy VisARTM locally on your computer. It supports any OS: Windows, Li
 
 2. Make sure you have installed `BigARTM <http://bigartm.readthedocs.io/en/master/installation/index.html>`_.
 
-3. Install django with console command **pip install django**.
+3. Install `PostgreSQL <https://www.postgresql.org/download/>`_ and `pgAdmin <https://www.pgadmin.org/>`_. Of cource, ou can use any database management system with django, but we recommend PostgreSQL.
 
-4. Install `PostgreSQL <https://www.postgresql.org/download/>`_ and `pgAdmin <https://www.pgadmin.org/>`_. Of cource, ou can use any database management system with django, but we recommend PostgreSQL.
+4. Open pgAdmin and create new database. Please remember username and password to this database. Default username in PostgreSQL is "postgres".
 
-5. Open pgAdmin and create database. Please remember username and password to this database. Default username in PostgreSQL is "postgres".
+5. Make sure you have installed git.
 
-6. Make sure you have installed git.
-
-7. Clone  VisARTM with console command
+6. Clone  VisARTM with console command
 
 .. code-block:: bash 
 
    git clone https://github.com/bigartm/visartm.git
+
+7. Install all required dependencies, including django:
+
+.. code-block:: bash 
+
+   cd visartm
+   pip install -r requirements.txt
    
-8. Now link database created in step 5 with VisARTM. For that, open file **visartm/settings.py** and lines like these:
+8. Now link database created in step 4 with VisARTM. For that, open file **visartm/settings.py** and lines like these:
 
 .. code-block:: python 
 
