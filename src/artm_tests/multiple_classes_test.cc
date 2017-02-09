@@ -260,8 +260,6 @@ TEST(MultipleClasses, BasicTest) {
 
 // artm_tests.exe --gtest_filter=MultipleClasses.InitializeSomeModalities
 TEST(MultipleClasses, InitializeSomeModalities) {
-  int nTokens = 60;
-  int nDocs = 100;
   int nTopics = 10;
 
   ::artm::MasterModelConfig master_config = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
@@ -297,7 +295,6 @@ TEST(MultipleClasses, ThrowIfNoTokensInEffect) {
   int nTokens = 60;
   int nDocs = 100;
   int nTopics = 10;
-  int nIters = 5;
 
   ::artm::MasterModelConfig master_config = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
   master_config.add_class_id("@default_class"); master_config.add_class_weight(0.5f);
@@ -518,7 +515,6 @@ void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, 
   auto tm_all = master->GetThetaMatrix();
 
   bool by_names = args.topic_name_size() > 0;
-  bool all_topics = !by_names;
 
   ASSERT_EQ(tm_dense.num_topics(), tm_dense.topic_name_size());
   ASSERT_EQ(tm_sparse.num_topics(), tm_sparse.topic_name_size());

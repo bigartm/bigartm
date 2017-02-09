@@ -577,6 +577,11 @@ inline void FixMessage(::artm::Batch* message) {
 
     item.clear_field();
   }
+
+  // For items without title set title to item id
+  for (auto& item : *message->mutable_item())
+    if (!item.has_title() && item.has_id())
+      item.set_title(boost::lexical_cast<std::string>(item.id()));
 }
 
 template<>
@@ -650,6 +655,8 @@ inline void FixMessage(::artm::MasterModelConfig* message) {
   items_processed_score->set_name("^^^ItemsProcessedScore^^^");
   items_processed_score->set_type(ScoreType_ItemsProcessed);
   items_processed_score->set_config(::artm::ItemsProcessedScore().SerializeAsString());
+
+  if (message->topic_name_size() == 0) message->set_ptd_name(std::string());
 }
 
 template<>

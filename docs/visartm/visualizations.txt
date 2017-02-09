@@ -1,0 +1,8 @@
+Visualizations
+====================
+
+You can explore documents, topic, terms, modalities and model itself.
+
+Besides, you can look at differnet visualizations of model in whole. 
+
+If you  have several models, choose model to be visualized using radio-buttons at dataset page.

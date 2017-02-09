@@ -694,6 +694,7 @@ message MasterModelConfig {
   optional bool opt_for_avx = 11 [default = true];
   optional string disk_cache_path = 13;
   optional bool cache_theta = 15 [default = false];
+  optional string ptd_name = 16 [default = ""];
 }
 
 message FitOfflineMasterModelArgs {

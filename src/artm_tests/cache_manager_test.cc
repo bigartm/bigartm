@@ -13,7 +13,7 @@
 #include "artm_tests/test_mother.h"
 #include "artm_tests/api.h"
 
-void RunTest(bool disk_cache) {
+void RunTest(bool disk_cache, std::string ptd_name) {
   const int nTokens = 10;
   const int batches_size = 3;
   const int nTopics = 8;
@@ -28,6 +28,7 @@ void RunTest(bool disk_cache) {
 
   ::artm::MasterModelConfig master_config = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
   master_config.set_reuse_theta(true);
+  master_config.set_ptd_name(ptd_name);
   if (disk_cache) master_config.set_disk_cache_path(target_path);
   ::artm::MasterModel master_component(master_config);
   ::artm::test::Api api(master_component);
@@ -39,7 +40,7 @@ void RunTest(bool disk_cache) {
   for (int iter = 0; iter < 3; ++iter)
     master_component.FitOfflineModel(fit_offline_args);
 
-  EXPECT_GT(master_component.info().cache_entry_size(), 0);
+  if (ptd_name.empty()) EXPECT_GT(master_component.info().cache_entry_size(), 0);
   ::artm::ThetaMatrix theta1 = master_component.GetThetaMatrix();
   EXPECT_EQ(theta1.num_topics(), nTopics);
   EXPECT_GE(theta1.item_id_size(), 1);
@@ -65,11 +66,17 @@ void RunTest(bool disk_cache) {
 // To run this particular test:
 // artm_tests.exe --gtest_filter=CacheManager.Basic
 TEST(CacheManager, Basic) {
-  RunTest(false);
+  RunTest(false, /*ptd_name=*/ "");
 }
 
 // To run this particular test:
 // artm_tests.exe --gtest_filter=CacheManager.DiskCache
 TEST(CacheManager, DiskCache) {
-  RunTest(true);
+  RunTest(true, /*ptd_name=*/ "");
+}
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=CacheManager.PtdName
+TEST(CacheManager, PtdName) {
+  RunTest(false, /*ptd_name=*/ "ptd");
 }

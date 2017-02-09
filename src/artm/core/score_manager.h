@@ -32,6 +32,7 @@ class ScoreManager : boost::noncopyable {
   void Clear();
   bool RequestScore(const ScoreName& score_name, ScoreData *score_data) const;
   void RequestAllScores(::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data) const;
+  void CopyFrom(const ScoreManager& score_manager);
 
  private:
   Instance* instance_;
@@ -50,6 +51,7 @@ class ScoreTracker : boost::noncopyable {
   void Clear();
   ScoreData* Add();
   void RequestScoreArray(const GetScoreArrayArgs& args, ScoreArray* score_data_array);
+  void CopyFrom(const ScoreTracker& score_tracker);
 
  private:
   mutable boost::mutex lock_;

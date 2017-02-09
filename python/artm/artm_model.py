@@ -12,6 +12,7 @@ from pandas import DataFrame
 from six import iteritems, string_types
 from six.moves import range, zip
 from multiprocessing.pool import ThreadPool
+from copy import deepcopy
 import tqdm
 
 from . import wrapper
@@ -78,11 +79,22 @@ def _topic_selection_regularizer_func(self, regularizers):
             self.regularizers[name].config = config
 
 
+class ArtmThreadPool(object):
+    def __init__(self):
+        self._pool = ThreadPool(processes=1)
+
+    def apply_async(self, func, args):
+        return self._pool.apply_async(func, args)
+
+    def __deepcopy__(self, memo):
+        return self
+
+
 class ARTM(object):
     def __init__(self, num_topics=None, topic_names=None, num_processors=None, class_ids=None,
                  scores=None, regularizers=None, num_document_passes=10, reuse_theta=False,
                  dictionary=None, cache_theta=False, theta_columns_naming='id', seed=-1,
-                 show_progress_bars=False):
+                 show_progress_bars=False, ptd_name=None):
         """
         :param int num_topics: the number of topics in model, will be overwrited if\
                                  topic_names is set
@@ -107,6 +119,7 @@ class ARTM(object):
         :param show_progress_bars: a boolean flag indicating whether to show progress bar in fit_offline,\
                                    fit_online and transform operations.
         :type seed: unsigned int or -1
+        :param ptd_name: string, name of ptd (theta) matrix
 
         :Important public fields:
           * regularizers: contains dict of regularizers, included into model
@@ -125,6 +138,15 @@ class ARTM(object):
           * Most arguments of ARTM constructor have corresponding setter and getter\
             of the same name that allows to change them at later time, after ARTM object\
             has been created.
+          * Setting ptd_name to a non-empty string activates an experimental mode\
+            where cached theta matrix is internally stored as a phi matrix with tokens\
+            corresponding to item title, and token class ids corresponding to batch id.\
+            With ptd_name argument you specify the name of this matrix\
+            (for example 'ptd' or 'theta', or whatever name you like).\
+            Later you can retrieve this matix with ARTM.get_phi(model_name='ptd'),\
+            change its values with ARTM.master.attach_model(model='ptd'),\
+            export/import this matrix with ARTM.master.export_model('ptd', filename) and\
+            ARTM.master.import_model('ptd', file_name).
         """
         self._num_processors = None
         self._cache_theta = False
@@ -133,7 +155,7 @@ class ARTM(object):
         self._theta_columns_naming = 'id'
         self._seed = -1
         self._show_progress_bars = show_progress_bars
-        self._pool = ThreadPool(processes=1)
+        self._pool = ArtmThreadPool()
 
         if topic_names is not None:
             self._topic_names = topic_names
@@ -169,6 +191,9 @@ class ARTM(object):
         self._model_nwt = 'nwt'
 
         self._lib = wrapper.LibArtm()
+        master_config = messages.MasterModelConfig()
+        if ptd_name:
+            master_config.ptd_name = ptd_name
         self._master = mc.MasterComponent(self._lib,
                                           num_processors=self._num_processors,
                                           topic_names=self._topic_names,
@@ -177,7 +202,8 @@ class ARTM(object):
                                           nwt_name=self._model_nwt,
                                           num_document_passes=self._num_document_passes,
                                           reuse_theta=self._reuse_theta,
-                                          cache_theta=self._cache_theta)
+                                          cache_theta=self._cache_theta,
+                                          config=master_config)
 
         self._regularizers = Regularizers(self._master)
         self._scores = Scores(self._master, self._model_pwt, self._model_nwt)
@@ -224,6 +250,20 @@ class ARTM(object):
 
     def __del__(self):
         self.dispose()
+
+    def clone(self):
+        """
+        :Description: returns a deep copy of the artm.ARTM object
+
+        :Note:
+          * This method is equivalent to copy.deepcopy() of your artm.ARTM object.
+            Both methods perform deep copy of the object,
+            including a complete copy of its internal C++ state
+            (e.g. a copy of all phi and theta matrices, scores and regularizers,
+            as well as ScoreTracker information with history of the scores).
+          * Attached phi matrices are copied as dense phi matrices.
+        """
+        return deepcopy(self)
 
     # ========== PROPERTIES ==========
     @property

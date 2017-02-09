@@ -88,6 +88,12 @@ void ScoreManager::RequestAllScores(::google::protobuf::RepeatedPtrField< ::artm
   }
 }
 
+void ScoreManager::CopyFrom(const ScoreManager& score_manager) {
+  boost::lock_guard<boost::mutex> guard(lock_);
+  boost::lock_guard<boost::mutex> guard2(score_manager.lock_);
+  score_map_ = score_manager.score_map_;
+}
+
 void ScoreTracker::Clear() {
   boost::lock_guard<boost::mutex> guard(lock_);
   array_.clear();
@@ -109,6 +115,12 @@ void ScoreTracker::RequestScoreArray(const GetScoreArrayArgs& args, ScoreArray* 
       score_array->add_score()->CopyFrom(*elem);
     }
   }
+}
+
+void ScoreTracker::CopyFrom(const ScoreTracker& score_tracker) {
+  boost::lock_guard<boost::mutex> guard(lock_);
+  boost::lock_guard<boost::mutex> guard2(score_tracker.lock_);
+  array_ = score_tracker.array_;
 }
 
 }  // namespace core

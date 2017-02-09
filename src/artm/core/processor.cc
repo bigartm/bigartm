@@ -119,7 +119,7 @@ static void CreateThetaCacheEntry(ThetaMatrix* new_cache_entry_ptr,
     const Item& item = batch.item(item_index);
     new_cache_entry_ptr->add_item_id(item.id());
     new_cache_entry_ptr->add_item_title(item.has_title() ? item.title() : std::string());
-    FloatArray* cached_theta = new_cache_entry_ptr->add_item_weights();
+    new_cache_entry_ptr->add_item_weights();
   }
 
   if (!args.has_predict_class_id()) {
@@ -217,8 +217,8 @@ InitializeTheta(int topic_size, const Batch& batch, const ProcessBatchesArgs& ar
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
     int index_of_item = -1;
     if ((cache != nullptr) && args.reuse_theta()) {
-      index_of_item = repeated_field_index_of(cache->item_id(),
-        batch.item(item_index).id());
+      index_of_item = repeated_field_index_of(cache->item_title(),
+        batch.item(item_index).title());
     }
 
     if ((index_of_item != -1) && args.reuse_theta()) {
@@ -493,7 +493,6 @@ InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, 
 
   const int num_topics = p_wt.topic_size();
   const int docs_count = theta_matrix->num_items();
-  const int tokens_count = batch.token_size();
 
   std::vector<int> token_id(batch.token_size(), -1);
   for (int token_index = 0; token_index < batch.token_size(); ++token_index)
@@ -720,7 +719,6 @@ void Processor::ThreadFunction() {
           }
         }
 
-        int topic_size = p_wt.topic_size();
         std::shared_ptr<const PhiMatrix> nwt_target;
         if (part->has_nwt_target_name()) {
           nwt_target = instance_->GetPhiMatrix(part->nwt_target_name());
@@ -751,7 +749,7 @@ void Processor::ThreadFunction() {
 
         std::shared_ptr<ThetaMatrix> cache;
         if (part->has_reuse_theta_cache_manager())
-          cache = part->reuse_theta_cache_manager()->FindCacheEntry(batch.id());
+          cache = part->reuse_theta_cache_manager()->FindCacheEntry(batch);
         std::shared_ptr<LocalThetaMatrix<float>> theta_matrix =
           InitializeTheta(p_wt.topic_size(), batch, args, cache.get());
 

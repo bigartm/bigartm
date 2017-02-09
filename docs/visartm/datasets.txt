@@ -1,0 +1,65 @@
+Datasets
+====================
+
+Object model
+-----------------------------------
+**Dataset** is a collection of **documents**. It contains vocabulary (set of **terms**) and **documents**.
+
+Documents technically are multisets or lists of terms. Also they can contain *raw text*.
+
+Each term belongs to **modality**. If **modalities** are undefined, all terms belongs to **modality** @default_class.
+
+**ArtmModel** is topic model.
+
+Dataset creating
+-----------------------------------
+
+Go to folder **visartm/data/datasets**. There create a folder, named after your dataset. Put there single file named vw.txt, which describes your dataset in Vowpal Vabbit format. This file is necessary and enough to go on.
+
+Then go to **Datasets**, click on **Create new dataset**, choose tab **Local**, select in combo-box **Folder** folder, that yo have created and click **Create**.
+
+Features
+------------------------------------
+You can not ony provide data in VW format. You have various options.
+
+**1. I have only raw text files and I don’t want do any preprocessing.**
+
+Create folder named **documents** in dataset folder. Put all documents, encoded in UTF-8 there (you can create subdirectories inside). Then, just enable **Parse** option in **Prerocessing** section on the page of dataset creation. Documents will be automatically parsed and lemmatized and Vowpal Wabbit file will be created.
+
+**2. I have additional meta data.**
+
+Create folder **meta** in dataset folder. Put there file **meta.json**. This file should be JSON dictionary, keys of which are names of documents, stated in VW file. If you upload raw text, names of documents should coinside with file names (if you have folders, then relative pathes instead of file names).
+
+The values of this JSON dictionary contain meta data for document. They are also JSON dictionaries with following keys (no one is obligatory).
+
+* **title**
+* **snippet**
+* **url**
+* **time** (must be UNIX timestamp)
+  
+**3. I have raw text and some additional modalities (like tags or authors) in VW format.**
+
+Name your VW file with additional modalitites **meta.vw.txt** and put it in folder **meta**. If you enable **Parse** option then, automatically extracted words will be merged with this data.
+
+**4. I know what’s your wordpos files and I want create those myself.**
+
+Just create folder **wordpos** next to documents, create there exact file structure as in documents, but instaed of text write positions of words. Of cource, that will mean that you also have **vw.txt** file, so don’t enable Parse option and system will use your wordpos.
+
+**5. I have collection in UCI format.**
+
+Use `this script <https://github.com/bigartm/visartm/blob/master/algo/preprocessing/UciReader.py>`_ to convert your collection into Vowpal Wabbit format, then upload single **vw.txt** file.
+
+Preprocessing
+----------------------------------------
+VisARTM can do some preprocessing with your dataset. It can be enabled on dataset creation page.
+
+* **Parse** - automatically parse and lemmatize raw text. Options:
+
+  * **Store order** - if you enable this, each occurence of each word will be stored in VW file. So, information about order of terms in initial document will be stored. But everything will work slower. If you disable this, documents will be treated like bag of words. Disable it if unsure.
+  * **Hashtags** - if you enable thiis, all terms, beginning with # will be treated as hashtags. They will not be lemmatized, and they will be stored as separate modality.
+
+* **Filter** - remove some terms from vocabulary. Options:
+
+  * **Lower bound** - all terms, which ocured in whole dataset less than lower_bound times, will be removed.
+  * **Upper bound** - all terms, which ocured in whole dataset more than upper_bound times, will be removed.
+  * **Lower bound** (relative) - all terms, which ocured in whole dataset more than upper_bound_relative * number_od_documents_in_collection times, will be removed.

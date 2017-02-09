@@ -73,6 +73,7 @@ Instance::Instance(const MasterModelConfig& config)
       processor_queue_(),
       cache_manager_(),
       score_manager_(),
+      score_tracker_(),
       processors_() {
   Reconfigure(config);
 }
@@ -87,6 +88,7 @@ Instance::Instance(const Instance& rhs)
       processor_queue_(),
       cache_manager_(),
       score_manager_(),
+      score_tracker_(),
       processors_() {
   Reconfigure(*rhs.config());
 
@@ -103,6 +105,10 @@ Instance::Instance(const Instance& rhs)
     if (value != nullptr)
       this->SetPhiMatrix(key, value->Duplicate());
   }
+
+  cache_manager_->CopyFrom(*rhs.cache_manager_);
+  score_manager_->CopyFrom(*rhs.score_manager_);
+  score_tracker_->CopyFrom(*rhs.score_tracker_);
 }
 
 Instance::~Instance() { }
@@ -387,7 +393,7 @@ void Instance::Reconfigure(const MasterModelConfig& master_config) {
 
   if (!is_configured_) {
     // First reconfiguration.
-    cache_manager_.reset(new CacheManager(master_config.disk_cache_path()));
+    cache_manager_.reset(new CacheManager(master_config.disk_cache_path(), this));
     score_manager_.reset(new ScoreManager(this));
     score_tracker_.reset(new ScoreTracker());
 
@@ -429,7 +435,8 @@ Instance::GetPhiMatrixSafe(ModelName model_name) const {
 
 void Instance::SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix) {
   models_.erase(model_name);
-  return models_.set(model_name, phi_matrix);
+  if (phi_matrix != nullptr)
+    models_.set(model_name, phi_matrix);
 }
 
 }  // namespace core

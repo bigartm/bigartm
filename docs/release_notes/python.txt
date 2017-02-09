@@ -8,6 +8,12 @@ For this reason we recommend to review :doc:`messages`.
 For further reference about Python API refer to :doc:`/api_references/python_interface/artm_model`,
 `Q & A <https://github.com/bigartm/bigartm/wiki/Q&A>`_ or `tutorials <https://github.com/bigartm/bigartm-book/blob/master/README.md>`_.
 
+v0.8.3
+------
+
+* Enable copying of ARTM, LDA, hARTM and ARTM_Level objects with ``clone()`` method and ``copy.deepcopy(obj)``.
+* Experimental support for import/export/editing of theta matrices; for more details see python reference of ``ARTM.__init__(ptd_name='ptd')``.
+
 v0.8.2
 ------
 

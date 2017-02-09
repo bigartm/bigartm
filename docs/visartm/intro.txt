@@ -1,0 +1,4 @@
+Introduction
+====================
+
+VisARTM is a web-based tool for operating with text collection and topics models.
