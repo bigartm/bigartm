@@ -138,6 +138,6 @@ class CooccurrenceDictionary {
   void ReadAndMergeBatches(const double cooc_min_tf, const int cooc_min_df,
           BatchManager &batch_manager);
  public:
-  CooccurrenceDictionary(const std::string vw, const std::string vocab,
+  CooccurrenceDictionary(const std::string &vw, const std::string &vocab,
           const int wind_width, const double min_tf, const int min_df);
 };

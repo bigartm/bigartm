@@ -23,7 +23,7 @@
 using namespace std;
 using namespace boost;
 
-inline CooccurrenceBatch::CooccurrenceBatch(int batch_num, const char filemode, const string &disk_path) {
+CooccurrenceBatch::CooccurrenceBatch(int batch_num, const char filemode, const string &disk_path) {
   const int max_name_len = 30;
   char num_str[max_name_len] = "";
   sprintf(num_str,"%.3d", batch_num);
@@ -90,7 +90,7 @@ inline void CooccurrenceBatch::WriteCell() {
           sizeof(Triple) * cell.num_of_triples);
 }
 
-inline BatchManager::BatchManager() {
+BatchManager::BatchManager() {
   batch_quan = 0;
   boost::filesystem::path dir("Co-occurrenceBatches");
   if (boost::filesystem::exists(dir)) {
@@ -107,7 +107,7 @@ inline BatchManager::BatchManager() {
   path_to_batches = /*full_dirname.string()*/ dir.string();
 }
 
-inline BatchManager::~BatchManager() {
+BatchManager::~BatchManager() {
   boost::filesystem::remove_all(path_to_batches);
 }
 
@@ -166,7 +166,7 @@ inline void ResultingBuffer::AddNewCellInBuffer(const CooccurrenceBatch *batch) 
   rec = batch->cell.records;
 }
 
-inline ResultingBuffer::ResultingBuffer(const double min_tf, const int min_df) {
+ResultingBuffer::ResultingBuffer(const double min_tf, const int min_df) {
   // No need to check if buffer's empty. At first usage new data will need
   // to be pushed while previous popped, but previous data doesn't exist
   // (see AddInBuffer and PopPreviousContent methods)
@@ -181,7 +181,7 @@ inline ResultingBuffer::ResultingBuffer(const double min_tf, const int min_df) {
   }
 }
 
-inline ResultingBuffer::~ResultingBuffer() { PopPreviousContent(); }
+ResultingBuffer::~ResultingBuffer() { PopPreviousContent(); }
 
 inline void ResultingBuffer::AddInBuffer(const CooccurrenceBatch *batch) {
   if (first_token_id == batch->cell.first_token_id) {
@@ -192,8 +192,8 @@ inline void ResultingBuffer::AddInBuffer(const CooccurrenceBatch *batch) {
   }
 }
 
-inline CooccurrenceDictionary::CooccurrenceDictionary(const std::string vw,
-        const std::string vocab, const int wind_width, const double min_tf,
+CooccurrenceDictionary::CooccurrenceDictionary(const std::string &vw,
+        const std::string &vocab, const int wind_width, const double min_tf,
         const int min_df) {
   // This function works as follows:
   // 1. Get content from a vocab file and put it in dictionary
