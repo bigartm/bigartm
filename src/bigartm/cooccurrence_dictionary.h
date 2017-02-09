@@ -11,9 +11,9 @@
 #include <sstream>
 #include <iomanip>
 
-#include <boost/core/noncopyable.hpp>
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
+#include "boost/utility.hpp"
 
 enum {
   MAX_NUM_OF_BATCHES = 1000,
@@ -89,8 +89,10 @@ class ResultingBuffer {
   int cooc_min_df;
   int first_token_id;
   std::vector<Triple> rec;
-  std::ofstream cooc_dictionary;
-  std::ofstream doc_quan_dictionary;
+  std::ofstream cooc_tf_dict;
+  std::ofstream cooc_df_dict;
+  bool calculate_cooc_tf;
+  bool calculate_cooc_df;
 
   void MergeWithExistingCell(const CooccurrenceBatch *batch);
 
@@ -99,7 +101,10 @@ class ResultingBuffer {
 
   void AddNewCellInBuffer(const CooccurrenceBatch *batch);
  public:
-  ResultingBuffer(const double min_tf, const int min_df);
+  ResultingBuffer(const double min_tf, const int min_df,
+          const std::string &cooc_tf_file_path,
+          const std::string &cooc_df_file_path, const bool &cooc_tf_flag,
+          const bool &cooc_df_flag);
 
   ~ResultingBuffer();
 
@@ -113,11 +118,14 @@ class CooccurrenceDictionary {
   double cooc_min_tf;
   std::string path_to_vocab;
   std::string path_to_vw;
+  std::string cooc_tf_file_path;
+  std::string cooc_df_file_path;
+  bool calculate_tf_cooc;
+  bool calculate_df_cooc;
   BatchManager batch_manager;
   std::unordered_map<string, int> dictionary;
 
-  void FetchVocab(const std::string &path_to_vocab,
-        std::unordered_map<std::string, int> &dictionary);
+  void FetchVocab();
 
   void UploadBatchOnDisk(BatchManager &batch_manager,
         std::map<int, std::map<int, cooccurrence_info>> &cooc);
@@ -131,13 +139,11 @@ class CooccurrenceDictionary {
   void SavePairOfTokens(int first_token_id, int second_token_id, int doc_id,
           std::map<int, std::map<int, cooccurrence_info>> &cooc_map);
 
-  void ReadVowpalWabbit(const std::string &path_to_vw, const int window_width,
-        const std::unordered_map<std::string, int> &dictionary,
-        BatchManager &batch_manager);
+  void ReadVowpalWabbit();
 
-  void ReadAndMergeBatches(const double cooc_min_tf, const int cooc_min_df,
-          BatchManager &batch_manager);
+  void ReadAndMergeBatches();
  public:
   CooccurrenceDictionary(const std::string &vw, const std::string &vocab,
-          const int wind_width, const double min_tf, const int min_df);
+        const std::string &cooc_tf_file, const std::string &cooc_df_file,
+        const int wind_width, const double min_tf, const int min_df);
 };

@@ -16,9 +16,9 @@
 #include <sstream>
 #include <iomanip>
 
-#include <boost/core/noncopyable.hpp>
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
+#include "boost/utility.hpp"
 
 using namespace std;
 using namespace boost;
@@ -152,11 +152,11 @@ void ResultingBuffer::MergeWithExistingCell(const CooccurrenceBatch *batch) {
 // Note: here is cast to int and comparison of doubles
 void ResultingBuffer::PopPreviousContent() {
   for (int i = 0; i < (int) rec.size(); ++i) {
-    if (rec[i].cooc_value >= cooc_min_tf)
-      cooc_dictionary << first_token_id << " " << rec[i].second_token_id
+    if (calculate_cooc_tf && rec[i].cooc_value >= cooc_min_tf)
+      cooc_tf_dict << first_token_id << " " << rec[i].second_token_id
                << " " << (int) rec[i].cooc_value << endl;
-    if (rec[i].doc_quan   >= cooc_min_df)
-      doc_quan_dictionary << first_token_id << " " << rec[i].second_token_id
+    if (calculate_cooc_df && rec[i].doc_quan   >= cooc_min_df)
+      cooc_df_dict << first_token_id << " " << rec[i].second_token_id
                << " " << rec[i].doc_quan << endl;
   }
 }
@@ -166,18 +166,31 @@ void ResultingBuffer::AddNewCellInBuffer(const CooccurrenceBatch *batch) {
   rec = batch->cell.records;
 }
 
-ResultingBuffer::ResultingBuffer(const double min_tf, const int min_df) {
+ResultingBuffer::ResultingBuffer(const double min_tf, const int min_df,
+         const std::string &cooc_tf_file_path,
+         const std::string &cooc_df_file_path, const bool &cooc_tf_flag,
+         const bool &cooc_df_flag) {
   // No need to check if buffer's empty. At first usage new data will need
   // to be pushed while previous popped, but previous data doesn't exist
   // (see AddInBuffer and PopPreviousContent methods)
   cooc_min_tf = min_tf;
   cooc_min_df = min_df;
+  calculate_cooc_tf = cooc_tf_flag;
+  calculate_cooc_df = cooc_df_flag;
   first_token_id = -1;
-  cooc_dictionary.open("Co-occurrenceDictionary.txt", std::ios::out);
-  doc_quan_dictionary.open("DocQuanDictionary.txt",   std::ios::out);
-  if (cooc_dictionary.bad() || doc_quan_dictionary.bad()) {
-    std::cerr << "Failed to create a file in the working directory\n";
-    throw 1;
+  if (calculate_cooc_tf) {
+    cooc_tf_dict.open(cooc_tf_file_path, std::ios::out);
+    if (cooc_tf_dict.bad()) {
+      std::cerr << "Failed to create a file in the working directory\n";
+      throw 1;
+    }
+  }
+  if (calculate_cooc_df) {
+    cooc_df_dict.open(cooc_df_file_path, std::ios::out);
+    if (cooc_df_dict.bad()) {
+      std::cerr << "Failed to create a file in the working directory\n";
+      throw 1;
+    }
   }
 }
 
@@ -193,8 +206,9 @@ void ResultingBuffer::AddInBuffer(const CooccurrenceBatch *batch) {
 }
 
 CooccurrenceDictionary::CooccurrenceDictionary(const std::string &vw,
-        const std::string &vocab, const int wind_width, const double min_tf,
-        const int min_df) {
+        const std::string &vocab, const std::string &cooc_tf_file,
+        const std::string &cooc_df_file, const int wind_width,
+        const double min_tf, const int min_df) {
   // This function works as follows:
   // 1. Get content from a vocab file and put it in dictionary
   // 2. Read Vowpal Wabbit file by portions, calculate co-occurrences for
@@ -206,21 +220,34 @@ CooccurrenceDictionary::CooccurrenceDictionary(const std::string &vw,
   // created
   try {
     path_to_vw = vw;
+    if (!path_to_vw.size()) {
+      std::cerr << "input file in VowpalWabbit format not specified\n";
+      throw 1;
+    }
     path_to_vocab = vocab;
+    if (!path_to_vocab.size()) {
+      std::cerr << "input file in UCI vocab format not specified\n";
+      throw 1;
+    }
     window_width = wind_width;
     cooc_min_tf = min_tf;
     cooc_min_df = min_df;
-    FetchVocab(path_to_vocab, dictionary);
-    if (dictionary.size() > 1) {
-      ReadVowpalWabbit(path_to_vw, window_width, dictionary, batch_manager);
-      if (batch_manager.GetBatchQuan())
-        ReadAndMergeBatches(cooc_min_tf, cooc_min_df, batch_manager);
+    cooc_tf_file_path = cooc_tf_file;
+    cooc_df_file_path = cooc_df_file;
+    calculate_tf_cooc = cooc_tf_file_path.size() ? true : false;
+    calculate_df_cooc = cooc_df_file_path.size() ? true : false;
+    if (calculate_tf_cooc || calculate_df_cooc) {
+      FetchVocab();
+      if (dictionary.size() > 1) {
+        ReadVowpalWabbit();
+        if (batch_manager.GetBatchQuan())
+          ReadAndMergeBatches();
+      }
     }
   } catch (...) {}
 }
 
-void CooccurrenceDictionary::FetchVocab(const std::string &path_to_vocab,
-        std::unordered_map<std::string, int> &dictionary) {
+void CooccurrenceDictionary::FetchVocab() {
   // This func reads words from vocab, sets them unique id and collects pair
   // in dictionary
   std::filebuf fb;
@@ -290,10 +317,7 @@ void CooccurrenceDictionary::SavePairOfTokens(int first_token_id,
     ModifyCoocMapNode(second_token_id, doc_id, map_record->second);
 }
 
-void CooccurrenceDictionary::ReadVowpalWabbit(const std::string &path_to_vw,
-        const int window_width,
-        const std::unordered_map<std::string, int> &dictionary,
-        BatchManager &batch_manager) {
+void CooccurrenceDictionary::ReadVowpalWabbit() {
   // This func works as follows:
   // 1. Acquire lock for reading from vowpal wabbit file
   // 2. Read a portion (items_per_batch) of documents from file and save it
@@ -385,8 +409,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit(const std::string &path_to_vw,
     tasks[i].get();
 }
 
-void CooccurrenceDictionary::ReadAndMergeBatches(const double cooc_min_tf,
-        const int cooc_min_df, BatchManager &batch_manager) {
+void CooccurrenceDictionary::ReadAndMergeBatches() {
   auto CompareBatches = [](const CooccurrenceBatch *left,
                            const CooccurrenceBatch *right) {
     return left->cell.first_token_id > right->cell.first_token_id;
@@ -402,7 +425,8 @@ void CooccurrenceDictionary::ReadAndMergeBatches(const double cooc_min_tf,
   // means another first_token_id => all the data linked with current
   // first_token_id can be filtered and be ready to be written in
   // resulting file.
-  ResultingBuffer res(cooc_min_tf, cooc_min_df);
+  ResultingBuffer res(cooc_min_tf, cooc_min_df, cooc_tf_file_path,
+          cooc_df_file_path, calculate_tf_cooc, calculate_df_cooc);
 
   // Standard k-way merge as external sort
   while (!batch_queue.empty()) {

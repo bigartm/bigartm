@@ -290,7 +290,8 @@ struct artm_options {
   std::string write_model_readable;
   std::string write_dictionary_readable;
   std::string write_predictions;
-  std::string write_cooc;
+  std::string write_cooc_tf;
+  std::string write_cooc_df;
   std::string write_class_predictions;
   std::string write_scores;
   std::string write_vw_corpus;
@@ -801,7 +802,7 @@ class ScoreHelper {
      }
      else if (type == ::artm::ScoreType_ThetaSnippet) {
        auto score_data = master_->GetScoreAs< ::artm::ThetaSnippetScore>(get_score_args);
-       int docs_to_show = score_data.values_size();
+       //int docs_to_show = score_data.values_size();
        std::cerr << "ThetaSnippet (" << score_name << ")\n";
        for (int item_index = 0; item_index < score_data.values_size(); ++item_index) {
          std::cerr << "ItemID=" << score_data.item_id(item_index) << ": ";
@@ -1342,7 +1343,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
         update_after += options.update_every;
         fit_online_args.add_update_after(std::min<int>(update_after, batch_file_names.size()));
         fit_online_args.add_apply_weight(pow(options.tau0 + update_count, -options.kappa));
-      } while (update_after < batch_file_names.size());
+      } while (update_after < (int) batch_file_names.size());
 
       for (auto& batch_file_name : batch_file_names)
         fit_online_args.add_batch_filename(batch_file_name.string());
@@ -1520,7 +1521,8 @@ int main(int argc, char * argv[]) {
 
     po::options_description output_options("Output");
     output_options.add_options()
-      ("write-cooc", po::value(&options.write_cooc)->default_value(""), "save dictionary of co-occurrences")
+      ("write-cooc-tf", po::value(&options.write_cooc_tf)->default_value(""), "save dictionary of co-occurrences with frequencies of co-occurrences of every specific pair of tokens in whole collection")
+      ("write-cooc-df", po::value(&options.write_cooc_df)->default_value(""), "save dictionary of co-occurrences with number of documents in which every specific pair occured together")
       ("save-model", po::value(&options.save_model)->default_value(""), "save the model to binary file after processing")
       ("save-batches", po::value(&options.save_batches)->default_value(""), "batch folder")
       ("save-dictionary", po::value(&options.save_dictionary)->default_value(""), "filename of dictionary file")
@@ -1729,7 +1731,8 @@ int main(int argc, char * argv[]) {
     }
 
     CooccurrenceDictionary cooc_dictionary(options.read_vw_corpus,
-          options.read_uci_vocab, options.cooc_window, options.cooc_min_tf,
+          options.read_uci_vocab, options.write_cooc_tf,
+          options.write_cooc_df, options.cooc_window, options.cooc_min_tf,
           options.cooc_min_df);
 
     return execute(options, argc, argv);
