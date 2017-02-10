@@ -237,13 +237,11 @@ CooccurrenceDictionary::CooccurrenceDictionary(const std::string &vw,
     cooc_df_file_path = cooc_df_file;
     calculate_tf_cooc = cooc_tf_file_path.size() ? true : false;
     calculate_df_cooc = cooc_df_file_path.size() ? true : false;
-    if (calculate_tf_cooc || calculate_df_cooc) {
-      FetchVocab();
-      if (dictionary.size() > 1) {
-        ReadVowpalWabbit();
-        if (batch_manager.GetBatchQuan())
-          ReadAndMergeBatches();
-      }
+    FetchVocab();
+    if (dictionary.size() > 1) {
+      ReadVowpalWabbit();
+      if (batch_manager.GetBatchQuan())
+        ReadAndMergeBatches();
     }
   } catch (...) {}
 }
