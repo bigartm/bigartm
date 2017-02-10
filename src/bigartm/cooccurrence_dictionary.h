@@ -13,7 +13,6 @@
 
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
-#include "boost/filesystem/fstream.hpp"
 #include "boost/utility.hpp"
 
 enum {
@@ -130,6 +129,8 @@ class CooccurrenceDictionary {
 
   void UploadBatchOnDisk(BatchManager &batch_manager,
         std::map<int, std::map<int, cooccurrence_info>> &cooc);
+
+  cooccurrence_info FormInitialCoocInfo(int doc_id);
 
   void AddInCoocMap(int first_token_id, int second_token_id, int doc_id,
         std::map<int, std::map<int, cooccurrence_info>> &cooc_map);

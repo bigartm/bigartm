@@ -18,7 +18,6 @@
 
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
-#include "boost/filesystem/fstream.hpp"
 #include "boost/utility.hpp"
 
 using namespace std;
@@ -47,7 +46,7 @@ CooccurrenceBatch::CooccurrenceBatch(int batch_num, const char filemode, const s
   }
 }
 
-void CooccurrenceBatch::FormNewCell(std::map<int, std::map<int, cooccurrence_info>>::iterator &map_node) {
+inline void CooccurrenceBatch::FormNewCell(std::map<int, std::map<int, cooccurrence_info>>::iterator &map_node) {
   cell.first_token_id = map_node->first;
   cell.records.resize(0);
   for (auto iter = (map_node->second).begin(); iter != (map_node->second).end(); ++iter) {
@@ -60,7 +59,7 @@ void CooccurrenceBatch::FormNewCell(std::map<int, std::map<int, cooccurrence_inf
   cell.num_of_triples = cell.records.size();
 }
 
-int CooccurrenceBatch::ReadCellHeader() {
+inline int CooccurrenceBatch::ReadCellHeader() {
   in_batch.read(reinterpret_cast<char *>(&cell), 2 * sizeof(int));
   if (!in_batch.eof())
     return true;
@@ -71,13 +70,13 @@ int CooccurrenceBatch::ReadCellHeader() {
   }
 }
 
-void CooccurrenceBatch::ReadRecords() {
+inline void CooccurrenceBatch::ReadRecords() {
   cell.records.resize(cell.num_of_triples);
   in_batch.read(reinterpret_cast<char *>(&cell.records[0]),
           sizeof(Triple) * cell.num_of_triples);
 }
 
-int CooccurrenceBatch::ReadCell() {
+inline int CooccurrenceBatch::ReadCell() {
   if(ReadCellHeader()) {
     ReadRecords();
     return true;
@@ -85,7 +84,7 @@ int CooccurrenceBatch::ReadCell() {
   return false;
 }
 
-void CooccurrenceBatch::WriteCell() {
+inline void CooccurrenceBatch::WriteCell() {
   out_batch.write(reinterpret_cast<char *>(&cell), 2 * sizeof(int));
   out_batch.write(reinterpret_cast<char *>(&cell.records[0]),
           sizeof(Triple) * cell.num_of_triples);
@@ -102,19 +101,16 @@ BatchManager::BatchManager() {
     std::cerr << "Failed to create directory\n";
     throw 1;
   }
-  //boost::filesystem::path full_dirname =
-  //    boost::filesystem::path(boost::filesystem::current_path()) /
-  //    boost::filesystem::path(dir);
-  path_to_batches = /*full_dirname.string()*/ dir.string();
+  path_to_batches = dir.string();
 }
 
 BatchManager::~BatchManager() {
   boost::filesystem::remove_all(path_to_batches);
 }
 
-int BatchManager::GetBatchQuan() { return batch_quan; }
+inline int BatchManager::GetBatchQuan() { return batch_quan; }
 
-CooccurrenceBatch *BatchManager::CreateNewBatch() {
+inline CooccurrenceBatch *BatchManager::CreateNewBatch() {
   if (batch_quan < max_batch_quan) {
     return new CooccurrenceBatch(batch_quan++, 'w', path_to_batches);
   } else {
@@ -124,11 +120,11 @@ CooccurrenceBatch *BatchManager::CreateNewBatch() {
   }
 }
 
-CooccurrenceBatch *BatchManager::OpenExistingBatch(int batch_num) {
+inline CooccurrenceBatch *BatchManager::OpenExistingBatch(int batch_num) {
   return new CooccurrenceBatch(batch_num, 'r', path_to_batches);
 }
 
-void ResultingBuffer::MergeWithExistingCell(const CooccurrenceBatch *batch) {
+inline void ResultingBuffer::MergeWithExistingCell(const CooccurrenceBatch *batch) {
   std::vector<Triple> new_vector;
   auto fi_iter = rec.begin();
   auto se_iter = batch->cell.records.begin();
@@ -151,7 +147,7 @@ void ResultingBuffer::MergeWithExistingCell(const CooccurrenceBatch *batch) {
 }
 
 // Note: here is cast to int and comparison of doubles
-void ResultingBuffer::PopPreviousContent() {
+inline void ResultingBuffer::PopPreviousContent() {
   for (int i = 0; i < (int) rec.size(); ++i) {
     if (calculate_cooc_tf && rec[i].cooc_value >= cooc_min_tf)
       cooc_tf_dict << first_token_id << " " << rec[i].second_token_id
@@ -162,7 +158,7 @@ void ResultingBuffer::PopPreviousContent() {
   }
 }
 
-void ResultingBuffer::AddNewCellInBuffer(const CooccurrenceBatch *batch) {
+inline void ResultingBuffer::AddNewCellInBuffer(const CooccurrenceBatch *batch) {
   first_token_id = batch->cell.first_token_id;
   rec = batch->cell.records;
 }
@@ -197,7 +193,7 @@ ResultingBuffer::ResultingBuffer(const double min_tf, const int min_df,
 
 ResultingBuffer::~ResultingBuffer() { PopPreviousContent(); }
 
-void ResultingBuffer::AddInBuffer(const CooccurrenceBatch *batch) {
+inline void ResultingBuffer::AddInBuffer(const CooccurrenceBatch *batch) {
   if (first_token_id == batch->cell.first_token_id) {
     MergeWithExistingCell(batch);
   } else {
@@ -246,7 +242,7 @@ CooccurrenceDictionary::CooccurrenceDictionary(const std::string &vw,
   } catch (...) {}
 }
 
-void CooccurrenceDictionary::FetchVocab() {
+inline void CooccurrenceDictionary::FetchVocab() {
   // This func reads words from vocab, sets them unique id and collects pair
   // in dictionary
   std::filebuf fb;
@@ -268,7 +264,8 @@ void CooccurrenceDictionary::FetchVocab() {
   }
 }
 
-void CooccurrenceDictionary::UploadBatchOnDisk(BatchManager &batch_manager,
+inline void CooccurrenceDictionary::UploadBatchOnDisk(
+        BatchManager &batch_manager,
         std::map<int, std::map<int, cooccurrence_info>> &cooc) {
   CooccurrenceBatch *batch = batch_manager.CreateNewBatch();
   for (auto iter = cooc.begin(); iter != cooc.end(); ++iter) {
@@ -278,24 +275,27 @@ void CooccurrenceDictionary::UploadBatchOnDisk(BatchManager &batch_manager,
   delete batch;
 }
 
-void CooccurrenceDictionary::AddInCoocMap(int first_token_id,
+inline cooccurrence_info CooccurrenceDictionary::FormInitialCoocInfo(int doc_id) {
+  cooccurrence_info res;
+  res.doc_quan = res.cooc_value = 1;
+  res.prev_doc_id = doc_id;
+  return res;
+}
+
+inline void CooccurrenceDictionary::AddInCoocMap(int first_token_id,
         int second_token_id, int doc_id,
         std::map<int, std::map<int, cooccurrence_info>> &cooc_map) {
-  cooccurrence_info tmp;
-  tmp.doc_quan = tmp.cooc_value = 1;
-  tmp.prev_doc_id = doc_id;
+  cooccurrence_info tmp = FormInitialCoocInfo(doc_id);
   std::map<int, cooccurrence_info> tmp_map;
   tmp_map.insert( std::pair<int, cooccurrence_info> (second_token_id, tmp));
   cooc_map.insert(std::pair<int, std::map<int, cooccurrence_info>> (first_token_id, tmp_map));
 }
 
-void CooccurrenceDictionary::ModifyCoocMapNode(int second_token_id,
+inline void CooccurrenceDictionary::ModifyCoocMapNode(int second_token_id,
         int doc_id, std::map<int, cooccurrence_info> &map_node) {
   auto iter = map_node.find(second_token_id);
   if (iter == map_node.end()) {
-    cooccurrence_info tmp;
-    tmp.doc_quan = tmp.cooc_value = 1;
-    tmp.prev_doc_id = doc_id;
+    cooccurrence_info tmp = FormInitialCoocInfo(doc_id);
     map_node.insert(std::pair<int, cooccurrence_info> (second_token_id, tmp));
   } else {
     iter->second.cooc_value++;
@@ -306,7 +306,7 @@ void CooccurrenceDictionary::ModifyCoocMapNode(int second_token_id,
   }
 }
 
-void CooccurrenceDictionary::SavePairOfTokens(int first_token_id,
+inline void CooccurrenceDictionary::SavePairOfTokens(int first_token_id,
         int second_token_id, int doc_id,
         std::map<int, std::map<int, cooccurrence_info>> &cooc_map) {
   auto map_record = cooc_map.find(first_token_id);
@@ -316,7 +316,7 @@ void CooccurrenceDictionary::SavePairOfTokens(int first_token_id,
     ModifyCoocMapNode(second_token_id, doc_id, map_record->second);
 }
 
-void CooccurrenceDictionary::ReadVowpalWabbit() {
+inline void CooccurrenceDictionary::ReadVowpalWabbit() {
   // This func works as follows:
   // 1. Acquire lock for reading from vowpal wabbit file
   // 2. Read a portion (items_per_batch) of documents from file and save it
@@ -408,7 +408,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
     tasks[i].get();
 }
 
-void CooccurrenceDictionary::ReadAndMergeBatches() {
+inline void CooccurrenceDictionary::ReadAndMergeBatches() {
   auto CompareBatches = [](const CooccurrenceBatch *left,
                            const CooccurrenceBatch *right) {
     return left->cell.first_token_id > right->cell.first_token_id;
