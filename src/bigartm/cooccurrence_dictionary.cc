@@ -33,13 +33,13 @@ CooccurrenceBatch::CooccurrenceBatch(int batch_num, const char filemode, const s
   boost::filesystem::path full_filename = boost::filesystem::path(disk_path)
                  / boost::filesystem::path(filename);
   if (filemode == 'w') {
-    out_batch = boost::filesystem::ofstream(full_filename);
+    out_batch.open(full_filename);
     if (out_batch.bad()) {
       std::cerr << "CooccurrenceBatch::CooccurrenceBatch: Failed to create batch\n";
       throw 1;
     }
   } else {
-    in_batch = boost::filesystem::ifstream(full_filename);
+    in_batch.open(full_filename);
     if (in_batch.bad()) {
       std::cerr << "CooccurrenceBatch::CooccurrenceBatch: Failed to open existing batch\n";
       throw 1;
