@@ -13,6 +13,9 @@ v0.8.3
 
 * Enable copying of ARTM, LDA, hARTM and ARTM_Level objects with ``clone()`` method and ``copy.deepcopy(obj)``.
 * Experimental support for import/export/editing of theta matrices; for more details see python reference of ``ARTM.__init__(ptd_name='ptd')``.
+* ``ARTM.get_phi_dense()`` method to extract phi matrix without pandas.DataFrame, see `#758 <https://github.com/bigartm/bigartm/issues/758>`_.
+* Bug fix in ``ARTM.get_phi_sparse()`` to return tokens as rows, and topic names as columns (previously it was the opposite way)
+
 
 v0.8.2
 ------
