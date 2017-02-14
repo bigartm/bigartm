@@ -81,8 +81,3 @@ Replace them with:
 Here **databasename** is the name of your database, **XXXXXX** is the password.
 	
 13. Repeat steps 6-7.
-
-
-
-
-
