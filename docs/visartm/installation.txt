@@ -7,59 +7,82 @@ You can deploy VisARTM locally on your computer. It supports any OS: Windows, Li
 
 2. Make sure you have installed `BigARTM <http://bigartm.readthedocs.io/en/master/installation/index.html>`_.
 
-3. Install `PostgreSQL <https://www.postgresql.org/download/>`_ and `pgAdmin <https://www.pgadmin.org/>`_. Of cource, ou can use any database management system with django, but we recommend PostgreSQL.
+3. Make sure you have installed git.
 
-4. Open pgAdmin and create new database. Please remember username and password to this database. Default username in PostgreSQL is "postgres".
-
-5. Make sure you have installed git.
-
-6. Clone  VisARTM with console command
+4. Clone  VisARTM with console command
 
 .. code-block:: bash 
 
    git clone https://github.com/bigartm/visartm.git
 
-7. Install all required dependencies, including django:
+5. Install all required dependencies, including django:
 
 .. code-block:: bash 
 
    cd visartm
    pip install -r requirements.txt
-   
-8. Now link database created in step 4 with VisARTM. For that, open file **visartm/settings.py** and lines like these:
-
-.. code-block:: python 
-
-   DATABASES = {
-		'default': {
-			'ENGINE': 'django.db.backends.postgresql_psycopg2',
-			'NAME': 'artmonlinedb',
-			'USER': 'postgres',
-			'PASSWORD': '******',
-			'HOST': '127.0.0.1',
-			'PORT': '5432', 
-		}
-	}
-
-Modify values as follows. NAME is name of database. USER is name of user of database. PASSWORD is his password. If you use local PostgreSQL, you will not need change ENGINE, otherwise it's up to you. You are running database server locally, so don't modify HOST value. 
-
-9. Now you need django to create tables. For that, go to folder named **visartm** and run:
+ 
+6. Now you need django to create tables.
 
 .. code-block:: bash 
 
    python manage.py makemigrations
    python manage.py migrate
    
-10. Create superuser for the service. Django will ask you for username and passwrod. Please remember them, you will need them to use service.
+Note: repeat this lines later after each time you make **git pull**.
+   
+7. Create superuser for the service. Django will ask you for username and passwrod. Please remember them, you will need them to use service.
 
 .. code-block:: bash 
 
    python manage.py createsuperuser
    
-11. Run the server.
+8. Run the server.
 
 .. code-block:: bash 
 
-   python manage.py runserver
+   python manage.py runserver 
+
    
-12. Open your favorite web browser and navigate to http://127.0.0.1:8000
+9. Open web browser (Google Chrome is recommended) and navigate to http://127.0.0.1:8000
+   
+Congratulations! You have installed BigRTM and it works! But you have to do some additional steps. By default, VisARTM uses **sqlite** database and it is not good for really big data sets. So, we recommend you install PostgreSQL databse management system. 
+   
+10. Install `PostgreSQL <https://www.postgresql.org/download/>`_ and `pgAdmin <https://www.pgadmin.org/>`_. Of cource, ou can use any database management system with django, but we recommend PostgreSQL.
+
+11. Open pgAdmin and create new database. Please remember username and password to this database. Default username in PostgreSQL is "postgres".
+    
+12. Now link database created in step 11 with VisARTM. For that, open file **visartm/settings.py** and  find lines:
+
+.. code-block:: python 
+
+	DATABASES = {
+		'default': {
+			'ENGINE': 'django.db.backends.sqlite3',
+			'NAME': 'visartm.sqlite',
+		}
+	}
+	
+Replace them with:	
+
+.. code-block:: python 
+
+   DATABASES = {
+		'default': {
+			'ENGINE': 'django.db.backends.postgresql_psycopg2',
+			'NAME': 'databasename',
+			'USER': 'postgres',
+			'PASSWORD': 'XXXXXX',
+			'HOST': '127.0.0.1',
+			'PORT': '5432', 
+		}
+	}
+	
+Here **databasename** is the name of your database, **XXXXXX** is the password.
+	
+13. Repeat steps 6-7.
+
+
+
+
+
