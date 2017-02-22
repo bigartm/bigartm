@@ -24,11 +24,14 @@
 namespace fs = boost::filesystem;
 
 CooccurrenceBatch::CooccurrenceBatch(int batch_num, const char filemode, const std::string& disk_path) {
-  const int max_name_len = 30;
-  char num_str[max_name_len] = "";
-  sprintf(num_str,"%.4d", batch_num);
-  std::string filename = std::string(num_str);
-  filename += std::string(".bin");
+  //const int max_name_len = 30;
+  //char num_str[max_name_len] = "";
+  //sprintf(num_str,"%.4d", batch_num);
+  std::stringstream ss;
+  ss << std::setprecision(4) << batch_num << ".bin";
+  //std::string filename = std::string(num_str);
+  //filename += std::string(".bin");
+  std::string filename = ss.str();
   fs::path full_filename = fs::path(disk_path) / fs::path(filename);
   if (filemode == 'w') {
     out_batch_.open(full_filename.string());
@@ -59,8 +62,8 @@ void CooccurrenceBatch::FormNewCell(std::map<int, CoocMap>::iterator& map_node) 
 }
 
 int CooccurrenceBatch::ReadCellHeader() {
-  in_batch_.read(static_cast<char *>(&cell_.first_token_id), sizeof cell_.first_token_id);
-  in_batch_.read(static_cast<char *>(&cell_.num_of_triples), sizeof cell_.num_of_triples);
+  in_batch_.read(reinterpret_cast<char *>(&cell_.first_token_id), sizeof cell_.first_token_id);
+  in_batch_.read(reinterpret_cast<char *>(&cell_.num_of_triples), sizeof cell_.num_of_triples);
   if (!in_batch_.eof())
     return true;
   else {
@@ -72,7 +75,7 @@ int CooccurrenceBatch::ReadCellHeader() {
 
 void CooccurrenceBatch::ReadRecords() {
   cell_.records.resize(cell_.num_of_triples);
-  in_batch_.read(static_cast<char *>(&cell_.records[0]),
+  in_batch_.read(reinterpret_cast<char *>(&cell_.records[0]),
           sizeof(Triple) * cell_.num_of_triples);
 }
 
@@ -85,9 +88,9 @@ int CooccurrenceBatch::ReadCell() {
 }
 
 void CooccurrenceBatch::WriteCell() {
-  out_batch_.write(static_cast<char *>(&cell_.first_token_id), sizeof cell_.first_token_id);
-  out_batch_.write(static_cast<char *>(&cell_.num_of_triples), sizeof cell_.num_of_triples);
-  out_batch_.write(static_cast<char *>(&cell_.records[0]),
+  out_batch_.write(reinterpret_cast<char *>(&cell_.first_token_id), sizeof cell_.first_token_id);
+  out_batch_.write(reinterpret_cast<char *>(&cell_.num_of_triples), sizeof cell_.num_of_triples);
+  out_batch_.write(reinterpret_cast<char *>(&cell_.records[0]),
           sizeof(Triple) * cell_.num_of_triples);
 }
 
