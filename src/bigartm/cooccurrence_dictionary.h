@@ -76,7 +76,7 @@ class BatchManager {
 
 class ResultingBuffer {
  public:
-  ResultingBuffer(const double min_tf, const int min_df,
+  ResultingBuffer(const float min_tf, const int min_df,
           const std::string& cooc_tf_file_path,
           const std::string& cooc_df_file_path, const bool& cooc_tf_flag,
           const bool& cooc_df_flag);
@@ -87,7 +87,7 @@ class ResultingBuffer {
   void PopPreviousContent();
   void AddNewCellInBuffer(const CooccurrenceBatch& batch);
 
-  double cooc_min_tf_;
+  float cooc_min_tf_;
   int cooc_min_df_;
   int first_token_id_;
   std::vector<Triple> rec_;
@@ -101,7 +101,7 @@ class CooccurrenceDictionary {
  public:
   CooccurrenceDictionary(const std::string& vw, const std::string& vocab,
         const std::string& cooc_tf_file, const std::string& cooc_df_file,
-        const int wind_width, const double min_tf, const int min_df);
+        const int wind_width, const float min_tf, const int min_df);
  private:
   void FetchVocab();
   void UploadBatchOnDisk(BatchManager& batch_manager,
@@ -118,7 +118,7 @@ class CooccurrenceDictionary {
 
   int window_width_;
   int cooc_min_df_;
-  double cooc_min_tf_;
+  float cooc_min_tf_;
   std::string path_to_vocab_;
   std::string path_to_vw_;
   std::string cooc_tf_file_path_;

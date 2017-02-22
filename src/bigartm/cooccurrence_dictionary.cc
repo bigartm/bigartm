@@ -109,9 +109,9 @@ BatchManager::~BatchManager() { fs::remove_all(path_to_batches_); }
 int BatchManager::GetBatchQuan() { return batch_quan_; }
 
 CooccurrenceBatch* BatchManager::CreateNewBatch() {
-  if (batch_quan_ < max_batch_quan_) {
+  if (batch_quan_ < max_batch_quan_)
     return new CooccurrenceBatch(batch_quan_++, 'w', path_to_batches_);
-  } else {
+  else {
     std::cerr << "Too many batches, maximal number of batches = "
               << max_batch_quan_ << std::endl;
     throw 1;
@@ -144,7 +144,7 @@ void ResultingBuffer::MergeWithExistingCell(const CooccurrenceBatch& batch) {
   rec_ = new_vector;
 }
 
-// Note: here is cast to int and comparison of doubles
+// Note: here is cast to int and comparison of floats
 void ResultingBuffer::PopPreviousContent() {
   for (int i = 0; i < static_cast<int> (rec_.size()); ++i) {
     if (calculate_cooc_tf_ && rec_[i].cooc_value >= cooc_min_tf_)
@@ -161,7 +161,7 @@ void ResultingBuffer::AddNewCellInBuffer(const CooccurrenceBatch& batch) {
   rec_ = batch.cell_.records;
 }
 
-ResultingBuffer::ResultingBuffer(const double min_tf, const int min_df,
+ResultingBuffer::ResultingBuffer(const float min_tf, const int min_df,
          const std::string& cooc_tf_file_path,
          const std::string& cooc_df_file_path, const bool& cooc_tf_flag,
          const bool& cooc_df_flag) {
@@ -203,7 +203,7 @@ void ResultingBuffer::AddInBuffer(const CooccurrenceBatch& batch) {
 CooccurrenceDictionary::CooccurrenceDictionary(const std::string& vw,
         const std::string& vocab, const std::string& cooc_tf_file,
         const std::string& cooc_df_file, const int wind_width,
-        const double min_tf, const int min_df) {
+        const float min_tf, const int min_df) {
   // This function works as follows:
   // 1. Get content from a vocab file and put it in dictionary
   // 2. Read Vowpal Wabbit file by portions, calculate co-occurrences for

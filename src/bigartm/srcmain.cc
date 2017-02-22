@@ -260,7 +260,7 @@ struct artm_options {
   int dictionary_size;
   int cooc_window;
   int cooc_min_df;
-  double cooc_min_tf;
+  float cooc_min_tf;
 
   // Model
   std::string load_model;
