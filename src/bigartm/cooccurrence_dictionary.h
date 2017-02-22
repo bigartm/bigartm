@@ -16,7 +16,7 @@
 
 enum {
   MAX_NUM_OF_BATCHES = 4000,
-  ITEMS_PER_BATCH = 5000,
+  ITEMS_PER_BATCH = 7000,
 };
 
 struct Triple {
