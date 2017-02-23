@@ -98,7 +98,7 @@ Computes the :math:`n_t` values for each requested topic in :math:`\Phi` matrix.
 Can be useful in external (self written in Python) scores and regularizers, that requires :math:`n_t`. Much more faster than :math:`\Phi` extraction and normalization.
 
 
-Class Presicion
+Class Precision
 -------------
 
 ToDo(sashafrey)
