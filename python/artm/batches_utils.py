@@ -75,11 +75,14 @@ class BatchVectorizer(object):
         :type class_ids: list of str or str
         :param bool process_in_memory: process batches from disk or from RAM \
                                        (only if data_format == Batches), model parameter is required
-        :param artm.ARTM model: ARTM instance that will use this vectorizer, is need only if\
-                                process_in_memory == True
+        :param artm.ARTM model: ARTM instance that will use this vectorizer, is required when\
+                                process_in_memory == True. Will be ignored in other cases
         """
         self._remove_batches = False
         self._process_in_memory = process_in_memory and data_format == 'batches' and model is not None
+        if self._process_in_memory != process_in_memory:
+            raise IOError("Correct configuration: process_memory == True + data_format == 'batches' + model != None")
+
         self._model = model
         if data_format == 'bow_n_wd' or data_format == 'vowpal_wabbit' or data_format == 'bow_uci':
             self._remove_batches = target_folder is None
@@ -123,7 +126,7 @@ class BatchVectorizer(object):
 
         if self._process_in_memory:
             for batch in self._batches_list:
-                model.master.remove_batch(batch)
+                self._model.master.remove_batch(batch)
         self._process_in_memory = False
 
     def __exit__(self, exc_type, exc_value, traceback):

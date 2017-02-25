@@ -105,6 +105,8 @@ def test_func():
                     
             assert counter == n_wd_num_tokens + 2
 
+            # ToDo: we're not able to compare lists directly in Python 3 because of
+            #       unknown reasons. This should be fixed
             assert set(tokens) == set(n_wd_tokens_list)
             assert set(token_tf) == set(n_wd_token_tf_list)
             assert set(token_df) == set(n_wd_token_df_list)
