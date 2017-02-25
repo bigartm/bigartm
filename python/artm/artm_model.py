@@ -484,7 +484,10 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('The model was not initialized. Use initialize() method')
 
-        batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
+        def _func(batch):
+            return batch if batch_vectorizer.process_in_memory else batch.filename
+
+        batches_list = [_func(batch) for batch in batch_vectorizer.batches_list]
         # outer cycle is needed because of TopicSelectionThetaRegularizer
         # and current ScoreTracker implementation
 
@@ -546,7 +549,10 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('The model was not initialized. Use initialize() method')
 
-        batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
+        def _func(batch):
+            return batch if batch_vectorizer.process_in_memory else batch.filename
+
+        batches_list = [_func(batch) for batch in batch_vectorizer.batches_list]
 
         update_after_final, apply_weight_final, decay_weight_final = [], [], []
         if (update_after is None) or (apply_weight is None) or (decay_weight is None):
