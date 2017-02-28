@@ -3,7 +3,7 @@
 
 * **Interpretability and Coherence of Topics**
 
-The one of main requirements of topic models is interpretability (i.e., do the topics contain tokens that, according to subjective human judgment, are representative of single coherent concept). `Newman at al. <http://www.aclweb.org/anthology/N10-1012>`_ showed the human evaluation of interpretability is well correlated with next automated quality measure called coherence. The coherence formula for topic is defined as
+The one of main requirements of topic models is interpretability (i.e., do the topics contain tokens that, according to subjective human judgment, are representative of single coherent concept). `Newman at al. <http://www.aclweb.org/anthology/N10-1012>`_ showed the human evaluation of interpretability is well correlated with the following automated quality measure called coherence. The coherence formula for topic is defined as
 
 :math:`\mathcal{C}_t = \cfrac{2}{k(k - 1)} \sum_{i = 1}^{k - 1} \sum_{j = 1}^{k} \mathrm{value}(w_i, w_j)`,
 
