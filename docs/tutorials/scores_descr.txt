@@ -52,7 +52,7 @@ Top Tokens
 
 * **Description:**
 
-Return ``k`` (= requested number of top tokens) most probable tokens in each requested topic. If the number of tokens with :math:`p(w|t) > 0` in topic is less than ``k`` then only these tokens will be returned. Also the score can compute the coherence of top tokens in the topic using co-occurrance dictionary (see :doc:`python_userguide/coherence` for detailes of usage from Python).
+Return ``k`` (= requested number of top tokens) most probable tokens in each requested topic. If the number of tokens with :math:`p(w|t) > 0` in topic is less than ``k`` then only these tokens will be returned. Also the score can compute the coherence of top tokens in the topic using co-occurrence dictionary (see :doc:`python_userguide/coherence` for detailes of usage from Python).
 
 The coherence formula for topic is defined as
 
