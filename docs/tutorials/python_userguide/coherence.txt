@@ -40,7 +40,7 @@ Where
 * ``data_path`` is path to folder with your collection in internal BigARTM format (batches);
 * ``cooc_file_path`` is path to file with co-occurrences of tokens;
 * ``vocab_file_path`` is path to vocabulary file corresponding to `cooc.txt`;
-* ``symmetric_cooc_values`` is Boolean argument. ``False`` means that co-occurrences information is not symmetric by order of tokens, i.e. `value(w1, w2)` and `value(w2, w1)` can be different.
+* ``symmetric_cooc_values`` is Boolean argument. ``False`` means that co-occurrence information is not symmetric by order of tokens, i.e. `value(w1, w2)` and `value(w2, w1)` can be different.
 
 
 So, now you can create coherence computation score: ::
