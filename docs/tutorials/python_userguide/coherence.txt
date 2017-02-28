@@ -1,4 +1,4 @@
-6. Tokens Coocurancy and Coherence Computation
+6. Tokens Co-occurrance and Coherence Computation
 ==============================================
 
 * **Interpretability and Coherence of Topics**
@@ -9,9 +9,9 @@ The one of main requirements of topic models is interpretability (i.e., do the t
 
 where value is some pairwise information about tokens in collection dictionary, which is provided by user according to his goals.
 
-* **Tokens Coocurancy Dictionary**
+* **Tokens Co-occurrance Dictionary**
 
-BigARTM provides ability of automatic coherence computation. Only one thing you should prepare is file with coocurancies of tokens. Lines of that file should have the next format: ::
+BigARTM provides ability of automatic coherence computation. Only one thing you should prepare is file with co-occurrances of tokens. Lines of that file should have the next format: ::
 
 	id1 id2 value
 
@@ -24,9 +24,9 @@ where `n(u)` and `n(v)` are frequencies of `u` and `v` in corpora, `n(u,v)` is j
 
 * **Usage**
 
-Let's assume you have file `cooc.txt` with coocurancies of tokens. Also you should have vocabulary file in UCI format `vocab.txt` corresponding to `cooc.txt` file. 
+Let's assume you have file `cooc.txt` with co-occurrances of tokens. Also you should have vocabulary file in UCI format `vocab.txt` corresponding to `cooc.txt` file. 
 
-To upload coocurancies data into BigARTM you should use ``artm.Dictionary`` object and method ``gather``: ::
+To upload co-occurrance data into BigARTM you should use ``artm.Dictionary`` object and method ``gather``: ::
 
 	cooc_dict = artm.Dictionary()
 	cooc_dict.gather(
@@ -38,9 +38,9 @@ To upload coocurancies data into BigARTM you should use ``artm.Dictionary`` obje
 Where 
 
 * ``data_path`` is path to folder with your collection in internal BigARTM format (batches);
-* ``cooc_file_path`` is path to file with coocurancies of tokens;
+* ``cooc_file_path`` is path to file with co-occurrances of tokens;
 * ``vocab_file_path`` is path to vocabulary file corresponding to `cooc.txt`;
-* ``symmetric_cooc_values`` is Boolean argument. ``False`` means that coocurancies information is not symmetric by order of tokens, i.e. `value(w1, w2)` and `value(w2, w1)` can be different.
+* ``symmetric_cooc_values`` is Boolean argument. ``False`` means that co-occurrances information is not symmetric by order of tokens, i.e. `value(w1, w2)` and `value(w2, w1)` can be different.
 
 
 So, now you can create coherence computation score: ::
@@ -55,10 +55,10 @@ So, now you can create coherence computation score: ::
 Arguments:
 
 * ``name`` is name of score;
-* ``class_id`` is name of modality, which contains tokens with coocurancy information;
+* ``class_id`` is name of modality, which contains tokens with co-occurrance information;
 * ``num_tokens`` is number ``k`` of used top tokens for topic coherence computation;
 * ``topic_names`` is list of topic names for coherence computation;
-* ``dictionary`` is artm.Dictionary with coocurancy statistic.
+* ``dictionary`` is artm.Dictionary with co-occurrance statistic.
 
 To add ``coherence_score`` to the model use next line: ::
 
