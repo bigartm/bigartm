@@ -52,7 +52,7 @@ Top Tokens
 
 * **Description:**
 
-Return ``k`` (= requested number of top tokens) most probable tokens in each requested topic. If the number of tokens with :math:`p(w|t) > 0` in topic is less than ``k`` then only these tokens will be returned. Also the score can compute the coherence of top tokens in the topic using coocurancy dictionary (see :doc:`python_userguide/coherence` for detailes of usage from Python).
+Return ``k`` (= requested number of top tokens) most probable tokens in each requested topic. If the number of tokens with :math:`p(w|t) > 0` in topic is less than ``k`` then only these tokens will be returned. Also the score can compute the coherence of top tokens in the topic using co-occurrence dictionary (see :doc:`python_userguide/coherence` for detailes of usage from Python).
 
 The coherence formula for topic is defined as
 
@@ -64,14 +64,14 @@ where value is some pairwise information about tokens in collection dictionary, 
 
 Checking top tokens is one of the main ways of topic quality verification. But in practice the interpretation of top tokens not always correlated with the real sence of topic and it is useful to check the documents assigned to it.
 
-Coherence is one of the best measures for automatic inpretability checking. Note, that different types of ``value`` will lead to different types of coherence.
+Coherence is one of the best measures for automatic interpretability checking. Note, that different types of ``value`` will lead to different types of coherence.
 
 Topic Kernel Scores
 -------------
 
 * **Description:**
 
-This score was created as one more way to control the inpretability of the topics. Let's define the `topic kernel` as :math:`W_t = \big\{ w \in W | p(t|w) > \mathrm{threashold}  \big\}`, and determine several measures, based on it:
+This score was created as one more way to control the interpretability of the topics. Let's define the `topic kernel` as :math:`W_t = \big\{ w \in W | p(t|w) > \mathrm{threashold}  \big\}`, and determine several measures, based on it:
 
   - :math:`\sum_{w \in W_t} p(w|t)` - the `purity` of the topic (higher values corresponds better topics);
   - :math:`\cfrac{1}{|W_t|}\sum_{w \in W_t} p(t|w)` - `contrast` of the topic (higher values corresponds better topics);
@@ -83,7 +83,7 @@ Also it can compute coherence topic kernels. The coherence formula is the same a
 
 * **Usage:**
 
-Average purity and contrast can be used as a measure of topics inpretability and difference. ``threahold`` parameter is recommended to be set to 0.5 and higher, it should be set once and fixed.
+Average purity and contrast can be used as a measure of topics interpretability and difference. ``threahold`` parameter is recommended to be set to 0.5 and higher, it should be set once and fixed.
 
 
 Topic Mass
