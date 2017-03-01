@@ -25,7 +25,7 @@ namespace fs = boost::filesystem;
 
 CooccurrenceBatch::CooccurrenceBatch(int batch_num, const char filemode, const std::string& disk_path) {
   std::stringstream ss;
-  ss << std::setprecision(4) << batch_num << ".bin";
+  ss << std::setprecision(4) << batch_num << ".batch";
   std::string filename = ss.str();
   fs::path full_filename = fs::path(disk_path) / fs::path(filename);
   if (filemode == 'w') {
@@ -57,8 +57,10 @@ void CooccurrenceBatch::FormNewCell(std::map<int, CoocMap>::iterator& map_node) 
 }
 
 bool CooccurrenceBatch::ReadCellHeader() {
-  in_batch_.read(reinterpret_cast<char*>(&cell_.first_token_id), sizeof cell_.first_token_id);
-  in_batch_.read(reinterpret_cast<char*>(&cell_.num_of_triples), sizeof cell_.num_of_triples);
+  in_batch_ >> cell_.first_token_id;
+  //in_batch_.read(reinterpret_cast<char*>(&cell_.first_token_id), sizeof cell_.first_token_id);
+  in_batch_ >> cell_.num_of_triples;
+  //in_batch_.read(reinterpret_cast<char*>(&cell_.num_of_triples), sizeof cell_.num_of_triples);
   if (!in_batch_.eof())
     return true;
   else {
@@ -70,12 +72,17 @@ bool CooccurrenceBatch::ReadCellHeader() {
 
 void CooccurrenceBatch::ReadRecords() {
   // It's not good if there are no records in batch after header
-    if (in_batch_.eof()) {
+  if (in_batch_.eof()) {
     std::cerr << "Error while reading from batch. File is corrupted\n";
     throw 1;
   }
   cell_.records.resize(cell_.num_of_triples);
-  in_batch_.read(reinterpret_cast<char*>(&cell_.records[0]), sizeof(Triple) * cell_.num_of_triples);
+  for (int i = 0; i < static_cast<int>(cell_.records.size()); ++i) {
+    in_batch_ >> cell_.records[i].cooc_value;
+    in_batch_ >> cell_.records[i].doc_quan;
+    in_batch_ >> cell_.records[i].second_token_id;
+  }
+  //in_batch_.read(reinterpret_cast<char*>(&cell_.records[0]), sizeof(Triple) * cell_.num_of_triples);
 }
 
 bool CooccurrenceBatch::ReadCell() {
@@ -87,9 +94,16 @@ bool CooccurrenceBatch::ReadCell() {
 }
 
 void CooccurrenceBatch::WriteCell() {
-  out_batch_.write(reinterpret_cast<char*>(&cell_.first_token_id), sizeof cell_.first_token_id);
-  out_batch_.write(reinterpret_cast<char*>(&cell_.num_of_triples), sizeof cell_.num_of_triples);
-  out_batch_.write(reinterpret_cast<char*>(&cell_.records[0]), sizeof(Triple) * cell_.num_of_triples);
+  out_batch_ << cell_.first_token_id << ' ';
+  //out_batch_.write(reinterpret_cast<char*>(&cell_.first_token_id), sizeof cell_.first_token_id);
+  out_batch_ << cell_.num_of_triples << std::endl;
+  //out_batch_.write(reinterpret_cast<char*>(&cell_.num_of_triples), sizeof cell_.num_of_triples);
+  for (int i = 0; i < static_cast<int>(cell_.records.size()); ++i) {
+    out_batch_ << cell_.records[i].cooc_value << ' ';
+    out_batch_ << cell_.records[i].doc_quan << ' ';
+    out_batch_ << cell_.records[i].second_token_id << std::endl;
+  }
+  //out_batch_.write(reinterpret_cast<char*>(&cell_.records[0]), sizeof(Triple) * cell_.num_of_triples);
 }
 
 BatchManager::BatchManager() {
