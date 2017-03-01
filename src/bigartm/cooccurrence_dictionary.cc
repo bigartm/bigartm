@@ -56,9 +56,9 @@ void CooccurrenceBatch::FormNewCell(std::map<int, CoocMap>::iterator& map_node) 
   cell_.num_of_triples = cell_.records.size();
 }
 
-int CooccurrenceBatch::ReadCellHeader() {
-  in_batch_.read(reinterpret_cast<char *>(&cell_.first_token_id), sizeof cell_.first_token_id);
-  in_batch_.read(reinterpret_cast<char *>(&cell_.num_of_triples), sizeof cell_.num_of_triples);
+bool CooccurrenceBatch::ReadCellHeader() {
+  in_batch_.read(reinterpret_cast<char*>(&cell_.first_token_id), sizeof cell_.first_token_id);
+  in_batch_.read(reinterpret_cast<char*>(&cell_.num_of_triples), sizeof cell_.num_of_triples);
   if (!in_batch_.eof())
     return true;
   else {
@@ -69,13 +69,17 @@ int CooccurrenceBatch::ReadCellHeader() {
 }
 
 void CooccurrenceBatch::ReadRecords() {
+  // It's not good if there are no records in batch after header
+    if (in_batch_.eof()) {
+    std::cerr << "Error while reading from batch. File is corrupted\n";
+    throw 1;
+  }
   cell_.records.resize(cell_.num_of_triples);
-  in_batch_.read(reinterpret_cast<char *>(&cell_.records[0]),
-          sizeof(Triple) * cell_.num_of_triples);
+  in_batch_.read(reinterpret_cast<char*>(&cell_.records[0]), sizeof(Triple) * cell_.num_of_triples);
 }
 
-int CooccurrenceBatch::ReadCell() {
-  if(ReadCellHeader()) {
+bool CooccurrenceBatch::ReadCell() {
+  if (ReadCellHeader()) {
     ReadRecords();
     return true;
   }
@@ -83,10 +87,9 @@ int CooccurrenceBatch::ReadCell() {
 }
 
 void CooccurrenceBatch::WriteCell() {
-  out_batch_.write(reinterpret_cast<char *>(&cell_.first_token_id), sizeof cell_.first_token_id);
-  out_batch_.write(reinterpret_cast<char *>(&cell_.num_of_triples), sizeof cell_.num_of_triples);
-  out_batch_.write(reinterpret_cast<char *>(&cell_.records[0]),
-          sizeof(Triple) * cell_.num_of_triples);
+  out_batch_.write(reinterpret_cast<char*>(&cell_.first_token_id), sizeof cell_.first_token_id);
+  out_batch_.write(reinterpret_cast<char*>(&cell_.num_of_triples), sizeof cell_.num_of_triples);
+  out_batch_.write(reinterpret_cast<char*>(&cell_.records[0]), sizeof(Triple) * cell_.num_of_triples);
 }
 
 BatchManager::BatchManager() {
@@ -146,10 +149,10 @@ void ResultingBuffer::MergeWithExistingCell(const CooccurrenceBatch& batch) {
 
 // Note: here is cast to int and comparison of floats
 void ResultingBuffer::PopPreviousContent() {
-  for (int i = 0; i < static_cast<int> (rec_.size()); ++i) {
+  for (int i = 0; i < static_cast<int>(rec_.size()); ++i) {
     if (calculate_cooc_tf_ && rec_[i].cooc_value >= cooc_min_tf_)
       cooc_tf_dict_ << first_token_id_ << " " << rec_[i].second_token_id
-               << " " << static_cast<int> (rec_[i].cooc_value) << std::endl;
+               << " " << static_cast<int>(rec_[i].cooc_value) << std::endl;
     if (calculate_cooc_df_ && rec_[i].doc_quan >= cooc_min_df_)
       cooc_df_dict_ << first_token_id_ << " " << rec_[i].second_token_id
                << " " << rec_[i].doc_quan << std::endl;
@@ -229,10 +232,13 @@ CooccurrenceDictionary::CooccurrenceDictionary(const std::string& vw,
     cooc_df_file_path_ = cooc_df_file;
     calculate_tf_cooc_ = cooc_tf_file_path_.size() ? true : false;
     calculate_df_cooc_ = cooc_df_file_path_.size() ? true : false;
+    // ToDo: set it depeding from RAM
+    items_per_batch = 7000;
+    max_num_of_batches = 4000;
     FetchVocab();
-    if (dictionary_.size() > 1) {
+    if (vocab_dictionary_.size() > 1) {
       ReadVowpalWabbit();
-      if (batch_manager_.GetBatchQuan())
+      if (batch_manager_.GetBatchQuan() != 0)
         ReadAndMergeBatches();
     }
   } catch (...) {}
@@ -255,7 +261,7 @@ void CooccurrenceDictionary::FetchVocab() {
       break;
     boost::algorithm::trim(str);
     if (!str.empty()) {
-      bool inserted = dictionary_.insert(std::make_pair(str, last_token_id)).second;
+      bool inserted = vocab_dictionary_.insert(std::make_pair(str, last_token_id)).second;
       if (inserted)
         ++last_token_id;
     }
@@ -283,8 +289,8 @@ void CooccurrenceDictionary::AddInCoocMap(int first_token_id,
         int second_token_id, int doc_id, std::map<int, CoocMap>& cooc_maps) {
   CooccurrenceInfo tmp = FormInitialCoocInfo(doc_id);
   std::map<int, CooccurrenceInfo> tmp_map;
-  tmp_map.insert( std::pair<int, CooccurrenceInfo> (second_token_id, tmp));
-  cooc_maps.insert(std::pair<int, std::map<int, CooccurrenceInfo>> (first_token_id, tmp_map));
+  tmp_map.insert( std::pair<int, CooccurrenceInfo>(second_token_id, tmp));
+  cooc_maps.insert(std::pair<int, std::map<int, CooccurrenceInfo>>(first_token_id, tmp_map));
 }
 
 void CooccurrenceDictionary::ModifyCoocMapNode(int second_token_id,
@@ -292,7 +298,7 @@ void CooccurrenceDictionary::ModifyCoocMapNode(int second_token_id,
   auto iter = map_node.find(second_token_id);
   if (iter == map_node.end()) {
     CooccurrenceInfo tmp = FormInitialCoocInfo(doc_id);
-    map_node.insert(std::pair<int, CooccurrenceInfo> (second_token_id, tmp));
+    map_node.insert(std::pair<int, CooccurrenceInfo>(second_token_id, tmp));
   } else {
     ++iter->second.cooc_value;
     if (iter->second.prev_doc_id != doc_id) {
@@ -343,7 +349,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
           return;
 
         std::string str;
-        while (portion.size() < ITEMS_PER_BATCH) {
+        while (static_cast<int>(portion.size()) < items_per_batch) {
           getline(vowpal_wabbit_doc, str);
           if (vowpal_wabbit_doc.eof())
             break;
@@ -367,15 +373,15 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
         if (doc.size() <= 1)
           continue;
 
-        for (int j = 1; j < static_cast<int> (doc.size() - 1); ++j) {
-          auto first_token = dictionary_.find(doc[j]);
-          if (first_token == dictionary_.end())
+        for (int j = 1; j < static_cast<int>(doc.size() - 1); ++j) {
+          auto first_token = vocab_dictionary_.find(doc[j]);
+          if (first_token == vocab_dictionary_.end())
             continue;
           int first_token_id = first_token->second;
 
-          for (int k = 1; k <= window_width_ && j + k < static_cast<int> (doc.size()); ++k) {
-            auto second_token = dictionary_.find(doc[j + k]);
-            if (second_token == dictionary_.end())
+          for (int k = 1; k <= window_width_ && j + k < static_cast<int>(doc.size()); ++k) {
+            auto second_token = vocab_dictionary_.find(doc[j + k]);
+            if (second_token == vocab_dictionary_.end())
               continue;
             int second_token_id = second_token->second;
             if (first_token_id == second_token_id)

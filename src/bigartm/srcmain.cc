@@ -1730,14 +1730,12 @@ int main(int argc, char * argv[]) {
       ::artm::ConfigureLogging(args);
     }
 
-    {
-      if (!options.read_vw_corpus.empty() &&
-          !options.read_uci_vocab.empty() &&
-          (!options.write_cooc_tf.empty() || !options.write_cooc_df.empty()))
-        CooccurrenceDictionary cooc_dictionary(options.read_vw_corpus,
-            options.read_uci_vocab, options.write_cooc_tf,
-            options.write_cooc_df, options.cooc_window, options.cooc_min_tf,
-            options.cooc_min_df);
+    if (!options.read_vw_corpus.empty() && !options.read_uci_vocab.empty() &&
+        (!options.write_cooc_tf.empty() || !options.write_cooc_df.empty())) {
+      CooccurrenceDictionary cooc_dictionary(options.read_vw_corpus,
+          options.read_uci_vocab, options.write_cooc_tf,
+          options.write_cooc_df, options.cooc_window, options.cooc_min_tf,
+          options.cooc_min_df);
     }
 
     return execute(options, argc, argv);

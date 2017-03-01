@@ -14,11 +14,6 @@
 #include "boost/filesystem.hpp"
 #include "boost/utility.hpp"
 
-enum {
-  MAX_NUM_OF_BATCHES = 4000,
-  ITEMS_PER_BATCH = 7000,
-};
-
 struct Triple {
   float cooc_value;
   int doc_quan;
@@ -44,9 +39,9 @@ class CooccurrenceBatch: private boost::noncopyable {
  friend class ResultingBuffer;
  public:
   void FormNewCell(std::map<int, CoocMap>::iterator& map_node);
-  int ReadCellHeader();
+  bool ReadCellHeader();
   void ReadRecords();
-  int ReadCell();
+  bool ReadCell();
   void WriteCell();
  private:
   CooccurrenceBatch(int batch_num, const char filemode, const std::string& disk_path);
@@ -126,5 +121,7 @@ class CooccurrenceDictionary {
   bool calculate_tf_cooc_;
   bool calculate_df_cooc_;
   BatchManager batch_manager_;
-  std::unordered_map<std::string, int> dictionary_;
+  std::unordered_map<std::string, int> vocab_dictionary_;
+  int max_num_of_batches;
+  int items_per_batch;
 };
