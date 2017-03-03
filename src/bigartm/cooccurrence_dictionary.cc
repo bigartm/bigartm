@@ -30,13 +30,13 @@ CooccurrenceBatch::CooccurrenceBatch(int batch_num, const char filemode, const s
   fs::path full_filename = fs::path(disk_path) / fs::path(filename);
   if (filemode == 'w') {
     out_batch_.open(full_filename.string());
-    if (out_batch_.bad()) {
+    if (!out_batch_.good()) {
       std::cerr << "CooccurrenceBatch::CooccurrenceBatch: Failed to create batch\n";
       throw 1;
     }
   } else {
     in_batch_.open(full_filename.string());
-    if (in_batch_.bad()) {
+    if (!in_batch_.good()) {
       std::cerr << "CooccurrenceBatch::CooccurrenceBatch: Failed to open existing batch\n";
       throw 1;
     }
@@ -161,12 +161,11 @@ void ResultingBuffer::MergeWithExistingCell(const CooccurrenceBatch& batch) {
   rec_ = new_vector;
 }
 
-// Note: here is cast to int and comparison of floats
 void ResultingBuffer::PopPreviousContent() {
   for (int i = 0; i < static_cast<int>(rec_.size()); ++i) {
     if (calculate_cooc_tf_ && rec_[i].cooc_value >= cooc_min_tf_)
       cooc_tf_dict_ << first_token_id_ << " " << rec_[i].second_token_id
-               << " " << static_cast<int>(rec_[i].cooc_value) << std::endl;
+               << " " << rec_[i].cooc_value << std::endl;
     if (calculate_cooc_df_ && rec_[i].doc_quan >= cooc_min_df_)
       cooc_df_dict_ << first_token_id_ << " " << rec_[i].second_token_id
                << " " << rec_[i].doc_quan << std::endl;
@@ -178,7 +177,7 @@ void ResultingBuffer::AddNewCellInBuffer(const CooccurrenceBatch& batch) {
   rec_ = batch.cell_.records;
 }
 
-ResultingBuffer::ResultingBuffer(const float min_tf, const int min_df,
+ResultingBuffer::ResultingBuffer(const int min_tf, const int min_df,
          const std::string& cooc_tf_file_path,
          const std::string& cooc_df_file_path, const bool& cooc_tf_flag,
          const bool& cooc_df_flag) {
@@ -192,14 +191,14 @@ ResultingBuffer::ResultingBuffer(const float min_tf, const int min_df,
   first_token_id_ = -1;
   if (calculate_cooc_tf_) {
     cooc_tf_dict_.open(cooc_tf_file_path, std::ios::out);
-    if (cooc_tf_dict_.bad()) {
+    if (!cooc_tf_dict_.good()) {
       std::cerr << "Failed to create a file in the working directory\n";
       throw 1;
     }
   }
   if (calculate_cooc_df_) {
     cooc_df_dict_.open(cooc_df_file_path, std::ios::out);
-    if (cooc_df_dict_.bad()) {
+    if (!cooc_df_dict_.good()) {
       std::cerr << "Failed to create a file in the working directory\n";
       throw 1;
     }
@@ -220,7 +219,7 @@ void ResultingBuffer::AddInBuffer(const CooccurrenceBatch& batch) {
 CooccurrenceDictionary::CooccurrenceDictionary(const std::string& vw,
         const std::string& vocab, const std::string& cooc_tf_file,
         const std::string& cooc_df_file, const int wind_width,
-        const float min_tf, const int min_df) {
+        const int min_tf, const int min_df, const int items_per_batch) {
   // This function works as follows:
   // 1. Get content from a vocab file and put it in dictionary
   // 2. Read Vowpal Wabbit file by portions, calculate co-occurrences for
@@ -246,9 +245,11 @@ CooccurrenceDictionary::CooccurrenceDictionary(const std::string& vw,
     cooc_df_file_path_ = cooc_df_file;
     calculate_tf_cooc_ = cooc_tf_file_path_.size() ? true : false;
     calculate_df_cooc_ = cooc_df_file_path_.size() ? true : false;
-    // ToDo: set it depeding from RAM
-    items_per_batch = 7000;
-    max_num_of_batches = 4000;
+    // ToDo: set it depending on RAM
+    {
+        items_per_batch_ = items_per_batch;
+        max_num_of_batches_ = 4000;
+    }
     FetchVocab();
     if (vocab_dictionary_.size() > 1) {
       ReadVowpalWabbit();
@@ -274,11 +275,11 @@ void CooccurrenceDictionary::FetchVocab() {
     if (vocab.eof())
       break;
     boost::algorithm::trim(str);
-    if (!str.empty()) {
-      bool inserted = vocab_dictionary_.insert(std::make_pair(str, last_token_id)).second;
-      if (inserted)
-        ++last_token_id;
-    }
+    std::vector<std::string> strs;
+    boost::split(strs, str, boost::is_any_of(" "));
+    if (!strs[0].empty())
+      if (strs.size() == 1 || strcmp(strs[1].c_str(), "@default_class") == 0)
+        vocab_dictionary_.insert(std::make_pair(strs[0], last_token_id++)).second;
   }
 }
 
@@ -303,7 +304,7 @@ void CooccurrenceDictionary::AddInCoocMap(int first_token_id,
         int second_token_id, int doc_id, std::map<int, CoocMap>& cooc_maps) {
   CooccurrenceInfo tmp = FormInitialCoocInfo(doc_id);
   std::map<int, CooccurrenceInfo> tmp_map;
-  tmp_map.insert( std::pair<int, CooccurrenceInfo>(second_token_id, tmp));
+  tmp_map.insert(  std::pair<int, CooccurrenceInfo>(second_token_id, tmp));
   cooc_maps.insert(std::pair<int, std::map<int, CooccurrenceInfo>>(first_token_id, tmp_map));
 }
 
@@ -363,7 +364,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
           return;
 
         std::string str;
-        while (static_cast<int>(portion.size()) < items_per_batch) {
+        while (static_cast<int>(portion.size()) < items_per_batch_) {
           getline(vowpal_wabbit_doc, str);
           if (vowpal_wabbit_doc.eof())
             break;
@@ -386,23 +387,53 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
         boost::split(doc, portion.back(), boost::is_any_of(" \t\r"));
         if (doc.size() <= 1)
           continue;
-
+        const int default_class = 0;
+        const int unusual_class = 1;
+        int current_class = default_class;
         for (int j = 1; j < static_cast<int>(doc.size() - 1); ++j) {
+          if (doc[j][0] == '|') {
+            if (strcmp(doc[j].c_str(), "|@default_class") == 0)
+              current_class = default_class;
+            else
+              current_class = unusual_class;
+            continue;
+          }
+          if (current_class != default_class)
+            continue;
+
           auto first_token = vocab_dictionary_.find(doc[j]);
           if (first_token == vocab_dictionary_.end())
             continue;
-          int first_token_id = first_token->second;
 
-          for (int k = 1; k <= window_width_ && j + k < static_cast<int>(doc.size()); ++k) {
-            auto second_token = vocab_dictionary_.find(doc[j + k]);
-            if (second_token == vocab_dictionary_.end())
-              continue;
-            int second_token_id = second_token->second;
-            if (first_token_id == second_token_id)
-              continue;
+          {
+            int current_class = default_class;
+            int first_token_id = first_token->second;
+            int not_a_word_counter = 0;
+            // if there are some words beginnig on '|' in a text the window
+            // should be extended
+            for (int k = 1; k <= window_width_ + not_a_word_counter && j + k < static_cast<int>(doc.size()); ++k) {
+              // ToDo: write macro here
+              if (doc[j + k][0] == '|') {
+                if (strcmp(doc[j + k].c_str(), "|@default_class") == 0)
+                  current_class = default_class;
+                else
+                  current_class = unusual_class;
+                ++not_a_word_counter;
+                continue;
+              }
+              if (current_class != default_class)
+                continue;
 
-            SavePairOfTokens(first_token_id, second_token_id, portion.size(), cooc_maps);
-            SavePairOfTokens(second_token_id, first_token_id, portion.size(), cooc_maps);
+              auto second_token = vocab_dictionary_.find(doc[j + k]);
+              if (second_token == vocab_dictionary_.end())
+                continue;
+              int second_token_id = second_token->second;
+              if (first_token_id == second_token_id)
+                continue;
+
+              SavePairOfTokens(first_token_id, second_token_id, portion.size(), cooc_maps);
+              SavePairOfTokens(second_token_id, first_token_id, portion.size(), cooc_maps);
+            }
           }
         }
       }

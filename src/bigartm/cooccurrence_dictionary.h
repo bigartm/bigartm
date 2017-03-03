@@ -15,18 +15,18 @@
 #include "boost/utility.hpp"
 
 struct Triple {
-  float cooc_value;
+  int cooc_value;
   int doc_quan;
   int second_token_id;
 };
 
 struct Pair {
-  float cooc_value;
+  int cooc_value;
   int doc_quan;
 };
 
 struct CooccurrenceInfo {
-  float cooc_value;
+  int cooc_value;
   int doc_quan;
   int prev_doc_id;
 };
@@ -71,7 +71,7 @@ class BatchManager {
 
 class ResultingBuffer {
  public:
-  ResultingBuffer(const float min_tf, const int min_df,
+  ResultingBuffer(const int min_tf, const int min_df,
           const std::string& cooc_tf_file_path,
           const std::string& cooc_df_file_path, const bool& cooc_tf_flag,
           const bool& cooc_df_flag);
@@ -82,7 +82,7 @@ class ResultingBuffer {
   void PopPreviousContent();
   void AddNewCellInBuffer(const CooccurrenceBatch& batch);
 
-  float cooc_min_tf_;
+  int cooc_min_tf_;
   int cooc_min_df_;
   int first_token_id_;
   std::vector<Triple> rec_;
@@ -96,7 +96,8 @@ class CooccurrenceDictionary {
  public:
   CooccurrenceDictionary(const std::string& vw, const std::string& vocab,
         const std::string& cooc_tf_file, const std::string& cooc_df_file,
-        const int wind_width, const float min_tf, const int min_df);
+        const int wind_width, const int min_tf, const int min_df,
+        const int items_per_batch);
  private:
   void FetchVocab();
   void UploadBatchOnDisk(BatchManager& batch_manager,
@@ -113,7 +114,7 @@ class CooccurrenceDictionary {
 
   int window_width_;
   int cooc_min_df_;
-  float cooc_min_tf_;
+  int cooc_min_tf_;
   std::string path_to_vocab_;
   std::string path_to_vw_;
   std::string cooc_tf_file_path_;
@@ -122,6 +123,6 @@ class CooccurrenceDictionary {
   bool calculate_df_cooc_;
   BatchManager batch_manager_;
   std::unordered_map<std::string, int> vocab_dictionary_;
-  int max_num_of_batches;
-  int items_per_batch;
+  int max_num_of_batches_;
+  int items_per_batch_;
 };
