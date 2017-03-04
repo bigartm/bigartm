@@ -34,6 +34,12 @@
 
 #include "artm/utility/blas.h"
 
+#ifdef USE_SSE
+#include <xmmintrin.h>
+#elif USE_AVX
+#include <immintrin.h>
+#endif // USE_SSE
+
 namespace util = artm::utility;
 namespace fs = boost::filesystem;
 using ::util::CsrMatrix;
@@ -341,6 +347,88 @@ InitializeSparseNdw(const Batch& batch, const ProcessBatchesArgs& args) {
   return std::make_shared<CsrMatrix<float>>(batch.token_size(), &n_dw_val, &n_dw_row_ptr, &n_dw_col_ind);
 }
 
+static inline void
+UpdateNtdCounters(const float *phi_ptr,
+                  const float *theta_ptr,
+                  float *ntd_ptr,
+                  const int num_topics,
+                  const float n_dw)
+{
+#ifdef USE_SSE
+  const int SSE_SHIFT = 4;
+  int num_cycles = num_topics / SSE_SHIFT;
+  int rem = num_topics % SSE_SHIFT;
+  __m128 res = _mm_setzero_ps();
+  const float *tmp_phi_ptr = phi_ptr;
+  for (int k = 0; k < num_cycles; ++k) {
+    res = _mm_add_ps(res, _mm_mul_ps(_mm_loadu_ps(tmp_phi_ptr), _mm_loadu_ps(theta_ptr)));
+    tmp_phi_ptr += SSE_SHIFT;
+    theta_ptr += SSE_SHIFT;
+  }
+  float p_dw_val_arr[SSE_SHIFT] = {0.};
+  _mm_storeu_ps(p_dw_val_arr, res);
+  float p_dw_val = 0;
+  for (int k = 0; k < SSE_SHIFT; ++k) p_dw_val += p_dw_val_arr[k];
+  // add remaining values
+  for (int k = 0; k < rem; ++k) {
+    p_dw_val += tmp_phi_ptr[k] * theta_ptr[k];
+  }
+  if (p_dw_val == 0) return;
+  const float alpha = n_dw / p_dw_val;
+  __m128 m_alpha = _mm_load1_ps(&alpha);
+  for (int k = 0; k < num_cycles; ++k) {
+    __m128 ntd_vals = _mm_loadu_ps(ntd_ptr);
+    __m128 add_vals = _mm_mul_ps(m_alpha, _mm_loadu_ps(phi_ptr));
+    _mm_storeu_ps(ntd_ptr, _mm_add_ps(ntd_vals, add_vals));
+    ntd_ptr += SSE_SHIFT;
+    phi_ptr += SSE_SHIFT;
+  }
+  for (int k = 0; k < rem; ++k) {
+    ntd_ptr[k] += alpha * phi_ptr[k];
+  }
+#elif USE_AVX
+  const int AVX_SHIFT = 8;
+  int num_cycles = num_topics / AVX_SHIFT;
+  int rem = num_topics % AVX_SHIFT;
+  const float *tmp_phi_ptr = phi_ptr;
+  __m256 res = _mm256_setzero_ps();
+  for (int k = 0; k < num_cycles; ++k) {
+    res = _mm256_add_ps(res, _mm256_mul_ps(_mm256_loadu_ps(tmp_phi_ptr), _mm256_loadu_ps(theta_ptr)));
+    tmp_phi_ptr += AVX_SHIFT;
+    theta_ptr += AVX_SHIFT;
+  }
+  float p_dw_val_arr[AVX_SHIFT] = {0.};
+  _mm256_storeu_ps(p_dw_val_arr, res);
+  float p_dw_val = 0;
+  for (int k = 0; k < AVX_SHIFT; ++k) p_dw_val += p_dw_val_arr[k];
+  // add remaining values
+  for (int k = 0; k < rem; ++k) {
+    p_dw_val += tmp_phi_ptr[k] * theta_ptr[k];
+  }
+  if (p_dw_val == 0) return;
+  const float alpha = n_dw / p_dw_val;
+  __m256 m_alpha = _mm256_broadcast_ss(&alpha);
+  for (int k = 0; k < num_cycles; ++k) {
+    __m256 ntd_vals = _mm256_loadu_ps(ntd_ptr);
+    __m256 add_vals = _mm256_mul_ps(m_alpha, _mm256_loadu_ps(phi_ptr));
+    _mm256_storeu_ps(ntd_ptr, _mm256_add_ps(ntd_vals, add_vals));
+    ntd_ptr += AVX_SHIFT;
+    phi_ptr += AVX_SHIFT;
+  }
+  for (int k = 0; k < rem; ++k) {
+    ntd_ptr[k] += alpha * phi_ptr[k];
+  }
+#else
+  float p_dw_val = 0;
+  for (int k = 0; k < num_topics; ++k) p_dw_val += phi_ptr[k] * theta_ptr[k];
+  if (p_dw_val == 0) return;
+  const float alpha = n_dw / p_dw_val;
+  for (int k = 0; k < num_topics; ++k)
+    ntd_ptr[k] += alpha * phi_ptr[k];
+#endif // USE_SSE
+}
+
+
 static void
 InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, float batch_weight,
                              const CsrMatrix<float>& sparse_ndw,
@@ -358,7 +446,7 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
   for (int token_index = 0; token_index < batch.token_size(); ++token_index)
     token_id[token_index] = p_wt.token_index(Token(batch.class_id(token_index), batch.token(token_index)));
 
-    if (args.opt_for_avx()) {
+  if (args.opt_for_avx()) {
     // This version is about 40% faster than the second alternative below.
     // Both versions return 100% equal results.
     // Speedup is due to several factors:
@@ -401,16 +489,11 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
           ntd_ptr[k] = 0.0f;
 
         for (int i = begin_index; i < end_index; ++i) {
-          const float* phi_ptr = &local_phi(i - begin_index, 0);
-
-          float p_dw_val = 0;
-          for (int k = 0; k < num_topics; ++k)
-            p_dw_val += phi_ptr[k] * theta_ptr[k];
-          if (p_dw_val == 0) continue;
-
-          const float alpha = sparse_ndw.val()[i] / p_dw_val;
-          for (int k = 0; k < num_topics; ++k)
-            ntd_ptr[k] += alpha * phi_ptr[k];
+          UpdateNtdCounters(&local_phi(i - begin_index, 0),
+                            theta_ptr,
+                            ntd_ptr,
+                            num_topics,
+                            sparse_ndw.val()[i]);
         }
 
         for (int k = 0; k < num_topics; ++k)
