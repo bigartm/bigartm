@@ -1732,12 +1732,22 @@ int main(int argc, char * argv[]) {
       ::artm::ConfigureLogging(args);
     }
 
-    if (!options.read_vw_corpus.empty() && !options.read_uci_vocab.empty() &&
-        (!options.write_cooc_tf.empty() || !options.write_cooc_df.empty())) {
+    if (!options.write_cooc_tf.empty() || !options.write_cooc_df.empty()) {
+      if (options.read_vw_corpus.empty())
+        throw "input file in VowpalWabbit format not specified";
+      if (options.read_uci_vocab.empty())
+        throw "input file in UCI vocab format not specified";
+
       CooccurrenceDictionary cooc_dictionary(options.read_vw_corpus,
           options.read_uci_vocab, options.write_cooc_tf,
           options.write_cooc_df, options.cooc_window, options.cooc_min_tf,
           options.cooc_min_df, options.items_per_batch);
+      cooc_dictionary.FetchVocab();
+      if (cooc_dictionary.VocabDictionarySize() > 1) {
+        cooc_dictionary.ReadVowpalWabbit();
+        if (cooc_dictionary.CooccurrenceBatchQuantity() != 0)
+          cooc_dictionary.ReadAndMergeCooccurrenceBatches();
+      }
     }
 
     return execute(options, argc, argv);

@@ -34,18 +34,17 @@ struct CooccurrenceInfo {
 typedef std::map<int, CooccurrenceInfo> CoocMap;
 
 class CooccurrenceBatch: private boost::noncopyable {
- friend class BatchManager;
  friend class CooccurrenceDictionary;
  friend class ResultingBuffer;
  public:
   void FormNewCell(std::map<int, CoocMap>::iterator& map_node);
-  bool ReadCellHeader();
   void ReadRecords();
-  bool ReadCell();
   void WriteCell();
+  bool ReadCell();
+  bool ReadCellHeader();
  private:
-  CooccurrenceBatch(int batch_num, const char filemode, const std::string& disk_path);
- private:
+  CooccurrenceBatch(const std::string& path_to_batches);
+
   struct Cell {
     int first_token_id;
     int num_of_triples;
@@ -54,27 +53,15 @@ class CooccurrenceBatch: private boost::noncopyable {
   Cell cell_;
   std::ifstream in_batch_;
   std::ofstream out_batch_;
-};
-
-class BatchManager {
- public:
-  BatchManager();
-  ~BatchManager();
-  int GetBatchQuan();
-  CooccurrenceBatch* CreateNewBatch();
-  CooccurrenceBatch* OpenExistingBatch(int batch_num);
- private:
-  int batch_quan_;
-  const int max_batch_quan_ = 1000;
-  std::string path_to_batches_;
+  std::string filename_;
 };
 
 class ResultingBuffer {
  public:
   ResultingBuffer(const int min_tf, const int min_df,
           const std::string& cooc_tf_file_path,
-          const std::string& cooc_df_file_path, const bool& cooc_tf_flag,
-          const bool& cooc_df_flag);
+          const std::string& cooc_df_file_path,
+          const bool& cooc_tf_flag, const bool& cooc_df_flag);
   ~ResultingBuffer();
   void AddInBuffer(const CooccurrenceBatch& batch);
  private:
@@ -98,19 +85,24 @@ class CooccurrenceDictionary {
         const std::string& cooc_tf_file, const std::string& cooc_df_file,
         const int wind_width, const int min_tf, const int min_df,
         const int items_per_batch);
- private:
+  ~CooccurrenceDictionary();
   void FetchVocab();
-  void UploadBatchOnDisk(BatchManager& batch_manager,
-        std::map<int, CoocMap>& cooc);
+  int  VocabDictionarySize();
+  void ReadVowpalWabbit();
+  int  CooccurrenceBatchQuantity();
+  void ReadAndMergeCooccurrenceBatches();
+ private:
+  void UploadCooccurrenceBatchOnDisk(std::map<int, CoocMap>& cooc);
   CooccurrenceInfo FormInitialCoocInfo(int doc_id);
   void AddInCoocMap(int first_token_id, int second_token_id, int doc_id,
-        std::map<int, CoocMap>& cooc_map);
+          std::map<int, CoocMap>& cooc_map);
   void ModifyCoocMapNode(int second_token_id, int doc_id,
           CoocMap& map_node);
   void SavePairOfTokens(int first_token_id, int second_token_id, int doc_id,
           std::map<int, CoocMap>& cooc_map);
-  void ReadVowpalWabbit();
-  void ReadAndMergeBatches();
+  CooccurrenceBatch* CreateNewCooccurrenceBatch();
+  void OpenExistingBatchFile(CooccurrenceBatch& batch);
+  void CloseExistingBatchFile(CooccurrenceBatch& batch);
 
   int window_width_;
   int cooc_min_df_;
@@ -121,8 +113,10 @@ class CooccurrenceDictionary {
   std::string cooc_df_file_path_;
   bool calculate_tf_cooc_;
   bool calculate_df_cooc_;
-  BatchManager batch_manager_;
   std::unordered_map<std::string, int> vocab_dictionary_;
-  int max_num_of_batches_;
+  unsigned max_num_of_batches_;
   int items_per_batch_;
+  std::string path_to_batches_;
+  std::vector<std::unique_ptr<CooccurrenceBatch>> vector_of_batches_;
+  int open_files_counter_;
 };
