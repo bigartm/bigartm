@@ -261,7 +261,6 @@ struct artm_options {
   int cooc_window;
   int cooc_min_df;
   int cooc_min_tf;
-  int items_per_batch;
 
   // Model
   std::string load_model;
@@ -1489,7 +1488,6 @@ int main(int argc, char * argv[]) {
 
     po::options_description dictionary_options("Dictionary");
     dictionary_options.add_options()
-      ("items-per-batch", po::value(&options.items_per_batch)->default_value(5000), "set value which means how many documents will be read in memory at a time")
       ("cooc-min-tf", po::value(&options.cooc_min_tf)->default_value(0), "minimal value of cooccurrences of a pair of tokens that are saved in dictionary of cooccurrences")
       ("cooc-min-df", po::value(&options.cooc_min_df)->default_value(0), "minimal value of documents in which a specific pair of tokens occurred together closely")
       ("cooc-window", po::value(&options.cooc_window)->default_value(5), "number of tokens around specific token, which are used in calculation of cooccurrences")
@@ -1741,7 +1739,7 @@ int main(int argc, char * argv[]) {
       CooccurrenceDictionary cooc_dictionary(options.read_vw_corpus,
           options.read_uci_vocab, options.write_cooc_tf,
           options.write_cooc_df, options.cooc_window, options.cooc_min_tf,
-          options.cooc_min_df, options.items_per_batch);
+          options.cooc_min_df);
       cooc_dictionary.FetchVocab();
       if (cooc_dictionary.VocabDictionarySize() > 1) {
         cooc_dictionary.ReadVowpalWabbit();

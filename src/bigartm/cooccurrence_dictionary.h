@@ -14,6 +14,15 @@
 #include "boost/filesystem.hpp"
 #include "boost/utility.hpp"
 
+#if defined(_WIN32)
+#elif defined(__APPLE__)
+  //#include "TargetConditionals.h"
+#elif defined(__linux__)
+  #include <sys/sysinfo.h>
+#elif defined(__unix__) // all unices not caught above
+#endif
+// https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
+
 struct Triple {
   int cooc_value;
   int doc_quan;
@@ -54,6 +63,7 @@ class CooccurrenceBatch: private boost::noncopyable {
   std::ifstream in_batch_;
   std::ofstream out_batch_;
   std::string filename_;
+  long in_batch_offset_;
 };
 
 class ResultingBuffer {
@@ -83,8 +93,7 @@ class CooccurrenceDictionary {
  public:
   CooccurrenceDictionary(const std::string& vw, const std::string& vocab,
         const std::string& cooc_tf_file, const std::string& cooc_df_file,
-        const int wind_width, const int min_tf, const int min_df,
-        const int items_per_batch);
+        const int wind_width, const int min_tf, const int min_df);
   ~CooccurrenceDictionary();
   void FetchVocab();
   int  VocabDictionarySize();
@@ -92,6 +101,7 @@ class CooccurrenceDictionary {
   int  CooccurrenceBatchQuantity();
   void ReadAndMergeCooccurrenceBatches();
  private:
+  int SetItemsPerBatch();
   void UploadCooccurrenceBatchOnDisk(std::map<int, CoocMap>& cooc);
   CooccurrenceInfo FormInitialCoocInfo(int doc_id);
   void AddInCoocMap(int first_token_id, int second_token_id, int doc_id,
@@ -101,8 +111,11 @@ class CooccurrenceDictionary {
   void SavePairOfTokens(int first_token_id, int second_token_id, int doc_id,
           std::map<int, CoocMap>& cooc_map);
   CooccurrenceBatch* CreateNewCooccurrenceBatch();
-  void OpenExistingBatchFile(CooccurrenceBatch& batch);
-  void CloseExistingBatchFile(CooccurrenceBatch& batch);
+  void OpenBatchInputFile(CooccurrenceBatch& batch);
+  void OpenBatchOutputFile(CooccurrenceBatch& batch);
+  bool IsOpenBatchInputFile(CooccurrenceBatch& batch);
+  void CloseBatchInputFile(CooccurrenceBatch& batch);
+  void CloseBatchOutputFile(CooccurrenceBatch& batch);
 
   int window_width_;
   int cooc_min_df_;
@@ -114,9 +127,10 @@ class CooccurrenceDictionary {
   bool calculate_tf_cooc_;
   bool calculate_df_cooc_;
   std::unordered_map<std::string, int> vocab_dictionary_;
-  unsigned max_num_of_batches_;
-  int items_per_batch_;
   std::string path_to_batches_;
   std::vector<std::unique_ptr<CooccurrenceBatch>> vector_of_batches_;
   int open_files_counter_;
+  int max_num_of_open_files_;
+  int num_of_threads_;
+  int items_per_batch_;
 };
