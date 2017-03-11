@@ -4,6 +4,7 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/../)
 
 set(SRC_LIST
 	srcmain.cc
+	cooccurrence_dictionary.cc
 	${CMAKE_SOURCE_DIR}/src/artm/cpp_interface.cc
 )
 
