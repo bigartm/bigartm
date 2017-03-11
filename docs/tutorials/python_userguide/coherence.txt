@@ -17,10 +17,10 @@ BigARTM provides ability of automatic coherence computation. The only thing you 
 
 where ``id1`` and ``id2`` are indexes of tokens in vocabulary file in UCI format (with 0-based indexing!). Details about UCI format can be found here: :doc:`../datasets`. ``value`` is some pairwise information about tokens with indexes ``id1`` and ``id2``. For instance, ``value`` can be computed by any corpora of texts by formulas:
 
-* pointwise PMI: :math:`value(u,v)=\left[\log\cfrac{n(u,v)}{n(u)n(v)}\right]_{+}`, 
+* positive PMI: :math:`value(u,v)=\left[\log\cfrac{n(u,v)n}{n(u)n(v)}\right]_{+}`, 
 * smoothed logarithm of conditional probability: :math:`value(u,v)=\log\cfrac{n(u,v)+1}{n(v)}`,
 
-where `n(u)` and `n(v)` are frequencies of `u` and `v` in corpora, `n(u,v)` is joint frequency of `u` and `v` in corpora in window with some fixed width.
+where `n(u)` and `n(v)` are frequencies of `u` and `v` in corpora, `n(u,v)` is joint frequency of `u` and `v` in corpora in window with some fixed width, `n` is length of corpora in words.
 
 * **Usage**
 
