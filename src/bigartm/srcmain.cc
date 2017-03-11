@@ -30,6 +30,9 @@ namespace po = boost::program_options;
 #include "artm/cpp_interface.h"
 #include "artm/core/common.h"
 #include "glog/logging.h"
+
+#include "cooccurrence_dictionary.h"
+
 using namespace artm;
 
 class CuckooWatch {
@@ -255,6 +258,9 @@ struct artm_options {
   std::string dictionary_min_df;
   std::string dictionary_max_df;
   int dictionary_size;
+  int cooc_window;
+  int cooc_min_df;
+  double cooc_min_tf;
 
   // Model
   std::string load_model;
@@ -284,6 +290,8 @@ struct artm_options {
   std::string write_model_readable;
   std::string write_dictionary_readable;
   std::string write_predictions;
+  std::string write_cooc_tf;
+  std::string write_cooc_df;
   std::string write_class_predictions;
   std::string write_scores;
   std::string write_vw_corpus;
@@ -794,7 +802,7 @@ class ScoreHelper {
      }
      else if (type == ::artm::ScoreType_ThetaSnippet) {
        auto score_data = master_->GetScoreAs< ::artm::ThetaSnippetScore>(get_score_args);
-       int docs_to_show = score_data.values_size();
+       //int docs_to_show = score_data.values_size();
        std::cerr << "ThetaSnippet (" << score_name << ")\n";
        for (int item_index = 0; item_index < score_data.values_size(); ++item_index) {
          std::cerr << "ItemID=" << score_data.item_id(item_index) << ": ";
@@ -1335,7 +1343,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
         update_after += options.update_every;
         fit_online_args.add_update_after(std::min<int>(update_after, batch_file_names.size()));
         fit_online_args.add_apply_weight(pow(options.tau0 + update_count, -options.kappa));
-      } while (update_after < batch_file_names.size());
+      } while (update_after < (int) batch_file_names.size());
 
       for (auto& batch_file_name : batch_file_names)
         fit_online_args.add_batch_filename(batch_file_name.string());
@@ -1480,6 +1488,9 @@ int main(int argc, char * argv[]) {
 
     po::options_description dictionary_options("Dictionary");
     dictionary_options.add_options()
+      ("cooc-min-tf", po::value(&options.cooc_min_tf)->default_value(200), "minimal value of cooccurrences of a pair of tokens that are saved in dictionary of cooccurrences")
+      ("cooc-min-df", po::value(&options.cooc_min_df)->default_value(200), "minimal value of documents in which a specific pair of tokens occurred together closely")
+      ("cooc-window", po::value(&options.cooc_window)->default_value(5), "number of tokens around specific token, which are used in calculation of cooccurrences")
       ("dictionary-min-df", po::value(&options.dictionary_min_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary-max-df", po::value(&options.dictionary_max_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary-size", po::value(&options.dictionary_size)->default_value(0), "limit dictionary size by filtering out tokens with high document frequency")
@@ -1510,6 +1521,8 @@ int main(int argc, char * argv[]) {
 
     po::options_description output_options("Output");
     output_options.add_options()
+      ("write-cooc-tf", po::value(&options.write_cooc_tf)->default_value(""), "save dictionary of co-occurrences with frequencies of co-occurrences of every specific pair of tokens in whole collection")
+      ("write-cooc-df", po::value(&options.write_cooc_df)->default_value(""), "save dictionary of co-occurrences with number of documents in which every specific pair occured together")
       ("save-model", po::value(&options.save_model)->default_value(""), "save the model to binary file after processing")
       ("save-batches", po::value(&options.save_batches)->default_value(""), "batch folder")
       ("save-dictionary", po::value(&options.save_dictionary)->default_value(""), "filename of dictionary file")
@@ -1716,6 +1729,13 @@ int main(int argc, char * argv[]) {
       if (vm.count("log-level")) args.set_minloglevel(options.log_level);
       ::artm::ConfigureLogging(args);
     }
+
+    if (!options.read_vw_corpus.empty() && !options.read_uci_vocab.empty() &&
+          (!options.write_cooc_tf.empty() || !options.write_cooc_df.empty()))
+      CooccurrenceDictionary cooc_dictionary(options.read_vw_corpus,
+          options.read_uci_vocab, options.write_cooc_tf,
+          options.write_cooc_df, options.cooc_window, options.cooc_min_tf,
+          options.cooc_min_df);
 
     return execute(options, argc, argv);
   } catch (std::exception& e) {
