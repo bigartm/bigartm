@@ -34,10 +34,8 @@
 
 #include "artm/utility/blas.h"
 
-#ifdef USE_SSE
+#if defined(USE_SSE)
 #include <xmmintrin.h>
-#elif USE_AVX
-#include <immintrin.h>
 #endif // USE_SSE
 
 namespace util = artm::utility;
@@ -354,7 +352,7 @@ UpdateNtdCounters(const float *phi_ptr,
                   const int num_topics,
                   const float n_dw)
 {
-#ifdef USE_SSE
+#if defined(USE_SSE)
   const int SSE_SHIFT = 4;
   int num_cycles = num_topics / SSE_SHIFT;
   int rem = num_topics % SSE_SHIFT;
@@ -382,38 +380,6 @@ UpdateNtdCounters(const float *phi_ptr,
     _mm_storeu_ps(ntd_ptr, _mm_add_ps(ntd_vals, add_vals));
     ntd_ptr += SSE_SHIFT;
     phi_ptr += SSE_SHIFT;
-  }
-  for (int k = 0; k < rem; ++k) {
-    ntd_ptr[k] += alpha * phi_ptr[k];
-  }
-#elif USE_AVX
-  const int AVX_SHIFT = 8;
-  int num_cycles = num_topics / AVX_SHIFT;
-  int rem = num_topics % AVX_SHIFT;
-  const float *tmp_phi_ptr = phi_ptr;
-  __m256 res = _mm256_setzero_ps();
-  for (int k = 0; k < num_cycles; ++k) {
-    res = _mm256_add_ps(res, _mm256_mul_ps(_mm256_loadu_ps(tmp_phi_ptr), _mm256_loadu_ps(theta_ptr)));
-    tmp_phi_ptr += AVX_SHIFT;
-    theta_ptr += AVX_SHIFT;
-  }
-  float p_dw_val_arr[AVX_SHIFT] = {0.};
-  _mm256_storeu_ps(p_dw_val_arr, res);
-  float p_dw_val = 0;
-  for (int k = 0; k < AVX_SHIFT; ++k) p_dw_val += p_dw_val_arr[k];
-  // add remaining values
-  for (int k = 0; k < rem; ++k) {
-    p_dw_val += tmp_phi_ptr[k] * theta_ptr[k];
-  }
-  if (p_dw_val == 0) return;
-  const float alpha = n_dw / p_dw_val;
-  __m256 m_alpha = _mm256_broadcast_ss(&alpha);
-  for (int k = 0; k < num_cycles; ++k) {
-    __m256 ntd_vals = _mm256_loadu_ps(ntd_ptr);
-    __m256 add_vals = _mm256_mul_ps(m_alpha, _mm256_loadu_ps(phi_ptr));
-    _mm256_storeu_ps(ntd_ptr, _mm256_add_ps(ntd_vals, add_vals));
-    ntd_ptr += AVX_SHIFT;
-    phi_ptr += AVX_SHIFT;
   }
   for (int k = 0; k < rem; ++k) {
     ntd_ptr[k] += alpha * phi_ptr[k];
