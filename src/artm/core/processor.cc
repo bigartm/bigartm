@@ -36,7 +36,7 @@
 
 #if defined(USE_SSE)
 #include <xmmintrin.h>
-#endif // USE_SSE
+#endif  // USE_SSE
 
 namespace util = artm::utility;
 namespace fs = boost::filesystem;
@@ -350,8 +350,7 @@ UpdateNtdCounters(const float *phi_ptr,
                   const float *theta_ptr,
                   float *ntd_ptr,
                   const int num_topics,
-                  const float n_dw)
-{
+                  const float n_dw) {
 #if defined(USE_SSE)
   const int SSE_SHIFT = 4;
   int num_cycles = num_topics / SSE_SHIFT;
@@ -391,7 +390,7 @@ UpdateNtdCounters(const float *phi_ptr,
   const float alpha = n_dw / p_dw_val;
   for (int k = 0; k < num_topics; ++k)
     ntd_ptr[k] += alpha * phi_ptr[k];
-#endif // USE_SSE
+#endif  // USE_SSE
 }
 
 
