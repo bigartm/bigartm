@@ -63,7 +63,7 @@ check_include_files(unistd.h HAVE_UNISTD_H)
 # set compiler flags
 if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
     ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread -fPIC -msse -DUSE_SSE")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread -fPIC")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -Wall")
   set(GFLAGS_INTTYPES_FORMAT "C99")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -114,6 +114,35 @@ if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
   endif (COMPILER_SUPPORTS_CXX11)
 endif (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
        ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
+
+# macros for checking support for SSE
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  # idea taken from https://github.com/PointCloudLibrary/pcl/blob/36fb6d2b2e9a8ab65507c0fe9606c05036c37460/cmake/pcl_find_sse.cmake#L154
+  include(CheckCXXSourceRuns)
+  set(CMAKE_REQUIRED_FLAGS "-msse")
+  check_cxx_source_runs("
+    #include <xmmintrin.h>
+    int main ()
+    {
+        __m128 a, b;
+        float fa[4] = {0., 1., 2., 3.};
+        float fb[4] = {-1., 2., 10., 42.};
+        float fc[4] = {0.};
+        a = _mm_loadu_ps(fa);
+        b = _mm_loadu_ps(fb);
+        b = _mm_mul_ps(a, b);
+        _mm_storeu_ps(fc, b);
+        return (0);
+    }"
+    HAVE_SSE_EXTENSIONS)
+  if (HAVE_SSE_EXTENSIONS)
+    # add flags for compiler, globally now, maybe locally in the future
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -mfpmath=sse")
+    # add definition for compiler, globally now, maybe locally in the future
+    add_definitions("-DUSE_SSE")
+  endif (HAVE_SSE_EXTENSIONS)
+  set(CMAKE_REQUIRED_FLAGS)
+endif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
 add_subdirectory(src)
 add_subdirectory(python)
