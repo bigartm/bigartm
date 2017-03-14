@@ -290,11 +290,13 @@ struct artm_options {
   std::string write_model_readable;
   std::string write_dictionary_readable;
   std::string write_predictions;
-  std::string write_cooc_tf;
-  std::string write_cooc_df;
   std::string write_class_predictions;
   std::string write_scores;
   std::string write_vw_corpus;
+  std::string write_tf_cooc;
+  std::string write_df_cooc;
+  std::string write_tf_ppmi;
+  std::string write_df_ppmi;
   std::string csv_separator;
   int score_level;
   std::vector<std::string> score;
@@ -1521,8 +1523,10 @@ int main(int argc, char * argv[]) {
 
     po::options_description output_options("Output");
     output_options.add_options()
-      ("write-cooc-tf", po::value(&options.write_cooc_tf)->default_value(""), "save dictionary of co-occurrences with frequencies of co-occurrences of every specific pair of tokens in whole collection")
-      ("write-cooc-df", po::value(&options.write_cooc_df)->default_value(""), "save dictionary of co-occurrences with number of documents in which every specific pair occured together")
+      ("write-cooc-tf", po::value(&options.write_tf_cooc)->default_value(""), "save dictionary of co-occurrences with frequencies of co-occurrences of every specific pair of tokens in whole collection")
+      ("write-cooc-df", po::value(&options.write_df_cooc)->default_value(""), "save dictionary of co-occurrences with number of documents in which every specific pair occured together")
+      ("write-tf-ppmi", po::value(&options.write_tf_ppmi)->default_value(""), "save dictionary of ppmi of pairs of tokens that occured together at least cooc_min_tf times in window of fixed size")
+      ("write-df-ppmi", po::value(&options.write_df_ppmi)->default_value(""), "save dictionary of ppmi of pairs of tokens that occured together at least once in window of fixed size in at least cooc_min_df documents")
       ("save-model", po::value(&options.save_model)->default_value(""), "save the model to binary file after processing")
       ("save-batches", po::value(&options.save_batches)->default_value(""), "batch folder")
       ("save-dictionary", po::value(&options.save_dictionary)->default_value(""), "filename of dictionary file")
@@ -1730,16 +1734,18 @@ int main(int argc, char * argv[]) {
       ::artm::ConfigureLogging(args);
     }
 
-    if (!options.write_cooc_tf.empty() || !options.write_cooc_df.empty()) {
+    if (!options.write_tf_cooc.empty() || !options.write_df_cooc.empty() ||
+        !options.write_tf_ppmi.empty() || !options.write_df_ppmi.empty()) {
       if (options.read_vw_corpus.empty())
         throw "input file in VowpalWabbit format not specified";
       if (options.read_uci_vocab.empty())
         throw "input file in UCI vocab format not specified";
 
-      CooccurrenceDictionary cooc_dictionary(options.read_vw_corpus,
-          options.read_uci_vocab, options.write_cooc_tf,
-          options.write_cooc_df, options.cooc_window, options.cooc_min_tf,
-          options.cooc_min_df);
+      CooccurrenceDictionary cooc_dictionary(options.cooc_window,
+          options.cooc_min_tf, options.cooc_min_df, options.read_uci_vocab,
+          options.read_vw_corpus, options.write_tf_cooc,
+          options.write_df_cooc, options.write_tf_ppmi,
+          options.write_df_ppmi);
       cooc_dictionary.FetchVocab();
       if (cooc_dictionary.VocabDictionarySize() > 1) {
         cooc_dictionary.ReadVowpalWabbit();
