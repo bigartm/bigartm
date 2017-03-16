@@ -51,6 +51,7 @@ CooccurrenceDictionary::CooccurrenceDictionary(const int window_width,
   calculate_ppmi_ = calculate_tf_ppmi_ || calculate_df_ppmi_;
   calculate_tf_cooc_ = write_tf_cooc_ || calculate_tf_ppmi_;
   calculate_df_cooc_ = write_df_cooc_ || calculate_df_ppmi_;
+  
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
   fs::path dir(boost::lexical_cast<std::string>(uuid));
   if (fs::exists(dir))
@@ -89,7 +90,7 @@ void CooccurrenceDictionary::FetchVocab() {
     boost::split(strs, str, boost::is_any_of(" "));
     if (!strs[0].empty())
       if (strs.size() == 1 || strcmp(strs[1].c_str(), "@default_class") == 0)
-        vocab_dictionary_.insert(std::make_pair(strs[0], last_token_id++)).second;
+        vocab_dictionary_.insert(std::make_pair(strs[0], last_token_id++));
   }
 }
 
@@ -127,7 +128,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
           return;
 
         std::string str;
-        while (static_cast<int>(portion.size()) < items_per_batch_) {
+        while (portion.size() < items_per_batch_) {
           getline(vowpal_wabbit_doc, str);
           if (vowpal_wabbit_doc.eof())
             break;
@@ -142,7 +143,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
       // second_token_id
       CoocMap cooc_map;
 
-      total_num_of_documents_ += static_cast<int>(portion.size());
+      total_num_of_documents_ += portion.size();
       // When the document is processed (element of vector portion),
       // memory for it can be freed by calling pop_back() from vector
       // (string will be popped)
@@ -154,7 +155,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
         const int default_class = 0;
         const int unusual_class = 1;
         int current_class = default_class;
-        for (int j = 1; j < static_cast<int>(doc.size() - 1); ++j) {
+        for (unsigned j = 1; j < doc.size() - 1; ++j) {
           if (doc[j][0] == '|') {
             if (strcmp(doc[j].c_str(), "|@default_class") == 0)
               current_class = default_class;
@@ -172,10 +173,10 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
           {
             int current_class = default_class;
             int first_token_id = first_token->second;
-            int not_a_word_counter = 0;
+            unsigned not_a_word_counter = 0;
             // if there are some words beginnig on '|' in a text the window
             // should be extended
-            for (int k = 1; k <= window_width_ + not_a_word_counter && j + k < static_cast<int>(doc.size()); ++k) {
+            for (unsigned k = 1; k <= window_width_ + not_a_word_counter && j + k < doc.size(); ++k) {
               // ToDo: write macro here
               if (doc[j + k][0] == '|') {
                 if (strcmp(doc[j + k].c_str(), "|@default_class") == 0)
@@ -220,13 +221,13 @@ int CooccurrenceDictionary::CooccurrenceBatchQuantity() {
 void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   auto CompareBatches = [](const std::unique_ptr<CooccurrenceBatch>& left,
                            const std::unique_ptr<CooccurrenceBatch>& right) {
-    return left->current_cell_.first_token_id > right->current_cell_.first_token_id;
+    return left->cell_.first_token_id > right->cell_.first_token_id;
   };
-  for (int i = 0; i < static_cast<int>(vector_of_batches_.size()) && i < max_num_of_open_files_ - 3; ++i) {
+  for (int i = 0; i < static_cast<int>(vector_of_batches_.size()) && i < max_num_of_open_files_ - 1; ++i) {
     OpenBatchInputFile(*(vector_of_batches_[i]));
     vector_of_batches_[i]->ReadCell();
   }
-  for (int i = max_num_of_open_files_ - 3; i < static_cast<int>(vector_of_batches_.size()); ++i) {
+  for (unsigned i = max_num_of_open_files_ - 1; i < vector_of_batches_.size(); ++i) {
     OpenBatchInputFile(*(vector_of_batches_[i]));
     vector_of_batches_[i]->ReadCell();
     CloseBatchInputFile(*(vector_of_batches_[i]));
@@ -240,9 +241,7 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   ResultingBuffer res(cooc_min_tf_, cooc_min_df_, calculate_tf_cooc_,
           calculate_df_cooc_, calculate_tf_ppmi_, calculate_df_ppmi_,
           calculate_ppmi_, total_num_of_pairs_, total_num_of_documents_,
-          cooc_tf_file_path_, cooc_df_file_path_, ppmi_tf_file_path_,
-          ppmi_df_file_path_);
-  open_files_counter_ += 2;
+          cooc_tf_file_path_, cooc_df_file_path_, ppmi_tf_file_path_, ppmi_df_file_path_);
 
   // Standard k-way merge as external sort
   while (!vector_of_batches_.empty()) {
@@ -263,23 +262,12 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
       vector_of_batches_.pop_back();
     }
   }
-  res.CheckPreviousCell(res.list_of_tf_records_, cooc_min_tf_);
-  res.CheckPreviousCell(res.list_of_df_records_, cooc_min_df_);
+  if (res.cell_.records.size() != 0)
+    res.PopPreviousContent();
   if (calculate_ppmi_) {
-    res.BuildFreqDictionary();
-    if (calculate_tf_ppmi_) {
-      res.CalculateTfPpmi();
-      res.WritePpmiInResultingFile(res.list_of_tf_records_, res.ppmi_tf_dict_);
-    }
-    if (calculate_df_ppmi_) {
-      res.CalculateDfPpmi();
-      res.WritePpmiInResultingFile(res.list_of_df_records_, res.ppmi_df_dict_);
-    }
+    res.CalculatePpmi();
+    res.WritePpmiInFile();
   }
-  if (write_tf_cooc_)
-    res.WriteCoocInResultingFile(res.list_of_tf_records_, res.cooc_tf_dict_);
-  if (write_df_cooc_)
-    res.WriteCoocInResultingFile(res.list_of_df_records_, res.cooc_df_dict_);
 }
 
 // ToDo: finish for mac, win, unices not caught below
@@ -289,7 +277,7 @@ int CooccurrenceDictionary::SetItemsPerBatch() {
   // Here is a tool that allows to define an otimal value of documents that
   // should be load in ram. It depends on size of ram, window width and
   // num of threads (because every thread holds its batch of documents)
-  const int default_value = 5000;
+  const int default_value = 6750;
   const double percent_of_ram = 0.4;
   const long long std_ram_size = 4025409536; // 4 Gb
   const int std_window_width = 10;
@@ -315,6 +303,44 @@ int CooccurrenceDictionary::SetItemsPerBatch() {
       default_value * percent_of_ram;
 }
 
+void CooccurrenceDictionary::SavePairOfTokens(const int first_token_id,
+        const int second_token_id, const int doc_id, CoocMap& cooc_map) {
+  auto map_record = cooc_map.find(first_token_id);
+  if (map_record == cooc_map.end())
+    AddInCoocMap(first_token_id, second_token_id, doc_id, cooc_map);
+  else
+    ModifyCoocMapNode(second_token_id, doc_id, map_record->second);
+}
+
+void CooccurrenceDictionary::AddInCoocMap(const int first_token_id,
+        const int second_token_id, const int doc_id, CoocMap& cooc_map) {
+  FirstTokenInfo new_first_token(doc_id);
+  CooccurrenceInfo new_cooc_info(doc_id);
+  SecondTokenInfo new_second_token;
+  new_second_token.insert(std::pair<int, CooccurrenceInfo>(second_token_id, new_cooc_info));
+  cooc_map.insert(std::make_pair(first_token_id, std::make_pair(new_first_token, new_second_token)));
+}
+
+void CooccurrenceDictionary::ModifyCoocMapNode(const int second_token_id,
+        const int doc_id, std::pair<FirstTokenInfo, SecondTokenInfo>& map_info) {
+  if (std::get<FIRST_TOKEN_INFO>(map_info).prev_doc_id != doc_id) {
+    std::get<FIRST_TOKEN_INFO>(map_info).prev_doc_id = doc_id;
+    ++(std::get<FIRST_TOKEN_INFO>(map_info).num_of_documents);
+  }
+  SecondTokenInfo& map_node = std::get<SECOND_TOKEN_INFO>(map_info);
+  auto iter = map_node.find(second_token_id);
+  if (iter == map_node.end()) {
+    CooccurrenceInfo new_cooc_info(doc_id);
+    map_node.insert(std::pair<int, CooccurrenceInfo>(second_token_id, new_cooc_info));
+  } else {
+    ++(std::get<COOCCURRENCE_INFO>(*iter).cooc_tf);
+    if (std::get<COOCCURRENCE_INFO>(*iter).prev_doc_id != doc_id) {
+      std::get<COOCCURRENCE_INFO>(*iter).prev_doc_id = doc_id;
+      ++(std::get<COOCCURRENCE_INFO>(*iter).cooc_df);
+    }
+  }
+}
+
 void CooccurrenceDictionary::UploadCooccurrenceBatchOnDisk(CoocMap& cooc_map) {
   std::unique_ptr<CooccurrenceBatch> batch(CreateNewCooccurrenceBatch());
   OpenBatchOutputFile(*batch);
@@ -324,61 +350,6 @@ void CooccurrenceDictionary::UploadCooccurrenceBatchOnDisk(CoocMap& cooc_map) {
   }
   CloseBatchOutputFile(*batch);
   vector_of_batches_.push_back(std::move(batch));
-}
-
-CooccurrenceInfo CooccurrenceDictionary::FormInitialCoocInfo(int doc_id) {
-  CooccurrenceInfo res;
-  res.cooc_df = 1;
-  res.cooc_tf = 1;
-  res.prev_doc_id = doc_id;
-  return res;
-}
-
-FirstTokenInfo CooccurrenceDictionary::FormInitialFirstTokenInfo(int doc_id) {
-  FirstTokenInfo res;
-  res.doc_num = 1;
-  res.prev_doc_id = doc_id;
-  return res;
-}
-
-void CooccurrenceDictionary::SavePairOfTokens(int first_token_id,
-        int second_token_id, int doc_id, CoocMap& cooc_map) {
-  auto map_record = cooc_map.find(first_token_id);
-  if (map_record == cooc_map.end())
-    AddInCoocMap(first_token_id, second_token_id, doc_id, cooc_map);
-  else {
-    ModifyCoocMapNode(second_token_id, doc_id, map_record->second);
-  }
-}
-
-void CooccurrenceDictionary::AddInCoocMap(int first_token_id,
-        int second_token_id, int doc_id, CoocMap& cooc_map) {
-  CooccurrenceInfo new_cooc_info = FormInitialCoocInfo(doc_id);
-  FirstTokenInfo new_first_token = FormInitialFirstTokenInfo(doc_id);
-  SecondTokenInfo new_second_token;
-  new_second_token.insert(std::make_pair(second_token_id, new_cooc_info));
-  cooc_map.insert(std::make_pair(first_token_id,
-              std::make_pair(new_first_token, new_second_token)));
-}
-
-void CooccurrenceDictionary::ModifyCoocMapNode(int second_token_id,
-        int doc_id, std::pair<FirstTokenInfo, SecondTokenInfo>& map_node) {
-  if (map_node.first.prev_doc_id != doc_id) {
-    map_node.first.prev_doc_id = doc_id;
-    ++map_node.first.doc_num;
-  }
-  SecondTokenInfo& second_token_map = map_node.second;
-  auto iter = second_token_map.find(second_token_id);
-  if (iter == second_token_map.end()) {
-    CooccurrenceInfo new_cooc_info = FormInitialCoocInfo(doc_id);
-    second_token_map.insert(std::pair<int, CooccurrenceInfo>(second_token_id, new_cooc_info));
-  } else {
-    ++iter->second.cooc_tf;
-    if (iter->second.prev_doc_id != doc_id) {
-      iter->second.prev_doc_id = doc_id;
-      ++iter->second.cooc_df;
-    }
-  }
 }
 
 CooccurrenceBatch* CooccurrenceDictionary::CreateNewCooccurrenceBatch() {
@@ -415,7 +386,83 @@ void CooccurrenceDictionary::CloseBatchOutputFile(CooccurrenceBatch& batch) {
   batch.out_batch_.close();
 }
 
-// ******************Methods of class CooccurrenceBatch*******************
+// ********************Methods of class CoccurrenceBatch**************
+
+void CooccurrenceBatch::FormNewCell(const CoocMap::iterator& map_node) {
+  // Every cooccurrence batch is divided into cells as folowing:
+  // Different cells have different first token id values.
+  // One cell contain records with euqal first token id
+  // One cooccurrence batch can't hold 2 or more cells in ram simultaneously
+  // Other cells are stored in output file
+  cell_.first_token_id = std::get<FIRST_TOKEN_ID>(*map_node);
+  std::pair<FirstTokenInfo, SecondTokenInfo>& map_info = std::get<MAP_INFO>(*map_node);
+  cell_.num_of_documents = std::get<FIRST_TOKEN_INFO>(map_info).num_of_documents;
+  SecondTokenInfo& second_token_info = std::get<SECOND_TOKEN_INFO>(map_info);
+  cell_.num_of_records = second_token_info.size();
+  cell_.records.resize(cell_.num_of_records);
+  int i = 0;
+  for (auto iter = second_token_info.begin(); iter != second_token_info.end(); ++iter, ++i) {
+    cell_.records[i].second_token_id = std::get<SECOND_TOKEN_ID>(*iter);
+    CooccurrenceInfo& cooc_info = std::get<COOCCURRENCE_INFO>(*iter);
+    cell_.records[i].cooc_tf = cooc_info.cooc_tf;
+    cell_.records[i].cooc_df = cooc_info.cooc_df;
+  }
+}
+
+// Cells are written in following form: first line consists of first token id
+// and num of triples
+// the second line consists of numbers triples, which are separeted with a
+// space and numbers in these triples are separeted the same
+void CooccurrenceBatch::WriteCell() {
+  std::stringstream ss;
+  ss << cell_.first_token_id << ' ';
+  ss << cell_.num_of_documents << ' ';
+  ss << cell_.num_of_records << std::endl;
+  for (unsigned i = 0; i < cell_.records.size(); ++i) {
+    ss << cell_.records[i].second_token_id << ' ';
+    ss << cell_.records[i].cooc_tf << ' ';
+    ss << cell_.records[i].cooc_df << ' ';
+  }
+  ss << std::endl;
+  out_batch_ << ss.str();
+}
+
+bool CooccurrenceBatch::ReadCellHeader() {
+  std::string str;
+  getline(in_batch_, str);
+  std::stringstream ss(str);
+  ss >> cell_.first_token_id;
+  ss >> cell_.num_of_documents;
+  ss >> cell_.num_of_records;
+  if (!in_batch_.eof())
+    return true;
+  else
+    return false;
+}
+
+void CooccurrenceBatch::ReadRecords() {
+  // It's not good if there are no records in batch after header
+  if (in_batch_.eof()) {
+    throw "Error while reading from batch. File is corrupted";
+  }
+  std::string str;
+  getline(in_batch_, str);
+  std::stringstream ss(str);
+  cell_.records.resize(cell_.num_of_records);
+  for (unsigned i = 0; i < cell_.num_of_records; ++i) {
+    ss >> cell_.records[i].second_token_id;
+    ss >> cell_.records[i].cooc_tf;
+    ss >> cell_.records[i].cooc_df;
+  }
+}
+
+bool CooccurrenceBatch::ReadCell() {
+  if (ReadCellHeader()) {
+    ReadRecords();
+    return true;
+  }
+  return false;
+}
 
 CooccurrenceBatch::CooccurrenceBatch(const std::string& path_to_batches) {
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
@@ -425,129 +472,39 @@ CooccurrenceBatch::CooccurrenceBatch(const std::string& path_to_batches) {
   in_batch_offset_ = 0;
 }
 
-void CooccurrenceBatch::FormNewCell(const CoocMap::iterator& map_node) {
-  // Every cooccurrence batch is divided into cells as folowing:
-  // Different cells have different first token id values.
-  // One cell contain records with euqal first token id
-  // One cooccurrence batch can't hold 2 or more cells in ram simultaneously
-  // Other cells are stored in output file
-  current_cell_.first_token_id = map_node->first;
-  current_cell_.num_of_documents = map_node->second.first.doc_num;
-  SecondTokenInfo& second_token_map = map_node->second.second;
-  current_cell_.num_of_records = static_cast<int>(second_token_map.size());
-  current_cell_.batch_records.resize(current_cell_.num_of_records);
-  int i = 0;
-  for (auto iter = second_token_map.begin(); iter != second_token_map.end(); ++iter, ++i) {
-    current_cell_.batch_records[i].first = iter->first;
-    current_cell_.batch_records[i].second.cooc_tf = iter->second.cooc_tf;
-    current_cell_.batch_records[i].second.cooc_df = iter->second.cooc_df;
-  }
-}
-
-// ToDo: write normal serialization
-void CooccurrenceBatch::WriteCell() {
-  // Cells are written in following form: first line consists of
-  // first token id, number of documents in which the folowing first token
-  // occurred, num of records
-  // The second line consists of records, which are separeted with a
-  // space and numbers in these records are separeted the same
-  std::stringstream ss;
-  ss << current_cell_.first_token_id << ' ';
-  ss << current_cell_.num_of_documents << ' ';
-  ss << current_cell_.num_of_records << std::endl;
-  for (int i = 0; i < static_cast<int>(current_cell_.batch_records.size()); ++i) {
-    ss << current_cell_.batch_records[i].first << ' ';
-    ss << current_cell_.batch_records[i].second.cooc_tf << ' ';
-    ss << current_cell_.batch_records[i].second.cooc_df << ' ';
-  }
-  ss << std::endl;
-  out_batch_ << ss.str();
-}
-
-bool CooccurrenceBatch::ReadCellHeader() {
-  // If there is a cell header in the batch then there are records and Batch
-  // isn't empty yet.
-  // Result of the function is true if the batch isn't empty
-  std::string str;
-  getline(in_batch_, str);
-  std::stringstream ss(str);
-  ss >> current_cell_.first_token_id;
-  ss >> current_cell_.num_of_documents;
-  ss >> current_cell_.num_of_records;
-  if (!in_batch_.eof())
-    return true;
-  else
-    return false;
-}
-
-void CooccurrenceBatch::ReadRecords() {
-  // It's not good if there are no records in batch after header
-  if (in_batch_.eof())
-    throw "Error while reading from batch. File is corrupted";
-  std::string str;
-  getline(in_batch_, str);
-  std::stringstream ss(str);
-  current_cell_.tf_records.clear();
-  current_cell_.df_records.clear();
-  for (int i = 0; i < static_cast<int>(current_cell_.num_of_records); ++i) {
-    OutputInfo tmp_tf;
-    OutputInfo tmp_df;
-    int second_token_id;
-    ss >> second_token_id;
-    ss >> tmp_tf.cooc_value;
-    ss >> tmp_df.cooc_value;
-    tmp_tf.ppmi = 0.0;
-    tmp_df.ppmi = 0.0;
-    current_cell_.tf_records.push_back(std::make_pair(second_token_id, tmp_tf));
-    current_cell_.df_records.push_back(std::make_pair(second_token_id, tmp_df));
-  }
-}
-
-bool CooccurrenceBatch::ReadCell() {
-  // As in ReadCellHeader function result here is true if batch isn't empty
-  // If it's empty reading from this batch stops
-  if (ReadCellHeader()) {
-    ReadRecords();
-    return true;
-  }
-  return false;
-}
-
-// ******************Methods of class ResultingBuffer*******************
+// ********************Methods of class ResultingBuffer**************
 
 ResultingBuffer::ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
-    const bool calculate_tf_cooc, const bool calculate_df_cooc,
-    const bool calculate_tf_ppmi, const bool calculate_df_ppmi,
+    const bool calculate_cooc_tf, const bool calculate_cooc_df,
+    const bool calculate_ppmi_tf, const bool calculate_ppmi_df,
     const bool calculate_ppmi, const long long total_num_of_pairs,
     const int total_num_of_documents,
     const std::string& cooc_tf_file_path,
     const std::string& cooc_df_file_path,
     const std::string& ppmi_tf_file_path,
     const std::string& ppmi_df_file_path) : cooc_min_tf_(cooc_min_tf),
-        cooc_min_df_(cooc_min_df), calculate_tf_cooc_(calculate_tf_cooc),
-        calculate_df_cooc_(calculate_df_cooc),
-        calculate_tf_ppmi_(calculate_tf_ppmi),
-        calculate_df_ppmi_(calculate_df_ppmi),
-        calculate_ppmi_(calculate_ppmi),
+        cooc_min_df_(cooc_min_df), calculate_cooc_tf_(calculate_cooc_tf),
+        calculate_cooc_df_(calculate_cooc_df), calculate_ppmi_tf_(calculate_ppmi_tf),
+        calculate_ppmi_df_(calculate_ppmi_df), calculate_ppmi_(calculate_ppmi),
         total_num_of_pairs_(total_num_of_pairs),
         total_num_of_documents_(total_num_of_documents),
-        filebuf_size_(8500) {
-  if (calculate_tf_cooc_) {
+        output_buf_size_(8500) {
+  if (calculate_cooc_tf_) {
     cooc_tf_dict_.open(cooc_tf_file_path, std::ios::out);
     if (!cooc_tf_dict_.good())
       throw "Failed to create a file in the working directory";
   }
-  if (calculate_df_cooc_) {
+  if (calculate_cooc_df_) {
     cooc_df_dict_.open(cooc_df_file_path, std::ios::out);
     if (!cooc_df_dict_.good())
       throw "Failed to create a file in the working directory";
   }
-  if (calculate_tf_ppmi_) {
+  if (calculate_ppmi_tf_) {
     ppmi_tf_dict_.open(ppmi_tf_file_path, std::ios::out);
     if (!ppmi_tf_dict_.good())
       throw "Failed to create a file in the working directory";
   }
-  if (calculate_df_ppmi_) {
+  if (calculate_ppmi_df_) {
     ppmi_df_dict_.open(ppmi_df_file_path, std::ios::out);
     if (!ppmi_df_dict_.good())
       throw "Failed to create a file in the working directory";
@@ -555,192 +512,127 @@ ResultingBuffer::ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
 }
 
 void ResultingBuffer::AddInBuffer(const CooccurrenceBatch& batch) {
-  if (list_of_tf_records_.size() != 0 &&
-      list_of_tf_records_.back().first == batch.current_cell_.first_token_id)
-    MergeWithExistingCell(list_of_tf_records_,
-            batch.current_cell_.tf_records,
-            batch.current_cell_.num_of_documents);
-  else {
-    CheckPreviousCell( list_of_tf_records_, cooc_min_tf_);
-    AddNewCellInBuffer(list_of_tf_records_,
-        batch.current_cell_.tf_records, batch.current_cell_.first_token_id,
-        batch.current_cell_.num_of_documents);
-  }
-  if (list_of_df_records_.size() != 0 &&
-      list_of_df_records_.back().first == batch.current_cell_.first_token_id)
-    MergeWithExistingCell(list_of_df_records_,
-            batch.current_cell_.df_records,
-            batch.current_cell_.num_of_documents);
-  else {
-    CheckPreviousCell( list_of_df_records_, cooc_min_df_);
-    AddNewCellInBuffer(list_of_df_records_,
-        batch.current_cell_.df_records, batch.current_cell_.first_token_id,
-        batch.current_cell_.num_of_documents);
+  if (cell_.first_token_id == batch.cell_.first_token_id) {
+    MergeWithExistingCell(batch);
+  } else {
+    PopPreviousContent();
+    cell_ = batch.cell_;
   }
 }
 
-// ToDo: replace list with forward list
-void ResultingBuffer::MergeWithExistingCell(OutputList& list_of_records,
-        const OutputRecords& batch_records,
-        const int num_of_documents_from_batch_cell) {
-  OutputRecords new_list;
-  OutputRecords& last_records = list_of_records.back().second.second;
-  auto fi_iter = last_records.begin();
-  auto se_iter = batch_records.begin();
-  while (fi_iter != last_records.end() && se_iter != batch_records.end()) {
-    if (fi_iter->first == se_iter->first) { // first is first_token_id
-      OutputInfo tmp;
-      tmp.cooc_value = fi_iter->second.cooc_value + se_iter->second.cooc_value;
-      tmp.ppmi = 0.0;
-      new_list.push_back(std::make_pair(fi_iter->first, tmp));
+void ResultingBuffer::MergeWithExistingCell(const CooccurrenceBatch& batch) {
+  std::vector<CoocTriple> old_vector = cell_.records;
+  cell_.records.resize(old_vector.size() + batch.cell_.records.size());
+  auto fi_iter = old_vector.begin();
+  auto se_iter = batch.cell_.records.begin();
+  auto th_iter = cell_.records.begin();
+  while (fi_iter != old_vector.end() && se_iter != batch.cell_.records.end()) {
+    if (fi_iter->second_token_id == se_iter->second_token_id) {
+      th_iter->second_token_id = fi_iter->second_token_id;
+      th_iter->cooc_tf = fi_iter->cooc_tf + se_iter->cooc_tf;
+      th_iter->cooc_df = fi_iter->cooc_df + se_iter->cooc_df;
       ++fi_iter;
       ++se_iter;
-    } else if (fi_iter->first < se_iter->first)
-      new_list.push_back(*(fi_iter++));
+      ++th_iter;
+    } else if (fi_iter->second_token_id < se_iter->second_token_id)
+      *(th_iter++) = *(fi_iter++);
     else
-      new_list.push_back(*(se_iter++));
+      *(th_iter++) = *(se_iter++);
   }
-  std::copy(fi_iter, last_records.end(),  std::back_inserter(new_list));
-  std::copy(se_iter, batch_records.end(), std::back_inserter(new_list));
-  int first_token_id = list_of_records.back().first;
-  int new_num_of_documents = list_of_records.back().second.first +
-              num_of_documents_from_batch_cell;
-  list_of_records.pop_back();
-  list_of_records.push_back(std::make_pair(first_token_id,
-              std::make_pair(new_num_of_documents, new_list)));
+  cell_.records.resize(th_iter - cell_.records.begin());
+  std::copy(fi_iter, old_vector.end(), std::back_inserter(cell_.records));
+  std::copy(se_iter, batch.cell_.records.end(), std::back_inserter(cell_.records));
 }
 
-void ResultingBuffer::CheckPreviousCell(OutputList& list_of_records,
-        const int cooc_min_value) {
-  if (list_of_records.empty())
-    return;
-  OutputRecords& last_records = list_of_records.back().second.second;
-  for (auto iter = last_records.begin(); iter != last_records.end(); ) {
-    if (iter->second.cooc_value < cooc_min_value)
-      last_records.erase(iter++);
-    else
-      ++iter;
-  }
-  if (last_records.empty())
-    list_of_records.pop_back();
-}
-
-void ResultingBuffer::AddNewCellInBuffer(OutputList& list_of_records,
-        const OutputRecords& batch_records, const int first_token_id,
-        const int num_of_documents) {
-        /* num of documents correspondes to first token*/
-  list_of_records.push_back(std::make_pair(first_token_id,
-              std::make_pair(num_of_documents, batch_records)));
-}
-
-// ToDo: think how to fill it simultaniously for tf and df
-void ResultingBuffer::BuildFreqDictionary() {
-  for (auto iter1 = list_of_tf_records_.begin(); iter1 != list_of_tf_records_.end(); ++iter1) {
-    long long token_freq = 0;
-    OutputRecords& internal_list = iter1->second.second;
-    for (auto iter2 = internal_list.begin(); iter2 != internal_list.end(); ++iter2) {
-      token_freq += iter2->second.cooc_value;
+void ResultingBuffer::PopPreviousContent() {
+  // It pops cooc_values in their output files and in resulting hash table
+  // Also it calculates absolute_tf values for tokens (it'll be used in calculation of ppmi)
+  std::stringstream output_buf_tf;
+  std::stringstream output_buf_df;
+  AbsoluteValues hash_table;
+  for (unsigned i = 0; i < cell_.records.size(); ++i) {
+    Results token_pair_info;
+    if (calculate_cooc_tf_ && cell_.records[i].cooc_tf >= cooc_min_tf_) {
+      if (cell_.first_token_id != cell_.records[i].second_token_id)
+        output_buf_tf << cell_.first_token_id << ' ' << cell_.records[i].second_token_id << ' ' << cell_.records[i].cooc_tf << std::endl;
+      hash_table.absolute_tf += cell_.records[i].cooc_tf;
+      token_pair_info.cooc_tf = cell_.records[i].cooc_tf;
     }
-    // This Dictionary provides access to information about token (e.g. total
-    // number times this token occurred in text, total number of documents
-    // where the folowing token occurred)
-    freq_dictionary_.insert(std::make_pair(iter1->first,
-           std::make_pair(token_freq, 0))).second; // 0 will be replaced later
+    if (output_buf_tf.tellg() > output_buf_size_)
+      cooc_tf_dict_ << output_buf_tf.str();
+    if (calculate_cooc_df_ && cell_.records[i].cooc_df >= cooc_min_df_) {
+      if (cell_.first_token_id != cell_.records[i].second_token_id)
+        output_buf_df << cell_.first_token_id << ' ' << cell_.records[i].second_token_id << ' ' << cell_.records[i].cooc_df << std::endl;
+      hash_table.absolute_df = cell_.num_of_documents;
+      token_pair_info.cooc_df = cell_.records[i].cooc_df;
+    }
+    if (output_buf_df.tellg() > output_buf_size_)
+      cooc_df_dict_ << output_buf_df.str();
+    if (token_pair_info.cooc_tf != 0 || token_pair_info.cooc_df != 0) {
+      hash_table.resulting_info.insert(std::make_pair(cell_.records[i].second_token_id, token_pair_info));
+    }
   }
-  for (auto iter1 = list_of_df_records_.begin(); iter1 != list_of_df_records_.end(); ++iter1) {
-    auto node = freq_dictionary_.find(iter1->first);
-    if (node == freq_dictionary_.end())
-      freq_dictionary_.insert(std::make_pair(iter1->first,
-              std::make_pair(0, iter1->second.first))).second;
-    else
-      node->second.second = iter1->second.first;
-  }
+  if (calculate_cooc_tf_)
+    cooc_tf_dict_ << output_buf_tf.str();
+  if (calculate_cooc_df_)
+    cooc_df_dict_ << output_buf_df.str();
+  // It's importants after pop to set size = 0, because this value will be checked later
+  cell_.records.resize(0);
+  resulting_hash_table_.insert(std::make_pair(cell_.first_token_id, hash_table));
 }
 
-void ResultingBuffer::CalculateTfPpmi() {
-  for (auto iter1 = list_of_tf_records_.begin(); iter1 != list_of_tf_records_.end(); ++iter1) {
-    OutputRecords& internal_list = iter1->second.second;
-    for (auto iter2 = internal_list.begin(); iter2 != internal_list.end(); ++iter2) {
-      // ToDo: make some experiments of calculation
-      // pmi(u, v) = (n / n_v) / (n_u / n_uv)
-      /*{
-        std::cout << '(' << iter1->first << ',' << iter2->first << ")\n";
-        std::cout << "n = " << total_num_of_pairs_ << std::endl;
-        std::cout << "n_v = " << freq_dictionary_.find(iter1->first)->second.first << std::endl;
-        std::cout << "n_u = " << freq_dictionary_.find(iter2->first)->second.first << std::endl;
-        std::cout << "n_uv = " << iter2->second.cooc_value << std::endl << std::endl;
-      }*/
-      double pmi = (static_cast<double>(total_num_of_pairs_) /
-          freq_dictionary_.find(iter2->first)->second.first) /
-          (freq_dictionary_.find(iter1->first)->second.first /
-          static_cast<double>(iter2->second.cooc_value));
-      // initially all the ppmi values are 0.0
-      // (look CooccurrenceBatch::ReadRecords)
-      if (pmi > 1.0) {
-        iter2->second.ppmi = log(pmi);
+void ResultingBuffer::CalculatePpmi() {
+  double sparseness_coef_tf = 0;
+  double sparseness_coef_df = 0;
+  for (auto iter1 = resulting_hash_table_.begin(); iter1 != resulting_hash_table_.end(); ++iter1) {
+    std::unordered_map<int, Results>& resulting_info = std::get<ABSOLUTE_VALUES>(*iter1).resulting_info;
+    for (auto iter2 = resulting_info.begin(); iter2 != resulting_info.end(); ++iter2) {
+      // sub_log_pmi(u, v) = (n / n_v) / (n_u / n_uv)
+      double sub_log_tf_pmi = (static_cast<double>(total_num_of_pairs_) /
+          std::get<ABSOLUTE_VALUES>(*iter1).absolute_tf) /
+          (resulting_hash_table_[std::get<SECOND_TOKEN_ID>(*iter2)].absolute_tf /
+          static_cast<double>(std::get<RESULTS>(*iter2).cooc_tf));
+      if (sub_log_tf_pmi > 1.0) {
+        std::get<RESULTS>(*iter2).tf_ppmi = log(sub_log_tf_pmi);
+        ++sparseness_coef_tf;
+      }
+
+      double sub_log_df_pmi = (static_cast<double>(total_num_of_documents_) /
+          std::get<ABSOLUTE_VALUES>(*iter1).absolute_df) /
+          (resulting_hash_table_[std::get<SECOND_TOKEN_ID>(*iter2)].absolute_df /
+          static_cast<double>(std::get<RESULTS>(*iter2).cooc_df));
+      if (sub_log_df_pmi > 1.0) {
+        std::get<RESULTS>(*iter2).df_ppmi = log(sub_log_df_pmi);
+        ++sparseness_coef_df;
       }
     }
   }
+  if (calculate_ppmi_tf_)
+    std::cout << "sparsness coefficient for matrix TF_PPMI = " << sparseness_coef_tf / resulting_hash_table_.size() / resulting_hash_table_.size() << std::endl;
+  if (calculate_ppmi_df_)
+    std::cout << "sparsness coefficient for matrix DF_PPMI = " << sparseness_coef_df / resulting_hash_table_.size() / resulting_hash_table_.size() << std::endl;
 }
 
-void ResultingBuffer::CalculateDfPpmi() {
-  for (auto iter1 = list_of_df_records_.begin(); iter1 != list_of_df_records_.end(); ++iter1) {
-    OutputRecords& internal_list = iter1->second.second;
-    for (auto iter2 = internal_list.begin(); iter2 != internal_list.end(); ++iter2) {
-      // ToDo: make some experiments of calculation
-      // pmi(u, v) = (n / n_v) / (n_u / n_uv)
-      /*{
-        std::cout << '(' << iter1->first << ',' << iter2->first << ")\n";
-        std::cout << "n = " << total_num_of_documents_ << std::endl;
-        std::cout << "n_u = " << freq_dictionary_.find(iter1->first)->second.second << std::endl;
-        std::cout << "n_v = " << freq_dictionary_.find(iter2->first)->second.second << std::endl;
-        std::cout << "n_uv = " << iter2->second.cooc_value << std::endl << std::endl;
-      }*/
-      double pmi = (static_cast<double>(total_num_of_documents_) /
-          freq_dictionary_.find(iter2->first)->second.second) /
-          (freq_dictionary_.find(iter1->first)->second.second /
-          static_cast<double>(iter2->second.cooc_value));
-      // initially all the ppmi values are 0.0
-      // (look CooccurrenceBatch::ReadRecords)
-      if (pmi > 1.0) {
-        iter2->second.ppmi = log(pmi);
-      }
+void ResultingBuffer::WritePpmiInFile() {
+  std::stringstream output_buf_tf;
+  std::stringstream output_buf_df;
+  for (auto iter1 = resulting_hash_table_.begin(); iter1 != resulting_hash_table_.end(); ++iter1) {
+    std::unordered_map<int, Results>& resulting_info = std::get<ABSOLUTE_VALUES>(*iter1).resulting_info;
+    for (auto iter2 = resulting_info.begin(); iter2 != resulting_info.end(); ++iter2) {
+      if (std::get<FIRST_TOKEN_ID>(*iter1) >= std::get<SECOND_TOKEN_ID>(*iter2))
+        continue;
+      if (calculate_ppmi_tf_)
+        output_buf_tf << std::get<FIRST_TOKEN_ID>(*iter1) << ' ' << std::get<SECOND_TOKEN_ID>(*iter2) << ' ' << std::get<RESULTS>(*iter2).tf_ppmi << std::endl;
+      if (output_buf_tf.tellg() > output_buf_size_)
+        ppmi_tf_dict_ << output_buf_tf.str();
+      if (calculate_ppmi_df_)
+        output_buf_df << std::get<FIRST_TOKEN_ID>(*iter1) << ' ' << std::get<SECOND_TOKEN_ID>(*iter2) << ' ' << std::get<RESULTS>(*iter2).df_ppmi << std::endl;
+      if (output_buf_df.tellg() > output_buf_size_)
+        ppmi_df_dict_ << output_buf_df.str();
     }
   }
-}
-
-void ResultingBuffer::WriteCoocInResultingFile(OutputList& list_of_records,
-        std::ofstream& cooc_dict) {
-  std::stringstream filebuf;
-  for (auto iter1 = list_of_records.begin();
-           iter1 != list_of_records.end(); ++iter1) {
-    OutputRecords& internal_list = iter1->second.second;
-    for (auto iter2 = internal_list.begin();
-             iter2 != internal_list.end(); ++iter2) {
-      if (iter1->first != iter2->first)
-        filebuf << iter1->first << " " << iter2->first << " "
-                << iter2->second.cooc_value << std::endl;
-      if (filebuf.tellg() > filebuf_size_)
-        cooc_dict << filebuf.str();
-    }
-  }
-  cooc_dict << filebuf.str();
-}
-
-void ResultingBuffer::WritePpmiInResultingFile(OutputList& list_of_records,
-        std::ofstream& ppmi_dict) {
-  std::stringstream filebuf;
-  for (auto iter1 = list_of_records.begin();
-           iter1 != list_of_records.end(); ++iter1) {
-    OutputRecords& internal_list = iter1->second.second;
-    for (auto iter2 = internal_list.begin();
-             iter2 != internal_list.end(); ++iter2) {
-      if (iter1->first < iter2->first)
-        filebuf << iter1->first << " " << iter2->first << " "
-                << iter2->second.ppmi << std::endl;
-      if (filebuf.tellg() > filebuf_size_)
-        ppmi_dict << filebuf.str();
-    }
-  }
-  ppmi_dict << filebuf.str();
+  if (calculate_ppmi_tf_)
+    ppmi_tf_dict_ << output_buf_tf.str();
+  if (calculate_ppmi_df_)
+    ppmi_df_dict_ << output_buf_df.str();
 }

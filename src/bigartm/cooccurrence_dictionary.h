@@ -14,6 +14,15 @@
 #include "boost/filesystem.hpp"
 #include "boost/utility.hpp"
 
+#define FIRST_TOKEN_ID 0
+#define FIRST_TOKEN_INFO 0
+#define SECOND_TOKEN_ID 0
+#define SECOND_TOKEN_INFO 1
+#define COOCCURRENCE_INFO 1
+#define MAP_INFO 1
+#define ABSOLUTE_VALUES 1
+#define RESULTS 1
+
 // Note: user has to have some of the headers below on his system
 // ToDo: finish for mac, win, unices not caught below
 #if defined(_WIN32)
@@ -25,34 +34,55 @@
 #endif
 // https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
 
-struct FirstTokenInfo {
-  int doc_num;
-  int prev_doc_id;
+struct CoocTriple {
+  int second_token_id;
+  long long cooc_tf;
+  int cooc_df;
+};
+
+struct CoocPair {
+  long long cooc_tf;
+  int cooc_df;
 };
 
 struct CooccurrenceInfo {
-  int cooc_tf;
+  CooccurrenceInfo(const int doc_id) : cooc_tf(1), cooc_df(1), prev_doc_id(doc_id) {}
+  long long cooc_tf;
   int cooc_df;
   int prev_doc_id;
 };
 
-struct InputInfo {
-  int cooc_tf;
-  int cooc_df;
+struct FirstTokenInfo {
+  FirstTokenInfo(const int doc_id) : num_of_documents(1), prev_doc_id(doc_id) {}
+  int num_of_documents;
+  int prev_doc_id;
 };
 
-struct OutputInfo {
-  long long cooc_value;
-  double ppmi;
+struct Results {
+  Results() : cooc_tf(0), cooc_df(0), tf_ppmi(0.0), df_ppmi(0.0) {}
+  long long cooc_tf;
+  int cooc_df;
+  double tf_ppmi;
+  double df_ppmi;
+};
+
+struct AbsoluteValues {
+  AbsoluteValues() : absolute_tf(0), absolute_df(0) {}
+  long long absolute_tf;
+  int absolute_df;
+  std::unordered_map<int, Results> resulting_info;
+};
+
+struct Cell {
+  Cell() : first_token_id(-1), num_of_documents(0), num_of_records(0) {}
+  int first_token_id;
+  int num_of_documents;
+  unsigned num_of_records;
+  std::vector<CoocTriple> records;
 };
 
 typedef std::map<int, CooccurrenceInfo> SecondTokenInfo;
 typedef std::map<int, std::pair<FirstTokenInfo, SecondTokenInfo>> CoocMap;
-typedef std::list<std::pair<int, OutputInfo>> OutputRecords;
-// Here in pair <int, OutputRecords> int is number of documents where the
-// folowing token occurred
-// list<pair<first_token_id, pair<num_of_documents, OutputRecords>>>
-typedef std::list<std::pair<int, std::pair<int, OutputRecords>>> OutputList;
 
 class CooccurrenceDictionary;
 class CooccurrenceBatch;
@@ -74,16 +104,13 @@ class CooccurrenceDictionary {
   void ReadAndMergeCooccurrenceBatches();
  private:
   int SetItemsPerBatch();
+  void SavePairOfTokens(const int first_token_id, const int second_token_id, const int doc_id,
+          CoocMap& cooc_map);
+  void AddInCoocMap(const int first_token_id, const int second_token_id, const int doc_id,
+          CoocMap& cooc_map);
+  void ModifyCoocMapNode(const int second_token_id, const int doc_id,
+          std::pair<FirstTokenInfo, SecondTokenInfo>& map_info);
   void UploadCooccurrenceBatchOnDisk(CoocMap& cooc_map);
-  CooccurrenceInfo FormInitialCoocInfo(int doc_id);
-  FirstTokenInfo FormInitialFirstTokenInfo(int doc_id);
-  void SavePairOfTokens(int first_token_id, int second_token_id, int doc_id,
-          CoocMap& cooc_map);
-  void AddInCoocMap(int first_token_id, int second_token_id, int doc_id,
-          CoocMap& cooc_map);
-  void ModifyCoocMapNode(int second_token_id, int doc_id,
-          std::pair<FirstTokenInfo, SecondTokenInfo>& map_node);
-  void SaveNumberOfDocuments(int first_token_id);
   CooccurrenceBatch* CreateNewCooccurrenceBatch();
   void OpenBatchInputFile(CooccurrenceBatch& batch);
   void OpenBatchOutputFile(CooccurrenceBatch& batch);
@@ -91,7 +118,7 @@ class CooccurrenceDictionary {
   void CloseBatchInputFile(CooccurrenceBatch& batch);
   void CloseBatchOutputFile(CooccurrenceBatch& batch);
 
-  const int window_width_;
+  const unsigned window_width_;
   const int cooc_min_tf_;
   const int cooc_min_df_;
   const std::string path_to_vocab_;
@@ -107,15 +134,16 @@ class CooccurrenceDictionary {
   bool calculate_ppmi_;
   bool calculate_tf_cooc_;
   bool calculate_df_cooc_;
+
   std::unordered_map<std::string, int> vocab_dictionary_;
   std::string path_to_batches_;
   std::vector<std::unique_ptr<CooccurrenceBatch>> vector_of_batches_;
   int open_files_counter_;
   int max_num_of_open_files_;
   int num_of_threads_;
-  int items_per_batch_;
-  long long total_num_of_pairs_;
-  int total_num_of_documents_;
+  unsigned total_num_of_pairs_;
+  unsigned total_num_of_documents_;
+  unsigned items_per_batch_;
 };
 
 class CooccurrenceBatch: private boost::noncopyable {
@@ -130,15 +158,7 @@ class CooccurrenceBatch: private boost::noncopyable {
  private:
   CooccurrenceBatch(const std::string& path_to_batches);
 
-  struct Cell {
-    int first_token_id;
-    int num_of_documents; // number of documents where first token occurred
-    int num_of_records;
-    std::vector<std::pair<int, InputInfo>> batch_records;
-    OutputRecords tf_records;
-    OutputRecords df_records;
-  };
-  Cell current_cell_;
+  Cell cell_;
   std::ifstream in_batch_;
   std::ofstream out_batch_;
   std::string filename_;
@@ -149,34 +169,26 @@ class ResultingBuffer {
  friend class CooccurrenceDictionary;
  private:
   ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
-      const bool calculate_tf_cooc, const bool calculate_df_cooc,
-      const bool calculate_tf_ppmi, const bool calculate_df_ppmi,
-      const bool calculate_ppmi_, const long long total_num_of_pairs,
-      const int total_num_of_documents,
+      const bool calculate_cooc_tf, const bool calculate_cooc_df,
+      const bool calculate_ppmi_tf, const bool calculate_ppmi_df,
+      const bool calculate_ppmi, const long long total_num_of_pairs_,
+      const int total_num_of_documents_,
       const std::string& cooc_tf_file_path,
       const std::string& cooc_df_file_path,
       const std::string& ppmi_tf_file_path,
       const std::string& ppmi_df_file_path);
   void AddInBuffer(const CooccurrenceBatch& batch);
-  void MergeWithExistingCell(OutputList& vector_of_records,
-          const OutputRecords& batch_records,
-          const int num_of_documents_from_batch_cell);
-  void CheckPreviousCell(OutputList& list_of_records, int cooc_min_value);
-  void AddNewCellInBuffer(OutputList& list_of_records,
-          const OutputRecords& batch_records, const int first_token_id,
-          const int num_of_documents);
-  void BuildFreqDictionary();
-  void CalculateTfPpmi();
-  void CalculateDfPpmi();
-  void WriteCoocInResultingFile(OutputList& list_of_records, std::ofstream& cooc_dict);
-  void WritePpmiInResultingFile(OutputList& list_of_records, std::ofstream& ppmi_dict);
+  void MergeWithExistingCell(const CooccurrenceBatch& batch);
+  void PopPreviousContent();
+  void CalculatePpmi();
+  void WritePpmiInFile();
 
   const int cooc_min_tf_;
   const int cooc_min_df_;
-  const bool calculate_tf_cooc_;
-  const bool calculate_df_cooc_;
-  const bool calculate_tf_ppmi_;
-  const bool calculate_df_ppmi_;
+  const bool calculate_cooc_tf_;
+  const bool calculate_cooc_df_;
+  const bool calculate_ppmi_tf_;
+  const bool calculate_ppmi_df_;
   const bool calculate_ppmi_;
   const long long total_num_of_pairs_;
   const int total_num_of_documents_;
@@ -184,8 +196,8 @@ class ResultingBuffer {
   std::ofstream cooc_df_dict_;
   std::ofstream ppmi_tf_dict_;
   std::ofstream ppmi_df_dict_;
-  OutputList list_of_tf_records_;
-  OutputList list_of_df_records_;
-  std::unordered_map<int, std::pair<long long, int>> freq_dictionary_;
-  const unsigned filebuf_size_;
+
+  Cell cell_;
+  const int output_buf_size_;
+  std::unordered_map<int, AbsoluteValues> resulting_hash_table_;
 };
