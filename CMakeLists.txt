@@ -116,7 +116,9 @@ endif (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
        ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
 
 # macros for checking support for SSE
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
+    ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
+  include(CheckCXXCompilerFlag)
   # idea taken from https://github.com/PointCloudLibrary/pcl/blob/36fb6d2b2e9a8ab65507c0fe9606c05036c37460/cmake/pcl_find_sse.cmake#L154
   include(CheckCXXSourceRuns)
   set(CMAKE_REQUIRED_FLAGS "-msse")
@@ -142,7 +144,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     add_definitions("-DUSE_SSE")
   endif (HAVE_SSE_EXTENSIONS)
   set(CMAKE_REQUIRED_FLAGS)
-endif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+endif (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
+       ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
 
 add_subdirectory(src)
 add_subdirectory(python)
