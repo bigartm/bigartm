@@ -20,8 +20,6 @@
 #define SECOND_TOKEN_INFO 1
 #define COOCCURRENCE_INFO 1
 #define MAP_INFO 1
-#define ABSOLUTE_VALUES 1
-#define RESULTS 1
 
 // Note: user has to have some of the headers below on his system
 // ToDo: finish for mac, win, unices not caught below
@@ -58,19 +56,10 @@ struct FirstTokenInfo {
   int prev_doc_id;
 };
 
-struct Results {
-  Results() : cooc_tf(0), cooc_df(0), tf_ppmi(0.0), df_ppmi(0.0) {}
-  long long cooc_tf;
-  int cooc_df;
-  double tf_ppmi;
-  double df_ppmi;
-};
-
-struct AbsoluteValues {
-  AbsoluteValues() : absolute_tf(0), absolute_df(0) {}
-  long long absolute_tf;
-  int absolute_df;
-  std::unordered_map<int, Results> resulting_info;
+struct PpmiCountersValues {
+  PpmiCountersValues() : n_u_tf(0), n_u_df(0) {}
+  long long n_u_tf;
+  int n_u_df;
 };
 
 struct Cell {
@@ -95,7 +84,7 @@ class CooccurrenceDictionary {
       const std::string& path_to_vw, const std::string& cooc_tf_file_path,
       const std::string& cooc_df_file_path,
       const std::string& ppmi_tf_file_path,
-      const std::string& ppmi_df_file_path);
+      const std::string& ppmi_df_file_path, const int num_of_threads);
   ~CooccurrenceDictionary();
   void FetchVocab();
   int  VocabDictionarySize();
@@ -140,10 +129,10 @@ class CooccurrenceDictionary {
   std::vector<std::unique_ptr<CooccurrenceBatch>> vector_of_batches_;
   int open_files_counter_;
   int max_num_of_open_files_;
-  int num_of_threads_;
   unsigned total_num_of_pairs_;
   unsigned total_num_of_documents_;
   unsigned items_per_batch_;
+  int num_of_threads_;
 };
 
 class CooccurrenceBatch: private boost::noncopyable {
@@ -177,11 +166,12 @@ class ResultingBuffer {
       const std::string& cooc_df_file_path,
       const std::string& ppmi_tf_file_path,
       const std::string& ppmi_df_file_path);
+  void OpenAndCheckInputFile(std::ifstream& ifile, const std::string path);
+  void OpenAndCheckOutputFile(std::ofstream& ofile, const std::string path);
   void AddInBuffer(const CooccurrenceBatch& batch);
   void MergeWithExistingCell(const CooccurrenceBatch& batch);
   void PopPreviousContent();
-  void CalculatePpmi();
-  void WritePpmiInFile();
+  void CalculateAndWritePpmi();
 
   const int cooc_min_tf_;
   const int cooc_min_df_;
@@ -192,12 +182,14 @@ class ResultingBuffer {
   const bool calculate_ppmi_;
   const long long total_num_of_pairs_;
   const int total_num_of_documents_;
-  std::ofstream cooc_tf_dict_;
-  std::ofstream cooc_df_dict_;
+  std::ifstream cooc_tf_dict_in_;
+  std::ofstream cooc_tf_dict_out_;
+  std::ifstream cooc_df_dict_in_;
+  std::ofstream cooc_df_dict_out_;
   std::ofstream ppmi_tf_dict_;
   std::ofstream ppmi_df_dict_;
 
   Cell cell_;
   const int output_buf_size_;
-  std::unordered_map<int, AbsoluteValues> resulting_hash_table_;
+  std::unordered_map<int, PpmiCountersValues> ppmi_counters_;
 };

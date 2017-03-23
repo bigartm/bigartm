@@ -29,14 +29,16 @@ CooccurrenceDictionary::CooccurrenceDictionary(const int window_width,
     const std::string& cooc_tf_file_path,
     const std::string& cooc_df_file_path,
     const std::string& ppmi_tf_file_path,
-    const std::string& ppmi_df_file_path) : window_width_(window_width),
-        cooc_min_tf_(cooc_min_tf), cooc_min_df_(cooc_min_df),
-        path_to_vocab_(path_to_vocab), path_to_vw_(path_to_vw),
+    const std::string& ppmi_df_file_path, const int num_of_threads) :
+        window_width_(window_width), cooc_min_tf_(cooc_min_tf),
+        cooc_min_df_(cooc_min_df), path_to_vocab_(path_to_vocab),
+        path_to_vw_(path_to_vw),
         cooc_tf_file_path_(cooc_tf_file_path),
         cooc_df_file_path_(cooc_df_file_path),
         ppmi_tf_file_path_(ppmi_tf_file_path),
         ppmi_df_file_path_(ppmi_df_file_path),
-        total_num_of_pairs_(0), total_num_of_documents_(0) {
+        total_num_of_pairs_(0), total_num_of_documents_(0),
+        num_of_threads_(num_of_threads) {
   // This function works as follows:
   // 1. Get content from a vocab file and put it in dictionary
   // 2. Read Vowpal Wabbit file by portions, calculate co-occurrences for
@@ -54,16 +56,22 @@ CooccurrenceDictionary::CooccurrenceDictionary(const int window_width,
   
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
   fs::path dir(boost::lexical_cast<std::string>(uuid));
-  if (fs::exists(dir))
-    throw "Folder with uuid already exists";
-  if (!fs::create_directory(dir))
-    throw "Failed to create directory";
+  if (fs::exists(dir)) {
+    std::cerr << "Folder with uuid already exists";
+    throw 1;
+  }
+  if (!fs::create_directory(dir)) {
+    std::cerr << "Failed to create directory";
+    throw 1;
+  }
   path_to_batches_ = dir.string();
   open_files_counter_ = 0;
   max_num_of_open_files_ = 1000;
-  num_of_threads_ = std::thread::hardware_concurrency();
-  if (num_of_threads_ == 0)
-    num_of_threads_ = 1;
+  if (num_of_threads_ == -1) {
+    num_of_threads_ = std::thread::hardware_concurrency();
+    if (num_of_threads_ == 0)
+      num_of_threads_ = 1;
+  }
   items_per_batch_ = SetItemsPerBatch();
   std::cout << "items per batch = " << items_per_batch_ << std::endl;
 }
@@ -76,8 +84,10 @@ void CooccurrenceDictionary::FetchVocab() {
   // This func reads words from vocab, sets them unique id and collects pair
   // in dictionary
   std::ifstream vocab(path_to_vocab_, std::ios::in);
-  if (!vocab.is_open())
-    throw "Failed to open vocab";
+  if (!vocab.is_open()) {
+    std::cerr << "Failed to open vocab";
+    throw 1;
+  }
   int last_token_id = 1;
   std::string str;
 
@@ -113,11 +123,16 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
   // on external storage
   // Repeat 1-6 for all portions (can work in parallel for different portions)
 
+  std::cout << "Step 1: creation of cooccurrence batches\n";
   std::ifstream vowpal_wabbit_doc(path_to_vw_, std::ios::in);
-  if (!vowpal_wabbit_doc.is_open())
-    throw "Failed to open vocab";
+  if (!vowpal_wabbit_doc.is_open()) {
+    std::cerr << "Failed to open vocab";
+    throw 1;
+  }
   std::mutex read_lock;
 
+  //unsigned critical_num_of_documents = 100000;
+  unsigned documents_processed = 0;
   auto func = [&]() {
     while (true) {
       std::vector<std::string> portion;
@@ -138,6 +153,9 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
 
       if (portion.size() == 0)
         continue;
+      /*documents_processed += portion.size();
+      if (documents_processed >= critical_num_of_documents)
+        break;*/
 
       // First elem in external map is first_token_id, in internal it's
       // second_token_id
@@ -204,6 +222,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
 
       if (!cooc_map.empty())
         UploadCooccurrenceBatchOnDisk(cooc_map);
+      std::cout << "proccessed " << documents_processed << " documents\n";
     }
   };
 
@@ -212,6 +231,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
     tasks.push_back(std::move(std::async(std::launch::async, func)));
   for (int i = 0; i < num_of_threads_; ++i)
     tasks[i].get();
+  std::cout << "Cooccurrence batches have been created\n";
 }
 
 int CooccurrenceDictionary::CooccurrenceBatchQuantity() {
@@ -219,6 +239,7 @@ int CooccurrenceDictionary::CooccurrenceBatchQuantity() {
 }
 
 void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
+  std::cout << "Step 2: merging Batches\n";
   auto CompareBatches = [](const std::unique_ptr<CooccurrenceBatch>& left,
                            const std::unique_ptr<CooccurrenceBatch>& right) {
     return left->cell_.first_token_id > right->cell_.first_token_id;
@@ -264,10 +285,12 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   }
   if (res.cell_.records.size() != 0)
     res.PopPreviousContent();
+  std::cout << "Batches have been merged\n";
   if (calculate_ppmi_) {
-    res.CalculatePpmi();
-    res.WritePpmiInFile();
+    std::cout << "Step 3: start calculation ppmi\n";
+    res.CalculateAndWritePpmi();
   }
+  std::cout << "Ppmi's have been calculated\n";
 }
 
 // ToDo: finish for mac, win, unices not caught below
@@ -278,7 +301,7 @@ int CooccurrenceDictionary::SetItemsPerBatch() {
   // should be load in ram. It depends on size of ram, window width and
   // num of threads (because every thread holds its batch of documents)
   const int default_value = 6750;
-  const double percent_of_ram = 0.4;
+  const double percent_of_ram = 0.6;
   const long long std_ram_size = 4025409536; // 4 Gb
   const int std_window_width = 10;
   const int std_num_of_threads = 2;
@@ -357,16 +380,20 @@ CooccurrenceBatch* CooccurrenceDictionary::CreateNewCooccurrenceBatch() {
 }
 
 void CooccurrenceDictionary::OpenBatchInputFile(CooccurrenceBatch& batch) {
-  if (open_files_counter_ >= max_num_of_open_files_)
-    throw "Max number of open files achieved, can't open more";
+  if (open_files_counter_ >= max_num_of_open_files_) {
+    std::cerr << "Max number of open files achieved, can't open more";
+    throw 1;
+  }
   ++open_files_counter_;
   batch.in_batch_.open(batch.filename_, std::ios::in);
   batch.in_batch_.seekg(batch.in_batch_offset_);
 }
 
 void CooccurrenceDictionary::OpenBatchOutputFile(CooccurrenceBatch& batch) {
-  if (open_files_counter_ >= max_num_of_open_files_)
-    throw "Max number of open files achieved, can't open more";
+  if (open_files_counter_ >= max_num_of_open_files_) {
+    std::cerr << "Max number of open files achieved, can't open more";
+    throw 1;
+  }
   ++open_files_counter_;
   batch.out_batch_.open(batch.filename_, std::ios::out);
 }
@@ -414,6 +441,7 @@ void CooccurrenceBatch::FormNewCell(const CoocMap::iterator& map_node) {
 // the second line consists of numbers triples, which are separeted with a
 // space and numbers in these triples are separeted the same
 void CooccurrenceBatch::WriteCell() {
+  // stringstream is used for fast bufferized i/o operations
   std::stringstream ss;
   ss << cell_.first_token_id << ' ';
   ss << cell_.num_of_documents << ' ';
@@ -428,6 +456,7 @@ void CooccurrenceBatch::WriteCell() {
 }
 
 bool CooccurrenceBatch::ReadCellHeader() {
+  // stringstream is used for fast bufferized i/o operations
   std::string str;
   getline(in_batch_, str);
   std::stringstream ss(str);
@@ -443,10 +472,12 @@ bool CooccurrenceBatch::ReadCellHeader() {
 void CooccurrenceBatch::ReadRecords() {
   // It's not good if there are no records in batch after header
   if (in_batch_.eof()) {
-    throw "Error while reading from batch. File is corrupted";
+    std::cerr << "Error while reading from batch. File is corrupted";
+    throw 1;
   }
   std::string str;
   getline(in_batch_, str);
+  // stringstream is used for fast bufferized i/o operations
   std::stringstream ss(str);
   cell_.records.resize(cell_.num_of_records);
   for (unsigned i = 0; i < cell_.num_of_records; ++i) {
@@ -490,24 +521,32 @@ ResultingBuffer::ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
         total_num_of_documents_(total_num_of_documents),
         output_buf_size_(8500) {
   if (calculate_cooc_tf_) {
-    cooc_tf_dict_.open(cooc_tf_file_path, std::ios::out);
-    if (!cooc_tf_dict_.good())
-      throw "Failed to create a file in the working directory";
+    OpenAndCheckOutputFile(cooc_tf_dict_out_, cooc_tf_file_path);
+    OpenAndCheckInputFile(cooc_tf_dict_in_, cooc_tf_file_path);
   }
   if (calculate_cooc_df_) {
-    cooc_df_dict_.open(cooc_df_file_path, std::ios::out);
-    if (!cooc_df_dict_.good())
-      throw "Failed to create a file in the working directory";
+    OpenAndCheckOutputFile(cooc_df_dict_out_, cooc_df_file_path);
+    OpenAndCheckInputFile(cooc_df_dict_in_, cooc_df_file_path);
   }
-  if (calculate_ppmi_tf_) {
-    ppmi_tf_dict_.open(ppmi_tf_file_path, std::ios::out);
-    if (!ppmi_tf_dict_.good())
-      throw "Failed to create a file in the working directory";
+  if (calculate_ppmi_tf_)
+    OpenAndCheckOutputFile(ppmi_tf_dict_, ppmi_tf_file_path);
+  if (calculate_ppmi_df_)
+    OpenAndCheckOutputFile(ppmi_df_dict_, ppmi_df_file_path);
+}
+
+void ResultingBuffer::OpenAndCheckInputFile(std::ifstream& ifile, const std::string path) {
+  ifile.open(path, std::ios::in);
+  if (!ifile.good()) {
+    std::cerr << "Failed to create a file in the working directory";
+    throw 1;
   }
-  if (calculate_ppmi_df_) {
-    ppmi_df_dict_.open(ppmi_df_file_path, std::ios::out);
-    if (!ppmi_df_dict_.good())
-      throw "Failed to create a file in the working directory";
+}
+
+void ResultingBuffer::OpenAndCheckOutputFile(std::ofstream& ofile, const std::string path) {
+  ofile.open(path, std::ios::out);
+  if (!ofile.good()) {
+    std::cerr << "Failed to create a file in the working directory";
+    throw 1;
   }
 }
 
@@ -545,94 +584,79 @@ void ResultingBuffer::MergeWithExistingCell(const CooccurrenceBatch& batch) {
 }
 
 void ResultingBuffer::PopPreviousContent() {
-  // It pops cooc_values in their output files and in resulting hash table
-  // Also it calculates absolute_tf values for tokens (it'll be used in calculation of ppmi)
+  // stringstream is used for fast bufferized i/o operations
   std::stringstream output_buf_tf;
   std::stringstream output_buf_df;
-  AbsoluteValues hash_table;
+  PpmiCountersValues n_u;
   for (unsigned i = 0; i < cell_.records.size(); ++i) {
-    Results token_pair_info;
     if (calculate_cooc_tf_ && cell_.records[i].cooc_tf >= cooc_min_tf_) {
       if (cell_.first_token_id != cell_.records[i].second_token_id)
         output_buf_tf << cell_.first_token_id << ' ' << cell_.records[i].second_token_id << ' ' << cell_.records[i].cooc_tf << std::endl;
-      hash_table.absolute_tf += cell_.records[i].cooc_tf;
-      token_pair_info.cooc_tf = cell_.records[i].cooc_tf;
+      n_u.n_u_tf += cell_.records[i].cooc_tf;
     }
     if (output_buf_tf.tellg() > output_buf_size_)
-      cooc_tf_dict_ << output_buf_tf.str();
-    if (calculate_cooc_df_ && cell_.records[i].cooc_df >= cooc_min_df_) {
+      cooc_tf_dict_out_ << output_buf_tf.str();
+    if (calculate_cooc_df_ && cell_.records[i].cooc_df >= cooc_min_df_)
       if (cell_.first_token_id != cell_.records[i].second_token_id)
         output_buf_df << cell_.first_token_id << ' ' << cell_.records[i].second_token_id << ' ' << cell_.records[i].cooc_df << std::endl;
-      hash_table.absolute_df = cell_.num_of_documents;
-      token_pair_info.cooc_df = cell_.records[i].cooc_df;
-    }
     if (output_buf_df.tellg() > output_buf_size_)
-      cooc_df_dict_ << output_buf_df.str();
-    if (token_pair_info.cooc_tf != 0 || token_pair_info.cooc_df != 0) {
-      hash_table.resulting_info.insert(std::make_pair(cell_.records[i].second_token_id, token_pair_info));
-    }
+      cooc_df_dict_out_ << output_buf_df.str();
   }
   if (calculate_cooc_tf_)
-    cooc_tf_dict_ << output_buf_tf.str();
+    cooc_tf_dict_out_ << output_buf_tf.str();
   if (calculate_cooc_df_)
-    cooc_df_dict_ << output_buf_df.str();
+    cooc_df_dict_out_ << output_buf_df.str();
+
+  if (n_u.n_u_tf != 0) {
+    n_u.n_u_df = cell_.num_of_documents;
+    ppmi_counters_.insert(std::make_pair(cell_.first_token_id, n_u));
+  }
   // It's importants after pop to set size = 0, because this value will be checked later
   cell_.records.resize(0);
-  resulting_hash_table_.insert(std::make_pair(cell_.first_token_id, hash_table));
+  //std::cout << "Token " << cell_.first_token_id << " has been proccessed\n";
 }
 
-void ResultingBuffer::CalculatePpmi() {
-  double sparseness_coef_tf = 0;
-  double sparseness_coef_df = 0;
-  for (auto iter1 = resulting_hash_table_.begin(); iter1 != resulting_hash_table_.end(); ++iter1) {
-    std::unordered_map<int, Results>& resulting_info = std::get<ABSOLUTE_VALUES>(*iter1).resulting_info;
-    for (auto iter2 = resulting_info.begin(); iter2 != resulting_info.end(); ++iter2) {
-      // sub_log_pmi(u, v) = (n / n_v) / (n_u / n_uv)
-      double sub_log_tf_pmi = (static_cast<double>(total_num_of_pairs_) /
-          std::get<ABSOLUTE_VALUES>(*iter1).absolute_tf) /
-          (resulting_hash_table_[std::get<SECOND_TOKEN_ID>(*iter2)].absolute_tf /
-          static_cast<double>(std::get<RESULTS>(*iter2).cooc_tf));
-      if (sub_log_tf_pmi > 1.0) {
-        std::get<RESULTS>(*iter2).tf_ppmi = log(sub_log_tf_pmi);
-        ++sparseness_coef_tf;
-      }
-
-      double sub_log_df_pmi = (static_cast<double>(total_num_of_documents_) /
-          std::get<ABSOLUTE_VALUES>(*iter1).absolute_df) /
-          (resulting_hash_table_[std::get<SECOND_TOKEN_ID>(*iter2)].absolute_df /
-          static_cast<double>(std::get<RESULTS>(*iter2).cooc_df));
-      if (sub_log_df_pmi > 1.0) {
-        std::get<RESULTS>(*iter2).df_ppmi = log(sub_log_df_pmi);
-        ++sparseness_coef_df;
-      }
-    }
-  }
-  if (calculate_ppmi_tf_)
-    std::cout << "sparsness coefficient for matrix TF_PPMI = " << sparseness_coef_tf / resulting_hash_table_.size() / resulting_hash_table_.size() << std::endl;
-  if (calculate_ppmi_df_)
-    std::cout << "sparsness coefficient for matrix DF_PPMI = " << sparseness_coef_df / resulting_hash_table_.size() / resulting_hash_table_.size() << std::endl;
-}
-
-void ResultingBuffer::WritePpmiInFile() {
+// ToDo: erase duplications of code
+void ResultingBuffer::CalculateAndWritePpmi() {
+  // stringstream is used for fast bufferized i/o operations
   std::stringstream output_buf_tf;
   std::stringstream output_buf_df;
-  for (auto iter1 = resulting_hash_table_.begin(); iter1 != resulting_hash_table_.end(); ++iter1) {
-    std::unordered_map<int, Results>& resulting_info = std::get<ABSOLUTE_VALUES>(*iter1).resulting_info;
-    for (auto iter2 = resulting_info.begin(); iter2 != resulting_info.end(); ++iter2) {
-      if (std::get<FIRST_TOKEN_ID>(*iter1) >= std::get<SECOND_TOKEN_ID>(*iter2))
+  int first_token_id = 0;
+  int second_token_id = 0;
+  long long cooc_tf = 0;
+  int cooc_df = 0;
+  if (calculate_ppmi_tf_) {
+    while (cooc_tf_dict_in_ >> first_token_id) {
+      cooc_tf_dict_in_ >> second_token_id;
+      cooc_tf_dict_in_ >> cooc_tf;
+      if (first_token_id > second_token_id)
         continue;
-      if (calculate_ppmi_tf_)
-        output_buf_tf << std::get<FIRST_TOKEN_ID>(*iter1) << ' ' << std::get<SECOND_TOKEN_ID>(*iter2) << ' ' << std::get<RESULTS>(*iter2).tf_ppmi << std::endl;
-      if (output_buf_tf.tellg() > output_buf_size_)
-        ppmi_tf_dict_ << output_buf_tf.str();
-      if (calculate_ppmi_df_)
-        output_buf_df << std::get<FIRST_TOKEN_ID>(*iter1) << ' ' << std::get<SECOND_TOKEN_ID>(*iter2) << ' ' << std::get<RESULTS>(*iter2).df_ppmi << std::endl;
-      if (output_buf_df.tellg() > output_buf_size_)
-        ppmi_df_dict_ << output_buf_df.str();
+      double sub_log_tf_pmi = (static_cast<double>(total_num_of_pairs_) /
+          ppmi_counters_[first_token_id].n_u_tf) /
+          (ppmi_counters_[second_token_id].n_u_tf / static_cast<double>(cooc_tf));
+      if (sub_log_tf_pmi > 1.0) {
+        output_buf_tf << first_token_id << ' ' << second_token_id << ' ' << log(sub_log_tf_pmi) << std::endl;
+        if (output_buf_tf.tellg() > output_buf_size_)
+          ppmi_tf_dict_ << output_buf_tf.str();
+      }
     }
-  }
-  if (calculate_ppmi_tf_)
     ppmi_tf_dict_ << output_buf_tf.str();
-  if (calculate_ppmi_df_)
+  }
+  if (calculate_ppmi_df_) {
+    while (cooc_df_dict_in_ >> first_token_id) {
+      cooc_df_dict_in_ >> second_token_id;
+      cooc_df_dict_in_ >> cooc_df;
+      if (first_token_id > second_token_id)
+        continue;
+      double sub_log_df_pmi = (static_cast<double>(total_num_of_documents_) /
+          ppmi_counters_[first_token_id].n_u_df) /
+          (ppmi_counters_[second_token_id].n_u_df / static_cast<double>(cooc_df));
+      if (sub_log_df_pmi > 1.0) {
+        output_buf_df << first_token_id << ' ' << second_token_id << ' ' << log(sub_log_df_pmi) << std::endl;
+        if (output_buf_df.tellg() > output_buf_size_)
+          ppmi_df_dict_ << output_buf_df.str();
+      }
+    }
     ppmi_df_dict_ << output_buf_df.str();
+  }
 }

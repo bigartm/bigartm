@@ -1744,7 +1744,8 @@ int main(int argc, char * argv[]) {
       CooccurrenceDictionary cooc_dictionary(options.cooc_window,
           options.cooc_min_tf, options.cooc_min_df, options.read_uci_vocab,
           options.read_vw_corpus, options.write_cooc_tf,
-          options.write_cooc_df, options.write_tf_ppmi, options.write_df_ppmi);
+          options.write_cooc_df, options.write_tf_ppmi, options.write_df_ppmi,
+          options.threads);
       cooc_dictionary.FetchVocab();
       if (cooc_dictionary.VocabDictionarySize() > 1) {
         cooc_dictionary.ReadVowpalWabbit();
