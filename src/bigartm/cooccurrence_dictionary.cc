@@ -131,7 +131,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
   }
   std::mutex read_lock;
 
-  //unsigned critical_num_of_documents = 100000;
+  //unsigned critical_num_of_documents = 3000000;
   unsigned documents_processed = 0;
   auto func = [&]() {
     while (true) {
@@ -153,8 +153,8 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
 
       if (portion.size() == 0)
         continue;
-      /*documents_processed += portion.size();
-      if (documents_processed >= critical_num_of_documents)
+      documents_processed += portion.size();
+      /*if (documents_processed >= critical_num_of_documents)
         break;*/
 
       // First elem in external map is first_token_id, in internal it's
@@ -300,30 +300,31 @@ int CooccurrenceDictionary::SetItemsPerBatch() {
   // Here is a tool that allows to define an otimal value of documents that
   // should be load in ram. It depends on size of ram, window width and
   // num of threads (because every thread holds its batch of documents)
-  const int default_value = 6750;
+  const int custom_value = 6750;
+  const int default_value = 10000;
   const double percent_of_ram = 0.6;
   const long long std_ram_size = 4025409536; // 4 Gb
   const int std_window_width = 10;
   const int std_num_of_threads = 2;
   long long totalram;
 #if defined(_WIN32)
-  return default_value * percent_of_ram;
+  return default_value;
 #elif defined(__APPLE__)
   #if defined(TARGET_OS_MAC)
-    return default_value * percent_of_ram;
+    return default_value;
   #endif
 #elif defined(__linux__) || defined(__linux) || defined(linux)
   struct sysinfo ex;
   sysinfo(&ex);
   totalram = ex.totalram;
 #elif defined(__unix__) // all unices not caught above
-  return default_value * percent_of_ram;
+  return default_value;
 #else // other platforms
-  return default_value * percent_of_ram;
+  return default_value;
 #endif
   return static_cast<double>(std_window_width) / window_width_ *
       totalram / std_ram_size * std_num_of_threads / num_of_threads_ *
-      default_value * percent_of_ram;
+      custom_value * percent_of_ram;
 }
 
 void CooccurrenceDictionary::SavePairOfTokens(const int first_token_id,
@@ -613,7 +614,7 @@ void ResultingBuffer::PopPreviousContent() {
   }
   // It's importants after pop to set size = 0, because this value will be checked later
   cell_.records.resize(0);
-  //std::cout << "Token " << cell_.first_token_id << " has been proccessed\n";
+  std::cout << "Token " << cell_.first_token_id << " has been proccessed\n";
 }
 
 // ToDo: erase duplications of code
