@@ -13,6 +13,7 @@
 #include <sstream>
 #include <iomanip>
 #include <memory>
+#include <cassert>
 
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
@@ -46,13 +47,11 @@ CooccurrenceDictionary::CooccurrenceDictionary(const int window_width,
   // 3. Read from external storage all the cooccurrence batches piece by
   // piece and create resulting file with all co-occurrences
 
-  write_tf_cooc_ = cooc_tf_file_path_.size() != 0;
-  write_df_cooc_ = cooc_df_file_path_.size() != 0;
+  calculate_tf_cooc_ = cooc_tf_file_path_.size() != 0;
+  calculate_df_cooc_ = cooc_df_file_path_.size() != 0;
   calculate_tf_ppmi_ = ppmi_tf_file_path_.size() != 0;
   calculate_df_ppmi_ = ppmi_df_file_path_.size() != 0;
   calculate_ppmi_ = calculate_tf_ppmi_ || calculate_df_ppmi_;
-  calculate_tf_cooc_ = write_tf_cooc_ || calculate_tf_ppmi_;
-  calculate_df_cooc_ = write_df_cooc_ || calculate_df_ppmi_;
   
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
   fs::path dir(boost::lexical_cast<std::string>(uuid));
@@ -66,7 +65,7 @@ CooccurrenceDictionary::CooccurrenceDictionary(const int window_width,
   }
   path_to_batches_ = dir.string();
   open_files_counter_ = 0;
-  max_num_of_open_files_ = 1000;
+  max_num_of_open_files_ = 600;
   if (num_of_threads_ == -1) {
     num_of_threads_ = std::thread::hardware_concurrency();
     if (num_of_threads_ == 0)
@@ -131,7 +130,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
   }
   std::mutex read_lock;
 
-  //unsigned critical_num_of_documents = 3000000;
+  //unsigned critical_num_of_documents = 5000;
   unsigned documents_processed = 0;
   auto func = [&]() {
     while (true) {
@@ -222,7 +221,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
 
       if (!cooc_map.empty())
         UploadCooccurrenceBatchOnDisk(cooc_map);
-      std::cout << "proccessed " << documents_processed << " documents\n";
+      std::cout << documents_processed << " documents proccessed\n";
     }
   };
 
@@ -244,14 +243,15 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
                            const std::unique_ptr<CooccurrenceBatch>& right) {
     return left->cell_.first_token_id > right->cell_.first_token_id;
   };
-  for (int i = 0; i < static_cast<int>(vector_of_batches_.size()) && i < max_num_of_open_files_ - 1; ++i) {
-    OpenBatchInputFile(*(vector_of_batches_[i]));
-    vector_of_batches_[i]->ReadCell();
+  auto iter = vector_of_batches_.begin();
+  for (; iter != vector_of_batches_.end() && open_files_counter_ < max_num_of_open_files_ - 1; ++iter) {
+    OpenBatchInputFile(**iter);
+    (*iter)->ReadCell();
   }
-  for (unsigned i = max_num_of_open_files_ - 1; i < vector_of_batches_.size(); ++i) {
-    OpenBatchInputFile(*(vector_of_batches_[i]));
-    vector_of_batches_[i]->ReadCell();
-    CloseBatchInputFile(*(vector_of_batches_[i]));
+  for (; iter != vector_of_batches_.end(); ++iter) {
+    OpenBatchInputFile(**iter);
+    (*iter)->ReadCell();
+    CloseBatchInputFile(**iter);
   }
   std::make_heap(vector_of_batches_.begin(), vector_of_batches_.end(), CompareBatches);
 
@@ -272,7 +272,7 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
     if (!vector_of_batches_.back()->in_batch_.is_open())
       OpenBatchInputFile(*(vector_of_batches_.back()));
     // if there are some data to read ReadCell reads it and returns true, else
-    // return false
+    // returns false
     if (vector_of_batches_.back()->ReadCell()) {
       if (max_num_of_open_files_ == open_files_counter_)
         CloseBatchInputFile(*(vector_of_batches_.back()));
@@ -300,9 +300,9 @@ int CooccurrenceDictionary::SetItemsPerBatch() {
   // Here is a tool that allows to define an otimal value of documents that
   // should be load in ram. It depends on size of ram, window width and
   // num of threads (because every thread holds its batch of documents)
-  const int custom_value = 6750;
-  const int default_value = 10000;
-  const double percent_of_ram = 0.6;
+  const int custom_value = 6250;
+  const int default_value = 2700;
+  const double percent_of_ram = 0.4;
   const long long std_ram_size = 4025409536; // 4 Gb
   const int std_window_width = 10;
   const int std_num_of_threads = 2;
@@ -381,20 +381,14 @@ CooccurrenceBatch* CooccurrenceDictionary::CreateNewCooccurrenceBatch() {
 }
 
 void CooccurrenceDictionary::OpenBatchInputFile(CooccurrenceBatch& batch) {
-  if (open_files_counter_ >= max_num_of_open_files_) {
-    std::cerr << "Max number of open files achieved, can't open more";
-    throw 1;
-  }
+  assert(open_files_counter_ < max_num_of_open_files_);
   ++open_files_counter_;
   batch.in_batch_.open(batch.filename_, std::ios::in);
   batch.in_batch_.seekg(batch.in_batch_offset_);
 }
 
 void CooccurrenceDictionary::OpenBatchOutputFile(CooccurrenceBatch& batch) {
-  if (open_files_counter_ >= max_num_of_open_files_) {
-    std::cerr << "Max number of open files achieved, can't open more";
-    throw 1;
-  }
+  assert(open_files_counter_ < max_num_of_open_files_);
   ++open_files_counter_;
   batch.out_batch_.open(batch.filename_, std::ios::out);
 }

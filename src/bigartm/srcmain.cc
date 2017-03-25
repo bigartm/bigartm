@@ -1740,6 +1740,10 @@ int main(int argc, char * argv[]) {
         throw "input file in VowpalWabbit format not specified";
       if (options.read_uci_vocab.empty())
         throw "input file in UCI vocab format not specified";
+      if (options.write_cooc_tf.empty() && !options.write_tf_ppmi.empty())
+        throw "please specify name of cooc_tf file";
+      if (options.write_cooc_df.empty() && !options.write_df_ppmi.empty())
+        throw "please specify name of cooc_df file";
 
       CooccurrenceDictionary cooc_dictionary(options.cooc_window,
           options.cooc_min_tf, options.cooc_min_df, options.read_uci_vocab,

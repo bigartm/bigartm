@@ -116,14 +116,11 @@ class CooccurrenceDictionary {
   const std::string cooc_df_file_path_;
   const std::string ppmi_tf_file_path_;
   const std::string ppmi_df_file_path_;
-  bool write_tf_cooc_;
-  bool write_df_cooc_;
   bool calculate_tf_ppmi_;
   bool calculate_df_ppmi_;
   bool calculate_ppmi_;
   bool calculate_tf_cooc_;
   bool calculate_df_cooc_;
-
   std::unordered_map<std::string, int> vocab_dictionary_;
   std::string path_to_batches_;
   std::vector<std::unique_ptr<CooccurrenceBatch>> vector_of_batches_;
