@@ -62,10 +62,14 @@ struct PpmiCountersValues {
   int n_u_df;
 };
 
+// Data in Coccurrence batches is stored in cells
+// Every cell refers to its first token id and holds info about tokens that co-occurr with it
+// Cell consists of header (first three fields) and records.
+// You need firstly to read cell header then records
 struct Cell {
   Cell() : first_token_id(-1), num_of_documents(0), num_of_records(0) {}
   int first_token_id;
-  int num_of_documents;
+  int num_of_documents; // when cell is read, it's necessary to know how many triples to read
   unsigned num_of_records;
   std::vector<CoocTriple> records;
 };
@@ -132,6 +136,9 @@ class CooccurrenceDictionary {
   int num_of_threads_;
 };
 
+// Cooccurrence Batch is an intermidiate buffer between other data in RAM and
+// a spesific file stored on disc. This buffer holds only one cell at a time.
+// Also it's a wrapper around a ifstream and ofstream of an external file
 class CooccurrenceBatch: private boost::noncopyable {
  friend class CooccurrenceDictionary;
  friend class ResultingBuffer;
@@ -140,7 +147,7 @@ class CooccurrenceBatch: private boost::noncopyable {
   void WriteCell();
   bool ReadCellHeader();
   void ReadRecords();
-  bool ReadCell();
+  bool ReadCell(); // Initiates reading of a cell from a file (e.g. call of ReadCellHeader() and ReadRecords())
  private:
   CooccurrenceBatch(const std::string& path_to_batches);
 
