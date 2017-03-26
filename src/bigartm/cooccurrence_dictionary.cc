@@ -65,7 +65,7 @@ CooccurrenceDictionary::CooccurrenceDictionary(const int window_width,
   }
   path_to_batches_ = dir.string();
   open_files_counter_ = 0;
-  max_num_of_open_files_ = 600;
+  max_num_of_open_files_ = 500;
   if (num_of_threads_ == -1) {
     num_of_threads_ = std::thread::hardware_concurrency();
     if (num_of_threads_ == 0)
@@ -131,7 +131,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
   std::mutex read_lock;
 
   //unsigned critical_num_of_documents = 5000;
-  unsigned documents_processed = 0;
+  //unsigned documents_processed = 0;
   auto func = [&]() {
     while (true) {
       std::vector<std::string> portion;
@@ -152,7 +152,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
 
       if (portion.size() == 0)
         continue;
-      documents_processed += portion.size();
+      //documents_processed += portion.size();
       /*if (documents_processed >= critical_num_of_documents)
         break;*/
 
@@ -221,7 +221,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
 
       if (!cooc_map.empty())
         UploadCooccurrenceBatchOnDisk(cooc_map);
-      std::cout << documents_processed << " documents proccessed\n";
+      //std::cout << documents_processed << " documents proccessed\n";
     }
   };
 
@@ -239,6 +239,18 @@ int CooccurrenceDictionary::CooccurrenceBatchQuantity() {
 
 void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   std::cout << "Step 2: merging Batches\n";
+
+  // This buffer won't hold more than 1 element, because another element
+  // means another first_token_id => all the data linked with current
+  // first_token_id can be filtered and be ready to be written in
+  // resulting file.
+  ResultingBuffer res(cooc_min_tf_, cooc_min_df_, calculate_tf_cooc_,
+          calculate_df_cooc_, calculate_tf_ppmi_, calculate_df_ppmi_,
+          calculate_ppmi_, total_num_of_pairs_, total_num_of_documents_,
+          cooc_tf_file_path_, cooc_df_file_path_, ppmi_tf_file_path_, ppmi_df_file_path_);
+  // ToDo: invent another mothod to add and subtract this number
+  open_files_counter_ += res.open_files_in_buf_;
+
   auto CompareBatches = [](const std::unique_ptr<CooccurrenceBatch>& left,
                            const std::unique_ptr<CooccurrenceBatch>& right) {
     return left->cell_.first_token_id > right->cell_.first_token_id;
@@ -254,15 +266,6 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
     CloseBatchInputFile(**iter);
   }
   std::make_heap(vector_of_batches_.begin(), vector_of_batches_.end(), CompareBatches);
-
-  // This buffer won't hold more than 1 element, because another element
-  // means another first_token_id => all the data linked with current
-  // first_token_id can be filtered and be ready to be written in
-  // resulting file.
-  ResultingBuffer res(cooc_min_tf_, cooc_min_df_, calculate_tf_cooc_,
-          calculate_df_cooc_, calculate_tf_ppmi_, calculate_df_ppmi_,
-          calculate_ppmi_, total_num_of_pairs_, total_num_of_documents_,
-          cooc_tf_file_path_, cooc_df_file_path_, ppmi_tf_file_path_, ppmi_df_file_path_);
 
   // Standard k-way merge as external sort
   while (!vector_of_batches_.empty()) {
@@ -301,7 +304,7 @@ int CooccurrenceDictionary::SetItemsPerBatch() {
   // should be load in ram. It depends on size of ram, window width and
   // num of threads (because every thread holds its batch of documents)
   const int custom_value = 6250;
-  const int default_value = 2700;
+  const int default_value = 10000;
   const double percent_of_ram = 0.4;
   const long long std_ram_size = 4025409536; // 4 Gb
   const int std_window_width = 10;
@@ -514,7 +517,7 @@ ResultingBuffer::ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
         calculate_ppmi_df_(calculate_ppmi_df), calculate_ppmi_(calculate_ppmi),
         total_num_of_pairs_(total_num_of_pairs),
         total_num_of_documents_(total_num_of_documents),
-        output_buf_size_(8500) {
+        output_buf_size_(8500), open_files_in_buf_(0) {
   if (calculate_cooc_tf_) {
     OpenAndCheckOutputFile(cooc_tf_dict_out_, cooc_tf_file_path);
     OpenAndCheckInputFile(cooc_tf_dict_in_, cooc_tf_file_path);
@@ -529,20 +532,22 @@ ResultingBuffer::ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
     OpenAndCheckOutputFile(ppmi_df_dict_, ppmi_df_file_path);
 }
 
-void ResultingBuffer::OpenAndCheckInputFile(std::ifstream& ifile, const std::string path) {
+void ResultingBuffer::OpenAndCheckInputFile(std::ifstream& ifile, const std::string& path) {
   ifile.open(path, std::ios::in);
   if (!ifile.good()) {
     std::cerr << "Failed to create a file in the working directory";
     throw 1;
   }
+  ++open_files_in_buf_;
 }
 
-void ResultingBuffer::OpenAndCheckOutputFile(std::ofstream& ofile, const std::string path) {
+void ResultingBuffer::OpenAndCheckOutputFile(std::ofstream& ofile, const std::string& path) {
   ofile.open(path, std::ios::out);
   if (!ofile.good()) {
     std::cerr << "Failed to create a file in the working directory";
     throw 1;
   }
+  ++open_files_in_buf_;
 }
 
 void ResultingBuffer::AddInBuffer(const CooccurrenceBatch& batch) {
@@ -608,7 +613,7 @@ void ResultingBuffer::PopPreviousContent() {
   }
   // It's importants after pop to set size = 0, because this value will be checked later
   cell_.records.resize(0);
-  std::cout << "Token " << cell_.first_token_id << " has been proccessed\n";
+  //std::cout << "Token " << cell_.first_token_id << " has been proccessed\n";
 }
 
 // ToDo: erase duplications of code

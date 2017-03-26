@@ -163,8 +163,8 @@ class ResultingBuffer {
       const std::string& cooc_df_file_path,
       const std::string& ppmi_tf_file_path,
       const std::string& ppmi_df_file_path);
-  void OpenAndCheckInputFile(std::ifstream& ifile, const std::string path);
-  void OpenAndCheckOutputFile(std::ofstream& ofile, const std::string path);
+  void OpenAndCheckInputFile(std::ifstream& ifile, const std::string& path);
+  void OpenAndCheckOutputFile(std::ofstream& ofile, const std::string& path);
   void AddInBuffer(const CooccurrenceBatch& batch);
   void MergeWithExistingCell(const CooccurrenceBatch& batch);
   void PopPreviousContent();
@@ -179,6 +179,8 @@ class ResultingBuffer {
   const bool calculate_ppmi_;
   const long long total_num_of_pairs_;
   const int total_num_of_documents_;
+  const int output_buf_size_;
+  int open_files_in_buf_;
   std::ifstream cooc_tf_dict_in_;
   std::ofstream cooc_tf_dict_out_;
   std::ifstream cooc_df_dict_in_;
@@ -187,6 +189,5 @@ class ResultingBuffer {
   std::ofstream ppmi_df_dict_;
 
   Cell cell_;
-  const int output_buf_size_;
   std::unordered_map<int, PpmiCountersValues> ppmi_counters_;
 };
