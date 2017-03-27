@@ -38,7 +38,7 @@ add_custom_target(proto_generation ALL
 # The version number, v0.8.2
 set(ARTM_VERSION_MAJOR 0)
 set(ARTM_VERSION_MINOR 8)
-set(ARTM_VERSION_PATCH 2)
+set(ARTM_VERSION_PATCH 3)
 
 # configure a header file to pass some of the CMake settings
 # to the source code

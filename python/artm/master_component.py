@@ -873,3 +873,22 @@ class MasterComponent(object):
         else:
             self._lib.ArtmRequestTransformMasterModel(self.master_id, args)
             return None, None
+
+    def import_batches(self, batches=None):
+        """
+        :param list batches: list of BigARTM batches loaded into RAM
+        """
+        args = messages.ImportBatchesArgs()
+        if batches is not None:
+            args.ClearField('batch')
+            for batch in batches:
+                batch_ref = args.batch.add()
+                batch_ref.CopyFrom(batch)
+        self._lib.ArtmImportBatches(self.master_id, args)
+
+    def remove_batch(self, batch_id=None):
+        """
+        :param str batches: id of batch, loaded in RAM
+        """
+        if batch_id is not None:
+            self._lib.ArtmDisposeBatch(self.master_id, batch_id)
