@@ -38,8 +38,7 @@ class Batch(object):
 class BatchVectorizer(object):
     def __init__(self, batches=None, collection_name=None, data_path='', data_format='batches',
                  target_folder=None, batch_size=1000, batch_name_type='code', data_weight=1.0,
-                 n_wd=None, vocabulary=None, gather_dictionary=True, class_ids=None,
-                 process_in_memory=False, model=None):
+                 n_wd=None, vocabulary=None, gather_dictionary=True, class_ids=None):
         """
         :param str collection_name: the name of text collection (required if data_format == 'bow_uci')
         :param str data_path: 1) if data_format == 'bow_uci' => folder containing\
@@ -55,10 +54,8 @@ class BatchVectorizer(object):
         :param int batch_size: number of documents to be stored in each batch
         :param str target_folder: full path to folder for future batches storing;\
                                   if not set, no batches will be produced for further work
-        :param batches: if process_in_memory == False -> list with non-full file names of\
-                              batches (necessary parameters are batches + data_path +\
-                              data_fromat=='batches' in this case)\
-                        else -> list of batches (messages.Batch objects), loaded in memory
+        :param batches: list with non-full file names of batches (necessary parameters are\
+                              batches + data_path + data_fromat=='batches' in this case)
         :type batches: list of str
         :param str batch_name_type: name batches in natural order ('code') or using random guids (guid)
         :param float data_weight: weight for a group of batches from data_path;\
@@ -73,17 +70,8 @@ class BatchVectorizer(object):
                                        and if data_weight is list - automatically set to False
         :param class_ids: list of class_ids or single class_id to parse and include in batches
         :type class_ids: list of str or str
-        :param bool process_in_memory: process batches from disk or from RAM \
-                                       (only if data_format == Batches), model parameter is required
-        :param artm.ARTM model: ARTM instance that will use this vectorizer, is required when\
-                                process_in_memory == True. Will be ignored in other cases
         """
         self._remove_batches = False
-        self._process_in_memory = process_in_memory and data_format == 'batches' and model is not None
-        if self._process_in_memory != process_in_memory:
-            raise IOError("Correct configuration: process_memory == True + data_format == 'batches' + model != None")
-
-        self._model = model
         if data_format == 'bow_n_wd' or data_format == 'vowpal_wabbit' or data_format == 'bow_uci':
             self._remove_batches = target_folder is None
         elif data_format == 'batches':
@@ -123,11 +111,6 @@ class BatchVectorizer(object):
         if self._remove_batches:
             shutil.rmtree(self._target_folder)
         self._remove_batches = False
-
-        if self._process_in_memory:
-            for batch in self._batches_list:
-                self._model.master.remove_batch(batch)
-        self._process_in_memory = False
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.__dispose()
@@ -197,11 +180,6 @@ class BatchVectorizer(object):
                 self._dictionary.gather(data_path=target_f)
 
     def _parse_batches(self, data_weight=None, batches=None):
-        if self._process_in_memory:
-            self._model.master.import_batches(batches)
-            self._batches_list = [batch.id for batch in batches]
-            return
-
         data_paths, data_weights, target_folders = self._populate_data(data_weight, True)
         for (data_p, data_w, target_f) in zip(data_paths, data_weights, target_folders):
             if batches is None:
@@ -314,13 +292,6 @@ class BatchVectorizer(object):
         :return: Dictionary object, if parameter gather_dictionary was True, else None
         """
         return self._dictionary
-
-    @property
-    def process_in_memory(self):
-        """
-        :return: if Vectorizer uses processing of batches in core memory
-        """
-        return self._process_in_memory
 
     def __repr__(self):
         return 'artm.BatchVectorizer(data_path="{0}", num_batches={1})'.format(

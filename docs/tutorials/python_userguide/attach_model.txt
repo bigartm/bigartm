@@ -62,7 +62,9 @@ Now let's assume that you have created ``pwt_new`` matrix with the same size, fi
 
    .. code-block:: python
 
-      numpy.copyto(phi_ref, new_phi.values)  # CORRECT!
+      for tok in xrange(num_tokens):
+           for top in xrange(num_topics):
+      	        phi_ref[tok, top] = pwt_new[tok, top]  # CORRECT!
         
       phi_ref = pwt_new  # NO!
 

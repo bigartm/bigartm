@@ -484,10 +484,7 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('The model was not initialized. Use initialize() method')
 
-        def _func(batch):
-            return batch if batch_vectorizer.process_in_memory else batch.filename
-
-        batches_list = [_func(batch) for batch in batch_vectorizer.batches_list]
+        batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         # outer cycle is needed because of TopicSelectionThetaRegularizer
         # and current ScoreTracker implementation
 
@@ -549,10 +546,7 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('The model was not initialized. Use initialize() method')
 
-        def _func(batch):
-            return batch if batch_vectorizer.process_in_memory else batch.filename
-
-        batches_list = [_func(batch) for batch in batch_vectorizer.batches_list]
+        batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
 
         update_after_final, apply_weight_final, decay_weight_final = [], [], []
         if (update_after is None) or (apply_weight is None) or (decay_weight is None):
@@ -650,9 +644,10 @@ class ARTM(object):
         self._num_online_processed_batches = 0
         self._phi_cached = None
 
-    def get_phi_dense(self, topic_names=None, class_ids=None, model_name=None):
+    def get_phi(self, topic_names=None, class_ids=None, model_name=None):
         """
-        :Description: get phi matrix in dense format
+        :Description: get custom Phi matrix of model. The extraction of the\
+                      whole Phi matrix expects ARTM.phi_ call.
 
         :param topic_names: list with topics or single topic to extract, None value means all topics
         :type topic_names: list of str or str or None
@@ -662,10 +657,10 @@ class ARTM(object):
                       reasonable to extract unnormalized counters
 
         :return:
-          * a 3-tuple of (data, rows, columns), where
-          * data --- numpy.ndarray with Phi data (i.e., p(w|t) values)
-          * rows --- the tokens of topic model;
+          * pandas.DataFrame: (data, columns, rows), where:
           * columns --- the names of topics in topic model;
+          * rows --- the tokens of topic model;
+          * data --- content of Phi matrix.
         """
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
@@ -687,29 +682,6 @@ class ARTM(object):
                   if class_ids is None or class_id in class_ids]
         topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name
                        if topic_names is None or topic_name in topic_names]
-        return nd_array, tokens, topic_names
-
-    def get_phi(self, topic_names=None, class_ids=None, model_name=None):
-        """
-        :Description: get custom Phi matrix of model. The extraction of the\
-                      whole Phi matrix expects ARTM.phi_ call.
-
-        :param topic_names: list with topics or single topic to extract, None value means all topics
-        :type topic_names: list of str or str or None
-        :param class_ids: list with class_ids or single class_id to extract, None means all class ids
-        :type class_ids: list of str or str or None
-        :param str model_name: self.model_pwt by default, self.model_nwt is also\
-                      reasonable to extract unnormalized counters
-
-        :return:
-          * pandas.DataFrame: (data, columns, rows), where:
-          * columns --- the names of topics in topic model;
-          * rows --- the tokens of topic model;
-          * data --- content of Phi matrix.
-        """
-        (nd_array, tokens, topic_names) = self.get_phi_dense(topic_names=topic_names,
-                                                             class_ids=class_ids,
-                                                             model_name=model_name)
         phi_data_frame = DataFrame(data=nd_array,
                                    columns=topic_names,
                                    index=tokens)
@@ -772,8 +744,8 @@ class ARTM(object):
         # Columns correspond to topics; get topic names from topic_model.topic_name
         data = sparse.csr_matrix((data, (row_ind, col_ind)),
                                  shape=(len(topic_model.token), len(topic_model.topic_name)))
-        columns = list(topic_model.topic_name)
-        rows = list(topic_model.token)
+        rows = list(topic_model.topic_name)
+        columns = list(topic_model.token)
         return data, rows, columns
 
     def get_theta(self, topic_names=None):
