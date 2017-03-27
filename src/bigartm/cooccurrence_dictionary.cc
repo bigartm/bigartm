@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <memory>
 #include <cassert>
+#include <stdexcept>
 
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
@@ -55,14 +56,10 @@ CooccurrenceDictionary::CooccurrenceDictionary(const int window_width,
   
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
   fs::path dir(boost::lexical_cast<std::string>(uuid));
-  if (fs::exists(dir)) {
-    std::cerr << "Folder with uuid already exists";
-    throw 1;
-  }
-  if (!fs::create_directory(dir)) {
-    std::cerr << "Failed to create directory";
-    throw 1;
-  }
+  if (fs::exists(dir))
+    throw std::invalid_argument("Folder with uuid already exists");
+  if (!fs::create_directory(dir))
+    throw std::invalid_argument("Failed to create directory");
   path_to_batches_ = dir.string();
   open_files_counter_ = 0;
   max_num_of_open_files_ = 500;
@@ -83,10 +80,8 @@ void CooccurrenceDictionary::FetchVocab() {
   // This func reads words from vocab, sets them unique id and collects pair
   // in dictionary
   std::ifstream vocab(path_to_vocab_, std::ios::in);
-  if (!vocab.is_open()) {
-    std::cerr << "Failed to open vocab";
-    throw 1;
-  }
+  if (!vocab.is_open())
+    throw std::invalid_argument("Failed to open vocab");
   int last_token_id = 1;
   std::string str;
 
@@ -124,10 +119,8 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
 
   std::cout << "Step 1: creation of cooccurrence batches\n";
   std::ifstream vowpal_wabbit_doc(path_to_vw_, std::ios::in);
-  if (!vowpal_wabbit_doc.is_open()) {
-    std::cerr << "Failed to open vocab";
-    throw 1;
-  }
+  if (!vowpal_wabbit_doc.is_open())
+    throw std::invalid_argument("Failed to open vocab");
   std::mutex read_lock;
 
   //unsigned critical_num_of_documents = 5000;
@@ -288,6 +281,11 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   }
   if (res.cell_.records.size() != 0)
     res.PopPreviousContent();
+  // Files are close in order to really push data in files
+  if (calculate_tf_cooc_)
+    res.cooc_tf_dict_out_.close();
+  if (calculate_df_cooc_)
+    res.cooc_df_dict_out_.close();
   std::cout << "Batches have been merged\n";
   if (calculate_ppmi_) {
     std::cout << "Step 3: start calculation ppmi\n";
@@ -469,10 +467,8 @@ bool CooccurrenceBatch::ReadCellHeader() {
 
 void CooccurrenceBatch::ReadRecords() {
   // It's not good if there are no records in batch after header
-  if (in_batch_.eof()) {
-    std::cerr << "Error while reading from batch. File is corrupted";
-    throw 1;
-  }
+  if (in_batch_.eof())
+    throw std::invalid_argument("Error while reading from batch. File is corrupted");
   std::string str;
   getline(in_batch_, str);
   // stringstream is used for fast bufferized i/o operations
@@ -534,19 +530,15 @@ ResultingBuffer::ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
 
 void ResultingBuffer::OpenAndCheckInputFile(std::ifstream& ifile, const std::string& path) {
   ifile.open(path, std::ios::in);
-  if (!ifile.good()) {
-    std::cerr << "Failed to create a file in the working directory";
-    throw 1;
-  }
+  if (!ifile.good())
+    throw std::invalid_argument("Failed to create a file in the working directory");
   ++open_files_in_buf_;
 }
 
 void ResultingBuffer::OpenAndCheckOutputFile(std::ofstream& ofile, const std::string& path) {
   ofile.open(path, std::ios::out);
-  if (!ofile.good()) {
-    std::cerr << "Failed to create a file in the working directory";
-    throw 1;
-  }
+  if (!ofile.good())
+    throw std::invalid_argument("Failed to create a file in the working directory");
   ++open_files_in_buf_;
 }
 

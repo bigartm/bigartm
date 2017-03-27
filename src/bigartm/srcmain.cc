@@ -1736,14 +1736,16 @@ int main(int argc, char * argv[]) {
 
     if (!options.write_cooc_tf.empty() || !options.write_cooc_df.empty() ||
         !options.write_tf_ppmi.empty() || !options.write_df_ppmi.empty()) {
-      if (options.read_vw_corpus.empty())
+      if (options.read_vw_corpus.empty()) {
+        throw std::invalid_argument("input file in VowpalWabbit format not specified");
         throw "input file in VowpalWabbit format not specified";
+      }
       if (options.read_uci_vocab.empty())
-        throw "input file in UCI vocab format not specified";
+        throw std::invalid_argument("input file in UCI vocab format not specified");
       if (options.write_cooc_tf.empty() && !options.write_tf_ppmi.empty())
-        throw "please specify name of cooc_tf file";
+        throw std::invalid_argument("please specify name of cooc_tf file");
       if (options.write_cooc_df.empty() && !options.write_df_ppmi.empty())
-        throw "please specify name of cooc_df file";
+        throw std::invalid_argument("please specify name of cooc_df file");
 
       CooccurrenceDictionary cooc_dictionary(options.cooc_window,
           options.cooc_min_tf, options.cooc_min_df, options.read_uci_vocab,
