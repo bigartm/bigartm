@@ -9,7 +9,7 @@ meaning that all linguistic processing (lemmatization, tokenization, detection o
 
 1. `Vowpal Wabbit <https://github.com/JohnLangford/vowpal_wabbit/wiki/Input-format>`_ is a single-format file, based on the following principles:
 
-   * each document is depresented in a single line
+   * each document is represented in a single line
    * all tokens are represented as strings (no need to convert them into an integer identifier)
    * token frequency defaults to ``1.0``, and can be optionally specified after a colon (:)
    * namespaces (:attr:`Batch.class_id`) can be identified by a pipe (|)
