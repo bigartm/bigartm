@@ -20,7 +20,7 @@ You may also get more information about builtin regularizers by typing ``bigartm
    Here is a combination of comand line keys that allows you to build co-occurrence dictionaries:
 
    .. code-block:: bash
-
+   
       bigartm -c vw -v vocab --cooc-window 10 --cooc-min-tf 200 --write-cooc-tf cooc_tf_ --cooc-min-df 200 --write-cooc-df cooc_df_ --write-ppmi-tf ppmi_tf_ --write-ppmi-df ppmi_df_
 
    Numbers and names of files can be changed, it's just an example.
