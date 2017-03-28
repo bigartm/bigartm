@@ -11,7 +11,7 @@ where value is some pairwise information about tokens in collection dictionary, 
 
 * **Tokens Co-occurrence Dictionary**
 
-BigARTM provides ability of automatic coherence computation. The only thing you should prepare is file with co-occurrences of tokens (to know how to gather a co-occurrence dictionary using BigARTM CLI, please read :doc:`/bigartm_cli`). Lines of that file should have the next format: ::
+BigARTM provides ability of automatic coherence computation. The only thing you should prepare is file with co-occurrences of tokens (to know how to gather a co-occurrence dictionary using BigARTM CLI, please read :doc:`../bigartm_cli`). Lines of that file should have the next format: ::
 
 	id1 id2 value
 
