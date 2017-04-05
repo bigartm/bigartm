@@ -340,7 +340,7 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
         :param kl_function_info: class with additional info about\
-                                     function under KL-div in regularizer
+                                 function under KL-div in regularizer
         :type kl_function_info: KlFunctionInfo object
         :param doc_titles: list of titles of documents to be processed by this regularizer.\
                            Default empty value means processing of all documents.\
@@ -478,7 +478,7 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
         :param dictionary: BigARTM collection dictionary,\
-                                     won't use dictionary if not specified
+                           won't use dictionary if not specified
         :type dictionary: str or reference to Dictionary object
         :param config: the low-level config of this regularizer
         :type config: protobuf object
@@ -616,13 +616,13 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
         :param float gamma: the coefficient of relative regularization for this regularizer
         :param class_ids: list of class_ids or single class_id to regularize, will\
                           regularize all classes if empty or None\
-                          dictionaty should contain pairwise tokens coocurancy info
+                          dictionary should contain pairwise tokens co-occurrence info
         :type class_ids: list of str or str or None
         :param topic_names: list of names or single name of topic to regularize,\
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
         :param dictionary: BigARTM collection dictionary, won't use dictionary if not\
-                                     specified, in this case regularizer is useless
+                           specified, in this case regularizer is useless
         :type dictionary: str or reference to Dictionary object
         :param config: the low-level config of this regularizer
         :type config: protobuf object
@@ -698,8 +698,8 @@ class BitermsPhiRegularizer(BaseRegularizerPhi):
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
         :param dictionary: BigARTM collection dictionary, won't use dictionary if not\
-                                     specified, in this case regularizer is useless,
-                                     dictionaty should contain pairwise tokens coocurancy info
+                           specified, in this case regularizer is useless,
+                           dictionary should contain pairwise tokens co-occurrence info
         :type dictionary: str or reference to Dictionary object
         :param config: the low-level config of this regularizer
         :type config: protobuf object
