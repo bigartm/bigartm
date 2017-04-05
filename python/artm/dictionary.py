@@ -78,7 +78,7 @@ class Dictionary(object):
     def save_text(self, dictionary_path, encoding='utf-8'):
         """
         :Description: saves the BigARTM dictionary of the collection on the disk\
-                      in the human readable text format
+                      in the human-readable text format
 
         :param str dictionary_path: full file name for the text dictionary file
         :param str encoding: an encoding of text in diciotnary
@@ -98,7 +98,7 @@ class Dictionary(object):
     def load_text(self, dictionary_path, encoding='utf-8'):
         """
         :Description: loads the BigARTM dictionary of the collection from the disk\
-                      in the human readable text format
+                      in the human-readable text format
 
         :param str dictionary_path: full file name of the text dictionary file
         :param str encoding: an encoding of text in diciotnary
@@ -137,7 +137,7 @@ class Dictionary(object):
         :param str data_path: full path to batches folder
         :param str cooc_file_path: full path to the file with cooc info. Cooc info is a file with three\
                                    columns, first two a the zero-based indices of tokens in vocab file,\
-                                   and third one is a value of their coocurance in collection (or another)\
+                                   and third one is a value of their co-occurrence in collection (or another)\
                                    pairwise statistic.
         :param str vocab_file_path: full path to the file with vocabulary.\
                       If given, the dictionary token will have the same order, as in\
