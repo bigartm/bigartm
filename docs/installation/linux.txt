@@ -46,7 +46,7 @@ Scroll further below for more OS-specific insructinos.
     cd bigartm
     mkdir build && cd build
     cmake ..
-    make
+    make -j20
 
     # Step 4. Install BigARTM
     make install
@@ -159,7 +159,7 @@ Now build and install the library:
 
 .. code-block:: bash
 
-   make
+   make -j20
    sudo make install
 
 Step 4. Register ``libartm.so`` / ``libartm.dylib``
