@@ -97,7 +97,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.datasets import fetch_20newsgroups
 from numpy import array
 
-cv = CountVectorizer(max_features=1000)
+cv = CountVectorizer(max_features=1000, stop_words='english')
 n_wd = array(cv.fit_transform(fetch_20newsgroups().data).todense()).T
 vocabulary = cv.get_feature_names()
 
