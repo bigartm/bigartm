@@ -84,7 +84,7 @@ bigartm.exe -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictio
 
 ### Interactive Python interface
 
-BigARTM supports full-featured and clear Python API (see [Installation](http://docs.bigartm.org/en/stable/installation/index.html) to configure Python API for your OS).
+BigARTM supports full-featured and clear Python API (see [Installation](http://docs.bigartm.org/en/latest/installation/index.html) to configure Python API for your OS).
 
 Example:
 
@@ -118,7 +118,7 @@ model.fit_offline(bv, num_collection_passes=20)
 model.get_top_tokens()
 ```
 
-Refer to [tutorials](http://docs.bigartm.org/en/latest/tutorials/tutorials/python_tutorial.html) for details on how to start using BigARTM from Python, [user's guide](http://docs.bigartm.org/en/latest/tutorials/tutorials/python_userguide/index.html) can provide information about more advanced features and cases.
+Refer to [tutorials](http://docs.bigartm.org/en/latest/tutorials/python_tutorial.html) for details on how to start using BigARTM from Python, [user's guide](http://docs.bigartm.org/en/latest/tutorials/python_userguide/index.html) can provide information about more advanced features and cases.
 
 ### Low-level API
 
