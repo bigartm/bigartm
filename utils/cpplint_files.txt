@@ -53,6 +53,7 @@ src/artm_tests/regularizers_test.cc
 src/artm_tests/repeatable_result_test.cc
 src/artm_tests/master_model_test.cc
 src/artm_tests/multiple_classes_test.cc
+src/artm_tests/serialize_test.cc
 src/artm_tests/supcry_test.cc
 src/artm_tests/test_mother.cc
 src/artm_tests/thread_safe_holder_test.cc
