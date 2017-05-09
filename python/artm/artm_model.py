@@ -94,7 +94,7 @@ class ARTM(object):
     def __init__(self, num_topics=None, topic_names=None, num_processors=None, class_ids=None,
                  scores=None, regularizers=None, num_document_passes=10, reuse_theta=False,
                  dictionary=None, cache_theta=False, theta_columns_naming='id', seed=-1,
-                 show_progress_bars=False, ptd_name=None):
+                 show_progress_bars=False, theta_name=None):
         """
         :param int num_topics: the number of topics in model, will be overwrited if\
                                  topic_names is set
@@ -119,7 +119,7 @@ class ARTM(object):
         :param show_progress_bars: a boolean flag indicating whether to show progress bar in fit_offline,\
                                    fit_online and transform operations.
         :type seed: unsigned int or -1
-        :param ptd_name: string, name of ptd (theta) matrix
+        :param theta_name: string, name of ptd (theta) matrix
 
         :Important public fields:
           * regularizers: contains dict of regularizers, included into model
@@ -138,13 +138,13 @@ class ARTM(object):
           * Most arguments of ARTM constructor have corresponding setter and getter\
             of the same name that allows to change them at later time, after ARTM object\
             has been created.
-          * Setting ptd_name to a non-empty string activates an experimental mode\
+          * Setting theta_name to a non-empty string activates an experimental mode\
             where cached theta matrix is internally stored as a phi matrix with tokens\
-            corresponding to item title, and token class ids corresponding to batch id.\
-            With ptd_name argument you specify the name of this matrix\
+            corresponding to item title, so user should guarantee that all ites has unique titles.\
+            With theta_name argument you specify the name of this matrix\
             (for example 'ptd' or 'theta', or whatever name you like).\
-            Later you can retrieve this matix with ARTM.get_phi(model_name='ptd'),\
-            change its values with ARTM.master.attach_model(model='ptd'),\
+            Later you can retrieve this matix with ARTM.get_phi(model_name=ARTM.theta_name),\
+            change its values with ARTM.master.attach_model(model=ARTM.theta_name),\
             export/import this matrix with ARTM.master.export_model('ptd', filename) and\
             ARTM.master.import_model('ptd', file_name).
         """
@@ -189,11 +189,12 @@ class ARTM(object):
 
         self._model_pwt = 'pwt'
         self._model_nwt = 'nwt'
+        self._theta_name = theta_name
 
         self._lib = wrapper.LibArtm()
         master_config = messages.MasterModelConfig()
-        if ptd_name:
-            master_config.ptd_name = ptd_name
+        if theta_name:
+            master_config.ptd_name = theta_name
         self._master = mc.MasterComponent(self._lib,
                                           num_processors=self._num_processors,
                                           topic_names=self._topic_names,
@@ -339,6 +340,10 @@ class ARTM(object):
     @property
     def model_nwt(self):
         return self._model_nwt
+
+    @property
+    def theta_name(self):
+        return self._theta_name
 
     @property
     def num_phi_updates(self):
