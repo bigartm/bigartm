@@ -12,6 +12,7 @@ namespace core {
 
 typedef std::string ClassId;
 const std::string DefaultClass = "@default_class";
+const std::string DocumentsClass = "@documents_class";
 
 // Token is a pair of keyword and its class_id (also known as tokens' modality).
 // Pay attention to the order of the arguments in the constructor.
