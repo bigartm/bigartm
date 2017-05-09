@@ -204,7 +204,7 @@ std::shared_ptr<ThetaMatrix> CacheManager::FindCacheEntry(const Batch& batch) co
     cached_theta->mutable_topic_name()->CopyFrom(phi_matrix->topic_name());
     std::vector<float> values; values.resize(phi_matrix->topic_size());
     for (int item_id = 0; item_id < batch.item_size(); item_id++) {
-      Token token(batch.id(), batch.item(item_id).title());
+      Token token(DocumentsClass, batch.item(item_id).title());
       if (token.keyword.empty()) continue;
       int token_index = phi_matrix->token_index(token);
       if (token_index < 0) continue;
@@ -247,7 +247,7 @@ void CacheManager::UpdateCacheEntry(const std::string& batch_id, const ThetaMatr
     std::shared_ptr<const ::artm::core::PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(ptd_name);
     PhiMatrix* mutable_phi_matrix = const_cast<PhiMatrix*>(phi_matrix.get());
     for (int i = 0; i < theta_matrix.item_title_size(); i++) {
-      Token token(batch_id, theta_matrix.item_title(i));
+      Token token(DocumentsClass, theta_matrix.item_title(i));
       int token_id = phi_matrix->token_index(token);
       if (token_id < 0) token_id = mutable_phi_matrix->AddToken(token);
       for (int topic_index = 0; topic_index < theta_matrix.topic_name_size(); topic_index++)
