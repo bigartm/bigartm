@@ -8,7 +8,7 @@ from . import wrapper
 from .wrapper import messages_pb2 as messages
 from .wrapper import constants as const
 
-from six import string_types
+from six import string_types, iteritems
 
 __all__ = [
     'KlFunctionInfo',
@@ -229,7 +229,7 @@ class BaseRegularizerPhi(BaseRegularizer):
 
     @topic_names.setter
     def topic_names(self, topic_names):
-        _reconfigure_field(self, topic_names, 'topic_names')
+        _reconfigure_field(self, topic_names, 'topic_name')
 
 
 class BaseRegularizerTheta(BaseRegularizer):
@@ -269,7 +269,7 @@ class BaseRegularizerTheta(BaseRegularizer):
 
     @topic_names.setter
     def topic_names(self, topic_names):
-        _reconfigure_field(self, topic_names, 'topic_names')
+        _reconfigure_field(self, topic_names, 'topic_name')
 
 
 ###################################################################################################
@@ -429,7 +429,19 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.DecorrelatorPhiConfig
     _type = const.RegularizerType_DecorrelatorPhi
 
-    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, topic_names=None, config=None):
+    def _update_config(self, pairs):
+        self._config.ClearField('first_topic_name')
+        self._config.ClearField('second_topic_name')
+        self._config.ClearField('value')
+
+        for first_topic, topics_and_values in iteritems(pairs):
+            for second_topic, value in iteritems(topics_and_values):
+                self._config.first_topic_name.append(first_topic)
+                self._config.second_topic_name.append(second_topic)
+                self._config.value.append(value)
+
+    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None,
+                 topic_names=None, topic_pairs=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
@@ -440,6 +452,10 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
         :param topic_names: list of names or single name of topic to regularize,\
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
+        :param topic_pairs: information about pairwise topic decorralation coefficients,\
+                            all topic names from topic_names parameter will be used with\
+                            1.0 coefficietn if None.
+        :type topic_pairs: dict, key - topic name, value - dict with topic names and float values
         :param config: the low-level config of this regularizer
         :type config: protobuf object
         """
@@ -452,13 +468,28 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
                                     class_ids=class_ids,
                                     dictionary=None)
 
+        if topic_pairs is not None:
+            self._update_config(topic_pairs)
+            self._topic_pairs = topic_pairs
+
     @property
     def dictionary(self):
         raise KeyError('No dictionary parameter')
 
+    @property
+    def topic_pairs(self):
+        return self.topic_pairs
+
     @dictionary.setter
     def dictionary(self, dictionary):
         raise KeyError('No dictionary parameter')
+
+    @topic_pairs.setter
+    def topic_pairs(self, topic_pairs):
+        if topic_pairs is not None:
+            self._update_config(topic_pairs)
+            self._topic_pairs = topic_pairs
+            self._master.reconfigure_regularizer(self.name, self._config, self.tau, self.gamma)
 
 
 class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
