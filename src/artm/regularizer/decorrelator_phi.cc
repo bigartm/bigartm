@@ -25,12 +25,16 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   std::unordered_map<std::string, int> topics_to_regularize;
   if (!use_topic_pairs) {
     for (auto& s : (config_.topic_name().size() ? config_.topic_name() : p_wt.topic_name())) {
+      bool valid_topic = false;
       for (int i = 0; i < p_wt.topic_name().size(); ++i) {
-        if (p_wt.topic_name(i) == s)
+        if (p_wt.topic_name(i) == s) {
           topics_to_regularize.insert(std::make_pair(s, i));
-        else
-          LOG(WARNING) << "Topic name " << s << " is not presented into model and will be ignored";
+          valid_topic = true;
+          break;
+        }
       }
+      if (!valid_topic)
+        LOG(WARNING) << "Topic name " << s << " is not presented into model and will be ignored";
     }
   }
 
