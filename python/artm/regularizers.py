@@ -478,7 +478,7 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
 
     @property
     def topic_pairs(self):
-        return self.topic_pairs
+        return self._topic_pairs
 
     @dictionary.setter
     def dictionary(self, dictionary):
