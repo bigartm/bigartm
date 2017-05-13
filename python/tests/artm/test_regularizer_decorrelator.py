@@ -9,11 +9,12 @@ import pytest
 from six.moves import range, zip
 
 import artm
+import pandas as pd
 
 
 def test_func():
     num_topics = 5
-    tolerance = 0.05
+    tolerance = 0.01
     batches_folder = tempfile.mkdtemp()
 
     try:
@@ -34,15 +35,16 @@ def test_func():
         model.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=1)
 
         phi = model.get_phi()
-        real_values = [
-            [0.32, 0.95, 0.2,  0.55, 0.32],
-            [0.33, 0.0,  0.68, 0.35, 0.63],
-            [0.35, 0.05, 0.11, 0.1,  0.05],
-        ]
-
-        for elems, values in zip(phi.values.tolist(), real_values):
-            for e, v in zip(elems, values):
-                assert abs(e - v) < tolerance
+        real_topics = pd.DataFrame(
+            data={
+                'topic_0': dict(ccc=0.32, bbb=0.33, aaa=0.35),
+                'topic_1': dict(ccc=0.95, bbb=0.0, aaa=0.05),
+                'topic_2': dict(ccc=0.2, bbb=0.68, aaa=0.12),
+                'topic_3': dict(ccc=0.55, bbb=0.35, aaa=0.1),
+                'topic_4': dict(ccc=0.32, bbb=0.63, aaa=0.05),
+            }
+        )
+        assert (phi - real_topics).abs().values.max() < tolerance
 
         model.regularizers['DPR'].topic_names = [model.topic_names[0], model.topic_names[1]]
         model.regularizers['DPR'].topic_pairs = {model.topic_names[0]: {model.topic_names[1]: 100.0,
@@ -50,28 +52,30 @@ def test_func():
         model.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=1)
 
         phi = model.get_phi()
-        real_values = [
-            [0.0,  0.94, 0.22, 0.58, 0.35],
-            [0.0,  0.0,  0.63, 0.3 , 0.58],
-            [0.0,  0.06, 0.14, 0.12, 0.07],
-        ]
-
-        for elems, values in zip(phi.values.tolist(), real_values):
-            for e, v in zip(elems, values):
-                assert abs(e - v) < tolerance
+        real_topics = pd.DataFrame(
+            data={
+                'topic_0': dict(ccc=0.0, bbb=0.0, aaa=0.0),
+                'topic_1': dict(ccc=0.94, bbb=0.0, aaa=0.06),
+                'topic_2': dict(ccc=0.22, bbb=0.63, aaa=0.15),
+                'topic_3': dict(ccc=0.58, bbb=0.3, aaa=0.12),
+                'topic_4': dict(ccc=0.35, bbb=0.58, aaa=0.07),
+            }
+        )
+        assert (phi - real_topics).abs().values.max() < tolerance
 
         model.regularizers['DPR'].topic_pairs = {model.topic_names[1]: {model.topic_names[0]: 10000.0}}
         model.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=1)
 
         phi = model.get_phi()
-        real_values = [
-            [0.0,  0.91, 0.21, 0.54, 0.35],
-            [0.0,  0.0,  0.55, 0.26, 0.53],
-            [0.0,  0.08, 0.24, 0.20, 0.12],
-        ]
-
-        for elems, values in zip(phi.values.tolist(), real_values):
-            for e, v in zip(elems, values):
-                assert abs(e - v) < tolerance
+        real_topics = pd.DataFrame(
+            data={
+                'topic_0': dict(ccc=0.0, bbb=0.0, aaa=0.0),
+                'topic_1': dict(ccc=0.91, bbb=0.0, aaa=0.09),
+                'topic_2': dict(ccc=0.21, bbb=0.55, aaa=0.24),
+                'topic_3': dict(ccc=0.54, bbb=0.26, aaa=0.20),
+                'topic_4': dict(ccc=0.35, bbb=0.53, aaa=0.12),
+            }
+        )
+        assert (phi - real_topics).abs().values.max() < tolerance
     finally:
         shutil.rmtree(batches_folder)
