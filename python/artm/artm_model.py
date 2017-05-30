@@ -929,7 +929,9 @@ class ARTM(object):
         elif theta_matrix_type == 'cache':
             theta_matrix_type_real = const.ThetaMatrixType_Cache
 
-        batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
+        batches_list = batch_vectorizer.batches_list
+        if not batch_vectorizer.process_in_memory:
+            batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
 
         theta_info, numpy_ndarray = self._wait_for_batches_processed(
             self._pool.apply_async(func=self.master.transform,
