@@ -42,7 +42,7 @@ def test_func():
         batches = []
         for b in uci_batch_vectorizer.batches_list:
             batch = artm.messages.Batch()
-            with open(b.filename, 'rb') as fin:
+            with open(b, 'rb') as fin:
                 batch.ParseFromString(fin.read())
                 batches.append(batch)
 
@@ -85,7 +85,7 @@ def test_func():
         assert len(glob.glob(os.path.join(temp_target_folder, '*.batch'))) == num_n_wd_batches
 
         for i in range(num_n_wd_batches):
-            with open(n_wd_batch_vectorizer.batches_list[i].filename, 'rb') as fin:
+            with open(n_wd_batch_vectorizer.batches_list[i], 'rb') as fin:
                 batch = artm.messages.Batch()
                 batch.ParseFromString(fin.read())
                 assert len(batch.item) == 2 or len(batch.item) == 1

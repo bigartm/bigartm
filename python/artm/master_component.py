@@ -888,8 +888,7 @@ class MasterComponent(object):
 
     def remove_batch(self, batch_id=None):
         """
-        :param batch_id: id of batch, loaded in RAM
-        :type batch_id: str or unicode
+        :param unicode batch_id: id of batch, loaded in RAM
         """
         if batch_id is not None:
-            self._lib.ArtmDisposeBatch(self.master_id, u'{}'.format(batch_id))
+            self._lib.ArtmDisposeBatch(self.master_id, batch_id)

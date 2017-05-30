@@ -276,9 +276,13 @@ class BatchVectorizer(object):
     @property
     def batches_list(self):
         """
-        :return: list of batches names
+        :return: list of batches filenames, if process_in_memory == False,\
+                 else - the list of in memory batches ids
         """
-        return self._batches_list
+        if self._process_in_memory:
+            return self._batches_list
+        else:
+            return [batch.filename for batch in self._batches_list]
 
     @property
     def weights(self):
