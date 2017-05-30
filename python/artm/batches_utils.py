@@ -86,7 +86,7 @@ class BatchVectorizer(object):
         self._model = model
         if data_format == 'bow_n_wd' or data_format == 'vowpal_wabbit' or data_format == 'bow_uci':
             self._remove_batches = target_folder is None
-        elif data_format == 'batches':
+        elif data_format == 'batches' or self._process_in_memory:
             self._remove_batches = False
 
         self._target_folder = target_folder
@@ -120,14 +120,14 @@ class BatchVectorizer(object):
         self._data_path = data_path if data_format == 'batches' else self._target_folder
 
     def __dispose(self):
-        if self._remove_batches:
-            shutil.rmtree(self._target_folder)
-        self._remove_batches = False
-
         if self._process_in_memory:
             for batch in self._batches_list:
                 self._model.master.remove_batch(batch)
         self._process_in_memory = False
+
+        if self._remove_batches:
+            shutil.rmtree(self._target_folder)
+        self._remove_batches = False
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.__dispose()

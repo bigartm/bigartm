@@ -6,6 +6,7 @@ Specifications of C-API functions
 
 # TODO: generate this file automatically
 
+import sys
 import ctypes
 
 import numpy
@@ -94,7 +95,7 @@ ARTM_API = [
     ),
     CallSpec(
         'ArtmDisposeBatch',
-        [('master_id', int), ('name', str)],
+        [('master_id', int), ('name', unicode if sys.version_info.major == 2 else str)],
     ),
     CallSpec(
         'ArtmOverwriteTopicModel',

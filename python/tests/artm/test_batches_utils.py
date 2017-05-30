@@ -55,6 +55,7 @@ def test_func():
         model.fit_online(update_every=1, batch_vectorizer=in_memory_batch_vectorizer)
         assert len(model.score_tracker['perplexity'].value) == 14
 
+        del in_memory_batch_vectorizer
 
         batch_batch_vectorizer = artm.BatchVectorizer(data_path=batches_folder, data_format='batches')
         assert len(batch_batch_vectorizer.batches_list) == num_uci_batches
