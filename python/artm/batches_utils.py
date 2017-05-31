@@ -37,8 +37,8 @@ class Batch(object):
 
 class BatchVectorizer(object):
     def __init__(self, batches=None, collection_name=None, data_path='', data_format='batches',
-                 target_folder=None, batch_size=1000, batch_name_type='code', data_weight=1.0,
-                 n_wd=None, vocabulary=None, gather_dictionary=True, class_ids=None, model=None):
+                 target_folder=None, batch_size=1000, batch_name_type='code', data_weight=1.0, n_wd=None,
+                 vocabulary=None, gather_dictionary=True, class_ids=None, process_in_memory_model=None):
         """
         :param str collection_name: the name of text collection (required if data_format == 'bow_uci')
         :param str data_path: 1) if data_format == 'bow_uci' => folder containing\
@@ -54,7 +54,7 @@ class BatchVectorizer(object):
         :param int batch_size: number of documents to be stored in each batch
         :param str target_folder: full path to folder for future batches storing;\
                                   if not set, no batches will be produced for further work
-        :param batches: if process_in_memory == False -> list with non-full file names of\
+        :param batches: if process_in_memory_model is None -> list with non-full file names of\
                               batches (necessary parameters are batches + data_path +\
                               data_fromat=='batches' in this case)\
                         else -> list of batches (messages.Batch objects), loaded in memory
@@ -72,16 +72,18 @@ class BatchVectorizer(object):
                                        and if data_weight is list - automatically set to False
         :param class_ids: list of class_ids or single class_id to parse and include in batches
         :type class_ids: list of str or str
-        :param artm.ARTM model: ARTM instance that will use this vectorizer, is required when\
-                                one need processing of batches from disk in RAM (only if\
-                                data_format == Batches). NOTE: makes vectorizer model specific.
+        :param artm.ARTM process_in_memory_model: ARTM instance that will use this vectorizer, is\
+                                                  required when one need processing of batches from\
+                                                  disk in RAM (only if data_format == Batches).\
+                                                  NOTE: makes vectorizer model specific.
         """
         self._remove_batches = False
-        self._process_in_memory = data_format == 'batches' and model is not None
-        if not self._process_in_memory and model is not None:
-            raise IOError("Correct configuration for in memory processing: data_format == 'batches' + model != None")
+        self._process_in_memory = data_format == 'batches' and process_in_memory_model is not None
+        if not self._process_in_memory and process_in_memory_model is not None:
+            raise IOError("Correct configuration for in memory processing: data_format =="
+                          "'batches' + process_in_memory_model != None")
 
-        self._model = model
+        self._model = process_in_memory_model
         if data_format == 'bow_n_wd' or data_format == 'vowpal_wabbit' or data_format == 'bow_uci':
             self._remove_batches = target_folder is None
         elif data_format == 'batches':

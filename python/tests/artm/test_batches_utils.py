@@ -47,7 +47,7 @@ def test_func():
                 batches.append(batch)
 
         in_memory_batch_vectorizer = artm.BatchVectorizer(data_format='batches',
-                                                          model=model,
+                                                          process_in_memory_model=model,
                                                           batches=batches)
 
         model.fit_offline(num_collection_passes=10, batch_vectorizer=in_memory_batch_vectorizer)
@@ -55,6 +55,7 @@ def test_func():
         assert len(model.score_tracker['perplexity'].value) == 14
 
         del in_memory_batch_vectorizer
+
 
         batch_batch_vectorizer = artm.BatchVectorizer(data_path=batches_folder, data_format='batches')
         assert len(batch_batch_vectorizer.batches_list) == num_uci_batches
