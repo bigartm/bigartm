@@ -38,8 +38,7 @@ class Batch(object):
 class BatchVectorizer(object):
     def __init__(self, batches=None, collection_name=None, data_path='', data_format='batches',
                  target_folder=None, batch_size=1000, batch_name_type='code', data_weight=1.0,
-                 n_wd=None, vocabulary=None, gather_dictionary=True, class_ids=None,
-                 process_in_memory=False, model=None):
+                 n_wd=None, vocabulary=None, gather_dictionary=True, class_ids=None, model=None):
         """
         :param str collection_name: the name of text collection (required if data_format == 'bow_uci')
         :param str data_path: 1) if data_format == 'bow_uci' => folder containing\
@@ -73,15 +72,14 @@ class BatchVectorizer(object):
                                        and if data_weight is list - automatically set to False
         :param class_ids: list of class_ids or single class_id to parse and include in batches
         :type class_ids: list of str or str
-        :param bool process_in_memory: process batches from disk or from RAM \
-                                       (only if data_format == Batches), model parameter is required
         :param artm.ARTM model: ARTM instance that will use this vectorizer, is required when\
-                                process_in_memory == True. Will be ignored in other cases
+                                one need processing of batches from disk in RAM (only if\
+                                data_format == Batches). NOTE: makes vectorizer model specific.
         """
         self._remove_batches = False
-        self._process_in_memory = process_in_memory and data_format == 'batches' and model is not None
-        if self._process_in_memory != process_in_memory:
-            raise IOError("Correct configuration: process_memory == True + data_format == 'batches' + model != None")
+        self._process_in_memory = data_format == 'batches' and model is not None
+        if not self._process_in_memory and model is not None:
+            raise IOError("Correct configuration for in memory processing: data_format == 'batches' + model != None")
 
         self._model = model
         if data_format == 'bow_n_wd' or data_format == 'vowpal_wabbit' or data_format == 'bow_uci':

@@ -40,14 +40,13 @@ def test_func():
         model.scores.add(artm.PerplexityScore(name='perplexity', dictionary=dictionary))
 
         batches = []
-        for b in uci_batch_vectorizer.batches_list:
+        for b in uci_batch_vectorizer.batches_ids:
             batch = artm.messages.Batch()
             with open(b, 'rb') as fin:
                 batch.ParseFromString(fin.read())
                 batches.append(batch)
 
         in_memory_batch_vectorizer = artm.BatchVectorizer(data_format='batches',
-                                                          process_in_memory=True,
                                                           model=model,
                                                           batches=batches)
 
@@ -85,7 +84,7 @@ def test_func():
         assert len(glob.glob(os.path.join(temp_target_folder, '*.batch'))) == num_n_wd_batches
 
         for i in range(num_n_wd_batches):
-            with open(n_wd_batch_vectorizer.batches_list[i], 'rb') as fin:
+            with open(n_wd_batch_vectorizer.batches_ids[i], 'rb') as fin:
                 batch = artm.messages.Batch()
                 batch.ParseFromString(fin.read())
                 assert len(batch.item) == 2 or len(batch.item) == 1
