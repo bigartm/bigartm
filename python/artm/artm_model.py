@@ -504,9 +504,9 @@ class ARTM(object):
                 self._synchronizations_processed += 1
                 self._wait_for_batches_processed(
                     self._pool.apply_async(func=self.master.fit_offline,
-                                           args=(batch_vectorizer.batches_list,
+                                           args=(batch_vectorizer.batches_ids,
                                                  batch_vectorizer.weights, 1, None)),
-                    len(batch_vectorizer.batches_list))
+                    len(batch_vectorizer.batches_ids))
 
                 for name in self.scores.data.keys():
                     if name not in self.score_tracker:
@@ -574,10 +574,10 @@ class ARTM(object):
 
         self._wait_for_batches_processed(
             self._pool.apply_async(func=self.master.fit_online,
-                                   args=(batch_vectorizer.batches_list, batch_vectorizer.weights,
+                                   args=(batch_vectorizer.batches_ids, batch_vectorizer.weights,
                                          update_after_final, apply_weight_final,
                                          decay_weight_final, async)),
-            len(batch_vectorizer.batches_list))
+            len(batch_vectorizer.batches_ids))
 
         for name in self.scores.data.keys():
             if name not in self.score_tracker:
@@ -923,9 +923,9 @@ class ARTM(object):
 
         theta_info, numpy_ndarray = self._wait_for_batches_processed(
             self._pool.apply_async(func=self.master.transform,
-                                   args=(None, batch_vectorizer.batches_list,
+                                   args=(None, batch_vectorizer.batches_ids,
                                          theta_matrix_type_real, predict_class_id)),
-            len(batch_vectorizer.batches_list))
+            len(batch_vectorizer.batches_ids))
 
         if theta_matrix_type is not None and theta_matrix_type != 'cache':
             document_ids = []

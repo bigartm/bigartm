@@ -86,7 +86,7 @@ class BatchVectorizer(object):
         self._model = model
         if data_format == 'bow_n_wd' or data_format == 'vowpal_wabbit' or data_format == 'bow_uci':
             self._remove_batches = target_folder is None
-        elif data_format == 'batches' or self._process_in_memory:
+        elif data_format == 'batches':
             self._remove_batches = False
 
         self._target_folder = target_folder
@@ -274,7 +274,7 @@ class BatchVectorizer(object):
         self._dictionary.create(dictionary_data)
 
     @property
-    def batches_list(self):
+    def batches_ids(self):
         """
         :return: list of batches filenames, if process_in_memory == False,\
                  else - the list of in memory batches ids
@@ -283,6 +283,14 @@ class BatchVectorizer(object):
             return self._batches_list
         else:
             return [batch.filename for batch in self._batches_list]
+
+    @property
+    def batches_list(self):
+        """
+        : return: list of batches, if process_in_memory == False,\
+                  else - the list of in memory batches ids
+        """
+        return self._batches_list
 
     @property
     def weights(self):
