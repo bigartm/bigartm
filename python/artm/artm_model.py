@@ -489,10 +489,6 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('The model was not initialized. Use initialize() method')
 
-        def _func(batch):
-            return batch if batch_vectorizer.process_in_memory else batch.filename
-
-        batches_list = [_func(batch) for batch in batch_vectorizer.batches_list]
         # outer cycle is needed because of TopicSelectionThetaRegularizer
         # and current ScoreTracker implementation
 
@@ -508,8 +504,9 @@ class ARTM(object):
                 self._synchronizations_processed += 1
                 self._wait_for_batches_processed(
                     self._pool.apply_async(func=self.master.fit_offline,
-                                           args=(batches_list, batch_vectorizer.weights, 1, None)),
-                    len(batches_list))
+                                           args=(batch_vectorizer.batches_ids,
+                                                 batch_vectorizer.weights, 1, None)),
+                    batch_vectorizer.num_batches)
 
                 for name in self.scores.data.keys():
                     if name not in self.score_tracker:
@@ -554,11 +551,6 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('The model was not initialized. Use initialize() method')
 
-        def _func(batch):
-            return batch if batch_vectorizer.process_in_memory else batch.filename
-
-        batches_list = [_func(batch) for batch in batch_vectorizer.batches_list]
-
         update_after_final, apply_weight_final, decay_weight_final = [], [], []
         if (update_after is None) or (apply_weight is None) or (decay_weight is None):
             update_after_final = range(update_every, batch_vectorizer.num_batches + 1, update_every)
@@ -582,10 +574,10 @@ class ARTM(object):
 
         self._wait_for_batches_processed(
             self._pool.apply_async(func=self.master.fit_online,
-                                   args=(batches_list, batch_vectorizer.weights,
+                                   args=(batch_vectorizer.batches_ids, batch_vectorizer.weights,
                                          update_after_final, apply_weight_final,
                                          decay_weight_final, async)),
-            len(batches_list))
+            batch_vectorizer.num_batches)
 
         for name in self.scores.data.keys():
             if name not in self.score_tracker:
@@ -929,12 +921,11 @@ class ARTM(object):
         elif theta_matrix_type == 'cache':
             theta_matrix_type_real = const.ThetaMatrixType_Cache
 
-        batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
-
         theta_info, numpy_ndarray = self._wait_for_batches_processed(
             self._pool.apply_async(func=self.master.transform,
-                                   args=(None, batches_list, theta_matrix_type_real, predict_class_id)),
-            len(batches_list))
+                                   args=(None, batch_vectorizer.batches_ids,
+                                         theta_matrix_type_real, predict_class_id)),
+            batch_vectorizer.num_batches)
 
         if theta_matrix_type is not None and theta_matrix_type != 'cache':
             document_ids = []

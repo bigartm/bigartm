@@ -37,9 +37,8 @@ class Batch(object):
 
 class BatchVectorizer(object):
     def __init__(self, batches=None, collection_name=None, data_path='', data_format='batches',
-                 target_folder=None, batch_size=1000, batch_name_type='code', data_weight=1.0,
-                 n_wd=None, vocabulary=None, gather_dictionary=True, class_ids=None,
-                 process_in_memory=False, model=None):
+                 target_folder=None, batch_size=1000, batch_name_type='code', data_weight=1.0, n_wd=None,
+                 vocabulary=None, gather_dictionary=True, class_ids=None, process_in_memory_model=None):
         """
         :param str collection_name: the name of text collection (required if data_format == 'bow_uci')
         :param str data_path: 1) if data_format == 'bow_uci' => folder containing\
@@ -55,7 +54,7 @@ class BatchVectorizer(object):
         :param int batch_size: number of documents to be stored in each batch
         :param str target_folder: full path to folder for future batches storing;\
                                   if not set, no batches will be produced for further work
-        :param batches: if process_in_memory == False -> list with non-full file names of\
+        :param batches: if process_in_memory_model is None -> list with non-full file names of\
                               batches (necessary parameters are batches + data_path +\
                               data_fromat=='batches' in this case)\
                         else -> list of batches (messages.Batch objects), loaded in memory
@@ -73,17 +72,18 @@ class BatchVectorizer(object):
                                        and if data_weight is list - automatically set to False
         :param class_ids: list of class_ids or single class_id to parse and include in batches
         :type class_ids: list of str or str
-        :param bool process_in_memory: process batches from disk or from RAM \
-                                       (only if data_format == Batches), model parameter is required
-        :param artm.ARTM model: ARTM instance that will use this vectorizer, is required when\
-                                process_in_memory == True. Will be ignored in other cases
+        :param artm.ARTM process_in_memory_model: ARTM instance that will use this vectorizer, is\
+                                                  required when one needs processing of batches from\
+                                                  disk in RAM (only if data_format == 'batches').\
+                                                  NOTE: makes vectorizer model specific.
         """
         self._remove_batches = False
-        self._process_in_memory = process_in_memory and data_format == 'batches' and model is not None
-        if self._process_in_memory != process_in_memory:
-            raise IOError("Correct configuration: process_memory == True + data_format == 'batches' + model != None")
+        self._process_in_memory = data_format == 'batches' and process_in_memory_model is not None
+        if not self._process_in_memory and process_in_memory_model is not None:
+            raise IOError("Correct configuration for in memory processing: data_format =="
+                          "'batches' + process_in_memory_model != None")
 
-        self._model = model
+        self._model = process_in_memory_model
         if data_format == 'bow_n_wd' or data_format == 'vowpal_wabbit' or data_format == 'bow_uci':
             self._remove_batches = target_folder is None
         elif data_format == 'batches':
@@ -120,14 +120,14 @@ class BatchVectorizer(object):
         self._data_path = data_path if data_format == 'batches' else self._target_folder
 
     def __dispose(self):
-        if self._remove_batches:
-            shutil.rmtree(self._target_folder)
-        self._remove_batches = False
-
         if self._process_in_memory:
             for batch in self._batches_list:
                 self._model.master.remove_batch(batch)
         self._process_in_memory = False
+
+        if self._remove_batches:
+            shutil.rmtree(self._target_folder)
+        self._remove_batches = False
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.__dispose()
@@ -274,9 +274,21 @@ class BatchVectorizer(object):
         self._dictionary.create(dictionary_data)
 
     @property
+    def batches_ids(self):
+        """
+        :return: list of batches filenames, if process_in_memory == False,\
+                 else - the list of in memory batches ids
+        """
+        if self._process_in_memory:
+            return self._batches_list
+        else:
+            return [batch.filename for batch in self._batches_list]
+
+    @property
     def batches_list(self):
         """
-        :return: list of batches names
+        : return: list of batches, if process_in_memory == False,\
+                  else - the list of in memory batches ids
         """
         return self._batches_list
 

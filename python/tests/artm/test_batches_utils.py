@@ -40,20 +40,21 @@ def test_func():
         model.scores.add(artm.PerplexityScore(name='perplexity', dictionary=dictionary))
 
         batches = []
-        for b in uci_batch_vectorizer.batches_list:
+        for b in uci_batch_vectorizer.batches_ids:
             batch = artm.messages.Batch()
-            with open(b.filename, 'rb') as fin:
+            with open(b, 'rb') as fin:
                 batch.ParseFromString(fin.read())
                 batches.append(batch)
 
         in_memory_batch_vectorizer = artm.BatchVectorizer(data_format='batches',
-                                                          process_in_memory=True,
-                                                          model=model,
+                                                          process_in_memory_model=model,
                                                           batches=batches)
 
         model.fit_offline(num_collection_passes=10, batch_vectorizer=in_memory_batch_vectorizer)
         model.fit_online(update_every=1, batch_vectorizer=in_memory_batch_vectorizer)
         assert len(model.score_tracker['perplexity'].value) == 14
+
+        del in_memory_batch_vectorizer
 
 
         batch_batch_vectorizer = artm.BatchVectorizer(data_path=batches_folder, data_format='batches')
@@ -84,7 +85,7 @@ def test_func():
         assert len(glob.glob(os.path.join(temp_target_folder, '*.batch'))) == num_n_wd_batches
 
         for i in range(num_n_wd_batches):
-            with open(n_wd_batch_vectorizer.batches_list[i].filename, 'rb') as fin:
+            with open(n_wd_batch_vectorizer.batches_ids[i], 'rb') as fin:
                 batch = artm.messages.Batch()
                 batch.ParseFromString(fin.read())
                 assert len(batch.item) == 2 or len(batch.item) == 1
