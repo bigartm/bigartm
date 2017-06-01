@@ -220,7 +220,7 @@ class BaseRegularizerPhi(BaseRegularizer):
 
     @class_ids.setter
     def class_ids(self, class_ids):
-        _reconfigure_field(self, class_ids, 'class_ids')
+        _reconfigure_field(self, class_ids, 'class_id')
 
     @dictionary.setter
     def dictionary(self, dictionary):
