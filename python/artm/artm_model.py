@@ -506,7 +506,7 @@ class ARTM(object):
                     self._pool.apply_async(func=self.master.fit_offline,
                                            args=(batch_vectorizer.batches_ids,
                                                  batch_vectorizer.weights, 1, None)),
-                    len(batch_vectorizer.batches_ids))
+                    batch_vectorizer.num_batches)
 
                 for name in self.scores.data.keys():
                     if name not in self.score_tracker:
@@ -577,7 +577,7 @@ class ARTM(object):
                                    args=(batch_vectorizer.batches_ids, batch_vectorizer.weights,
                                          update_after_final, apply_weight_final,
                                          decay_weight_final, async)),
-            len(batch_vectorizer.batches_ids))
+            batch_vectorizer.num_batches)
 
         for name in self.scores.data.keys():
             if name not in self.score_tracker:
@@ -925,7 +925,7 @@ class ARTM(object):
             self._pool.apply_async(func=self.master.transform,
                                    args=(None, batch_vectorizer.batches_ids,
                                          theta_matrix_type_real, predict_class_id)),
-            len(batch_vectorizer.batches_ids))
+            batch_vectorizer.num_batches)
 
         if theta_matrix_type is not None and theta_matrix_type != 'cache':
             document_ids = []

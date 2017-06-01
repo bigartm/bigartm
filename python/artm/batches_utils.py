@@ -73,8 +73,8 @@ class BatchVectorizer(object):
         :param class_ids: list of class_ids or single class_id to parse and include in batches
         :type class_ids: list of str or str
         :param artm.ARTM process_in_memory_model: ARTM instance that will use this vectorizer, is\
-                                                  required when one need processing of batches from\
-                                                  disk in RAM (only if data_format == Batches).\
+                                                  required when one needs processing of batches from\
+                                                  disk in RAM (only if data_format == 'batches').\
                                                   NOTE: makes vectorizer model specific.
         """
         self._remove_batches = False
