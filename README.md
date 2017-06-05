@@ -29,7 +29,7 @@ BigARTM is a powerful tool for [topic modeling](https://en.wikipedia.org/wiki/To
 
 ### Related Software Packages
 
-- [David Blei's List](https://www.cs.princeton.edu/~blei/topicmodeling.html) of Open Source topic modeling software
+- [David Blei's List](http://www.cs.columbia.edu/~blei/topicmodeling_software.html) of Open Source topic modeling software
 - [MALLET](http://mallet.cs.umass.edu/topics.php): Java-based toolkit for language processing with topic modeling package
 - [Gensim](https://radimrehurek.com/gensim/): Python topic modeling library
 - [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit) has an implementation of [Online-LDA algorithm](https://github.com/JohnLangford/vowpal_wabbit/wiki/Latent-Dirichlet-Allocation)
