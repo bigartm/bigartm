@@ -122,8 +122,8 @@ Refer to [tutorials](http://docs.bigartm.org/en/latest/tutorials/python_tutorial
 
 ### Low-level API
 
-  - [C++ Interface](http://docs.bigartm.org/en/latest/ref/cpp_interface.html)
-  - [Plain C Interface](http://docs.bigartm.org/en/latest/ref/c_interface.html)
+  - [C++ Interface](http://docs.bigartm.org/en/latest/api_references/cpp_interface.html)
+  - [Plain C Interface](http://docs.bigartm.org/en/latest/api_references/c_interface.html)
 
 
 ## Contributing
