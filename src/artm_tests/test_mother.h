@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <string>
 
 #include "boost/lexical_cast.hpp"
 #include "boost/uuid/uuid.hpp"
@@ -28,6 +29,12 @@ class Helpers {
   static std::string DescribeThetaMatrix(const ::artm::ThetaMatrix& theta_matrix);
   static void CompareTopicModels(const ::artm::TopicModel& tm1, const ::artm::TopicModel& tm2, bool* ok);
   static void CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm::ThetaMatrix& tm2, bool *ok);
+
+  static artm::Batch GenerateBatch(int nTokens, int nDocs, std::string class1, std::string class2);
+  static artm::DictionaryData GenerateDictionary(int nTokens, std::string class1, std::string class2);
+  static void ConfigurePerplexityScore(std::string score_name,
+                                       artm::MasterModelConfig* master_config,
+                                       std::vector<std::string> class_ids = { });
 };
 
 class TestMother {
