@@ -113,7 +113,7 @@ Currently openSUSE require to install Boost from sources:
    brew install git cmake boost
 
 Step 2. Python packages
-----------------------------------------------------------------
+-----------------------
 BigARTM require Python packages ``numpy``, ``pandas``, ``protobuf`` and ``tqdm``.
 We recommend to install them with recent versino of ``pip``.
 

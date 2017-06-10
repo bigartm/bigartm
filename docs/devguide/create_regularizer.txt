@@ -1,5 +1,5 @@
 Creating New Regularizer
-=========================
+========================
 
 This manual describes all necessary steps you need to proceed to create your own regularizer in the core of BigARTM library. We assume you are now in the root directory of BigARTM. The Google Protocol Buffers technology will be used, so we also assume you familiar with it. The instructions will be forwarded with corresponding examples of two regularizers, one per matrix (New Regulrizer Phi and New regularizer Theta).
 
@@ -183,7 +183,7 @@ Also take into consideration the notation of parameters naming (for example, cla
 for the changes to take effect.
 
 Phi regularizer C++ code
--------------
+------------------------
 
 All you need is to implement the method
 
@@ -196,7 +196,7 @@ All you need is to implement the method
 Here you use p_wt, n_wt and all information you have got as parameters through the config to count r_wt and put it in the ``result`` variable. The multiplication on ``tau`` and usage of coefficients of relative regularzation will be processed in further computations automaticaly and shouldn't worry you.
 
 Theta regularizer C++ code
--------------
+--------------------------
 
 You need to create a class implementing the ``RegularizeThetaAgent`` interface (e.g., ``NewRegularizerThetaAgent``) and a class implementing ``RegularizerInterface`` interface (e.g., ``NewRegularizerTheta``).
 

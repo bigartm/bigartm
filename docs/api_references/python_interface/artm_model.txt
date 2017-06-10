@@ -1,5 +1,5 @@
 ARTM model
-================
+==========
 
 This page describes ARTM class.
 

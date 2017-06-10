@@ -1,5 +1,5 @@
 LDA model
-================
+=========
 
 This page describes LDA class.
 
