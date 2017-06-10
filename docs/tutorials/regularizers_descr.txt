@@ -1,5 +1,5 @@
 Regularizers Description
-=========
+========================
 
 This page describes the features and cases of usage of the regularizers, that have already been implemented in the core of BigARTM library. Detailed description of parameters of the regularizers in the Python API can be seen in :doc:`../api_references/python_interface/regularizers`.
 
@@ -8,7 +8,7 @@ Examples of the usage of the regularizers can be found in :doc:`python_tutorial`
 Note: The influence of any regularizer with ``tau`` parameter in it's M-step formula can be controlled via this parameter.
 
 Smooth/Sparse Phi
--------------
+-----------------
 
 * **M-step formula:**
 
@@ -41,7 +41,7 @@ Notes:
 
 
 Smooth/Sparse Theta
--------------
+-------------------
 
 * **M-step formula:**
 
@@ -75,7 +75,7 @@ Notes:
 
 
 Decorrelator Phi
--------------
+----------------
 
 * **M-step formula:**
 
@@ -101,7 +101,7 @@ Notes:
 
 
 Label Regularization Phi
--------------
+------------------------
 
 * **M-step formula:**
 
@@ -109,7 +109,7 @@ Label Regularization Phi
 
 
 Specified sparse Phi
--------------
+--------------------
 
 * **Description:**
 
@@ -117,7 +117,7 @@ It is not a usual regularizer, it's a tool to sparse as many elements in :math:`
 
 
 Improve Coherence Phi
--------------
+---------------------
 
 * **M-step formula:**
 
@@ -125,7 +125,7 @@ Improve Coherence Phi
 
 
 Smooth Ptdw
--------------
+-----------
 
 * **M-step formula:**
 
@@ -133,7 +133,7 @@ Smooth Ptdw
 
 
 Topic Selection Theta
--------------
+---------------------
 
 * **M-step formula:**
 
@@ -142,7 +142,7 @@ Topic Selection Theta
 where ``topic_value[t]`` = ``n`` / (``n_t`` * ``|T|``)
 
 Biterms Phi
--------------
+-----------
 
 * **M-step formula:**
 
@@ -150,12 +150,12 @@ Biterms Phi
 
 
 Hierarchy Sparsing Theta
--------------
+------------------------
 
 `ToDo(nadiinchi)`
 
 
 Topic Segmentation Ptdw
--------------
+-----------------------
 
 `ToDo(anastasiabayandina)`

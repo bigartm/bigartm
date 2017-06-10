@@ -6,7 +6,7 @@
 .. _tutorial:
 
 API References
-=========
+==============
 
 .. toctree::
    :maxdepth: 2

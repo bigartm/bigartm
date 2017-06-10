@@ -1,5 +1,5 @@
 VisARTM
-====================
+=======
 
 VisARTM is a web-based tool for topic models visualiztion. It uses BigARTM as topic modelling core.
 

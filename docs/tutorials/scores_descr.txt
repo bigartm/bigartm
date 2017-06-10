@@ -1,12 +1,12 @@
 Scores Description
-=========
+==================
 
 This page describes the scores, that have already been implemented in the core of BigARTM library. Detailed description of parameters of the scores in the Python API can be seen in :doc:`../api_references/python_interface/scores`, and their return values in :doc:`../api_references/python_interface/score_tracker`.
 
 Examples of the usage of the scores can be found in :doc:`python_tutorial` and in :doc:`python_userguide/index`.
 
 Perplexity
--------------
+----------
 
 * **Description:**
 
@@ -24,7 +24,7 @@ This is one of the main scores as it indicates the level and speed of convergenc
 
 
 Sparsity Phi
--------------
+------------
 
 * **Description:**
 
@@ -36,7 +36,7 @@ One of the goals of regularization is to achive a sparse structure of :math:`\Ph
 
 
 Sparsity Theta
--------------
+--------------
 
 * **Description:**
 
@@ -48,7 +48,7 @@ One of the goals of regularization is to achive a sparse structure of :math:`\Th
 
 
 Top Tokens
--------------
+----------
 
 * **Description:**
 
@@ -67,7 +67,7 @@ Checking top tokens is one of the main ways of topic quality verification. But i
 Coherence is one of the best measures for automatic interpretability checking. Note, that different types of ``value`` will lead to different types of coherence.
 
 Topic Kernel Scores
--------------
+-------------------
 
 * **Description:**
 
@@ -87,7 +87,7 @@ Average purity and contrast can be used as a measure of topics interpretability 
 
 
 Topic Mass
--------------
+----------
 
 * **Description:**
 
@@ -99,20 +99,20 @@ Can be useful in external (self written in Python) scores and regularizers, that
 
 
 Class Precision
--------------
+---------------
 
 ToDo(sashafrey)
 
 
 Background Tokens Ratio
--------------
+-----------------------
 
 * **Description:**
 
 Computes KL-divergence between :math:`p(t)` and :math:`p(t|w)` distributions :math:`\mathrm{KL}(p(t) || p(t|w))` (or via versa) for each token and counts the part of tokens that have this value greater than given ``delta``. Such tokens are considered to be background ones. Also returns all these tokens, if it was requested.
 
 Items Processed (technical)
--------------
+---------------------------
 
 * **Description:**
 
@@ -120,7 +120,7 @@ Computes the number of documents, that was used for model training since the sco
 
 
 Theta Snippet (technical)
--------------
+-------------------------
 
 * **Description:**
 

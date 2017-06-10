@@ -1,5 +1,5 @@
 2. Base PLSA Model with Perplexity Score
-=========
+========================================
 
 Detailed description of all parameters and methods of BigARTM Python API classes can be found in :doc:`../../api_references/python_interface`.
 

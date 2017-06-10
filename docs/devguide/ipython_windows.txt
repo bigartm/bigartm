@@ -1,5 +1,5 @@
 Working with iPython notebooks remotely
-=========================
+=======================================
 
 It turned out to be common scenario to run BigARTM on a Linux server (for example on Amazon EC2), while connecting to it from Windows through ``putty``.
 Here is a convenient way to use ``ipython notebook`` in this scenario:
