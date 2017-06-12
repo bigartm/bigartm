@@ -31,9 +31,9 @@ def test_func():
     smsp_phi_tau = -20.0
     smsp_theta_tau = -3.0
 
-    perplexity_tol = 0.1
+    perplexity_tol = 1.0
     expected_perp_col_value_on_iteration = {
-        0: 6649.1,
+        0: 6650.1,
         1: 2300.2,
         2: 1996.8,
         3: 1786.1,
@@ -60,7 +60,7 @@ def test_func():
         4: 2,
         5: 10,
         6: 28,
-        7: 47
+        7: 46
     }
 
     batches_folder = tempfile.mkdtemp()

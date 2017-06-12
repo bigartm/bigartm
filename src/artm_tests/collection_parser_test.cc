@@ -207,9 +207,9 @@ TEST(CollectionParser, Multiclass) {
   ASSERT_APPROX_EQ(dictionary_ptr.token_tf(1), 4.0);
   ASSERT_APPROX_EQ(dictionary_ptr.token_tf(2), 9.0);
 
-  ASSERT_APPROX_EQ(dictionary_ptr.token_value(0), 5.0 / 18.0);
-  ASSERT_APPROX_EQ(dictionary_ptr.token_value(1), 4.0 / 18.0);
-  ASSERT_APPROX_EQ(dictionary_ptr.token_value(2), 9.0 / 18.0);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_value(0), 5.0 / 14.0);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_value(1), 4.0 / 4.0);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_value(2), 9.0 / 14.0);
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
