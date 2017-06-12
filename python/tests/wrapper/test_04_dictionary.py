@@ -60,7 +60,7 @@ def test_func():
         4: 2,
         5: 10,
         6: 28,
-        7: 46
+        7: 47
     }
 
     batches_folder = tempfile.mkdtemp()
