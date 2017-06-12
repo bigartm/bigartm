@@ -25,8 +25,10 @@ TEST(Scores, Perplexity) {
   master_config_2.add_class_id("@some_class"); master_config_2.add_class_weight(2.0f);
   ::artm::test::Helpers::ConfigurePerplexityScore("perplexity_1", &master_config_2, {});
   ::artm::test::Helpers::ConfigurePerplexityScore("perplexity_2", &master_config_2, { "@default_class" });
-  ::artm::test::Helpers::ConfigurePerplexityScore("perplexity_3", &master_config_2, { "@default_class", "@some_class" });
-  ::artm::test::Helpers::ConfigurePerplexityScore("perplexity_4", &master_config_2, { "@error_class", "@some_class" });
+  ::artm::test::Helpers::ConfigurePerplexityScore("perplexity_3", &master_config_2,
+                                                  { "@default_class", "@some_class" });
+  ::artm::test::Helpers::ConfigurePerplexityScore("perplexity_4", &master_config_2,
+                                                  { "@error_class", "@some_class" });
   ::artm::MasterModel master_2(master_config_2);
   ::artm::test::Api api_2(master_2);
 

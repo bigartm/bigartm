@@ -42,7 +42,7 @@ void Perplexity::AppendScore(
   double normalizer = 0.0;
   double raw = 0.0;
   ::google::protobuf::int64 zero_words = 0;
-  
+
   // choose class_ids policy
   if (config_.class_id_size() == 0) {
     for (int i = 0; (i < args.class_id_size()) && (i < args.class_weight_size()); ++i) {
