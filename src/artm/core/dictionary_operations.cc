@@ -284,17 +284,13 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
       token_info.token_tf += token_n_w[index];
       token_info.token_df += token_df[index];
 
-      auto class_id_iter = sum_w_tf.find(token_class_id);
-      if (class_id_iter != sum_w_tf.end()) {
-        sum_w_tf[token_class_id] += token_n_w[index];
-      } else {
-        sum_w_tf[token_class_id] = token_n_w[index];
-      }
+      sum_w_tf[token_class_id] += token_n_w[index];
     }
   }
 
-  for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
-    iter->second.token_value = static_cast<float>(iter->second.token_tf / sum_w_tf[iter->first.class_id]);
+  for (auto& token_freq : token_freq_map) {
+    token_freq.second.token_value = static_cast<float>(token_freq.second.token_tf /
+                                                       sum_w_tf[token_freq.first.class_id]);
   }
 
   LOG(INFO) << "Find " << token_freq_map.size()

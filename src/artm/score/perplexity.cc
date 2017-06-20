@@ -1,6 +1,7 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-// Author: Marina Suvorova (m.dudarenko@gmail.com)
+// Authors: Marina Suvorova (m.dudarenko@gmail.com)
+//          Murat Apishev (great-mel@yandex.ru)
 
 #include <cmath>
 #include <map>
@@ -33,7 +34,7 @@ void Perplexity::AppendScore(
     Score* score) {
   int topic_size = p_wt.topic_size();
 
-  // fields od proto mesage for all cases
+  // fields of proto messages for all classes
   std::unordered_map<::artm::core::ClassId, float> class_weight_map;
   std::unordered_map<::artm::core::ClassId, double> normalizer_map;
   std::unordered_map<::artm::core::ClassId, double> raw_map;
@@ -64,7 +65,7 @@ void Perplexity::AppendScore(
       }
     }
     if (class_weight_map.empty()) {
-      LOG(ERROR) << "All requested class ids are not presented in model. Score calculation will be skipped";
+      LOG(ERROR) << "None of requested classes were presented in model. Score calculation will be skipped";
       return;
     }
   }
@@ -75,10 +76,12 @@ void Perplexity::AppendScore(
     if (use_class_ids) {
       ::artm::core::ClassId class_id = token_dict[item.token_id(token_index)].class_id;
       auto class_weight_iter = class_weight_map.find(class_id);
-      if (class_weight_iter == class_weight_map.end())
+      if (class_weight_iter == class_weight_map.end()) {
+        // we should not take tokens without class id weight into consideration
         continue;
+      }
 
-      normalizer_map[class_id] += class_weight_iter->second * item.token_weight(token_index);
+      normalizer_map[class_id] += item.token_weight(token_index);
     } else {
       normalizer += item.token_weight(token_index);
     }
