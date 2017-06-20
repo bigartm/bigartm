@@ -74,45 +74,6 @@ bool CompareThetaMatrices(const ::artm::ThetaMatrix& t1, const ::artm::ThetaMatr
   return true;
 }
 
-artm::DictionaryData GenerateDictionary(int nTokens, std::string class1, std::string class2) {
-  ::artm::DictionaryData dictionary_data;
-  for (int i = 0; i < nTokens; i++) {
-    std::stringstream str;
-    str << "token" << i;
-    std::string class_id = (i % 2 == 0) ? class1 : class2;
-    if (class_id.empty())
-      continue;
-    dictionary_data.add_token(str.str());
-    dictionary_data.add_class_id(class_id);
-  }
-  return dictionary_data;
-}
-
-artm::Batch GenerateBatch(int nTokens, int nDocs, std::string class1, std::string class2) {
-  artm::Batch batch;
-  batch.set_id("11972762-6a23-4524-b089-7122816aff72");
-  for (int i = 0; i < nTokens; i++) {
-    std::stringstream str;
-    str << "token" << i;
-    std::string class_id = (i % 2 == 0) ? class1 : class2;
-    batch.add_token(str.str());
-    batch.add_class_id(class_id);
-  }
-
-  for (int iDoc = 0; iDoc < nDocs; iDoc++) {
-    artm::Item* item = batch.add_item();
-    item->set_id(iDoc);
-    for (int iToken = 0; iToken < nTokens; ++iToken) {
-      item->add_token_id(iToken);
-      int background_count = (iToken > 40) ? (1 + rand() % 5) : 0;  // NOLINT
-      int topical_count = ((iToken < 40) && ((iToken % 10) == (iDoc % 10))) ? 10 : 0;
-      item->add_token_weight(static_cast<float>(background_count + topical_count));
-    }
-  }
-
-  return batch;
-}
-
 // artm_tests.exe --gtest_filter=MultipleClasses.BasicTest
 TEST(MultipleClasses, BasicTest) {
   int nTokens = 60;
@@ -147,7 +108,7 @@ TEST(MultipleClasses, BasicTest) {
   regularizer_config2->set_tau(2.0);
 
   // Generate doc-token matrix
-  artm::Batch batch = GenerateBatch(nTokens, nDocs, "@default_class", "__custom_class");
+  artm::Batch batch = ::artm::test::Helpers::GenerateBatch(nTokens, nDocs, "@default_class", "__custom_class");
   artm::TopicModel initial_model;
   initial_model.set_name(master_config.pwt_name());
   for (int i = 0; i < nTopics; ++i) {
@@ -303,7 +264,7 @@ TEST(MultipleClasses, ThrowIfNoTokensInEffect) {
   ::artm::MasterModelConfig master_config_reg(master_config);
 
   // Generate doc-token matrix
-  artm::Batch batch = GenerateBatch(nTokens, nDocs, "@default_class", "__custom_class");
+  artm::Batch batch = ::artm::test::Helpers::GenerateBatch(nTokens, nDocs, "@default_class", "__custom_class");
   std::vector<std::shared_ptr< ::artm::Batch>> batches;
   batches.push_back(std::make_shared< ::artm::Batch>(batch));
 
@@ -326,15 +287,6 @@ void configureTopTokensScore(std::string score_name, std::string class_id, artm:
   if (!class_id.empty()) top_tokens_config.set_class_id(class_id);
   score_config.set_config(top_tokens_config.SerializeAsString());
   score_config.set_type(::artm::ScoreType_TopTokens);
-  score_config.set_name(score_name);
-  master_config->add_score_config()->CopyFrom(score_config);
-}
-
-void configurePerplexityScore(std::string score_name, artm::MasterModelConfig* master_config) {
-  ::artm::ScoreConfig score_config;
-  ::artm::PerplexityScoreConfig perplexity_config;
-  score_config.set_config(perplexity_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreType_Perplexity);
   score_config.set_name(score_name);
   master_config->add_score_config()->CopyFrom(score_config);
 }
@@ -380,7 +332,7 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   configureTopTokensScore("tts_class_one", "class_one", &master_config);
   configureTopTokensScore("tts_class_two", "class_two", &master_config);
   configureThetaSnippetScore("theta_snippet", /*num_items = */ 5, &master_config);
-  configurePerplexityScore("perplexity", &master_config);
+  ::artm::test::Helpers::ConfigurePerplexityScore("perplexity", &master_config);
   configureItemsProcessedScore("items_processed", &master_config);
 
   master_config.add_class_id("class_one"); master_config.add_class_weight(2.0f);
@@ -392,8 +344,8 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   ::artm::test::Api api2(master2);
 
   // Generate doc-token matrix
-  artm::Batch batch = GenerateBatch(nTokens, nDocs, "class_one", "class_two");
-  artm::DictionaryData dict = GenerateDictionary(nTokens, "class_one", "");
+  artm::Batch batch = ::artm::test::Helpers::GenerateBatch(nTokens, nDocs, "class_one", "class_two");
+  artm::DictionaryData dict = ::artm::test::Helpers::GenerateDictionary(nTokens, "class_one", "");
   std::vector<std::shared_ptr< ::artm::Batch>> batches;
   batches.push_back(std::make_shared< ::artm::Batch>(batch));
 
@@ -578,7 +530,7 @@ TEST(MultipleClasses, GetTopicModel) {
   ::artm::test::Api api(master);
 
   // Generate doc-token matrix
-  artm::Batch batch = GenerateBatch(nTokens, nDocs, "class_one", "class_two");
+  artm::Batch batch = ::artm::test::Helpers::GenerateBatch(nTokens, nDocs, "class_one", "class_two");
   std::vector<std::shared_ptr< ::artm::Batch>> batches;
   batches.push_back(std::make_shared< ::artm::Batch>(batch));
   auto offline_args = api.Initialize(batches);

@@ -12,6 +12,59 @@
 namespace artm {
 namespace test {
 
+artm::Batch Helpers::GenerateBatch(int nTokens, int nDocs, std::string class1, std::string class2) {
+  artm::Batch batch;
+  batch.set_id("11972762-6a23-4524-b089-7122816aff72");
+  for (int i = 0; i < nTokens; i++) {
+    std::stringstream str;
+    str << "token" << i;
+    std::string class_id = (i % 2 == 0) ? class1 : class2;
+    batch.add_token(str.str());
+    batch.add_class_id(class_id);
+  }
+
+  for (int iDoc = 0; iDoc < nDocs; iDoc++) {
+    artm::Item* item = batch.add_item();
+    item->set_id(iDoc);
+    for (int iToken = 0; iToken < nTokens; ++iToken) {
+      item->add_token_id(iToken);
+      int background_count = (iToken > 40) ? (1 + rand() % 5) : 0;  // NOLINT
+      int topical_count = ((iToken < 40) && ((iToken % 10) == (iDoc % 10))) ? 10 : 0;
+      item->add_token_weight(static_cast<float>(background_count + topical_count));
+    }
+  }
+
+  return batch;
+}
+
+artm::DictionaryData Helpers::GenerateDictionary(int nTokens, std::string class1, std::string class2) {
+  ::artm::DictionaryData dictionary_data;
+  for (int i = 0; i < nTokens; i++) {
+    std::stringstream str;
+    str << "token" << i;
+    std::string class_id = (i % 2 == 0) ? class1 : class2;
+    if (class_id.empty())
+      continue;
+    dictionary_data.add_token(str.str());
+    dictionary_data.add_class_id(class_id);
+  }
+  return dictionary_data;
+}
+
+void Helpers::ConfigurePerplexityScore(std::string score_name,
+                                       artm::MasterModelConfig* master_config,
+                                       std::vector<std::string> class_ids) {
+  ::artm::ScoreConfig score_config;
+  ::artm::PerplexityScoreConfig perplexity_config;
+  for (auto& s : class_ids) {
+    perplexity_config.add_class_id(s);
+  }
+  score_config.set_config(perplexity_config.SerializeAsString());
+  score_config.set_type(::artm::ScoreType_Perplexity);
+  score_config.set_name(score_name);
+  master_config->add_score_config()->CopyFrom(score_config);
+}
+
 MasterModelConfig TestMother::GenerateMasterModelConfig(int nTopics) {
   MasterModelConfig config;
   for (int i = 0; i < nTopics; ++i)

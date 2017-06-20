@@ -256,10 +256,23 @@ message PerplexityScoreConfig {
 
 // Represents a result of calculation of a perplexity score
 message PerplexityScore {
+  message ClassIdInfo {
+    optional string class_id = 1;
+    optional double raw = 2;
+    optional double normalizer = 3;
+    optional int64 zero_words = 4;
+  }
+
+  // general perplexity value for all cases
   optional double value = 1;
+  
+  // fields for case of all class ids
   optional double raw = 2;
   optional double normalizer = 3;
   optional int64 zero_words = 4;
+
+  // field for case of custom class ids
+  repeated ClassIdInfo class_id_info = 5;
 }
 
 // Represents a configuration of a theta sparsity score

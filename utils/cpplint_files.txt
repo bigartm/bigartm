@@ -50,6 +50,7 @@ src/artm_tests/collection_parser_test.cc
 src/artm_tests/cpp_interface_test.cc
 src/artm_tests/template_manager_test.cc
 src/artm_tests/regularizers_test.cc
+src/artm_tests/scores_test.cc
 src/artm_tests/repeatable_result_test.cc
 src/artm_tests/master_model_test.cc
 src/artm_tests/multiple_classes_test.cc

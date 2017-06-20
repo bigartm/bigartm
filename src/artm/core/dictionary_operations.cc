@@ -239,7 +239,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
   }
 
   int total_items_count = 0;
-  double sum_w_tf = 0.0;
+  std::unordered_map<ClassId, double> sum_w_tf;
   for (const std::string& batch_file : batches) {
     std::shared_ptr<Batch> batch_ptr = mem_batches.get(batch_file);
     try {
@@ -279,15 +279,19 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 
     for (int index = 0; index < batch.token_size(); ++index) {
       // unordered_map.operator[] creates element using default constructor if the key doesn't exist
-      TokenValues& token_info = token_freq_map[Token(batch.class_id(index), batch.token(index))];
+      ClassId token_class_id = batch.class_id(index);
+      TokenValues& token_info = token_freq_map[Token(token_class_id, batch.token(index))];
       token_info.token_tf += token_n_w[index];
-      sum_w_tf += token_n_w[index];
       token_info.token_df += token_df[index];
+
+      sum_w_tf[token_class_id] += token_n_w[index];
     }
   }
 
-  for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter)
-    iter->second.token_value = static_cast<float>(iter->second.token_tf / sum_w_tf);
+  for (auto& token_freq : token_freq_map) {
+    token_freq.second.token_value = static_cast<float>(token_freq.second.token_tf /
+                                                       sum_w_tf[token_freq.first.class_id]);
+  }
 
   LOG(INFO) << "Find " << token_freq_map.size()
     << " unique tokens in " << total_items_count << " items";
