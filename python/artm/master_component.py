@@ -11,44 +11,59 @@ from six.moves import zip
 from .wrapper import messages_pb2 as messages
 from .wrapper import constants
 
+from . import regularizers
+from . import scores
+
 
 REGULARIZERS = (
     (
         messages.SmoothSparseThetaConfig,
-        constants.RegularizerType_SmoothSparseTheta
+        constants.RegularizerType_SmoothSparseTheta,
+        regularizers.SmoothSparseThetaRegularizer,
     ), (
         messages.SmoothSparsePhiConfig,
-        constants.RegularizerType_SmoothSparsePhi
+        constants.RegularizerType_SmoothSparsePhi,
+        regularizers.SmoothSparsePhiRegularizer,
     ), (
         messages.DecorrelatorPhiConfig,
-        constants.RegularizerType_DecorrelatorPhi
+        constants.RegularizerType_DecorrelatorPhi,
+        regularizers.DecorrelatorPhiRegularizer,
     ), (
         messages.LabelRegularizationPhiConfig,
-        constants.RegularizerType_LabelRegularizationPhi
+        constants.RegularizerType_LabelRegularizationPhi,
+        regularizers.LabelRegularizationPhiRegularizer,
     ), (
         messages.SpecifiedSparsePhiConfig,
-        constants.RegularizerType_SpecifiedSparsePhi
+        constants.RegularizerType_SpecifiedSparsePhi,
+        regularizers.SpecifiedSparsePhiRegularizer,
     ), (
         messages.ImproveCoherencePhiConfig,
-        constants.RegularizerType_ImproveCoherencePhi
+        constants.RegularizerType_ImproveCoherencePhi,
+        regularizers.ImproveCoherencePhiRegularizer,
     ), (
         messages.SmoothPtdwConfig,
-        constants.RegularizerType_SmoothPtdw
+        constants.RegularizerType_SmoothPtdw,
+        regularizers.SmoothPtdwRegularizer,
     ), (
         messages.TopicSelectionThetaConfig,
-        constants.RegularizerType_TopicSelectionTheta
+        constants.RegularizerType_TopicSelectionTheta,
+        regularizers.TopicSelectionThetaRegularizer,
     ), (
         messages.BitermsPhiConfig,
-        constants.RegularizerType_BitermsPhi
+        constants.RegularizerType_BitermsPhi,
+        regularizers.BitermsPhiRegularizer,
     ), (
         messages.HierarchySparsingThetaConfig,
-        constants.RegularizerType_HierarchySparsingTheta
+        constants.RegularizerType_HierarchySparsingTheta,
+        regularizers.HierarchySparsingThetaRegularizer,
     ), (
         messages.TopicSegmentationPtdwConfig,
-        constants.RegularizerType_TopicSegmentationPtdw
-    ), (
+        constants.RegularizerType_TopicSegmentationPtdw,
+        regularizers.TopicSegmentationPtdwRegularizer,
+    }, (
         messages.SmoothTimeInTopicsPhiConfig,
-        constants.RegularizerType_SmoothTimeInTopicsPhi
+        constants.RegularizerType_SmoothTimeInTopicsPhi,
+        regularizers.SmoothTimeInTopicsPhiRegularizer,
     ),
 )
 
@@ -56,61 +71,72 @@ SCORES = (
     (
         constants.ScoreType_Perplexity,
         messages.PerplexityScoreConfig,
-        messages.PerplexityScore
+        messages.PerplexityScore,
+        scores.PerplexityScore,
     ), (
         constants.ScoreType_SparsityTheta,
         messages.SparsityThetaScoreConfig,
-        messages.SparsityThetaScore
+        messages.SparsityThetaScore,
+        scores.SparsityThetaScore,
     ), (
         constants.ScoreType_SparsityPhi,
         messages.SparsityPhiScoreConfig,
-        messages.SparsityPhiScore
+        messages.SparsityPhiScore,
+        scores.SparsityPhiScore,
     ), (
         constants.ScoreType_ItemsProcessed,
         messages.ItemsProcessedScoreConfig,
-        messages.ItemsProcessedScore
+        messages.ItemsProcessedScore,
+        scores.ItemsProcessedScore,
     ), (
         constants.ScoreType_TopTokens,
         messages.TopTokensScoreConfig,
-        messages.TopTokensScore
+        messages.TopTokensScore,
+        scores.TopTokensScore,
     ), (
         constants.ScoreType_ThetaSnippet,
         messages.ThetaSnippetScoreConfig,
-        messages.ThetaSnippetScore
+        messages.ThetaSnippetScore,
+        scores.ThetaSnippetScore,
     ), (
         constants.ScoreType_TopicKernel,
         messages.TopicKernelScoreConfig,
-        messages.TopicKernelScore
+        messages.TopicKernelScore,
+        scores.TopicKernelScore,
     ), (
         constants.ScoreType_TopicMassPhi,
         messages.TopicMassPhiScoreConfig,
-        messages.TopicMassPhiScore
+        messages.TopicMassPhiScore,
+        scores.TopicMassPhiScore,
+
     ), (
         constants.ScoreType_ClassPrecision,
         messages.ClassPrecisionScoreConfig,
-        messages.ClassPrecisionScore
+        messages.ClassPrecisionScore,
+        scores.ClassPrecisionScore,
     ), (
         constants.ScoreType_BackgroundTokensRatio,
         messages.BackgroundTokensRatioScoreConfig,
-        messages.BackgroundTokensRatioScore
+        messages.BackgroundTokensRatioScore,
+        scores.BackgroundTokensRatioScore,
     ),
 )
 
 
 def _regularizer_type(config):
-    for mcls, const in REGULARIZERS:
+    for mcls, const, _ in REGULARIZERS:
         if isinstance(config, mcls):
             return const
 
 
 def _score_type(config):
-    for const, ccls, _ in SCORES:
+    for const, ccls, _, _ in SCORES:
         if isinstance(config, ccls):
             return const
 
 
 def _score_data_func(score_data_type):
-    for const, _, mfunc in SCORES:
+    for const, _, mfunc, _ in SCORES:
         if score_data_type == const:
             return mfunc
 
