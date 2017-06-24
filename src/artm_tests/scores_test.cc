@@ -158,7 +158,7 @@ TEST(Scores, ScoreTrackerExport) {
   import_args.set_file_name(target_name);
   master_2.ImportScoreTracker(import_args);
 
-  // assert that loaded data has same size
+  // assert that source and loaded data has same size and content
   args.set_score_name("perplexity");
   auto score_array_2 = master_2.GetScoreArray(args);
   ASSERT_EQ(score_array_2.score_size(), nPasses);

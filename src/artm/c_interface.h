@@ -84,7 +84,7 @@ extern "C" {
 
   DLL_PUBLIC int64_t ArtmRequestScore(int master_id, int64_t length, const char* get_score_args);
   DLL_PUBLIC int64_t ArtmRequestScoreArray(int master_id, int64_t length, const char* get_score_args);
-  
+
   DLL_PUBLIC int64_t ArtmExportScoreTracker(int master_id, int64_t length, const char* export_score_tracker_args);
   DLL_PUBLIC int64_t ArtmImportScoreTracker(int master_id, int64_t length, const char* import_score_tracker_args);
 

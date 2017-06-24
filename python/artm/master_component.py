@@ -737,6 +737,10 @@ class MasterComponent(object):
         return phi_matrix_info, numpy_ndarray
 
     def export_model(self, model, filename):
+        """
+        :param str model: name of matrix in BigARTM
+        :param str filename: the name of file to save model into binary format
+        """
         args = messages.ExportModelArgs(model_name=model, file_name=filename)
         result = self._lib.ArtmExportModel(self.master_id, args)
 
@@ -895,3 +899,17 @@ class MasterComponent(object):
         """
         if batch_id is not None:
             self._lib.ArtmDisposeBatch(self.master_id, batch_id)
+
+    def export_score_tracker(self, filename):
+        """
+        :param str filename: the name of file to save score tracker into binary format
+        """
+        args = messages.ExportScoreTrackerArgs(file_name=filename)
+        result = self._lib.ArtmExportScoreTracker(self.master_id, args)
+
+    def import_score_tracker(self, filename):
+        """
+        :param str filename: the name of file to load score tracker from binary format
+        """
+        args = messages.ImportScoreTrackerArgs(file_name=filename)
+        result = self._lib.ArtmImportScoreTracker(self.master_id, args)

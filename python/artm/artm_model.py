@@ -146,7 +146,8 @@ class ARTM(object):
             Later you can retrieve this matix with ARTM.get_phi(model_name=ARTM.theta_name),\
             change its values with ARTM.master.attach_model(model=ARTM.theta_name),\
             export/import this matrix with ARTM.master.export_model('ptd', filename) and\
-            ARTM.master.import_model('ptd', file_name).
+            ARTM.master.import_model('ptd', file_name). In this case you also are able to work\
+            with theta matrix when using 'dump_model' method and 'load_model' function.
         """
         self._num_processors = None
         self._cache_theta = False
@@ -1011,6 +1012,17 @@ class ARTM(object):
         return 'artm.ARTM(num_topics={0}, num_tokens={1}{2})'.format(
             self.num_topics, num_tokens, class_ids)
 
+    def dump_model(self, target_folder):
+        """
+        descr
+        """
+        pass
 
 def version():
     return ARTM(num_topics=1).library_version
+
+def load_model(target_folder):
+    """
+    descr
+    """
+    return ARTM(num_topics=1)

@@ -53,7 +53,7 @@ class ScoreTracker : boost::noncopyable {
   void RequestScoreArray(const GetScoreArrayArgs& args, ScoreArray* score_data_array);
   void CopyFrom(const ScoreTracker& score_tracker);
   const std::vector<std::shared_ptr<ScoreData>>& GetDataUnsafe() const { return array_; }
-  size_t Size() const{ return array_.size(); }
+  size_t Size() const { return array_.size(); }
 
  private:
   mutable boost::mutex lock_;
