@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "boost/filesystem.hpp"
+
 #include "gtest/gtest.h"
 
 #include "artm/cpp_interface.h"
@@ -106,4 +108,71 @@ TEST(Scores, Perplexity) {
   ASSERT_LT(score.raw(), 0.0);
   ASSERT_GT(score.normalizer(), 0.0);
   ASSERT_EQ(score.class_id_info_size(), 0);
+}
+
+// artm_tests.exe --gtest_filter=Scores.ScoreTrackerExport
+TEST(Scores, ScoreTrackerExport) {
+  int nTokens = 60, nDocs = 10, nTopics = 10, nPasses = 5;
+
+  ::artm::ScoreConfig score_config;
+  ::artm::TopTokensScore top_tokens_config;
+  score_config.set_config(top_tokens_config.SerializeAsString());
+  score_config.set_type(::artm::ScoreType_TopTokens);
+  score_config.set_name("top_tokens");
+
+  ::artm::MasterModelConfig master_config_1 = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
+  ::artm::test::Helpers::ConfigurePerplexityScore("perplexity", &master_config_1);
+  master_config_1.add_score_config()->CopyFrom(score_config);
+  ::artm::MasterModel master_1(master_config_1);
+  ::artm::test::Api api_1(master_1);
+
+  ::artm::MasterModelConfig master_config_2 = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
+  ::artm::MasterModel master_2(master_config_2);
+  ::artm::test::Api api_2(master_2);
+
+  // Generate doc-token matrix
+  artm::Batch batch = ::artm::test::Helpers::GenerateBatch(nTokens, nDocs, "@default_class", "@default_class");
+  artm::DictionaryData dict = ::artm::test::Helpers::GenerateDictionary(nTokens, "@default_class", "@default_class");
+  std::vector<std::shared_ptr< ::artm::Batch>> batches;
+  batches.push_back(std::make_shared< ::artm::Batch>(batch));
+
+  auto offline_args = api_1.Initialize(batches, nullptr, nullptr, &dict);
+  offline_args.set_num_collection_passes(nPasses);
+  master_1.FitOfflineModel(offline_args);
+
+  ::artm::GetScoreArrayArgs args;
+  args.set_score_name("perplexity");
+  auto score_array_1_perp = master_1.GetScoreArray(args);
+  ASSERT_EQ(score_array_1_perp.score_size(), nPasses);
+
+  args.set_score_name("top_tokens");
+  auto score_array_1_top = master_1.GetScoreArray(args);
+  ASSERT_EQ(score_array_1_top.score_size(), nPasses);
+
+  std::string target_name = artm::test::Helpers::getUniqueString();
+  ::artm::ExportScoreTrackerArgs export_args;
+  export_args.set_file_name(target_name);
+  master_1.ExportScoreTracker(export_args);
+
+  ::artm::ImportScoreTrackerArgs import_args;
+  import_args.set_file_name(target_name);
+  master_2.ImportScoreTracker(import_args);
+
+  // assert that loaded data has same size
+  args.set_score_name("perplexity");
+  auto score_array_2 = master_2.GetScoreArray(args);
+  ASSERT_EQ(score_array_2.score_size(), nPasses);
+  for (size_t i = 0; i < nPasses; ++i) {
+    ASSERT_EQ(score_array_1_perp.score(i).data(), score_array_2.score(i).data());
+  }
+
+  args.set_score_name("top_tokens");
+  score_array_2 = master_2.GetScoreArray(args);
+  ASSERT_EQ(score_array_2.score_size(), nPasses);
+  for (size_t i = 0; i < nPasses; ++i) {
+    ASSERT_EQ(score_array_1_top.score(i).data(), score_array_2.score(i).data());
+  }
+
+  try { boost::filesystem::remove(target_name); }
+  catch (...) {}
 }
