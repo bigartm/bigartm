@@ -416,6 +416,25 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
     << ", topic_size = " << target->topic_size();
 }
 
+void MasterComponent::ExportScoreTracker(const ExportScoreTrackerArgs& args) {
+  if (boost::filesystem::exists(args.file_name()))
+    BOOST_THROW_EXCEPTION(DiskWriteException("File already exists: " + args.file_name()));
+
+  std::ofstream fout(args.file_name(), std::ofstream::binary);
+  if (!fout.is_open())
+    BOOST_THROW_EXCEPTION(DiskWriteException("Unable to create file " + args.file_name()));
+
+  LOG(INFO) << "Exporting score tracker to " << args.file_name();
+}
+
+void MasterComponent::ImportScoreTracker(const ImportScoreTrackerArgs& args) {
+  std::ifstream fin(args.file_name(), std::ifstream::binary);
+  if (!fin.is_open())
+    BOOST_THROW_EXCEPTION(DiskReadException("Unable to open file " + args.file_name()));
+
+  LOG(INFO) << "Importing score tracker from " << args.file_name();
+}
+
 void MasterComponent::AttachModel(const AttachModelArgs& args, int address_length, float* address) {
   ModelName model_name = args.model_name();
   LOG(INFO) << "Attaching model " << model_name << " to " << address << " (" << address_length << " bytes)";

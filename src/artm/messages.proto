@@ -573,6 +573,14 @@ message ImportModelArgs {
   optional string model_name = 2;
 }
 
+message ExportScoreTrackerArgs {
+  optional string file_name = 1;
+}
+
+message ImportScoreTrackerArgs {
+  optional string file_name = 1;
+}
+
 message AttachModelArgs {
   optional string model_name = 1;
 }
