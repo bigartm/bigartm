@@ -1069,10 +1069,16 @@ class ARTM(object):
 
         scores = {}
         for name, score in iteritems(self._scores.data):
-            scores[name] = str(score.config)
+            model_name = None
+            try:
+                model_name = score.model_name
+            except:
+                pass
+            scores[name] = [str(score.config), model_name]
+
         params['scores'] = scores
 
-        with open(os.path.join(data_path, PARAMETERS_FILENAME_JSON), 'wb') as fout:
+        with open(os.path.join(data_path, PARAMETERS_FILENAME_JSON), 'w') as fout:
             json.dump(params, fout)
 
         # save parameters in humanreadable format
@@ -1086,6 +1092,15 @@ class ARTM(object):
         for name, score in iteritems(self._scores._data):
             scores[name] = [score._config_message.__name__,
                             score.config.SerializeToString()]
+
+            model_name = None
+            try:
+                model_name = score.model_name
+            except:
+                pass
+            if model_name is not None:
+                scores[name].append(model_name)
+
         params['scores'] = scores
 
         with open(os.path.join(data_path, PARAMETERS_FILENAME_BIN), 'wb') as fout:
@@ -1147,7 +1162,10 @@ def load_artm_model(data_path):
                 config = score_info[1]()
                 func = score_info[3]
         config.ParseFromString(type_config[1])
-        model.scores.add(func(name=name, config=config))
+        if len(type_config) == 3:
+            model.scores.add(func(name=name, config=config, model_name=type_config[2]))
+        else:
+            model.scores.add(func(name=name, config=config))
         model.score_tracker[name] = SCORE_TRACKER[model.scores[name].type](model.scores[name])
 
     # load core score tracker

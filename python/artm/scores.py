@@ -106,6 +106,12 @@ class BaseScore(object):
         if class_id is not None:
             self._config.class_id = class_id
             self._class_id = class_id
+        elif config is not None:
+            try:
+                if config.HasField('class_id'):
+                    self._class_id = config.class_id
+            except:
+                pass
 
         self._topic_names = []
         if topic_names is not None:
@@ -115,6 +121,12 @@ class BaseScore(object):
             for topic_name in topic_names:
                 self._config.topic_name.append(topic_name)
                 self._topic_names.append(topic_name)
+        elif config is not None:
+            try:
+                if len(config.topic_name):
+                    self._topic_names = [topic_name for topic_name in config.topic_name]
+            except:
+                pass
 
         self._name = name if name is not None else '{0}:{1}'.format(self._type, uuid.uuid1().urn)
         self._model_name = model_name if model_name is not None else 'pwt'
@@ -210,6 +222,8 @@ class SparsityPhiScore(BaseScore):
         if eps is not None:
             self._config.eps = eps
             self._eps = eps
+        elif config is not None and config.HasField('eps'):
+            self._eps = config.eps
 
     @property
     def eps(self):
@@ -245,6 +259,8 @@ class SparsityThetaScore(BaseScore):
         if eps is not None:
             self._config.eps = eps
             self._eps = eps
+        elif config is not None and config.HasField('eps'):
+            self._eps = config.eps
 
     @property
     def eps(self):
@@ -299,6 +315,8 @@ class PerplexityScore(BaseScore):
             for class_id in class_ids:
                 self._config.class_id.append(class_id)
                 self._class_ids.append(class_id)
+        elif config is not None and len(config.class_id):
+            self._class_ids = [class_id for class_id in config.class_id]
 
         self._dictionary_name = ''
         if dictionary is not None:
@@ -306,6 +324,8 @@ class PerplexityScore(BaseScore):
             self._dictionary_name = dictionary_name
             self._config.dictionary_name = dictionary_name
             self._config.model_type = const.PerplexityScoreConfig_Type_UnigramCollectionModel
+        elif config is not None and config.HasField('dictionary_name'):
+            self._dictionary_name = config.dictionary_name
         else:
             self._config.model_type = const.PerplexityScoreConfig_Type_UnigramDocumentModel
 
@@ -429,12 +449,16 @@ class TopTokensScore(BaseScore):
         if num_tokens is not None:
             self._config.num_tokens = num_tokens
             self._num_tokens = num_tokens
+        elif config is not None and config.HasField('num_tokens'):
+            self._num_tokens = config.num_tokens
 
         self._dictionary_name = ''
         if dictionary is not None:
             dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
             self._dictionary_name = dictionary_name
             self._config.cooccurrence_dictionary_name = dictionary_name
+        elif config is not None and config.HasField('cooccurrence_dictionary_name'):
+            self._dictionary_name = config.cooccurrence_dictionary_name
 
     @property
     def num_tokens(self):
@@ -490,11 +514,15 @@ class ThetaSnippetScore(BaseScore):
             for item_id in item_ids:
                 self._config.item_id.append(item_id)
                 self._item_ids.append(item_id)
+        elif config is not None and len(config.item_id):
+            self._item_ids = [item_id for item_id in config.item_id]
 
         self._num_items = 10
         if num_items is not None:
             self._config.num_items = num_items
             self._num_items = num_items
+        elif config is not None and config.HasField('num_items'):
+            self._num_items = config.num_items
 
     @property
     def topic_names(self):
@@ -567,19 +595,25 @@ class TopicKernelScore(BaseScore):
 
         self._eps = GLOB_EPS
         if eps is not None:
-            self._config.theta_sparsity_eps = eps
+            self._config.eps = eps
             self._eps = eps
+        elif config is not None and config.HasField('eps'):
+            self._eps = config.eps
 
         self._dictionary_name = ''
         if dictionary is not None:
             dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
             self._dictionary_name = dictionary_name
             self.config.cooccurrence_dictionary_name = dictionary_name
+        elif config is not None and config.HasField('cooccurrence_dictionary_name'):
+            self._dictionary_name = config.cooccurrence_dictionary_name
 
         self._probability_mass_threshold = 0.1
         if probability_mass_threshold is not None:
             self._config.probability_mass_threshold = probability_mass_threshold
             self._probability_mass_threshold = probability_mass_threshold
+        elif config is not None and config.HasField('probability_mass_threshold'):
+            self._probability_mass_threshold = config.probability_mass_threshold
 
     @property
     def eps(self):
@@ -644,6 +678,8 @@ class TopicMassPhiScore(BaseScore):
         if eps is not None:
             self._config.eps = eps
             self._eps = eps
+        elif config is not None and config.HasField('eps'):
+            self._eps = config.eps
 
     @property
     def eps(self):
@@ -723,16 +759,22 @@ class BackgroundTokensRatioScore(BaseScore):
         if save_tokens is not None:
             self._config.save_tokens = save_tokens
             self._save_tokens = save_tokens
+        elif config is not None and config.HasField('save_tokens'):
+            self._save_tokens = config.save_tokens
 
         self._direct_kl = True
         if direct_kl is not None:
             self._config.direct_kl = direct_kl
             self._direct_kl = direct_kl
+        elif config is not None and config.HasField('direct_kl'):
+            self._direct_kl = config.direct_kl
 
         self._delta_threshold = 0.5
         if delta_threshold is not None:
             self._config.delta_threshold = delta_threshold
             self._delta_threshold = delta_threshold
+        elif config is not None and config.HasField('delta_threshold'):
+            self._delta_threshold = config.delta_threshold
 
     @property
     def save_tokens(self):

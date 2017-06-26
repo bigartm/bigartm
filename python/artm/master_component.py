@@ -630,6 +630,7 @@ class MasterComponent(object):
         """
         :param str name: the name of the future score
         :param config: an instance of \*\*\*ScoreConfig
+        :param model_name: pwt or nwt model name
         """
         master_config = messages.MasterModelConfig()
         master_config.CopyFrom(self._config)
