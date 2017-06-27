@@ -123,6 +123,8 @@ def test_func():
             model.scores.add(artm.TopicKernelScore(name='kernel', topic_names=model.topic_names[0: 5],
                                                    probability_mass_threshold=0.4))
 
+            # REGULARIZERS WITH DICTIONARY, KL, GAMMA
+
             #model.regularizers.add(artm.SmoothSparsePhiRegularizer(name='smsp_phi', tau=-0.5))
             #model.regularizers.add(artm.SmoothSparseThetaRegularizer(name='smsp_theta', tau=0.1))
             #model.regularizers.add(artm.SmoothPtdwRegularizer(name='sm_ptdw', tau=0.2))

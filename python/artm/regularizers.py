@@ -64,6 +64,9 @@ class KlFunctionInfo(object):
         if not first:
             obj._master.reconfigure_regularizer(obj.name, obj._config, obj.tau, obj.gamma)
 
+    def _update_from_config(self, obj):
+        pass
+
 
 class Regularizers(object):
     def __init__(self, master):
@@ -191,6 +194,12 @@ class BaseRegularizerPhi(BaseRegularizer):
             for class_id in class_ids:
                 self._config.class_id.append(class_id)
                 self._class_ids.append(class_id)
+        elif config is not None:
+            try:
+                if len(config.class_id):
+                    self._class_ids = [class_id for class_id in config.class_id]
+            except:
+                pass
 
         self._topic_names = []
         if topic_names is not None:
@@ -200,12 +209,24 @@ class BaseRegularizerPhi(BaseRegularizer):
             for topic_name in topic_names:
                 self._config.topic_name.append(topic_name)
                 self._topic_names.append(topic_name)
+        elif config is not None:
+            try:
+                if len(config.topic_name):
+                    self._topic_names = [topic_name for topic_name in config.topic_name]
+            except:
+                pass
 
         self._dictionary_name = ''
         if dictionary is not None:
             dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
             self._config.dictionary_name = dictionary_name
             self._dictionary_name = dictionary_name
+        elif config is not None:
+            try:
+                if config.HasField('dictionary_name'):
+                    self._dictionary_name = config.dictionary_name
+            except:
+                pass
 
     @property
     def class_ids(self):
@@ -246,6 +267,12 @@ class BaseRegularizerTheta(BaseRegularizer):
             for alpha in alpha_iter:
                 self._config.alpha_iter.append(alpha)
                 self._alpha_iter.append(alpha)
+        elif config is not None:
+            try:
+                if len(config.alpha_iter):
+                    self._alpha_iter = [alpha for alpha in config.alpha_iter]
+            except:
+                pass
 
         self._topic_names = []
         if topic_names is not None:
@@ -255,6 +282,12 @@ class BaseRegularizerTheta(BaseRegularizer):
             for topic_name in topic_names:
                 self._config.topic_name.append(topic_name)
                 self._topic_names.append(topic_name)
+        elif config is not None:
+            try:
+                if len(config.topic_name):
+                    self._topic_names = [topic_name for topic_name in config.topic_name]
+            except:
+                pass
 
     @property
     def alpha_iter(self):
@@ -313,6 +346,9 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
         self._kl_function_info = KlFunctionInfo()
         if kl_function_info is not None:
             self._kl_function_info = kl_function_info
+        elif config is not None and config.HasField('transform_config'):
+            self._kl_function_info._update_from_config(self)
+
         self._kl_function_info._update_config(self, first=True)
 
     @property

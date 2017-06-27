@@ -1064,7 +1064,14 @@ class ARTM(object):
 
         regularizers = {}
         for name, regularizer in iteritems(self._regularizers.data):
-            regularizers[name] = str(regularizer.config)
+            tau = None
+            gamma = None
+            try:
+                tau = score.tau
+                gamma = score.gamma
+            except:
+                pass
+            regularizers[name] = [str(regularizer.config), tau, gamma]
         params['regularizers'] = regularizers
 
         scores = {}
@@ -1086,6 +1093,20 @@ class ARTM(object):
         for name, regularizer in iteritems(self._regularizers._data):
             regularizers[name] = [regularizer._config_message.__name__,
                                   regularizer.config.SerializeToString()]
+
+            tau = None
+            gamma = None
+            try:
+                tau = score.tau
+                gamma = score.gamma
+            except:
+                pass
+
+            if tau is not None:
+                scores[name].append(tau)
+                if gamma is not None:
+                    scores[name].append(gamma)
+
         params['regularizers'] = regularizers
 
         scores = {}
@@ -1151,7 +1172,13 @@ def load_artm_model(data_path):
                 config = reg_info[0]()
                 func = reg_info[2]
         config.ParseFromString(type_config[1])
-        model.regularizers.add(func(name=name, config=config))
+
+        if len(type_config) == 3:
+            model.regularizers.add(func(name=name, config=config, tau=type_config[2]))
+        elif len(type_config) == 4:
+            model.regularizers.add(func(name=name, config=config, tau=type_config[2], gamma=type_config[3]))
+        else:
+            model.regularizers.add(func(name=name, config=config))
 
     # load scores and configure python score_tracker
     for name, type_config in iteritems(params['scores']):
