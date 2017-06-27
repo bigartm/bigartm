@@ -65,7 +65,15 @@ class KlFunctionInfo(object):
             obj._master.reconfigure_regularizer(obj.name, obj._config, obj.tau, obj.gamma)
 
     def _update_from_config(self, obj):
-        pass
+        if obj._config.transform_config.type == const.TransformConfig_TransformType_Constant:
+            self.function_type = 'log'
+        elif: obj._config.transform_config.type == const.TransformConfig_TransformType_Polynomial:
+            self.function_type = 'pol'
+            if obj._config.transform_config.HasField('n'):
+                self.power_value = obj._config.transform_config.n
+            if obj._config.transform_config.HasField('a'):
+                self.power_value = obj._config.transform_config.a
+            
 
 
 class Regularizers(object):
@@ -407,6 +415,9 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
         self._kl_function_info = KlFunctionInfo()
         if kl_function_info is not None:
             self._kl_function_info = kl_function_info
+        elif config is not None and config.HasField('transform_config'):
+            self._kl_function_info._update_from_config(self)
+
         self._kl_function_info._update_config(self, first=True)
 
         self._doc_titles = []
@@ -415,7 +426,10 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
             for title in doc_titles:
                 self._config.item_title.append(title)
                 self._doc_titles.append(title)
+        elif config is not None and len(config.item_title):
+            self._doc_titles = [title for title in config.item_title]
 
+##########-------
         self._doc_topic_coef = []
         if doc_topic_coef is not None:
             real_doc_topic_coef = doc_topic_coef if isinstance(doc_topic_coef[0], list) else [doc_topic_coef]
@@ -425,6 +439,7 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
                 for coef in topic_coef:
                     ref.value.append(coef)
             self._doc_topic_coef = doc_topic_coef
+##########-------
 
     @property
     def kl_function_info(self):
@@ -505,9 +520,11 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
                                     class_ids=class_ids,
                                     dictionary=None)
 
+##########-------
         if topic_pairs is not None:
             self._update_config(topic_pairs)
             self._topic_pairs = topic_pairs
+##########------- MARKED AND FURTHER
 
     @property
     def dictionary(self):
@@ -812,6 +829,7 @@ class HierarchySparsingThetaRegularizer(BaseRegularizerTheta):
                                       config=config,
                                       topic_names=topic_names,
                                       alpha_iter=alpha_iter)
+
         if parent_topic_proportion is not None:
             for elem in parent_topic_proportion:
                 self._config.parent_topic_proportion.append(elem)
