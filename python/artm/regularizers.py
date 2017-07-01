@@ -67,13 +67,12 @@ class KlFunctionInfo(object):
     def _update_from_config(self, obj):
         if obj._config.transform_config.type == const.TransformConfig_TransformType_Constant:
             self.function_type = 'log'
-        elif: obj._config.transform_config.type == const.TransformConfig_TransformType_Polynomial:
+        elif obj._config.transform_config.type == const.TransformConfig_TransformType_Polynomial:
             self.function_type = 'pol'
             if obj._config.transform_config.HasField('n'):
                 self.power_value = obj._config.transform_config.n
             if obj._config.transform_config.HasField('a'):
                 self.power_value = obj._config.transform_config.a
-            
 
 
 class Regularizers(object):
@@ -441,8 +440,10 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
         elif config is not None and len(config.item_topic_multiplier):
             for coefs in config.item_topic_multiplier:
                 self._doc_topic_coef.append([])
-                for coef in coefs:
+                for coef in coefs.value:
                     self._doc_topic_coef[-1].append(coef)
+            if len(self._doc_topic_coef) == 1:
+                self._doc_topic_coef = self._doc_topic_coef[0]
 
     @property
     def kl_function_info(self):
@@ -496,13 +497,9 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
                 self._config.value.append(value)
 
     def _update_from_config(self, config):
-        if len(config.first_topic_name) and len(config.second_topic_name) and len(config.value):
-            assert len(config.first_topic_name) == len(config.value) and
-                   len(config.second_topic_name) == len(config.value)
-
-        self._topic_pairs = []
+        self._topic_pairs = {}
         for f_topic, s_topic, value in zip(config.first_topic_name, config.second_topic_name, config.value):
-            if not f_topic in self._topic_pairs:
+            if f_topic not in self._topic_pairs:
                 self._topic_pairs[f_topic] = {}
             self._topic_pairs[f_topic][s_topic] = value
 
@@ -538,7 +535,7 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
             self._update_config(topic_pairs)
             self._topic_pairs = topic_pairs
         elif config is not None:
-            _update_from_config(config)
+            self._update_from_config(config)
 
     @property
     def dictionary(self):
@@ -863,8 +860,8 @@ class HierarchySparsingThetaRegularizer(BaseRegularizerTheta):
     def parent_topic_proportion(self):
         return self._parent_topic_proportion
 
-    @doc_titles.setter
-    def doc_titles(self, doc_titles):
+    @parent_topic_proportion.setter
+    def parent_topic_proportion(self, parent_topic_proportion):
         _reconfigure_field(self, parent_topic_proportion, 'parent_topic_proportion')
 
 

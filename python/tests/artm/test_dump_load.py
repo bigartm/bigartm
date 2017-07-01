@@ -50,8 +50,22 @@ def _assert_scores_equality(model_1, model_2):
             raise RuntimeError('No such score: {}'.format(name))
 
 def _assert_regularizers_equality(model_1, model_2):
-    # NEED FIX: CREATION OF REG FROM CONFIG SHOULD UPDATE ALL FIELDS, PRESENTED IN CONFIG
-    pass
+    assert set(model_1.regularizers.data.keys()) == set(model_2.regularizers.data.keys())
+
+    for name in model_1.regularizers.data.keys():
+        assert model_1.regularizers[name].tau == model_2.regularizers[name].tau
+        if name == 'decor':
+            assert model_1.regularizers[name].gamma == model_2.regularizers[name].gamma
+            assert model_1.regularizers[name].topic_pairs == model_2.regularizers[name].topic_pairs
+        elif name == 'smsp_phi':
+            assert model_1.regularizers[name].gamma == model_2.regularizers[name].gamma
+            assert model_1.regularizers[name].dictionary == model_2.regularizers[name].dictionary
+        elif name == 'smsp_theta':
+            assert model_1.regularizers[name].doc_topic_coef == model_2.regularizers[name].doc_topic_coef
+        elif name == 'sm_ptdw':
+            pass
+        else:
+            raise RuntimeError('No such regularizers: {}'.format(name))
 
 
 def _assert_score_values_equality(model_1, model_2):
@@ -123,11 +137,20 @@ def test_func():
             model.scores.add(artm.TopicKernelScore(name='kernel', topic_names=model.topic_names[0: 5],
                                                    probability_mass_threshold=0.4))
 
-            # REGULARIZERS WITH DICTIONARY, KL, GAMMA
+            topic_pairs = {}
+            for topic_name_1 in model.topic_names:
+                for topic_name_2 in model.topic_names:
+                    if topic_name_1 not in topic_pairs:
+                        topic_pairs[topic_name_1] = {}
+                    topic_pairs[topic_name_1][topic_name_2] = numpy.random.randint(0, 3)
 
-            #model.regularizers.add(artm.SmoothSparsePhiRegularizer(name='smsp_phi', tau=-0.5))
-            #model.regularizers.add(artm.SmoothSparseThetaRegularizer(name='smsp_theta', tau=0.1))
-            #model.regularizers.add(artm.SmoothPtdwRegularizer(name='sm_ptdw', tau=0.2))
+            model.regularizers.add(artm.DecorrelatorPhiRegularizer(name='decor', tau=0.7, # gamma=0.5,
+                                                                   topic_pairs=topic_pairs))
+            model.regularizers.add(artm.SmoothSparsePhiRegularizer(name='smsp_phi', tau=-0.5, gamma=0.3,
+                                                                   dictionary=batch_vectorizer.dictionary))
+            model.regularizers.add(artm.SmoothSparseThetaRegularizer(name='smsp_theta', tau=0.1,
+                                                                     doc_topic_coef=[2.0] * model.num_topics))
+            model.regularizers.add(artm.SmoothPtdwRegularizer(name='sm_ptdw', tau=0.2))
 
             # learn first model and dump it on disc
             model.fit_offline(batch_vectorizer, num_collection_passes=10)
@@ -140,7 +163,7 @@ def test_func():
 
             _assert_params_equality(model, model_new)
             _assert_scores_equality(model, model_new)
-            #_assert_regularizers_equality(model, model_new)
+            _assert_regularizers_equality(model, model_new)
             _assert_score_values_equality(model, model_new)
             _assert_matrices_equality(model, model_new)
          
@@ -154,7 +177,7 @@ def test_func():
             # check new results are also equal
             _assert_params_equality(model, model_new)
             _assert_scores_equality(model, model_new)
-            #_assert_regularizers_equality(model, model_new)
+            _assert_regularizers_equality(model, model_new)
             _assert_score_values_equality(model, model_new)
             _assert_matrices_equality(model, model_new)
 

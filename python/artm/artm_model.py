@@ -1088,7 +1088,7 @@ class ARTM(object):
         with open(os.path.join(data_path, PARAMETERS_FILENAME_JSON), 'w') as fout:
             json.dump(params, fout)
 
-        # save parameters in humanreadable format
+        # save parameters in binary format
         regularizers = {}
         for name, regularizer in iteritems(self._regularizers._data):
             regularizers[name] = [regularizer._config_message.__name__,
@@ -1097,15 +1097,15 @@ class ARTM(object):
             tau = None
             gamma = None
             try:
-                tau = score.tau
-                gamma = score.gamma
+                tau = regularizer.tau
+                gamma = regularizer.gamma
             except:
                 pass
 
             if tau is not None:
-                scores[name].append(tau)
+                regularizers[name].append(tau)
                 if gamma is not None:
-                    scores[name].append(gamma)
+                    regularizers[name].append(gamma)
 
         params['regularizers'] = regularizers
 
