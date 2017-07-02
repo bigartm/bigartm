@@ -18,27 +18,23 @@ This call has one feature, it rewrites the old dictionary with new one. So if yo
 
 * **Saving/loading model**:
 
-Now let's study saving the model to disk.
-
-It's important to understand that the model contains two matrices: :math:`\Phi` (or :math:`p_{wt}`) and :math:`n_{wt}`. To make model be loadable without loses you need to save both these matrices. The current library version can save only one matrix per method call, so you will need two calls:
+Now let's study saving the model to disk. To save your model on disk form Python you can use ``artm.ARTM.dump_artm_model`` method:
 
 .. code-block:: python
 
-   model.save(filename='saved_p_wt', model_name='p_wt')
-   model.save(filename='saved_n_wt', model_name='n_wt')
+   model.save('my_model_folder')
 
-The model will be saved in binary format. To use it later you need to load it's matrices back:
+The model will be saved in binary format, it's parameters will be duplicated also in json file. To use it later you need to load it back via ``artm.load_artm_model`` function:
 
 .. code-block:: python
 
-   model.load(filename='saved_p_wt', model_name='p_wt')
-   model.load(filename='saved_n_wt', model_name='n_wt')
+   model = artm.load_artm_model('my_model_folder')
 
 .. note::
 
-   The model after loading will only contain :math:`\Phi` and :math:`n_{wt}` matrices and some associated information (like number of topics, their names, the names of the modalities (without weights!) and some other data). So you need to restore all necessary scores, regularizers, modality weights and all important parameters, like ``cache_theta``.
+   To use this methods correctly you should set ``cache_theta`` flag to False (and don't use Theta matrix), or set ``theta_name`` parameter (that will store Theta as Phi-like object).
 
-You can use ``save/load`` methods pair in case of long fitting, when restoring parameters is much more easier than model re-fitting.
+You can use ``dump_artm_model/load_artm_model`` functions pair in case of long fitting, when restoring parameters is much more easier than model re-fitting.
 
 * **Creating batches manually**:
 
