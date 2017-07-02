@@ -502,6 +502,8 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
             if f_topic not in self._topic_pairs:
                 self._topic_pairs[f_topic] = {}
             self._topic_pairs[f_topic][s_topic] = value
+        if self._topic_pairs == {}:
+            self._topic_pairs = None
 
     def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None,
                  topic_names=None, topic_pairs=None, config=None):
@@ -531,6 +533,7 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
                                     class_ids=class_ids,
                                     dictionary=None)
 
+        self._topic_pairs = None
         if topic_pairs is not None:
             self._update_config(topic_pairs)
             self._topic_pairs = topic_pairs

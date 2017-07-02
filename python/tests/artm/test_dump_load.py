@@ -40,6 +40,7 @@ def _assert_scores_equality(model_1, model_2):
             assert abs(model_1.scores[name].eps - model_2.scores[name].eps) < 1e-5
         elif name == 'top_tok':
             assert model_1.scores[name].num_tokens == model_2.scores[name].num_tokens
+            assert model_1.scores[name].class_id == model_2.scores[name].class_id
         elif name == 'sp_nwt':
             assert model_1.scores[name].model_name == model_2.scores[name].model_name
         elif name == 'kernel':
@@ -144,7 +145,7 @@ def test_func():
                         topic_pairs[topic_name_1] = {}
                     topic_pairs[topic_name_1][topic_name_2] = numpy.random.randint(0, 3)
 
-            model.regularizers.add(artm.DecorrelatorPhiRegularizer(name='decor', tau=0.7, # gamma=0.5,
+            model.regularizers.add(artm.DecorrelatorPhiRegularizer(name='decor', tau=100000.0,
                                                                    topic_pairs=topic_pairs))
             model.regularizers.add(artm.SmoothSparsePhiRegularizer(name='smsp_phi', tau=-0.5, gamma=0.3,
                                                                    dictionary=batch_vectorizer.dictionary))
