@@ -23,6 +23,7 @@ __all__ = [
     'BitermsPhiRegularizer',
     'HierarchySparsingThetaRegularizer',
     'TopicSegmentationPtdwRegularizer',
+    'SmoothTimeInTopicsPhiRegularizer',
 ]
 
 
@@ -814,3 +815,39 @@ class TopicSegmentationPtdwRegularizer(BaseRegularizer):
                 background_topic_names = [background_topic_names]
             for topic_name in background_topic_names:
                 self._config.background_topic_names.append(topic_name)
+
+
+class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
+    _config_message = messages.SmoothTimeInTopicsPhiConfig
+    _type = const.RegularizerType_SmoothTimeInTopicsPhi
+
+    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, topic_names=None, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param float gamma: the coefficient of relative regularization for this regularizer
+        :param class_ids: list of class_ids or single class_id to regularize, will\
+                          regularize all classes if empty or None
+        :type class_ids: list of str or str or None
+        :param topic_names: list of names or single name of topic to regularize,\
+                            will regularize all topics if empty or None
+        :type topic_names: list of str or single str or None
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
+        BaseRegularizerPhi.__init__(self,
+                                    name=name,
+                                    tau=tau,
+                                    gamma=gamma,
+                                    config=config,
+                                    topic_names=topic_names,
+                                    class_ids=class_ids,
+                                    dictionary=None)
+
+    @property
+    def dictionary(self):
+        raise KeyError('No dictionary parameter')
+
+    @dictionary.setter
+    def dictionary(self, dictionary):
+        raise KeyError('No dictionary parameter')

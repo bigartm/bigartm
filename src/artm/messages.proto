@@ -85,6 +85,7 @@ enum RegularizerType {
   RegularizerType_BitermsPhi = 9;
   RegularizerType_HierarchySparsingTheta = 10;
   RegularizerType_TopicSegmentationPtdw = 11;
+  RegularizerType_SmoothTimeInTopicsPhi = 12;
   RegularizerType_Unknown = 9999;
 }
 
@@ -192,6 +193,12 @@ message TopicSegmentationPtdwConfig {
   repeated string background_topic_names = 1;
   optional int32 window = 3 [default = 10];
   optional double threshold = 4 [default = 0.5];
+}
+
+// Represents a configuration of a SmoothTimeInTopics Phi regularizer
+message SmoothTimeInTopicsPhiConfig {
+  repeated string topic_name = 1;
+  repeated string class_id = 2;
 }
 
 // Represents the transform functions
