@@ -535,7 +535,7 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
         :param float gamma: the coefficient of relative regularization for this regularizer
-        :param class_id: class_id to regularize
+        :param str class_id: class_id to regularize
         :param topic_names: list of names or single name of topic to regularize,\
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
@@ -821,14 +821,12 @@ class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.SmoothTimeInTopicsPhiConfig
     _type = const.RegularizerType_SmoothTimeInTopicsPhi
 
-    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, topic_names=None, config=None):
+    def __init__(self, name=None, tau=1.0, gamma=None, class_id=None, topic_names=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
         :param float gamma: the coefficient of relative regularization for this regularizer
-        :param class_ids: list of class_ids or single class_id to regularize, will\
-                          regularize all classes if empty or None
-        :type class_ids: list of str or str or None
+        :param str class_id: class_id to regularize
         :param topic_names: list of names or single name of topic to regularize,\
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
@@ -841,12 +839,33 @@ class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
                                     gamma=gamma,
                                     config=config,
                                     topic_names=topic_names,
-                                    class_ids=class_ids,
+                                    class_ids=None,
                                     dictionary=None)
+
+        self._class_id = '@default_class'
+        if class_id is not None:
+            self._config.class_id = class_id
+            self._class_id = class_id
+
+    @property
+    def class_id(self):
+        return self._class_id
+
+    @property
+    def class_ids(self):
+        raise KeyError('No class_ids parameter')
 
     @property
     def dictionary(self):
         raise KeyError('No dictionary parameter')
+
+    @class_id.setter
+    def class_id(self, class_id):
+        _reconfigure_field(self, class_id, 'class_id')
+
+    @class_ids.setter
+    def class_ids(self, class_ids):
+        raise KeyError('No class_ids parameter')
 
     @dictionary.setter
     def dictionary(self, dictionary):

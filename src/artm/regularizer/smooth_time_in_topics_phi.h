@@ -13,9 +13,9 @@
    
    The parameters of the regularizer:
    - topic_names (the names of topics to regularize, empty == all)
-   - class_ids (class ids to regularize, empty == all)
+   - class_id (class id to regularize, required)
 
-   Note: w runs from 1 to number of tokens - 1, e.g. ignores first and last tokens.
+   Note: regularizer ignores first and last tokens of given modality.
 */
 
 #ifndef SRC_ARTM_REGULARIZER_SMOOTH_TIME_IN_TOPICS_PHI_H_

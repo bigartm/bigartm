@@ -25,27 +25,38 @@ bool SmoothTimeInTopicsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   else
     topics_to_regularize = core::is_member(p_wt.topic_name(), config_.topic_name());
 
-  bool use_all_classes = false;
-  if (config_.class_id_size() == 0) {
-    use_all_classes = true;
-  }
-
   // proceed the regularization
-  for (int token_id = 1; token_id < token_size - 1; ++token_id) {
+  // will update only tokens of given modality, that have prev and post tokens of this modality
+  int index_prev_prev = -1;
+  int index_prev = -1;
+  for (int token_id = 0; token_id < token_size; ++token_id) {
     const ::artm::core::Token& token = p_wt.token(token_id);
 
-    if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) continue;
+    if (token.class_id != config_.class_id())
+      continue;
+
+    if (index_prev_prev < 0) {
+      index_prev_prev = token_id;
+      continue;
+    }
+
+    if (index_prev < 0) {
+      index_prev = token_id;
+      continue;
+    }
 
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
-        double value = p_wt.get(token_id, topic_id);
+        double value = p_wt.get(index_prev, topic_id);
 
-        value *= ((p_wt.get(token_id - 1, topic_id) - value) > 0.0 ? 1.0 : -1.0) +
-                 ((p_wt.get(token_id + 1, topic_id) - value) > 0.0 ? 1.0 : -1.0);
+        value *= ((p_wt.get(index_prev_prev, topic_id) - value) > 0.0 ? 1.0 : -1.0) +
+                 ((p_wt.get(token_id, topic_id) - value) > 0.0 ? 1.0 : -1.0);
 
-        result->set(token_id, topic_id, value);
+        result->set(index_prev, topic_id, value);
       }
     }
+    index_prev_prev = index_prev;
+    index_prev = token_id;
   }
 
   return true;
@@ -56,7 +67,10 @@ google::protobuf::RepeatedPtrField<std::string> SmoothTimeInTopicsPhi::topics_to
 }
 
 google::protobuf::RepeatedPtrField<std::string> SmoothTimeInTopicsPhi::class_ids_to_regularize() {
-  return config_.class_id();
+  google::protobuf::RepeatedPtrField<std::string> retval;
+  std::string* ptr = retval.Add();
+  *ptr = config_.class_id();
+  return retval;
 }
 
 bool SmoothTimeInTopicsPhi::Reconfigure(const RegularizerConfig& config) {
