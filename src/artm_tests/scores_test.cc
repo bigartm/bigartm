@@ -110,8 +110,8 @@ TEST(Scores, Perplexity) {
   ASSERT_EQ(score.class_id_info_size(), 0);
 }
 
-// artm_tests.exe --gtest_filter=Scores.ScoreTrackerExport
-TEST(Scores, ScoreTrackerExport) {
+// artm_tests.exe --gtest_filter=Scores.ScoreTrackerExportImport
+TEST(Scores, ScoreTrackerExportImport) {
   int nTokens = 60, nDocs = 10, nTopics = 10, nPasses = 5;
 
   ::artm::ScoreConfig score_config;

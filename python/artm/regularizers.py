@@ -939,6 +939,8 @@ class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
         if class_id is not None:
             self._config.class_id = class_id
             self._class_id = class_id
+        elif config is not None and config.HasField('class_id'):
+            self._class_id = config.class_id
 
     @property
     def class_id(self):

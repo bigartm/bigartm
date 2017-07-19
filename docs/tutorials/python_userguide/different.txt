@@ -18,13 +18,13 @@ This call has one feature, it rewrites the old dictionary with new one. So if yo
 
 * **Saving/loading model**:
 
-Now let's study saving the model to disk. To save your model on disk form Python you can use ``artm.ARTM.dump_artm_model`` method:
+Now let's study saving the model to disk. To save your model on disk from Python you can use ``artm.ARTM.dump_artm_model`` method:
 
 .. code-block:: python
 
-   model.save('my_model_folder')
+   model.dump_artm_model('my_model_folder')
 
-The model will be saved in binary format, it's parameters will be duplicated also in json file. To use it later you need to load it back via ``artm.load_artm_model`` function:
+The model will be saved in binary format, its parameters will be duplicated also in json file. To use it later you need to load it back via ``artm.load_artm_model`` function:
 
 .. code-block:: python
 
@@ -32,9 +32,9 @@ The model will be saved in binary format, it's parameters will be duplicated als
 
 .. note::
 
-   To use this methods correctly you should set ``cache_theta`` flag to False (and don't use Theta matrix), or set ``theta_name`` parameter (that will store Theta as Phi-like object).
+   To use these methods correctly you should either set ``cache_theta`` flag to False (and don't use Theta matrix) or set ``theta_name`` parameter (that will store Theta as Phi-like object).
 
-You can use ``dump_artm_model/load_artm_model`` functions pair in case of long fitting, when restoring parameters is much more easier than model re-fitting.
+You can use pair of ``dump_artm_model/load_artm_model`` functions in case of long fitting, when restoring parameters is much more easier than model re-fitting.
 
 * **Creating batches manually**:
 
