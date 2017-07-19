@@ -46,6 +46,9 @@ REGULARIZERS = (
     ), (
         messages.TopicSegmentationPtdwConfig,
         constants.RegularizerType_TopicSegmentationPtdw
+    ), (
+        messages.SmoothTimeInTopicsPhiConfig,
+        constants.RegularizerType_SmoothTimeInTopicsPhi
     ),
 )
 
