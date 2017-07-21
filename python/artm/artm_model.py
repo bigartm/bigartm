@@ -158,7 +158,7 @@ class ARTM(object):
             Later you can retrieve this matix with ARTM.get_phi(model_name=ARTM.theta_name),\
             change its values with ARTM.master.attach_model(model=ARTM.theta_name),\
             export/import this matrix with ARTM.master.export_model('ptd', filename) and\
-            ARTM.master.import_model('ptd', file_name). In this case you also are able to work\
+            ARTM.master.import_model('ptd', file_name). In this case you are also able to work\
             with theta matrix when using 'dump_artm_model' method and 'load_artm_model' function.
         """
         self._num_processors = None
@@ -1042,7 +1042,7 @@ class ARTM(object):
         if self.theta_name is not None:
             self._master.export_model(self.theta_name, os.path.join(data_path, PTD_FILENAME))
 
-        # save parameters in humanreadable format
+        # save parameters in human-readable format
         params = {}
         params['version'] = self.library_version
         params['creation_time'] = str(datetime.datetime.now())

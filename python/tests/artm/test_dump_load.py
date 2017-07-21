@@ -151,7 +151,7 @@ def test_func():
                                                                    dictionary=batch_vectorizer.dictionary))
             model.regularizers.add(artm.SmoothSparseThetaRegularizer(name='smsp_theta', tau=0.1,
                                                                      doc_topic_coef=[2.0] * model.num_topics))
-            model.regularizers.add(artm.SmoothPtdwRegularizer(name='sm_ptdw', tau=0.2))
+            model.regularizers.add(artm.SmoothPtdwRegularizer(name='sm_ptdw', tau=0.1))
 
             # learn first model and dump it on disc
             model.fit_offline(batch_vectorizer, num_collection_passes=10)

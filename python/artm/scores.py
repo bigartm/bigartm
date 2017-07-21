@@ -604,7 +604,7 @@ class TopicKernelScore(BaseScore):
         if dictionary is not None:
             dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
             self._dictionary_name = dictionary_name
-            self.config.cooccurrence_dictionary_name = dictionary_name
+            self._config.cooccurrence_dictionary_name = dictionary_name
         elif config is not None and config.HasField('cooccurrence_dictionary_name'):
             self._dictionary_name = config.cooccurrence_dictionary_name
 
