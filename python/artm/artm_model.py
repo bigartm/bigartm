@@ -1067,9 +1067,9 @@ class ARTM(object):
             tau = None
             gamma = None
             try:
-                tau = score.tau
-                gamma = score.gamma
-            except:
+                tau = regularizer.tau
+                gamma = regularizer.gamma
+            except KeyError:
                 pass
             regularizers[name] = [str(regularizer.config), tau, gamma]
         params['regularizers'] = regularizers
@@ -1079,7 +1079,7 @@ class ARTM(object):
             model_name = None
             try:
                 model_name = score.model_name
-            except:
+            except KeyError:
                 pass
             scores[name] = [str(score.config), model_name]
 
@@ -1099,7 +1099,7 @@ class ARTM(object):
             try:
                 tau = regularizer.tau
                 gamma = regularizer.gamma
-            except:
+            except KeyError:
                 pass
 
             if tau is not None:
@@ -1117,7 +1117,7 @@ class ARTM(object):
             model_name = None
             try:
                 model_name = score.model_name
-            except:
+            except KeyError:
                 pass
             if model_name is not None:
                 scores[name].append(model_name)

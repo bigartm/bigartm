@@ -6,11 +6,26 @@ import tempfile
 import os
 import pytest
 import numpy
+import json
 
 from six.moves import range, zip
 from six import iteritems
 
 import artm
+
+def _assert_json_params(params):
+    params['num_processors'] == 7
+    len(params['topic_names']) == 15
+    params['model_pwt'] == 'pwt'
+    params['num_document_passes'] == 5
+    params['synchronizations_processed'] == 14
+    params['num_online_processed_batches'] == 4
+    params['show_progress_bars'] == False
+    params['model_nwt'] == 'nwt'
+    len(params['scores']) == 5
+    len(params['regularizers']) == 4
+    params['class_ids'] == {u'@default_class': 1.0}
+
 
 def _assert_params_equality(model_1, model_2):
     assert model_1.num_processors == model_2.num_processors
@@ -158,6 +173,11 @@ def test_func():
             model.fit_online(batch_vectorizer, update_every=1)
 
             model.dump_artm_model(os.path.join(dump_folder, 'target'))
+
+            params = {}
+            with open(os.path.join(dump_folder, 'target', 'parameters.json'), 'r') as fin:
+                params = json.load(fin)
+            _assert_json_params(params)
 
             # create second model from the dump and check the results are equal
             model_new = artm.load_artm_model(os.path.join(dump_folder, 'target'))

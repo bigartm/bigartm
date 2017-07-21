@@ -205,7 +205,7 @@ class BaseRegularizerPhi(BaseRegularizer):
             try:
                 if len(config.class_id):
                     self._class_ids = [class_id for class_id in config.class_id]
-            except:
+            except AttributeError:
                 pass
 
         self._topic_names = []
@@ -220,7 +220,7 @@ class BaseRegularizerPhi(BaseRegularizer):
             try:
                 if len(config.topic_name):
                     self._topic_names = [topic_name for topic_name in config.topic_name]
-            except:
+            except AttributeError:
                 pass
 
         self._dictionary_name = ''
@@ -232,7 +232,7 @@ class BaseRegularizerPhi(BaseRegularizer):
             try:
                 if config.HasField('dictionary_name'):
                     self._dictionary_name = config.dictionary_name
-            except:
+            except ValueError:
                 pass
 
     @property
@@ -278,7 +278,7 @@ class BaseRegularizerTheta(BaseRegularizer):
             try:
                 if len(config.alpha_iter):
                     self._alpha_iter = [alpha for alpha in config.alpha_iter]
-            except:
+            except AttributeError:
                 pass
 
         self._topic_names = []
@@ -293,7 +293,7 @@ class BaseRegularizerTheta(BaseRegularizer):
             try:
                 if len(config.topic_name):
                     self._topic_names = [topic_name for topic_name in config.topic_name]
-            except:
+            except AttributeError:
                 pass
 
     @property

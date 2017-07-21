@@ -110,7 +110,7 @@ class BaseScore(object):
             try:
                 if config.HasField('class_id'):
                     self._class_id = config.class_id
-            except:
+            except ValueError:
                 pass
 
         self._topic_names = []
@@ -125,7 +125,7 @@ class BaseScore(object):
             try:
                 if len(config.topic_name):
                     self._topic_names = [topic_name for topic_name in config.topic_name]
-            except:
+            except AttributeError:
                 pass
 
         self._name = name if name is not None else '{0}:{1}'.format(self._type, uuid.uuid1().urn)
