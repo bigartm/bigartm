@@ -108,9 +108,8 @@ class BaseScore(object):
             self._class_id = class_id
         elif config is not None:
             try:
-                if config.HasField('class_id'):
-                    self._class_id = config.class_id
-            except ValueError:
+                self._class_id = config.class_id
+            except AttributeError:
                 pass
 
         self._topic_names = []

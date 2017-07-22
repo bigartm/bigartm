@@ -230,9 +230,8 @@ class BaseRegularizerPhi(BaseRegularizer):
             self._dictionary_name = dictionary_name
         elif config is not None:
             try:
-                if config.HasField('dictionary_name'):
-                    self._dictionary_name = config.dictionary_name
-            except ValueError:
+                self._dictionary_name = config.dictionary_name
+            except AttributeError:
                 pass
 
     @property
