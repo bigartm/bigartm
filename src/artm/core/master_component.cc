@@ -359,7 +359,7 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
   }
 
   fout.close();
-  LOG(INFO) << "Export completed, token_size = " << n_wt.token_size()
+  LOG(INFO) << "Export of model completed, token_size = " << n_wt.token_size()
             << ", topic_size = " << n_wt.topic_size();
 }
 
@@ -390,13 +390,15 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
       break;
 
     if (length <= 0)
-      BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
+      BOOST_THROW_EXCEPTION(CorruptedMessageException(
+        "Unable to read from " + args.file_name() + ": message has negative length"));
 
     std::string buffer(length, '\0');
     fin.read(&buffer[0], length);
     ::artm::TopicModel topic_model;
     if (!topic_model.ParseFromArray(buffer.c_str(), length))
-      BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
+      BOOST_THROW_EXCEPTION(CorruptedMessageException(
+        "Unable to read from " + args.file_name() + ": message parsing failed"));
 
     topic_model.set_name(args.model_name());
 
@@ -412,8 +414,74 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
     BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
 
   instance_->SetPhiMatrix(args.model_name(), target);
-  LOG(INFO) << "Import completed, token_size = " << target->token_size()
+  LOG(INFO) << "Import of model completed, token_size = " << target->token_size()
     << ", topic_size = " << target->topic_size();
+}
+
+void MasterComponent::ExportScoreTracker(const ExportScoreTrackerArgs& args) {
+  if (boost::filesystem::exists(args.file_name()))
+    BOOST_THROW_EXCEPTION(DiskWriteException("File already exists: " + args.file_name()));
+
+  std::ofstream fout(args.file_name(), std::ofstream::binary);
+  if (!fout.is_open())
+    BOOST_THROW_EXCEPTION(DiskWriteException("Unable to create file " + args.file_name()));
+
+  LOG(INFO) << "Exporting score tracker to " << args.file_name();
+
+  const char version = 0;
+  fout << version;
+
+  // We expect here that each ScoreData object has suitable size (< 2GB)
+  for (auto& item : instance_->score_tracker()->GetDataUnsafe()) {
+    auto str = item->SerializeAsString();
+    fout << str.size();
+    fout << str;
+  }
+
+  fout.close();
+  LOG(INFO) << "Export of score tracker completed, number of score items: " << instance_->score_tracker()->Size();
+}
+
+void MasterComponent::ImportScoreTracker(const ImportScoreTrackerArgs& args) {
+  std::ifstream fin(args.file_name(), std::ifstream::binary);
+  if (!fin.is_open())
+    BOOST_THROW_EXCEPTION(DiskReadException("Unable to open file " + args.file_name()));
+
+  LOG(INFO) << "Importing score tracker from " << args.file_name();
+
+  char version;
+  fin >> version;
+  if (version != 0) {
+    std::stringstream ss;
+    ss << "Unsupported format version: " << static_cast<int>(version);
+    BOOST_THROW_EXCEPTION(DiskReadException(ss.str()));
+  }
+
+  instance_->score_tracker()->Clear();
+  while (!fin.eof()) {
+    int length;
+    fin >> length;
+    if (fin.eof())
+      break;
+
+    if (length <= 0)
+      BOOST_THROW_EXCEPTION(CorruptedMessageException(
+        "Unable to read from " + args.file_name() + ": message has negative length"));
+
+    std::string buffer(length, '\0');
+    fin.read(&buffer[0], length);
+    ::artm::ScoreData score_data;
+    if (!score_data.ParseFromArray(buffer.c_str(), length))
+      BOOST_THROW_EXCEPTION(CorruptedMessageException(
+        "Unable to read from " + args.file_name() + ": message parsing failed"));
+
+    auto ptr = instance_->score_tracker()->Add();
+    ptr->CopyFrom(score_data);
+  }
+
+  fin.close();
+
+  LOG(INFO) << "Import of model completed, number of score items: " << instance_->score_tracker()->Size();
 }
 
 void MasterComponent::AttachModel(const AttachModelArgs& args, int address_length, float* address) {

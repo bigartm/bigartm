@@ -396,6 +396,20 @@ inline std::string DescribeErrors(const ::artm::ImportModelArgs& message) {
   return ss.str();
 }
 
+inline std::string DescribeErrors(const ::artm::ExportScoreTrackerArgs& message) {
+  std::stringstream ss;
+  if (!message.has_file_name()) ss << "ExportScoreTrackerArgs.file_name is not defined; ";
+
+  return ss.str();
+}
+
+inline std::string DescribeErrors(const ::artm::ImportScoreTrackerArgs& message) {
+  std::stringstream ss;
+  if (!message.has_file_name()) ss << "ImportScoreTrackerArgs.file_name is not defined; ";
+
+  return ss.str();
+}
+
 inline std::string DescribeErrors(const ::artm::ImportDictionaryArgs& message) {
   std::stringstream ss;
   if (!message.has_file_name()) ss << "ImportDictionaryArgs.file_name is not defined; ";

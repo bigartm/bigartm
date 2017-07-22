@@ -237,6 +237,14 @@ void MasterModel::ImportModel(const ImportModelArgs& args) {
   ArtmExecute(id_, args, ArtmImportModel);
 }
 
+void MasterModel::ExportScoreTracker(const ExportScoreTrackerArgs& args) {
+  ArtmExecute(id_, args, ArtmExportScoreTracker);
+}
+
+void MasterModel::ImportScoreTracker(const ImportScoreTrackerArgs& args) {
+  ArtmExecute(id_, args, ArtmImportScoreTracker);
+}
+
 void MasterModel::CreateDictionary(const DictionaryData& args) {
   ArtmExecute(id_, args, ArtmCreateDictionary);
 }

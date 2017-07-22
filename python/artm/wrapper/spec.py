@@ -227,4 +227,12 @@ ARTM_API = [
         [('master_id', int), ('config', messages.TransformMasterModelArgs)],
         request=messages.ThetaMatrix,
     ),
+    CallSpec(
+        'ArtmExportScoreTracker',
+        [('master_id', int), ('args', messages.ExportScoreTrackerArgs)],
+    ),
+    CallSpec(
+        'ArtmImportScoreTracker',
+        [('master_id', int), ('args', messages.ImportScoreTrackerArgs)],
+    ),
 ]

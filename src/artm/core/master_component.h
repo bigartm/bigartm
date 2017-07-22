@@ -76,6 +76,8 @@ class MasterComponent : boost::noncopyable {
   void ClearThetaCache(const ClearThetaCacheArgs& args);
   void ClearScoreCache(const ClearScoreCacheArgs& args);
   void ClearScoreArrayCache(const ClearScoreArrayCacheArgs& args);
+  void ExportScoreTracker(const ExportScoreTrackerArgs& args);
+  void ImportScoreTracker(const ImportScoreTrackerArgs& args);
 
   // DISPOSE functionality
   void DisposeModel(const std::string& name);

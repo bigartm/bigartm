@@ -64,6 +64,16 @@ class KlFunctionInfo(object):
         if not first:
             obj._master.reconfigure_regularizer(obj.name, obj._config, obj.tau, obj.gamma)
 
+    def _update_from_config(self, obj):
+        if obj._config.transform_config.type == const.TransformConfig_TransformType_Constant:
+            self.function_type = 'log'
+        elif obj._config.transform_config.type == const.TransformConfig_TransformType_Polynomial:
+            self.function_type = 'pol'
+            if obj._config.transform_config.HasField('n'):
+                self.power_value = obj._config.transform_config.n
+            if obj._config.transform_config.HasField('a'):
+                self.power_value = obj._config.transform_config.a
+
 
 class Regularizers(object):
     def __init__(self, master):
@@ -191,6 +201,12 @@ class BaseRegularizerPhi(BaseRegularizer):
             for class_id in class_ids:
                 self._config.class_id.append(class_id)
                 self._class_ids.append(class_id)
+        elif config is not None:
+            try:
+                if len(config.class_id):
+                    self._class_ids = [class_id for class_id in config.class_id]
+            except AttributeError:
+                pass
 
         self._topic_names = []
         if topic_names is not None:
@@ -200,12 +216,23 @@ class BaseRegularizerPhi(BaseRegularizer):
             for topic_name in topic_names:
                 self._config.topic_name.append(topic_name)
                 self._topic_names.append(topic_name)
+        elif config is not None:
+            try:
+                if len(config.topic_name):
+                    self._topic_names = [topic_name for topic_name in config.topic_name]
+            except AttributeError:
+                pass
 
         self._dictionary_name = ''
         if dictionary is not None:
             dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
             self._config.dictionary_name = dictionary_name
             self._dictionary_name = dictionary_name
+        elif config is not None:
+            try:
+                self._dictionary_name = config.dictionary_name
+            except AttributeError:
+                pass
 
     @property
     def class_ids(self):
@@ -246,6 +273,12 @@ class BaseRegularizerTheta(BaseRegularizer):
             for alpha in alpha_iter:
                 self._config.alpha_iter.append(alpha)
                 self._alpha_iter.append(alpha)
+        elif config is not None:
+            try:
+                if len(config.alpha_iter):
+                    self._alpha_iter = [alpha for alpha in config.alpha_iter]
+            except AttributeError:
+                pass
 
         self._topic_names = []
         if topic_names is not None:
@@ -255,6 +288,12 @@ class BaseRegularizerTheta(BaseRegularizer):
             for topic_name in topic_names:
                 self._config.topic_name.append(topic_name)
                 self._topic_names.append(topic_name)
+        elif config is not None:
+            try:
+                if len(config.topic_name):
+                    self._topic_names = [topic_name for topic_name in config.topic_name]
+            except AttributeError:
+                pass
 
     @property
     def alpha_iter(self):
@@ -313,6 +352,9 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
         self._kl_function_info = KlFunctionInfo()
         if kl_function_info is not None:
             self._kl_function_info = kl_function_info
+        elif config is not None and config.HasField('transform_config'):
+            self._kl_function_info._update_from_config(self)
+
         self._kl_function_info._update_config(self, first=True)
 
     @property
@@ -371,6 +413,9 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
         self._kl_function_info = KlFunctionInfo()
         if kl_function_info is not None:
             self._kl_function_info = kl_function_info
+        elif config is not None and config.HasField('transform_config'):
+            self._kl_function_info._update_from_config(self)
+
         self._kl_function_info._update_config(self, first=True)
 
         self._doc_titles = []
@@ -379,6 +424,8 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
             for title in doc_titles:
                 self._config.item_title.append(title)
                 self._doc_titles.append(title)
+        elif config is not None and len(config.item_title):
+            self._doc_titles = [title for title in config.item_title]
 
         self._doc_topic_coef = []
         if doc_topic_coef is not None:
@@ -389,6 +436,13 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
                 for coef in topic_coef:
                     ref.value.append(coef)
             self._doc_topic_coef = doc_topic_coef
+        elif config is not None and len(config.item_topic_multiplier):
+            for coefs in config.item_topic_multiplier:
+                self._doc_topic_coef.append([])
+                for coef in coefs.value:
+                    self._doc_topic_coef[-1].append(coef)
+            if len(self._doc_topic_coef) == 1:
+                self._doc_topic_coef = self._doc_topic_coef[0]
 
     @property
     def kl_function_info(self):
@@ -441,6 +495,15 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
                 self._config.second_topic_name.append(second_topic)
                 self._config.value.append(value)
 
+    def _update_from_config(self, config):
+        self._topic_pairs = {}
+        for f_topic, s_topic, value in zip(config.first_topic_name, config.second_topic_name, config.value):
+            if f_topic not in self._topic_pairs:
+                self._topic_pairs[f_topic] = {}
+            self._topic_pairs[f_topic][s_topic] = value
+        if self._topic_pairs == {}:
+            self._topic_pairs = None
+
     def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None,
                  topic_names=None, topic_pairs=None, config=None):
         """
@@ -469,9 +532,12 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
                                     class_ids=class_ids,
                                     dictionary=None)
 
+        self._topic_pairs = None
         if topic_pairs is not None:
             self._update_config(topic_pairs)
             self._topic_pairs = topic_pairs
+        elif config is not None:
+            self._update_from_config(config)
 
     @property
     def dictionary(self):
@@ -560,16 +626,22 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         if class_id is not None:
             self._config.class_id = class_id
             self._class_id = class_id
+        elif config is not None and config.HasField('class_id'):
+            self._class_id = config.class_id
 
         self._num_max_elements = 20
         if num_max_elements is not None:
             self._config.max_elements_count = num_max_elements
             self._num_max_elements = num_max_elements
+        elif config is not None and config.HasField('num_max_elements'):
+            self._num_max_elements = config.num_max_elements
 
         self._probability_threshold = 0.99
         if probability_threshold is not None:
             self._config.probability_threshold = probability_threshold
             self._probability_threshold = probability_threshold
+        elif config is not None and config.HasField('probability_threshold'):
+            self._probability_threshold = config.probability_threshold
 
         self._sparse_by_columns = True
         if sparse_by_columns is not None:
@@ -579,6 +651,8 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
             else:
                 self._config.mode = const.SpecifiedSparsePhiConfig_SparseMode_SparseTokens
                 self._sparse_by_columns = False
+        elif config is not None and config.HasField('mode'):
+            self._sparse_by_columns = (config.mode == const.SpecifiedSparsePhiConfig_SparseMode_SparseTopics)
 
     @property
     def class_id(self):
@@ -776,9 +850,21 @@ class HierarchySparsingThetaRegularizer(BaseRegularizerTheta):
                                       config=config,
                                       topic_names=topic_names,
                                       alpha_iter=alpha_iter)
+
         if parent_topic_proportion is not None:
+            self._parent_topic_proportion = parent_topic_proportion
             for elem in parent_topic_proportion:
                 self._config.parent_topic_proportion.append(elem)
+        elif config is not None and len(config.parent_topic_proportion):
+            self._parent_topic_proportion = [p for p in config.parent_topic_proportion]
+
+    @property
+    def parent_topic_proportion(self):
+        return self._parent_topic_proportion
+
+    @parent_topic_proportion.setter
+    def parent_topic_proportion(self, parent_topic_proportion):
+        _reconfigure_field(self, parent_topic_proportion, 'parent_topic_proportion')
 
 
 class TopicSegmentationPtdwRegularizer(BaseRegularizer):
@@ -805,16 +891,22 @@ class TopicSegmentationPtdwRegularizer(BaseRegularizer):
         if window is not None:
             self._config.window = window
             self._window = window
+        elif config is not None and config.HasField('window'):
+            self._window = config.window
 
         if threshold is not None:
             self._config.threshold = threshold
             self._threshold = threshold
+        elif config is not None and config.HasField('threshold'):
+            self._threshold = config.threshold
 
         if background_topic_names is not None:
             if isinstance(background_topic_names, string_types):
                 background_topic_names = [background_topic_names]
             for topic_name in background_topic_names:
                 self._config.background_topic_names.append(topic_name)
+        elif config is not None and len(config.background_topic_names):
+            self._background_topic_names = [name for name in config.background_topic_names]
 
 
 class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
@@ -846,6 +938,8 @@ class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
         if class_id is not None:
             self._config.class_id = class_id
             self._class_id = class_id
+        elif config is not None and config.HasField('class_id'):
+            self._class_id = config.class_id
 
     @property
     def class_id(self):

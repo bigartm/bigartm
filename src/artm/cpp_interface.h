@@ -123,6 +123,8 @@ class MasterModel {
   void FitOfflineModel(const FitOfflineMasterModelArgs& args);
   void MergeModel(const MergeModelArgs& args);
   void DisposeModel(const std::string& model_name);
+  void ImportScoreTracker(const ImportScoreTrackerArgs& args);
+  void ExportScoreTracker(const ExportScoreTrackerArgs& args);
 
   // Apply model to batches
   ThetaMatrix Transform(const TransformMasterModelArgs& args);

@@ -418,6 +418,14 @@ int64_t ArtmImportModel(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::ImportModelArgs>(master_id, length, args, &MasterComponent::ImportModel);
 }
 
+int64_t ArtmExportScoreTracker(int master_id, int64_t length, const char* args) {
+  return ArtmExecute< ::artm::ExportScoreTrackerArgs>(master_id, length, args, &MasterComponent::ExportScoreTracker);
+}
+
+int64_t ArtmImportScoreTracker(int master_id, int64_t length, const char* args) {
+  return ArtmExecute< ::artm::ImportScoreTrackerArgs>(master_id, length, args, &MasterComponent::ImportScoreTracker);
+}
+
 int64_t ArtmCreateRegularizer(int master_id, int64_t length, const char* config) {
   return ArtmExecute< ::artm::RegularizerConfig>(
     master_id, length, config, &MasterComponent::CreateOrReconfigureRegularizer);

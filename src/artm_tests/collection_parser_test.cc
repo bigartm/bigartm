@@ -27,11 +27,11 @@ TEST(CollectionParser, UciBagOfWords) {
 
   ::artm::ParseCollection(config);
 
-  boost::filesystem::recursive_directory_iterator it(target_folder);
-  boost::filesystem::recursive_directory_iterator endit;
+  fs::recursive_directory_iterator it(target_folder);
+  fs::recursive_directory_iterator endit;
   int batches_count = 0;
   while (it != endit) {
-    if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
+    if (fs::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
       ::artm::Batch batch;
       ::artm::core::Helpers::LoadMessage(it->path().string(), &batch);
@@ -89,7 +89,7 @@ TEST(CollectionParser, UciBagOfWords) {
   dictionary_checker(config.vocab_file_path(), "default_dictionary");
   dictionary_checker("../../../test_data/vocab.parser_test_no_newline.txt", "no_newline_dictionary");
 
-  try { boost::filesystem::remove_all(target_folder); }
+  try { fs::remove_all(target_folder); }
   catch (...) {}
 }
 
@@ -122,11 +122,11 @@ TEST(CollectionParser, MatrixMarket) {
 
   ::artm::ParseCollection(config);
 
-  boost::filesystem::recursive_directory_iterator it(target_folder);
-  boost::filesystem::recursive_directory_iterator endit;
+  fs::recursive_directory_iterator it(target_folder);
+  fs::recursive_directory_iterator endit;
   int batches_count = 0;
   while (it != endit) {
-    if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
+    if (fs::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
 
       artm::Batch batch;
@@ -138,7 +138,7 @@ TEST(CollectionParser, MatrixMarket) {
 
   ASSERT_EQ(batches_count, 1);
 
-  try { boost::filesystem::remove_all(target_folder); }
+  try { fs::remove_all(target_folder); }
   catch (...) {}
 }
 
@@ -153,11 +153,11 @@ TEST(CollectionParser, Multiclass) {
 
   ::artm::ParseCollection(config);
 
-  boost::filesystem::recursive_directory_iterator it(target_folder);
-  boost::filesystem::recursive_directory_iterator endit;
+  fs::recursive_directory_iterator it(target_folder);
+  fs::recursive_directory_iterator endit;
   int batches_count = 0;
   while (it != endit) {
-    if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
+    if (fs::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
       artm::Batch batch;
       ::artm::core::Helpers::LoadMessage(it->path().string(), &batch);
@@ -211,7 +211,7 @@ TEST(CollectionParser, Multiclass) {
   ASSERT_APPROX_EQ(dictionary_ptr.token_value(1), 4.0 / 4.0);
   ASSERT_APPROX_EQ(dictionary_ptr.token_value(2), 9.0 / 14.0);
 
-  try { boost::filesystem::remove_all(target_folder); }
+  try { fs::remove_all(target_folder); }
   catch (...) {}
 }
 
@@ -228,11 +228,11 @@ TEST(CollectionParser, VowpalWabbit) {
 
   ::artm::ParseCollection(config);
 
-  boost::filesystem::recursive_directory_iterator it(target_folder);
-  boost::filesystem::recursive_directory_iterator endit;
+  fs::recursive_directory_iterator it(target_folder);
+  fs::recursive_directory_iterator endit;
   int batches_count = 0;
   while (it != endit) {
-    if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
+    if (fs::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
       ::artm::Batch batch;
       ::artm::core::Helpers::LoadMessage(it->path().string(), &batch);
@@ -250,7 +250,7 @@ TEST(CollectionParser, VowpalWabbit) {
 
   ASSERT_EQ(batches_count, 2);
 
-  try { boost::filesystem::remove_all(target_folder); }
+  try { fs::remove_all(target_folder); }
   catch (...) {}
 }
 // vim: set ts=2 sw=2 sts=2:
