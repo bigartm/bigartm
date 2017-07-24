@@ -19,6 +19,7 @@ RegularizerType_BitermsPhi = 9
 RegularizerType_HierarchySparsingTheta = 10
 RegularizerType_TopicSegmentationPtdw = 11
 RegularizerType_SmoothTimeInTopicsPhi = 12
+RegularizerType_NetPlsaPhiRegularizer = 13
 RegularizerType_Unknown = 9999
 SpecifiedSparsePhiConfig_SparseMode_SparseTopics = 0
 SpecifiedSparsePhiConfig_SparseMode_SparseTokens = 1

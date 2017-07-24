@@ -964,3 +964,50 @@ class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
     @dictionary.setter
     def dictionary(self, dictionary):
         raise KeyError('No dictionary parameter')
+
+
+class NetPlsaPhiRegularizer(BaseRegularizerPhi):
+    _config_message = messages.NetPlsaPhiConfig
+    _type = const.RegularizerType_NetPlsaPhi
+
+    def _update_config(self, pairs):
+        self._config.ClearField('first_vertex_index')
+        self._config.ClearField('second_vertex_index')
+        self._config.ClearField('value')
+
+        for first_index, indices_and_values in iteritems(pairs):
+            for second_index, value in iteritems(indices_and_values):
+                self._config.first_vertex_index.append(first_index)
+                self._config.second_vertex_index.append(second_index)
+                self._config.value.append(value)
+
+    def __init__(self, name=None, tau=1.0, gamma=None, class_id=None, symmetric_edge_weights=False,
+                 topic_names=None, vertex_names=None, vertex_weights=None, edge_weights=None, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param float gamma: the coefficient of relative regularization for this regularizer
+        :param str class_id: name of class_id of special tokens-vertices
+        :param topic_names: list of names or single name of topic to regularize,\
+                            will regularize all topics if empty or None
+        :type topic_names: list of str or single str or None
+        :param edge_weights: information about edge weights of NetPLSA model, required.
+        :type edge_weights: dict, key - first token, value - dict with second tokens and float values
+        :param bool symmetric_edge_weights: use symmetric edge weights or not
+        :param list vertex_names: list of tokens-vertices of class_id modality, required.
+        :param list vertex_weights: list of weights of vertices, should has equal length with\
+                                    vertex_name, 1.0 values for all vertices will be used by default
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
+        BaseRegularizerPhi.__init__(self,
+                                    name=name,
+                                    tau=tau,
+                                    gamma=gamma,
+                                    config=config,
+                                    topic_names=topic_names,
+                                    class_ids=None,
+                                    dictionary=None)
+
+        # as in decorrelator (from_config) + remove class_ids and add
+        # class_id (don't forget vertex_weights -> weights)

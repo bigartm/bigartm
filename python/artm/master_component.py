@@ -64,6 +64,10 @@ REGULARIZERS = (
         messages.SmoothTimeInTopicsPhiConfig,
         constants.RegularizerType_SmoothTimeInTopicsPhi,
         regularizers.SmoothTimeInTopicsPhiRegularizer,
+    ), (
+        messages.NetPlsaPhiConfig,
+        constants.RegularizerType_NetPlsaPhi,
+        regularizers.NetPlsaPhiRegularizer,
     ),
 )
 
