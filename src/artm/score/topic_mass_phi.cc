@@ -24,9 +24,10 @@ std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix&
     topics_to_score_size = config_.topic_name_size();
   }
 
-  ::artm::core::ClassId class_id = ::artm::core::DefaultClass;
-  if (config_.has_class_id())
-    class_id = config_.class_id();
+  bool use_all_classes = false;
+  if (config_.class_id_size() == 0) {
+    use_all_classes = true;
+  }
 
   std::vector<double> topic_mass;
   topic_mass.assign(topics_to_score_size, 0.0);
@@ -34,16 +35,17 @@ std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix&
   double numerator = 0.0;
 
   for (int token_index = 0; token_index < token_size; token_index++) {
-    if (p_wt.token(token_index).class_id == class_id) {
-      int real_topic_index = 0;
-      for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-        double value = p_wt.get(token_index, topic_index);
-        denominator += value;
+    if (!use_all_classes && !core::is_member(p_wt.token(token_index).class_id, config_.class_id()))
+      continue;
 
-        if (topics_to_score[topic_index]) {
-          numerator += value;
-          topic_mass[real_topic_index++] += value;
-        }
+    int real_topic_index = 0;
+    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+      double value = p_wt.get(token_index, topic_index);
+      denominator += value;
+
+      if (topics_to_score[topic_index]) {
+        numerator += value;
+        topic_mass[real_topic_index++] += value;
       }
     }
   }

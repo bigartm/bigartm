@@ -653,10 +653,11 @@ class TopicMassPhiScore(BaseScore):
     _config_message = messages.TopicMassPhiScoreConfig
     _type = const.ScoreType_TopicMassPhi
 
-    def __init__(self, name=None, class_id=None, topic_names=None, model_name=None, eps=None, config=None):
+    def __init__(self, name=None, class_ids=None, topic_names=None, model_name=None, eps=None, config=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
-        :param str class_id: class_id to score
+        :param class_ids: class_id to score, means that tokens of all class_ids will be used
+        :type class_ids: list of str
         :param topic_names: list of names or single name of topic to regularize, will\
                             score all topics if empty or None
         :type topic_names: list of str or str or None
@@ -668,7 +669,7 @@ class TopicMassPhiScore(BaseScore):
         """
         BaseScore.__init__(self,
                            name=name,
-                           class_id=class_id,
+                           class_id=None,
                            topic_names=topic_names,
                            model_name=model_name,
                            config=config)
@@ -680,13 +681,38 @@ class TopicMassPhiScore(BaseScore):
         elif config is not None and config.HasField('eps'):
             self._eps = config.eps
 
+        self._class_ids = []
+        if class_ids is not None:
+            self._config.ClearField('class_id')
+            for class_id in class_ids:
+                self._config.class_id.append(class_id)
+                self._class_ids.append(class_id)
+        elif config is not None and len(config.class_id):
+            self._class_ids = [class_id for class_id in config.class_id]
+
     @property
     def eps(self):
         return self._eps
 
+    @property
+    def class_ids(self):
+        return self._class_ids
+
+    @property
+    def class_id(self):
+        raise KeyError('No class_id parameter')
+
     @eps.setter
     def eps(self, eps):
         _reconfigure_field(self, eps, 'eps')
+
+    @class_ids.setter
+    def class_ids(self, class_ids):
+        _reconfigure_field(self, class_ids, 'class_ids', 'class_id')
+
+    @class_id.setter
+    def class_id(self, class_id):
+        raise KeyError('No class_id parameter')
 
 
 class ClassPrecisionScore(BaseScore):

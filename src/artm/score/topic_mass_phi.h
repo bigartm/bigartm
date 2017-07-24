@@ -6,7 +6,7 @@
    
    Parameters:
    - topic_name (names of topics from which top tokens need to be extracted)
-   - class_id (class_id to use, empty == DefaultClass)
+   - class_id (class_id to use, empty == all modalities)
    - eps
 
 */
