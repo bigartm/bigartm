@@ -379,7 +379,7 @@ message TopicKernelScore {
 // Represents a configuration of a topic part in nwt score
 message TopicMassPhiScoreConfig {
   optional float eps = 1 [default = 1e-37];
-  optional string class_id = 2 [default = "@default_class"];
+  repeated string class_id = 2;
   repeated string topic_name = 3;
 }
 
