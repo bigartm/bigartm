@@ -1051,6 +1051,13 @@ class NetPlsaPhiRegularizer(BaseRegularizerPhi):
         elif config is not None and len(config.vertex_weight):
             self._vertex_weights = [weight for weight in config.vertex_weight]
 
+        self._edge_weights = None
+        if edge_weights is not None:
+            self._update_config(edge_weights)
+            self._edge_weights = edge_weights
+        elif config is not None:
+            self._update_from_config(config)
+
     @property
     def class_id(self):
         return self._class_id
