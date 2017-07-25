@@ -1,6 +1,7 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
 #include <memory>
+#include <vector>
 
 #include "gtest/gtest.h"
 
@@ -189,4 +190,111 @@ TEST(Regularizers, SmoothSparseTheta) {
     std::cout << std::endl;
   }
   std::cout << std::endl;
+}
+
+// artm_tests.exe --gtest_filter=Regularizers.NetPlsa
+TEST(Regularizers, NetPlsa) {
+  int nTopics = 8;
+  int nTokens = 10;
+  int nDocs = 5;
+
+  // create master
+  ::artm::MasterModelConfig master_config = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
+  master_config.set_cache_theta(true);
+
+  // create regularizers
+  ::artm::RegularizerConfig* regularizer_config = master_config.add_regularizer_config();
+
+  regularizer_config->set_name("NetPlsaRegularizer_1");
+  regularizer_config->set_type(::artm::RegularizerType_NetPlsaPhi);
+  regularizer_config->set_tau(2.0f);
+
+  ::artm::NetPlsaPhiConfig internal_config;
+  internal_config.set_class_id("@time_class");
+  internal_config.add_vertex_name("time_1");
+  internal_config.add_vertex_name("time_2");
+  internal_config.add_vertex_weight(2.0);
+  internal_config.add_vertex_weight(1.0);
+  internal_config.add_first_vertex_index(0);
+  internal_config.add_second_vertex_index(1);
+  internal_config.add_edge_weight(3.0);
+  internal_config.set_symmetric_edge_weights(true);
+
+  regularizer_config->set_config(internal_config.SerializeAsString());
+
+
+  regularizer_config = master_config.add_regularizer_config();
+
+  regularizer_config->set_name("NetPlsaRegularizer_2");
+  regularizer_config->set_type(::artm::RegularizerType_NetPlsaPhi);
+  regularizer_config->set_tau(-2.0f);
+
+  ::artm::NetPlsaPhiConfig internal_config_2;
+  internal_config.set_class_id("@time_class");
+  internal_config.add_vertex_name("time_1");
+  internal_config.add_vertex_name("time_2");
+  internal_config.add_first_vertex_index(0);
+  internal_config.add_second_vertex_index(1);
+  internal_config.add_edge_weight(-3.0);
+  internal_config.add_first_vertex_index(1);
+  internal_config.add_second_vertex_index(0);
+  internal_config.add_edge_weight(8.0);
+
+  internal_config.set_symmetric_edge_weights(false);
+
+  regularizer_config->set_config(internal_config.SerializeAsString());
+
+  artm::MasterModel master(master_config);
+  ::artm::test::Api api(master);
+
+  // generate data
+  artm::Batch batch;
+  batch.set_id("11972762-6a23-4524-b089-7122816aff72");
+  for (int i = 0; i < nTokens; i++) {
+    std::stringstream str;
+    str << "token" << i;
+    batch.add_token(str.str());
+    batch.add_class_id("@default_class");
+  }
+  batch.add_token("time_1");
+  batch.add_class_id("@time_class");
+  batch.add_token("time_2");
+  batch.add_class_id("@time_class");
+
+  for (int iDoc = 0; iDoc < nDocs; iDoc++) {
+    artm::Item* item = batch.add_item();
+    item->set_id(iDoc);
+    for (int iToken = 0; iToken < nTokens; ++iToken) {
+      item->add_token_id(iToken);
+      int background_count = (iToken > 40) ? (1 + rand() % 5) : 0;  // NOLINT
+      int topical_count = ((iToken < 40) && ((iToken % 10) == (iDoc % 10))) ? 10 : 0;
+      item->add_token_weight(static_cast<float>(background_count + topical_count));
+    }
+    if (iDoc < 2) {
+      item->add_token_id(nTokens);
+      item->add_token_weight(1.0f);
+    } else if (iDoc == 2) {
+      item->add_token_id(nTokens + 1);
+      item->add_token_weight(1.0f);
+    }
+  }
+
+  // iterations
+  auto offline_args = api.Initialize({ std::make_shared<artm::Batch>(batch) });
+  for (int iter = 0; iter < 2; ++iter)
+    master.FitOfflineModel(offline_args);
+
+  // get and check theta
+  ::artm::ThetaMatrix theta_matrix = master.GetThetaMatrix();
+
+  std::vector<float> real_values;
+  for (int j = 0; j < nDocs; ++j) {
+    real_values.push_back(theta_matrix.item_weights(j).value(0));
+  }
+
+  std::vector<float> expected_values = { 5.95393e-06f, 3.30627e-13f, 0.0f, 1.0f, 0.0f };
+
+  for (int i = 0; i < nDocs; ++i) {
+    ASSERT_NEAR(real_values[i], expected_values[i], 1.0e-12);
+  }
 }

@@ -13,8 +13,8 @@ namespace artm {
 namespace regularizer {
 
 bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
-                                    const ::artm::core::PhiMatrix& n_wt,
-                                    ::artm::core::PhiMatrix* result) {
+                               const ::artm::core::PhiMatrix& n_wt,
+                               ::artm::core::PhiMatrix* result) {
   // read the parameters from config and control their correctness
   const int topic_size = p_wt.topic_size();
   const int token_size = p_wt.token_size();
@@ -33,9 +33,10 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
 
   bool has_weights = config_.vertex_weight_size();
-  if (has_weights && config_.vertex_name_size() != config_.vertex_weight_size()) {
+  if (has_weights && vertex_name2id_.size() != config_.vertex_weight_size()) {
     LOG(ERROR) << "Non-empty vertex_weight array should have the same length " <<
-                  "with vertex_name array in NetPLSA regularizer config";
+                  "with vertex_name array in NetPLSA regularizer config (" <<
+                  vertex_name2id_.size() << " != " << config_.vertex_weight_size() << ")";
   }
 
   std::vector<double> n_t(topic_size, 0.0);
