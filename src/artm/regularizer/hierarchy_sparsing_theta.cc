@@ -20,40 +20,43 @@ void HierarchySparsingThetaAgent::Apply(int item_index, int inner_iter, int topi
 }
 
 void HierarchySparsingThetaAgent::Apply(int inner_iter,
-  const ::artm::utility::LocalThetaMatrix<float>& n_td,
-  ::artm::utility::LocalThetaMatrix<float>* r_td) const {
-  if (!(regularization_on)) return;
+                                        const ::artm::utility::LocalThetaMatrix<float>& n_td,
+                                        ::artm::utility::LocalThetaMatrix<float>* r_td) const {
+  if (!(regularization_on)) {
+    return;
+  }
 
   std::vector<float> n_d, n_t;
-  int topics_num = n_td.num_topics();
-  int items_num = n_td.num_items();
+  int topic_size = n_td.num_topics();
+  int item_size = n_td.num_items();
   float item_sum = 0.0f;
   float topic_sum = 0.0f;
 
   // count n_d
-  for (int item_id = 0; item_id < items_num; ++item_id) {
+  for (int item_id = 0; item_id < item_size; ++item_id) {
     item_sum = 0;
-    for (int topic_id = 0; topic_id < topics_num; ++topic_id) {
+    for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       item_sum += n_td(topic_id, item_id);
     }
     n_d.push_back(item_sum);
   }
 
   // count topics proportion (n_t)
-  for (int topic_id = 0; topic_id < topics_num; ++topic_id) {
+  for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
     topic_sum = 0;
-    for (int item_id = 0; item_id < items_num; ++item_id) {
+    for (int item_id = 0; item_id < item_size; ++item_id) {
       topic_sum += parent_topic_proportion[item_id] * n_td(topic_id, item_id) / n_d[item_id];
     }
     n_t.push_back(topic_sum);
   }
 
-  // make regularization
-  if (topics_num != topic_weight.size()) return;
-  if (inner_iter >= alpha_weight.size()) return;
+  // proceed regularization
+  if (topic_size != topic_weight.size() || inner_iter >= alpha_weight.size()) {
+    return;
+  }
 
-  for (int item_id = 0; item_id < items_num; ++item_id)
-    for (int topic_id = 0; topic_id < topics_num; ++topic_id) {
+  for (int item_id = 0; item_id < item_size; ++item_id) {
+    for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (n_td(topic_id, item_id) > 0.0f)
         (*r_td)(topic_id, item_id) += alpha_weight[inner_iter] * topic_weight[topic_id] *
         (prior_parent_topic_probability
@@ -61,13 +64,14 @@ void HierarchySparsingThetaAgent::Apply(int inner_iter,
         * parent_topic_proportion[item_id]
         / n_t[topic_id]);
     }
+  }
 }
 
-HierarchySparsingTheta::HierarchySparsingTheta(const HierarchySparsingThetaConfig& config) : config_(config) {}
+HierarchySparsingTheta::HierarchySparsingTheta(const HierarchySparsingThetaConfig& config) : config_(config) { }
 
 std::shared_ptr<RegularizeThetaAgent>
-  HierarchySparsingTheta::CreateRegularizeThetaAgent(const Batch& batch,
-  const ProcessBatchesArgs& args, float tau) {
+HierarchySparsingTheta::CreateRegularizeThetaAgent(const Batch& batch,
+                                                   const ProcessBatchesArgs& args, float tau) {
   HierarchySparsingThetaAgent* agent = new HierarchySparsingThetaAgent();
   std::shared_ptr<HierarchySparsingThetaAgent> retval(agent);
 
@@ -88,11 +92,13 @@ std::shared_ptr<RegularizeThetaAgent>
       return nullptr;
     }
 
-    for (int i = 0; i < config_.alpha_iter_size(); ++i)
+    for (int i = 0; i < config_.alpha_iter_size(); ++i) {
       agent->alpha_weight.push_back(config_.alpha_iter(i));
+    }
   } else {
-    for (int i = 0; i < args.num_document_passes(); ++i)
+    for (int i = 0; i < args.num_document_passes(); ++i) {
       agent->alpha_weight.push_back(1.0f);
+    }
   }
 
   if (config_.parent_topic_proportion_size()) {
@@ -101,17 +107,19 @@ std::shared_ptr<RegularizeThetaAgent>
       return nullptr;
     }
 
-    for (int i = 0; i < config_.parent_topic_proportion_size(); ++i)
+    for (int i = 0; i < config_.parent_topic_proportion_size(); ++i) {
       agent->parent_topic_proportion.push_back(config_.parent_topic_proportion(i));
+    }
   } else {
-    for (int i = 0; i < item_size; ++i)
+    for (int i = 0; i < item_size; ++i) {
       agent->parent_topic_proportion.push_back(1.0f);
+    }
   }
 
   agent->topic_weight.resize(topic_size, 0.0f);
   if (config_.topic_name_size() == 0) {
     for (int i = 0; i < topic_size; ++i)
-      agent->topic_weight[i] = static_cast<float>(-tau);
+      agent->topic_weight[i] = -tau;
   } else {
     if (topic_size != args.topic_name_size()) {
       LOG(ERROR) << "args.num_topics() != args.topic_name_size()";
@@ -121,7 +129,9 @@ std::shared_ptr<RegularizeThetaAgent>
     for (int topic_id = 0; topic_id < config_.topic_name_size(); ++topic_id) {
       int topic_index = ::artm::core::repeated_field_index_of(
         args.topic_name(), config_.topic_name(topic_id));
-      if (topic_index != -1) agent->topic_weight[topic_index] = static_cast<float>(-tau);
+      if (topic_index != -1) {
+        agent->topic_weight[topic_index] = -tau;
+      }
     }
   }
 

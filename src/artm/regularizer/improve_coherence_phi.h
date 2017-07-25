@@ -31,7 +31,7 @@ namespace regularizer {
 class ImproveCoherencePhi : public RegularizerInterface {
  public:
   explicit ImproveCoherencePhi(const ImproveCoherencePhiConfig& config)
-    : config_(config) {}
+    : config_(config) { }
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,

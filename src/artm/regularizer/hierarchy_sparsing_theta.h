@@ -69,7 +69,7 @@ class HierarchySparsingTheta : public RegularizerInterface {
   explicit HierarchySparsingTheta(const HierarchySparsingThetaConfig& config);
 
   virtual std::shared_ptr<RegularizeThetaAgent>
-    CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, float tau);
+  CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, float tau);
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
 

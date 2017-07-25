@@ -15,10 +15,11 @@ namespace regularizer {
 SmoothSparsePhi::SmoothSparsePhi(const SmoothSparsePhiConfig& config)
     : config_(config),
       transform_function_(nullptr) {
-  if (config.has_transform_config())
+  if (config.has_transform_config()) {
     transform_function_ = artm::core::TransformFunction::create(config.transform_config());
-  else
+  } else {
     transform_function_ = artm::core::TransformFunction::create();
+  }
 }
 
 bool SmoothSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
@@ -29,10 +30,11 @@ bool SmoothSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   const int token_size = p_wt.token_size();
 
   std::vector<bool> topics_to_regularize;
-  if (config_.topic_name().size() == 0)
+  if (config_.topic_name().size() == 0) {
     topics_to_regularize.assign(topic_size, true);
-  else
+  } else {
     topics_to_regularize = core::is_member(p_wt.topic_name(), config_.topic_name());
+  }
 
   bool use_all_classes = false;
   if (config_.class_id_size() == 0) {
@@ -40,14 +42,15 @@ bool SmoothSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
 
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
-  if (config_.has_dictionary_name())
+  if (config_.has_dictionary_name()) {
     dictionary_ptr = dictionary(config_.dictionary_name());
+  }
   bool has_dictionary = dictionary_ptr != nullptr;
 
   // proceed the regularization
   for (int token_id = 0; token_id < token_size; ++token_id) {
     float coefficient = 1.0f;
-    const ::artm::core::Token& token = p_wt.token(token_id);
+    const auto& token = p_wt.token(token_id);
     if (has_dictionary) {
       if (use_all_classes ||
           core::is_member(token.class_id, config_.class_id())) {
@@ -87,10 +90,11 @@ bool SmoothSparsePhi::Reconfigure(const RegularizerConfig& config) {
 
   config_.CopyFrom(regularizer_config);
 
-  if (config_.has_transform_config())
+  if (config_.has_transform_config()) {
     transform_function_ = artm::core::TransformFunction::create(config_.transform_config());
-  else
+  } else {
     transform_function_ = artm::core::TransformFunction::create();
+  }
 
   return true;
 }

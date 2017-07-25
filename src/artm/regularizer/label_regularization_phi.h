@@ -32,8 +32,7 @@ namespace regularizer {
 
 class LabelRegularizationPhi : public RegularizerInterface {
  public:
-  explicit LabelRegularizationPhi(const LabelRegularizationPhiConfig& config)
-    : config_(config) {}
+  explicit LabelRegularizationPhi(const LabelRegularizationPhiConfig& config) : config_(config) { }
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,

@@ -31,8 +31,7 @@ namespace regularizer {
 
 class SpecifiedSparsePhi : public RegularizerInterface {
  public:
-  explicit SpecifiedSparsePhi(const SpecifiedSparsePhiConfig& config)
-    : config_(config) {}
+  explicit SpecifiedSparsePhi(const SpecifiedSparsePhiConfig& config) : config_(config) { }
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,

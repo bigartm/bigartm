@@ -12,7 +12,7 @@ class MultiLanguagePhi : public RegularizerInterface {
  public:
   explicit MultiLanguagePhi(const MultiLanguagePhiConfig& config)
     : config_(config)
-    , no_regularization_calls_(0) {}
+    , no_regularization_calls_(0) { }
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,

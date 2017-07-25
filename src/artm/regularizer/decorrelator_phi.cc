@@ -24,7 +24,7 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
 
   std::unordered_map<std::string, int> topics_to_regularize;
   if (!use_topic_pairs) {
-    for (auto& s : (config_.topic_name().size() ? config_.topic_name() : p_wt.topic_name())) {
+    for (const auto& s : (config_.topic_name().size() ? config_.topic_name() : p_wt.topic_name())) {
       bool valid_topic = false;
       for (int i = 0; i < p_wt.topic_name().size(); ++i) {
         if (p_wt.topic_name(i) == s) {
@@ -57,29 +57,31 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
       // simple case (without topic_pairs)
       if (!use_topic_pairs) {
         // create general normalizer
-        for (auto& pair : topics_to_regularize)
+        for (const auto& pair : topics_to_regularize)
           weights_sum += p_wt.get(token_id, pair.second);
 
         // process every topic from topic_names
-        for (auto& pair : topics_to_regularize) {
+        for (const auto& pair : topics_to_regularize) {
           float weight = p_wt.get(token_id, pair.second);
           float value = static_cast<float>(-weight * (weights_sum - weight));
           result->set(token_id, pair.second, value);
         }
       } else {  // complex case
-        for (auto& pair : topic_pairs_) {
+        for (const auto& pair : topic_pairs_) {
           weights_sum = 0.0f;
 
           // check given topic exists in model
           auto first_iter = all_topics.find(pair.first);
-          if (first_iter == all_topics.end())
+          if (first_iter == all_topics.end()) {
             continue;
+          }
 
           // create custom normilizer for this topic
-          for (auto topic_and_value : pair.second) {
+          for (const auto& topic_and_value : pair.second) {
             auto second_iter = all_topics.find(topic_and_value.first);
-            if (second_iter == all_topics.end())
+            if (second_iter == all_topics.end()) {
               continue;
+            }
 
             weights_sum += p_wt.get(token_id, second_iter->second) * topic_and_value.second;
           }
@@ -124,8 +126,7 @@ void DecorrelatorPhi::UpdateTopicPairs(const DecorrelatorPhiConfig& config) {
         topic_pairs_.insert(std::make_pair(first_name, std::unordered_map<std::string, float>()));
         iter = topic_pairs_.find(first_name);
       }
-      iter->second.insert(std::make_pair(config.second_topic_name(i),
-        config.value(i)));
+      iter->second.insert(std::make_pair(config.second_topic_name(i), config.value(i)));
     }
   }
 }

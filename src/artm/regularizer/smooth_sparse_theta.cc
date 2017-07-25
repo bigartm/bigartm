@@ -18,8 +18,10 @@ void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter,
   assert(item_index >= 0 && item_index < batch_.item_size());
   assert(topics_size == topic_weight.size());
   assert(inner_iter < alpha_weight.size());
-  if (topics_size != topic_weight.size()) return;
-  if (inner_iter >= alpha_weight.size()) return;
+
+  if (topics_size != topic_weight.size() || inner_iter >= alpha_weight.size()) {
+    return;
+  }
 
   const Item& item = batch_.item(item_index);
   const std::string& item_title = item.has_title() ? item.title() : std::string();
@@ -37,8 +39,9 @@ void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter,
 
   if (use_specific_items) {
     auto iter = item_topic_multiplier_->find(item_title);
-    if (item_title.empty() || iter == item_topic_multiplier_->end())
+    if (item_title.empty() || iter == item_topic_multiplier_->end()) {
       return;
+    }
 
     if (use_specific_multiplier && iter->second.size() != topics_size) {
       LOG(ERROR) << "Topic coefs vector for item " << iter->first << " has length != topic_size ("
@@ -86,22 +89,27 @@ SmoothSparseTheta::CreateRegularizeThetaAgent(const Batch& batch,
       return nullptr;
     }
 
-    for (int i = 0; i < config_.alpha_iter_size(); ++i)
+    for (int i = 0; i < config_.alpha_iter_size(); ++i) {
       agent->alpha_weight.push_back(config_.alpha_iter(i));
+    }
   } else {
-    for (int i = 0; i < args.num_document_passes(); ++i)
+    for (int i = 0; i < args.num_document_passes(); ++i) {
       agent->alpha_weight.push_back(1.0f);
+    }
   }
 
   agent->topic_weight.resize(topic_size, 0.0f);
   if (config_.topic_name_size() == 0) {
-    for (int i = 0; i < topic_size; ++i)
+    for (int i = 0; i < topic_size; ++i) {
       agent->topic_weight[i] = static_cast<float>(tau);
+    }
   } else {
     for (int topic_id = 0; topic_id < config_.topic_name_size(); ++topic_id) {
       int topic_index = ::artm::core::repeated_field_index_of(
         args.topic_name(), config_.topic_name(topic_id));
-      if (topic_index != -1) agent->topic_weight[topic_index] = static_cast<float>(tau);
+      if (topic_index != -1) { 
+        agent->topic_weight[topic_index] = static_cast<float>(tau);
+      }
     }
   }
 
