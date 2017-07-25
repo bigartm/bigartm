@@ -60,7 +60,7 @@ bool SmoothSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) continue;
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
-        double value = transform_function_->apply(p_wt.get(token_id, topic_id));
+        float value = transform_function_->apply(p_wt.get(token_id, topic_id));
         result->set(token_id, topic_id, coefficient * value);
       }
     }

@@ -116,7 +116,7 @@ class ProgressScope {
   std::string newline_;
 };
 
-bool parseNumberOrPercent(std::string str, double* value, bool* fraction ) {
+bool parseNumberOrPercent(std::string str, float* value, bool* fraction ) {
   if (str.empty())
     return false;
 
@@ -129,7 +129,7 @@ bool parseNumberOrPercent(std::string str, double* value, bool* fraction ) {
   *value = 0;
   *fraction = true;
   try {
-    *value = boost::lexical_cast<double>(str);
+    *value = boost::lexical_cast<float>(str);
   }
   catch (...) {
     return false;
@@ -1199,7 +1199,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
       filter_dictionary_args.set_dictionary_name(options.main_dictionary_name);
       filter_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
       bool fraction;
-      double value;
+      float value;
       if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction))  {
         if (fraction) filter_dictionary_args.set_min_df_rate(value);
         else filter_dictionary_args.set_min_df(value);

@@ -47,7 +47,7 @@ bool SmoothTimeInTopicsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
 
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
-        double value = p_wt.get(index_prev, topic_id);
+        float value = p_wt.get(index_prev, topic_id);
 
         value *= ((p_wt.get(index_prev_prev, topic_id) - value) > 0.0 ? 1.0 : -1.0) +
                  ((p_wt.get(token_id, topic_id) - value) > 0.0 ? 1.0 : -1.0);

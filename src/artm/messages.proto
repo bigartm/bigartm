@@ -2,11 +2,6 @@ syntax = "proto2";
 // File messages.proto defines all messages that can be transefer in or out from BigARTM library.
 package artm;
 
-// Represents an array of double-precision floating point values
-message DoubleArray {
-  repeated double value = 1 [packed = true];
-}
-
 // Represents an array of single-precision floating point values
 message FloatArray {
   repeated float value = 1 [packed = true];
@@ -68,8 +63,8 @@ message Batch {
 
 message RegularizerSettings {
   optional string name = 1;
-  optional double tau = 2;
-  optional double gamma = 3;
+  optional float tau = 2;
+  optional float gamma = 3;
 }
 
 enum RegularizerType {
@@ -95,7 +90,7 @@ message RegularizerConfig {
   optional RegularizerType type = 2 [default = RegularizerType_Unknown];
   optional bytes config = 3;
   optional float tau = 4;
-  optional double gamma = 5;
+  optional float gamma = 5;
   optional string config_json = 6;
 }
 
@@ -105,7 +100,7 @@ message SmoothSparseThetaConfig {
   repeated float alpha_iter = 2;
   optional TransformConfig transform_config = 3;
   repeated string item_title = 4;
-  repeated DoubleArray item_topic_multiplier = 5;
+  repeated FloatArray item_topic_multiplier = 5;
 }
 
 // Represents a configuration of a SmoothSparse Phi regularizer
@@ -164,7 +159,7 @@ message SmoothPtdwConfig {
 
   optional SmoothType type = 1 [default = MovingAverage];
   optional int32 window = 3 [default = 10];
-  optional double threshold = 4 [default = 1.0];
+  optional float threshold = 4 [default = 1.0];
 }
 
 // Represents a configuration of a TopicSelection Theta regularizer
@@ -192,7 +187,7 @@ message HierarchySparsingThetaConfig {
 message TopicSegmentationPtdwConfig {
   repeated string background_topic_names = 1;
   optional int32 window = 3 [default = 10];
-  optional double threshold = 4 [default = 0.5];
+  optional float threshold = 4 [default = 0.5];
 }
 
 // Represents a configuration of a SmoothTimeInTopics Phi regularizer
@@ -210,8 +205,8 @@ message TransformConfig {
   }
 
   optional TransformType type = 1 [default = Constant];
-  optional double n = 2 [default = 1];
-  optional double a = 3 [default = 1];
+  optional float n = 2 [default = 1];
+  optional float a = 3 [default = 1];
 }
 
 enum ScoreType {
@@ -265,13 +260,16 @@ message PerplexityScoreConfig {
 message PerplexityScore {
   message ClassIdInfo {
     optional string class_id = 1;
+
+    // here and below we sum a lot of small values,
+    // so double type is required
     optional double raw = 2;
     optional double normalizer = 3;
     optional int64 zero_words = 4;
   }
 
   // general perplexity value for all cases
-  optional double value = 1;
+  optional float value = 1;
   
   // fields for case of all class ids
   optional double raw = 2;
@@ -290,7 +288,7 @@ message SparsityThetaScoreConfig {
 
 // Represents a result of calculation of a theta sparsity score
 message SparsityThetaScore {
-  optional double value = 1;
+  optional float value = 1;
   optional int64 zero_topics = 2;
   optional int64 total_topics = 3;
 }
@@ -304,7 +302,7 @@ message SparsityPhiScoreConfig {
 
 // Represents a result of calculation of a phi sparsity score
 message SparsityPhiScore {
-  optional double value = 1;
+  optional float value = 1;
   optional int64 zero_tokens = 2;
   optional int64 total_tokens = 3;
 }
@@ -317,8 +315,8 @@ message ItemsProcessedScoreConfig {
 message ItemsProcessedScore {
   optional int32 value = 1 [default = 0];
   optional int32 num_batches = 2 [default = 0];
-  optional double token_weight = 3 [default = 0];
-  optional double token_weight_in_effect = 4 [default = 0];
+  optional float token_weight = 3 [default = 0];
+  optional float token_weight_in_effect = 4 [default = 0];
 }
 
 // Represents a configuration of a top tokens score
@@ -358,19 +356,19 @@ message TopicKernelScoreConfig {
   optional float eps = 1 [default = 1e-37];
   optional string class_id = 2 [default = "@default_class"];
   repeated string topic_name = 3;
-  optional double probability_mass_threshold = 4 [default = 0.1];
+  optional float probability_mass_threshold = 4 [default = 0.1];
   optional string cooccurrence_dictionary_name = 5;
 }
 
 // Represents a result of calculation of a topic kernel score
 message TopicKernelScore {
-  repeated double kernel_size = 1;
-  repeated double kernel_purity = 2;
-  repeated double kernel_contrast = 3;
-  optional double average_kernel_size = 4;
-  optional double average_kernel_purity = 5;
-  optional double average_kernel_contrast = 6;
-  repeated double coherence = 7;
+  repeated float kernel_size = 1;
+  repeated float kernel_purity = 2;
+  repeated float kernel_contrast = 3;
+  optional float average_kernel_size = 4;
+  optional float average_kernel_purity = 5;
+  optional float average_kernel_contrast = 6;
+  repeated float coherence = 7;
   optional float average_coherence = 8;
   repeated StringArray kernel_tokens = 9;
   repeated string topic_name = 10;
@@ -385,10 +383,10 @@ message TopicMassPhiScoreConfig {
 
 // Represents a result of calculation of a topic part in nwt score
 message TopicMassPhiScore {
-  optional double value = 1;
+  optional float value = 1;
   repeated string topic_name = 2;
-  repeated double topic_ratio = 3;
-  repeated double topic_mass = 4;
+  repeated float topic_ratio = 3;
+  repeated float topic_mass = 4;
 }
 
 // Represents a configuration of a class precision score
@@ -397,9 +395,9 @@ message ClassPrecisionScoreConfig {
 
 // Represents a result of calculation of a class precision score
 message ClassPrecisionScore {
-  optional double value = 1;
-  optional double error = 2;
-  optional double total = 3;
+  optional float value = 1;
+  optional float error = 2;
+  optional float total = 3;
 }
 
 // Represents a configuration of a class precision score
@@ -600,7 +598,7 @@ message ProcessBatchesArgs {
   optional string pwt_source_name = 3;
   optional int32 num_document_passes = 4 [default = 10];
   repeated string regularizer_name = 6;
-  repeated double regularizer_tau = 7;
+  repeated float regularizer_tau = 7;
   repeated string class_id = 8;
   repeated float class_weight = 9;
   optional bool reuse_theta = 10 [default = false];

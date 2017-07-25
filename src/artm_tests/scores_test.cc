@@ -73,7 +73,7 @@ TEST(Scores, Perplexity) {
   ASSERT_DOUBLE_EQ(score.normalizer(), 0.0);
   ASSERT_EQ(score.zero_words(), 0);
   ASSERT_EQ(score.class_id_info_size(), 2);
-  double value_1 = score.value();
+  float value_1 = score.value();
 
   gs.set_score_name("perplexity_3");
   score = master_2.GetScoreAs< ::artm::PerplexityScore>(gs);
@@ -82,7 +82,7 @@ TEST(Scores, Perplexity) {
   ASSERT_DOUBLE_EQ(score.normalizer(), 0.0);
   ASSERT_EQ(score.zero_words(), 0);
   ASSERT_EQ(score.class_id_info_size(), 2);
-  double value_2 = score.value();
+  float value_2 = score.value();
 
   ASSERT_DOUBLE_EQ(value_1, value_2);
 

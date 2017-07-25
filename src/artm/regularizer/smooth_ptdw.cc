@@ -18,12 +18,12 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Loc
   int num_topics = ptdw->num_topics();
   if (config_.type() == SmoothPtdwConfig_SmoothType_MovingAverage) {
     // 1. evaluate wich tokens are background
-    double threshold = config_.threshold();
+    float threshold = config_.threshold();
     std::vector<bool> is_background(local_token_size, false);
     int count_background = 0;
     for (int i = 0; i < local_token_size; ++i) {
       const float* local_ptdw_ptr = &(*ptdw)(i, 0);  // NOLINT
-      double sum_background = 0.0;
+      float sum_background = 0.0;
       for (int k = 0; k < num_topics; ++k) {
         char b = 'b';
         if (args_.topic_name(k)[0] == b) {  // background topic
@@ -82,7 +82,7 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Loc
 
 std::shared_ptr<RegularizePtdwAgent>
 SmoothPtdw::CreateRegularizePtdwAgent(const Batch& batch,
-                                      const ProcessBatchesArgs& args, double tau) {
+                                      const ProcessBatchesArgs& args, float tau) {
   SmoothPtdwAgent* agent = new SmoothPtdwAgent(config_, args, tau);
   std::shared_ptr<RegularizePtdwAgent> retval(agent);
   return retval;

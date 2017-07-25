@@ -373,8 +373,8 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   gs.set_score_name("tts_class_two"); EXPECT_TRUE(master2.GetScoreAs< ::artm::TopTokensScore>(gs).num_entries() > 0);
 
   gs.set_score_name("perplexity");
-  double p1 = master.GetScoreAs< ::artm::PerplexityScore>(gs).value();
-  double p2 = master2.GetScoreAs< ::artm::PerplexityScore>(gs).value();
+  float p1 = master.GetScoreAs< ::artm::PerplexityScore>(gs).value();
+  float p2 = master2.GetScoreAs< ::artm::PerplexityScore>(gs).value();
   EXPECT_TRUE((p1 > 0) && (p2 > 0) && (p1 != p2));
 
   gs.set_score_name("theta_snippet");

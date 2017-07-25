@@ -513,8 +513,8 @@ class MasterComponent(object):
         :param regularizer_name: list of names of Phi regularizers to use
         :type regularizer_name: list of str
         :param regularizer_tau: list of tau coefficients for Phi regularizers
-        :type regularizer_tau: list of double
-        :type regularizer_tau: list of double
+        :type regularizer_tau: list of floats
+        :type regularizer_tau: list of floats
         """
         args = messages.RegularizeModelArgs(pwt_source_name=pwt,
                                             nwt_source_name=nwt,

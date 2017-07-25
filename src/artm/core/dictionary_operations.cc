@@ -239,7 +239,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
   }
 
   int total_items_count = 0;
-  std::unordered_map<ClassId, double> sum_w_tf;
+  std::unordered_map<ClassId, float> sum_w_tf;
   for (const std::string& batch_file : batches) {
     std::shared_ptr<Batch> batch_ptr = mem_batches.get(batch_file);
     try {

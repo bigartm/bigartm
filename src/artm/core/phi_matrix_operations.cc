@@ -212,7 +212,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
     }
 
     {
-      double tau = reg_iterator->tau();
+      float tau = reg_iterator->tau();
       bool relative_reg = reg_iterator->has_gamma();
 
       if (p_wt.token_size() != n_wt.token_size() || p_wt.topic_size() != n_wt.topic_size() ||
@@ -298,12 +298,12 @@ void PhiMatrixOperations::InvokePhiRegularizers(
           if (relative_reg) {
             if (!topics_to_regularize[topic_id]) continue;
 
-            double gamma = reg_iterator->gamma();
+            float gamma = reg_iterator->gamma();
             float n_t = iter->second.first.second[topic_id];
-            float n = iter->second.first.first;
+            double n = iter->second.first.first;
             float r_it = iter->second.second.second[topic_id];
-            float r_i = iter->second.second.first;
-            coefficient = static_cast<float>(gamma) * (n_t / r_it) + static_cast<float>(1 - gamma) * (n / r_i);
+            double r_i = iter->second.second.first;
+            coefficient = gamma * (n_t / r_it) + (1 - gamma) * static_cast<float>(n / r_i);
           }
           // update global r_wt using coefficient and tau
           float increment = coefficient * tau * local_r_wt.get(token_id, topic_id);

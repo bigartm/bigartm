@@ -125,7 +125,7 @@ void RunBasicTest(bool serialize_as_json) {
 
   artm::TopicModel topic_model;
   double expected_normalizer = 0;
-  double previous_perplexity = 0;
+  float previous_perplexity = 0;
   for (int iter = 0; iter < 5; ++iter) {
     master_component.FitOfflineModel(offline_args);
     {

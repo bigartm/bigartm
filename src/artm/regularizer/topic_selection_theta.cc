@@ -43,7 +43,7 @@ void TopicSelectionThetaAgent::Apply(int inner_iter,
 
   auto local_topic_value = topic_value;
   if (local_topic_value.empty()) {
-    std::vector<double> n_t(topics_num, 0.0);
+    std::vector<float> n_t(topics_num, 0.0);
     double n = 0.0;
 
     // count n_t
@@ -56,7 +56,7 @@ void TopicSelectionThetaAgent::Apply(int inner_iter,
       n += n_t[topic_id];
 
     for (int topic_id = 0; topic_id < topics_num; ++topic_id) {
-      double val = n_t[topic_id] * topics_num;
+      float val = n_t[topic_id] * topics_num;
       local_topic_value.push_back((val > 0) ? static_cast<float>(n / val) : 0.0f);
     }
   }
@@ -74,7 +74,7 @@ TopicSelectionTheta::TopicSelectionTheta(const TopicSelectionThetaConfig& config
 
 std::shared_ptr<RegularizeThetaAgent>
 TopicSelectionTheta::CreateRegularizeThetaAgent(const Batch& batch,
-                                                const ProcessBatchesArgs& args, double tau) {
+                                                const ProcessBatchesArgs& args, float tau) {
   TopicSelectionThetaAgent* agent = new TopicSelectionThetaAgent();
   std::shared_ptr<TopicSelectionThetaAgent> retval(agent);
 

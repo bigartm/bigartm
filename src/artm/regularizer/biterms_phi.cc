@@ -52,10 +52,10 @@ bool BitermsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
 
   // compute n_t
-  std::vector<double> n_t(topic_size, 0.0);
+  std::vector<float> n_t(topic_size, 0.0);
   for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
     for (int token_index = 0; token_index < token_size; ++token_index) {
-      n_t[topic_index] += static_cast<double>(n_wt.get(token_index, topic_index));
+      n_t[topic_index] += n_wt.get(token_index, topic_index);
     }
   }
 

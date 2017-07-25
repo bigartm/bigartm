@@ -19,7 +19,7 @@
      inner iterations)
    - item_title (an array of string. If not empty => only items with
      titles from this array will be regularized)
-   - item_topic_multiplier (an array of arrays of doubles. Should have
+   - item_topic_multiplier (an array of arrays of floats. Should have
      length 1 or equal to length of item_title)
 
 */
@@ -38,14 +38,14 @@
 namespace artm {
 namespace regularizer {
 
-typedef std::unordered_map<std::string, std::vector<double> > ItemTopicMultiplier;
+typedef std::unordered_map<std::string, std::vector<float> > ItemTopicMultiplier;
 
 class SmoothSparseThetaAgent : public RegularizeThetaAgent {
  public:
   explicit SmoothSparseThetaAgent(const Batch& batch,
                                   std::shared_ptr<artm::core::TransformFunction> func,
                                   std::shared_ptr<ItemTopicMultiplier> item_topic_multiplier,
-                                  std::shared_ptr<std::vector<double> > universal_topic_multiplier)
+                                  std::shared_ptr<std::vector<float> > universal_topic_multiplier)
     : batch_(batch)
     , transform_function_(func)
     , item_topic_multiplier_(item_topic_multiplier)
@@ -62,7 +62,7 @@ class SmoothSparseThetaAgent : public RegularizeThetaAgent {
 
   std::shared_ptr<artm::core::TransformFunction> transform_function_;
   std::shared_ptr<ItemTopicMultiplier> item_topic_multiplier_;
-  std::shared_ptr<std::vector<double> > universal_topic_multiplier_;
+  std::shared_ptr<std::vector<float> > universal_topic_multiplier_;
 };
 
 class SmoothSparseTheta : public RegularizerInterface {
@@ -70,7 +70,7 @@ class SmoothSparseTheta : public RegularizerInterface {
   explicit SmoothSparseTheta(const SmoothSparseThetaConfig& config);
 
   virtual std::shared_ptr<RegularizeThetaAgent>
-  CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau);
+  CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, float tau);
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
 
@@ -82,7 +82,7 @@ class SmoothSparseTheta : public RegularizerInterface {
   SmoothSparseThetaConfig config_;
   std::shared_ptr<artm::core::TransformFunction> transform_function_;
   std::shared_ptr<ItemTopicMultiplier> item_topic_multiplier_;
-  std::shared_ptr<std::vector<double> > universal_topic_multiplier_;
+  std::shared_ptr<std::vector<float> > universal_topic_multiplier_;
 };
 
 }  // namespace regularizer

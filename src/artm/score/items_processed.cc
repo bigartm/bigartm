@@ -15,8 +15,8 @@ void ItemsProcessed::AppendScore(
     const artm::core::PhiMatrix& p_wt,
     const artm::ProcessBatchesArgs& args,
     Score* score) {
-  double token_weight = 0.0;
-  double token_weight_in_effect = 0.0;
+  float token_weight = 0.0f;
+  float token_weight_in_effect = 0.0f;
   for (auto& item : batch.item()) {
     for (int token_index = 0; token_index < item.token_id_size(); token_index++) {
       int token_id = item.token_id(token_index);

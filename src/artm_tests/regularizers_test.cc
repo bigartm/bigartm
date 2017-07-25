@@ -108,7 +108,7 @@ TEST(Regularizers, SmoothSparseTheta) {
   ::artm::ThetaMatrix theta_matrix = master.GetThetaMatrix();
 
   // nDocs x nTopics
-  std::vector<std::vector<double> > expected_values = {
+  std::vector<std::vector<float> > expected_values = {
     { 0.0,  0.0,   0.0,   0.0 },
     { 0.265, 0.224, 0.247, 0.264 },
     { 0.0,  0.0,   0.0,   0.0 }

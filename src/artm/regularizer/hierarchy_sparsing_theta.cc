@@ -24,9 +24,11 @@ void HierarchySparsingThetaAgent::Apply(int inner_iter,
   ::artm::utility::LocalThetaMatrix<float>* r_td) const {
   if (!(regularization_on)) return;
 
-  std::vector<double> n_d, n_t;
-  int topics_num = n_td.num_topics(), items_num = n_td.num_items();
-  double item_sum = 0, topic_sum = 0;
+  std::vector<float> n_d, n_t;
+  int topics_num = n_td.num_topics();
+  int items_num = n_td.num_items();
+  float item_sum = 0.0f;
+  float topic_sum = 0.0f;
 
   // count n_d
   for (int item_id = 0; item_id < items_num; ++item_id) {
@@ -65,7 +67,7 @@ HierarchySparsingTheta::HierarchySparsingTheta(const HierarchySparsingThetaConfi
 
 std::shared_ptr<RegularizeThetaAgent>
   HierarchySparsingTheta::CreateRegularizeThetaAgent(const Batch& batch,
-  const ProcessBatchesArgs& args, double tau) {
+  const ProcessBatchesArgs& args, float tau) {
   HierarchySparsingThetaAgent* agent = new HierarchySparsingThetaAgent();
   std::shared_ptr<HierarchySparsingThetaAgent> retval(agent);
 

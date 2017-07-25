@@ -47,15 +47,15 @@ void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter,
     }
 
     for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
-      double mult = use_specific_multiplier ? iter->second[topic_id] :
+      float mult = use_specific_multiplier ? iter->second[topic_id] :
         (use_universal_multiplier ? (*universal_topic_multiplier_)[topic_id]: 1.0);
-      double value = transform_function_->apply(n_td[topic_id]);
+      float value = transform_function_->apply(n_td[topic_id]);
       r_td[topic_id] += value > 0.0f ? mult * alpha_weight[inner_iter] * topic_weight[topic_id] * value : 0.0f;
     }
   } else {
     for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
-      double mult = use_universal_multiplier ? (*universal_topic_multiplier_)[topic_id] : 1.0;
-      double value = transform_function_->apply(n_td[topic_id]);
+      float mult = use_universal_multiplier ? (*universal_topic_multiplier_)[topic_id] : 1.0;
+      float value = transform_function_->apply(n_td[topic_id]);
       r_td[topic_id] += value > 0.0f ? mult * alpha_weight[inner_iter] * topic_weight[topic_id] * value : 0.0f;
     }
   }
@@ -71,7 +71,7 @@ SmoothSparseTheta::SmoothSparseTheta(const SmoothSparseThetaConfig& config)
 
 std::shared_ptr<RegularizeThetaAgent>
 SmoothSparseTheta::CreateRegularizeThetaAgent(const Batch& batch,
-                                              const ProcessBatchesArgs& args, double tau) {
+                                              const ProcessBatchesArgs& args, float tau) {
   SmoothSparseThetaAgent* agent = new SmoothSparseThetaAgent(batch,
                                                              transform_function_,
                                                              item_topic_multiplier_,
@@ -121,7 +121,7 @@ void SmoothSparseTheta::ReconfigureImpl() {
 
   if (config_.item_topic_multiplier_size() == 1) {
     universal_topic_multiplier_.reset(
-      new std::vector<double>(config_.item_topic_multiplier(0).value().begin(),
+      new std::vector<float>(config_.item_topic_multiplier(0).value().begin(),
                               config_.item_topic_multiplier(0).value().end()));
   }
 
@@ -130,7 +130,7 @@ void SmoothSparseTheta::ReconfigureImpl() {
     if (config_.item_topic_multiplier_size() == config_.item_title_size()) {
       for (int i = 0; i < config_.item_title_size(); ++i) {
         item_topic_multiplier_->insert(std::make_pair(config_.item_title(i),
-                                       std::vector<double>(config_.item_topic_multiplier(i).value().begin(),
+                                       std::vector<float>(config_.item_topic_multiplier(i).value().begin(),
                                        config_.item_topic_multiplier(i).value().end())));
         auto m_ptr = config_.mutable_item_topic_multiplier(i);
         m_ptr->clear_value();
@@ -138,7 +138,7 @@ void SmoothSparseTheta::ReconfigureImpl() {
     } else {
       LOG(WARNING) << "SmoothSparseThetaConfig.item_topic_multilplier has incorrect size or is empty";
       for (int i = 0; i < config_.item_title_size(); ++i) {
-        item_topic_multiplier_->insert(std::make_pair(config_.item_title(i), std::vector<double>()));
+        item_topic_multiplier_->insert(std::make_pair(config_.item_title(i), std::vector<float>()));
       }
     }
   }

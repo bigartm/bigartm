@@ -29,7 +29,7 @@ std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix&
     use_all_classes = true;
   }
 
-  std::vector<double> topic_mass;
+  std::vector<float> topic_mass;
   topic_mass.assign(topics_to_score_size, 0.0);
   double denominator = 0.0;
   double numerator = 0.0;
@@ -40,7 +40,7 @@ std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix&
 
     int real_topic_index = 0;
     for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-      double value = p_wt.get(token_index, topic_index);
+      float value = p_wt.get(token_index, topic_index);
       denominator += value;
 
       if (topics_to_score[topic_index]) {
@@ -53,9 +53,9 @@ std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix&
   TopicMassPhiScore* topic_mass_score = new TopicMassPhiScore();
   std::shared_ptr<Score> retval(topic_mass_score);
 
-  double value = 0.0;
+  float value = 0.0;
   if (denominator > config_.eps())
-    value = static_cast<double>(numerator / denominator);
+    value = static_cast<float>(numerator / denominator);
   topic_mass_score->set_value(value);
 
   for (int i = 0; i < topic_size; ++i) {
@@ -63,10 +63,10 @@ std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix&
       topic_mass_score->add_topic_name(p_wt.topic_name(i));
   }
 
-  for (double elem : topic_mass) {
+  for (const auto& elem : topic_mass) {
     // don't check denominator value: if it's near zero the 'value' will show it
     topic_mass_score->add_topic_mass(elem);
-    topic_mass_score->add_topic_ratio(static_cast<double>(elem / denominator));
+    topic_mass_score->add_topic_ratio(elem / denominator);
   }
 
   return retval;

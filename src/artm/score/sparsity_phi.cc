@@ -49,8 +49,8 @@ std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::PhiMatrix& 
 
   sparsity_phi_score->set_zero_tokens(zero_tokens_count);
   sparsity_phi_score->set_total_tokens(class_tokens_count * topics_to_score_size);
-  sparsity_phi_score->set_value(static_cast<double>(sparsity_phi_score->zero_tokens()) /
-                                static_cast<double>(sparsity_phi_score->total_tokens()));
+  sparsity_phi_score->set_value(static_cast<float>(sparsity_phi_score->zero_tokens()) /
+                                static_cast<float>(sparsity_phi_score->total_tokens()));
 
   return retval;
 }

@@ -64,7 +64,7 @@ void SparsityTheta::AppendScore(const Score& score, Score* target) {
                                          sparsity_theta_score->zero_topics());
   sparsity_theta_target->set_total_topics(sparsity_theta_target->total_topics() +
                                           sparsity_theta_score->total_topics());
-  sparsity_theta_target->set_value(static_cast<double>(sparsity_theta_target->zero_topics()) /
+  sparsity_theta_target->set_value(static_cast<float>(sparsity_theta_target->zero_topics()) /
                                     sparsity_theta_target->total_topics());
 }
 

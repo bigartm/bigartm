@@ -284,7 +284,7 @@ CreateRegularizerAgents(const Batch& batch, const ProcessBatchesArgs& args, Inst
                         RegularizeThetaAgentCollection* theta_agents, RegularizePtdwAgentCollection* ptdw_agents) {
   for (int reg_index = 0; reg_index < args.regularizer_name_size(); ++reg_index) {
     auto& reg_name = args.regularizer_name(reg_index);
-    double tau = args.regularizer_tau(reg_index);
+    float tau = args.regularizer_tau(reg_index);
     auto regularizer = instance->regularizers()->get(reg_name);
     if (regularizer == nullptr) {
       LOG(ERROR) << "Theta Regularizer with name <" << reg_name << "> does not exist.";

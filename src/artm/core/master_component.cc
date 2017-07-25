@@ -1288,7 +1288,7 @@ class ArtmExecutor {
     }
   }
 
-  void Merge(std::string nwt, double decay_weight, std::string nwt_hat, double apply_weight) {
+  void Merge(std::string nwt, float decay_weight, std::string nwt_hat, float apply_weight) {
     MergeModelArgs merge_model_args;
     merge_model_args.add_nwt_source_name(nwt);
     merge_model_args.add_source_weight(decay_weight);

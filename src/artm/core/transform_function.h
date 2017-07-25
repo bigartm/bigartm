@@ -17,28 +17,28 @@ class TransformFunction {
  public:
   static std::shared_ptr<TransformFunction> create(const TransformConfig& config);
   static std::shared_ptr<TransformFunction> create();
-  virtual double apply(double value) = 0;
+  virtual float apply(float value) = 0;
   virtual ~TransformFunction() { }
 };
 
 class LogarithmTransformFunction : public TransformFunction {
  public:
-  virtual double apply(double value);
+  virtual float apply(float value);
 };
 
 class PolynomialTransformFunction : public TransformFunction {
  public:
-  PolynomialTransformFunction(double a, double n);
-  virtual double apply(double value);
+  PolynomialTransformFunction(float a, float n);
+  virtual float apply(float value);
 
  private:
-  double a_;
-  double n_;
+  float a_;
+  float n_;
 };
 
 class ConstantTransformFunction : public TransformFunction {
  public:
-  double apply(double value);
+  float apply(float value);
 };
 
 }  // namespace core

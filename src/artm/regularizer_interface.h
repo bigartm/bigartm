@@ -65,12 +65,12 @@ class RegularizerInterface {
   virtual ~RegularizerInterface() { }
 
   virtual std::shared_ptr<RegularizeThetaAgent>
-  CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau) {
+  CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, float tau) {
     return nullptr;
   }
 
   virtual std::shared_ptr<RegularizePtdwAgent>
-  CreateRegularizePtdwAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau) {
+  CreateRegularizePtdwAgent(const Batch& batch, const ProcessBatchesArgs& args, float tau) {
     return nullptr;
   }
 
