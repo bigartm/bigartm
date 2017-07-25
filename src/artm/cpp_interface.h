@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CPP_INTERFACE_H_
-#define SRC_ARTM_CPP_INTERFACE_H_
+#pragma once
 
 #include <memory>
 #include <stdexcept>
@@ -177,5 +176,3 @@ std::vector<T> MasterModel::GetScoreArrayAs(const GetScoreArrayArgs& args) {
 }
 
 }  // namespace artm
-
-#endif  // SRC_ARTM_CPP_INTERFACE_H_

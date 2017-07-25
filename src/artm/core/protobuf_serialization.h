@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_PROTOBUF_SERIALIZATION_H_
-#define SRC_ARTM_CORE_PROTOBUF_SERIALIZATION_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -52,5 +51,3 @@ class ProtobufSerialization {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_PROTOBUF_SERIALIZATION_H_

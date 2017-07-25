@@ -36,8 +36,8 @@ remember to take these values into account when computing p(topic)
 in formula (*)!
 */
 
-#ifndef SRC_ARTM_REGULARIZER_HIERARCHY_SPARSING_THETA_H_
-#define SRC_ARTM_REGULARIZER_HIERARCHY_SPARSING_THETA_H_
+#pragma once
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -81,6 +81,3 @@ class HierarchySparsingTheta : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_HIERARCHY_SPARSING_THETA_H_
-

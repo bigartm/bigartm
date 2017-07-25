@@ -4,8 +4,7 @@
 // Most common tasks are to search for a value (or values) in a repeated protobuf field.
 // The name 'is_member' is motivated by MatLab method (http://se.mathworks.com/help/matlab/ref/ismember.html)
 
-#ifndef SRC_ARTM_CORE_PROTOBUF_HELPERS_H_
-#define SRC_ARTM_CORE_PROTOBUF_HELPERS_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -82,5 +81,3 @@ bool repeated_field_equals(const T& f1, const T& f2) {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_PROTOBUF_HELPERS_H_

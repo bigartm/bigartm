@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_TESTS_TEST_MOTHER_H_
-#define SRC_ARTM_TESTS_TEST_MOTHER_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -51,5 +50,3 @@ class TestMother {
 
 }  // namespace test
 }  // namespace artm
-
-#endif  // SRC_ARTM_TESTS_TEST_MOTHER_H_

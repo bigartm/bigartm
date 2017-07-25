@@ -8,8 +8,7 @@
 
 */
 
-#ifndef SRC_ARTM_SCORE_PEAK_MEMORY_H_
-#define SRC_ARTM_SCORE_PEAK_MEMORY_H_
+#pragma once
 
 #include "artm/score_calculator_interface.h"
 
@@ -29,5 +28,3 @@ class PeakMemory : public ScoreCalculatorInterface {
 
 }  // namespace score
 }  // namespace artm
-
-#endif  // SRC_ARTM_SCORE_PEAK_MEMORY_H_

@@ -18,8 +18,7 @@
 
 */
 
-#ifndef SRC_ARTM_SCORE_TOPIC_KERNEL_H_
-#define SRC_ARTM_SCORE_TOPIC_KERNEL_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -48,5 +47,3 @@ class TopicKernel : public ScoreCalculatorInterface {
 
 }  // namespace score
 }  // namespace artm
-
-#endif  // SRC_ARTM_SCORE_TOPIC_KERNEL_H_

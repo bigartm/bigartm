@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_PROCESSOR_INPUT_H_
-#define SRC_ARTM_CORE_PROCESSOR_INPUT_H_
+#pragma once
 
 #include <string>
 
@@ -85,5 +84,3 @@ class ProcessorInput {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_PROCESSOR_INPUT_H_

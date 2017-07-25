@@ -20,8 +20,7 @@
 
 */
 
-#ifndef SRC_ARTM_REGULARIZER_TOPIC_SELECTION_THETA_H_
-#define SRC_ARTM_REGULARIZER_TOPIC_SELECTION_THETA_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -63,5 +62,3 @@ class TopicSelectionTheta : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_TOPIC_SELECTION_THETA_H_

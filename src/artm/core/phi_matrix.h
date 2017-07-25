@@ -1,8 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_PHI_MATRIX_H_
-#define SRC_ARTM_CORE_PHI_MATRIX_H_
-
+#pragma once
 
 #include <string>
 #include <vector>
@@ -44,9 +42,5 @@ class PhiMatrix {
   virtual ~PhiMatrix() {}
 };
 
-
 }  // namespace core
 }  // namespace artm
-
-
-#endif  // SRC_ARTM_CORE_PHI_MATRIX_H_

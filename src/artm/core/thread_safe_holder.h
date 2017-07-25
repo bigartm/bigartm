@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_THREAD_SAFE_HOLDER_H_
-#define SRC_ARTM_CORE_THREAD_SAFE_HOLDER_H_
+#pragma once
 
 #include <queue>
 #include <map>
@@ -191,5 +190,3 @@ class ThreadSafeQueue : boost::noncopyable {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_THREAD_SAFE_HOLDER_H_

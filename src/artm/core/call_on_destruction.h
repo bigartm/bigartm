@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_CALL_ON_DESTRUCTION_H_
-#define SRC_ARTM_CORE_CALL_ON_DESTRUCTION_H_
+#pragma once
 
 #include <functional>
 
@@ -28,5 +27,3 @@ class call_on_destruction {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_CALL_ON_DESTRUCTION_H_

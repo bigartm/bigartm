@@ -5,8 +5,7 @@
    Work in progress, description will be provided later.
 */
 
-#ifndef SRC_ARTM_REGULARIZER_SMOOTH_PTDW_H_
-#define SRC_ARTM_REGULARIZER_SMOOTH_PTDW_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -47,5 +46,3 @@ class SmoothPtdw : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_SMOOTH_PTDW_H_

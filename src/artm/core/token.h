@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_TOKEN_H_
-#define SRC_ARTM_CORE_TOKEN_H_
+#pragma once
 
 #include <string>
 
@@ -71,5 +70,3 @@ struct TokenHasher {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_TOKEN_H_

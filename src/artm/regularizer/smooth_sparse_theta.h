@@ -24,8 +24,7 @@
 
 */
 
-#ifndef SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_THETA_H_
-#define SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_THETA_H_
+#pragma once
 
 #include <map>
 #include <memory>
@@ -87,5 +86,3 @@ class SmoothSparseTheta : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_THETA_H_

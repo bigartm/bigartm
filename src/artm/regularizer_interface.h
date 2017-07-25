@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_REGULARIZER_INTERFACE_H_
-#define SRC_ARTM_REGULARIZER_INTERFACE_H_
+#pragma once
 
 #include <vector>
 #include <map>
@@ -95,5 +94,3 @@ class RegularizerInterface {
 };
 
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_INTERFACE_H_

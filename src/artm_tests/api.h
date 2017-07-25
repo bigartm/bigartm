@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_TESTS_API_H_
-#define SRC_ARTM_TESTS_API_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -44,5 +43,3 @@ class Api {
 
 }  // namespace test
 }  // namespace artm
-
-#endif  // SRC_ARTM_TESTS_API_H_

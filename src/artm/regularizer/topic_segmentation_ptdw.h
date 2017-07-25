@@ -1,12 +1,11 @@
 /* Copyright 2017, Additive Regularization of Topic Models.
 
-   Author: Anastasia Bayandina
+   Author: Anastasia Bayandina (anast.bayandina@gmail.com)
 
    ToDo: Description will be updated later
 */
 
-#ifndef SRC_ARTM_REGULARIZER_TOPIC_SEGMENTATION_PTDW_H_
-#define SRC_ARTM_REGULARIZER_TOPIC_SEGMENTATION_PTDW_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -45,5 +44,3 @@ class TopicSegmentationPtdw : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_TOPIC_SEGMENTATION_PTDW_H_

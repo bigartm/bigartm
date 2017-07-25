@@ -20,8 +20,7 @@
 Note, that in case of topic_pairs usage the topic_names parameter will be ignored.
 */
 
-#ifndef SRC_ARTM_REGULARIZER_DECORRELATOR_PHI_H_
-#define SRC_ARTM_REGULARIZER_DECORRELATOR_PHI_H_
+#pragma once
 
 #include <unordered_map>
 #include <string>
@@ -58,5 +57,3 @@ class DecorrelatorPhi : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_DECORRELATOR_PHI_H_

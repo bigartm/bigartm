@@ -2,8 +2,7 @@
 
 // Author: Murat Apishev (great-mel@yandex.ru)
 
-#ifndef SRC_ARTM_CORE_TRANSFORM_FUNCTION_H_
-#define SRC_ARTM_CORE_TRANSFORM_FUNCTION_H_
+#pragma once
 
 #include <memory>
 
@@ -43,5 +42,3 @@ class ConstantTransformFunction : public TransformFunction {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_TRANSFORM_FUNCTION_H_

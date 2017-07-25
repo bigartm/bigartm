@@ -19,8 +19,7 @@
 
 */
 
-#ifndef SRC_ARTM_REGULARIZER_SPECIFIED_SPARSE_PHI_H_
-#define SRC_ARTM_REGULARIZER_SPECIFIED_SPARSE_PHI_H_
+#pragma once
 
 #include <string>
 
@@ -48,5 +47,3 @@ class SpecifiedSparsePhi : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_SPECIFIED_SPARSE_PHI_H_

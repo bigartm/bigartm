@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_CHECK_MESSAGES_H_
-#define SRC_ARTM_CORE_CHECK_MESSAGES_H_
+#pragma once
 
 #include <string>
 
@@ -998,6 +997,3 @@ inline void FixPackedMessage(std::string* message) {
 
 }  // namespace core
 }  // namespace artm
-
-
-#endif  // SRC_ARTM_CORE_CHECK_MESSAGES_H_

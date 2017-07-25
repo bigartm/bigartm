@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_SCORE_MANAGER_H_
-#define SRC_ARTM_CORE_SCORE_MANAGER_H_
+#pragma once
 
 #include <map>
 #include <memory>
@@ -62,6 +61,3 @@ class ScoreTracker : boost::noncopyable {
 
 }  // namespace core
 }  // namespace artm
-
-
-#endif  // SRC_ARTM_CORE_SCORE_MANAGER_H_
