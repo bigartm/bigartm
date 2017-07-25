@@ -18,7 +18,6 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                     const ::artm::core::PhiMatrix& n_wt,
                                     ::artm::core::PhiMatrix* result) {
   // read the parameters from config and control their correctness
-  const int topic_size = p_wt.topic_size();
   const int token_size = p_wt.token_size();
   const bool use_topic_pairs = (topic_pairs_.size() > 0);
 

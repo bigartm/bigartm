@@ -15,24 +15,28 @@ namespace artm {
 namespace score {
 
 std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& p_wt) {
-  int topic_size = p_wt.topic_size();
-  int token_size = p_wt.token_size();
+  const int topic_size = p_wt.topic_size();
+  const int token_size = p_wt.token_size();
 
   // parameters preparation
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
-  if (config_.has_cooccurrence_dictionary_name())
+  if (config_.has_cooccurrence_dictionary_name()) {
     dictionary_ptr = dictionary(config_.cooccurrence_dictionary_name());
+  }
   bool count_coherence = dictionary_ptr != nullptr;
 
-  auto topic_name = p_wt.topic_name();
+  const auto& topic_name = p_wt.topic_name();
   std::vector<bool> topics_to_score;
-  if (config_.topic_name_size() == 0)
+  if (config_.topic_name_size() == 0) {
     topics_to_score.assign(topic_size, true);
-  else
+  } else {
     topics_to_score = core::is_member(topic_name, config_.topic_name());
+  }
+
   ::artm::core::ClassId class_id = ::artm::core::DefaultClass;
-  if (config_.has_class_id())
+  if (config_.has_class_id()) {
     class_id = config_.class_id();
+  }
 
   float probability_mass_threshold = config_.probability_mass_threshold();
   if (probability_mass_threshold < 0 || probability_mass_threshold > 1) {
@@ -67,21 +71,24 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
     }
   }
 
-  auto n_wt = GetPhiMatrix(instance_->config()->nwt_name());
+  const auto& n_wt = GetPhiMatrix(instance_->config()->nwt_name());
   std::vector<float> n_t(topic_size, 0.0f);
   std::vector<std::vector<core::Token> > topic_kernel_tokens(
       topic_size, std::vector<core::Token>());
 
-  for (int topic_index = 0; topic_index < topic_size; ++topic_index)
-    for (int token_index = 0; token_index < token_size; ++token_index)
+  for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+    for (int token_index = 0; token_index < token_size; ++token_index) {
       n_t[topic_index] += n_wt->get(token_index, topic_index);
+    }
+  }
 
   for (int token_index = 0; token_index < token_size; ++token_index) {
     if (p_wt.token(token_index).class_id == class_id) {
       float p_w = 0.0;
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-        if (topics_to_score[topic_index])
+        if (topics_to_score[topic_index]) {
           p_w += p_wt.get(token_index, topic_index) * n_t[topic_index];
+	}
       }
 
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
@@ -130,7 +137,7 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
 
   for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
     float current_kernel_size = kernel_size->Get(topic_index);
-    bool useful_topic = (current_kernel_size != -1);
+    const bool useful_topic = (current_kernel_size != -1);
     if (useful_topic) {
       useful_topics_count += 1;
       average_kernel_size += current_kernel_size;
@@ -138,8 +145,9 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
       average_kernel_contrast += kernel_contrast->Get(topic_index);
 
       StringArray* tokens = kernel_tokens->Add();
-      for (unsigned token_id = 0; token_id < topic_kernel_tokens[topic_index].size(); ++token_id)
+      for (unsigned token_id = 0; token_id < topic_kernel_tokens[topic_index].size(); ++token_id) {
         tokens->add_value(topic_kernel_tokens[topic_index][token_id].keyword);
+      }
     }
   }
   average_kernel_size /= useful_topics_count;
@@ -149,8 +157,9 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
   topic_kernel_score->set_average_kernel_size(average_kernel_size);
   topic_kernel_score->set_average_kernel_purity(average_kernel_purity);
   topic_kernel_score->set_average_kernel_contrast(average_kernel_contrast);
-  if (count_coherence)
+  if (count_coherence) {
     topic_kernel_score->set_average_coherence(average_kernel_coherence);
+  }
 
   return retval;
 }

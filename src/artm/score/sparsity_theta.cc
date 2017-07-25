@@ -19,7 +19,7 @@ void SparsityTheta::AppendScore(
     const artm::ProcessBatchesArgs& args,
     const std::vector<float>& theta,
     Score* score) {
-  int topic_size = p_wt.topic_size();
+  const int topic_size = p_wt.topic_size();
 
   std::vector<bool> topics_to_score;
   ::google::protobuf::int64 topics_to_score_size = topic_size;

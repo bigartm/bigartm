@@ -18,7 +18,7 @@ namespace score {
 
 class PeakMemory : public ScoreCalculatorInterface {
  public:
-  explicit PeakMemory(const ScoreConfig& config) : ScoreCalculatorInterface(config) {}
+  explicit PeakMemory(const ScoreConfig& config) : ScoreCalculatorInterface(config) { }
 
   virtual bool is_cumulative() const { return false; }
 

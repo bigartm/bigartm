@@ -20,8 +20,9 @@ Perplexity::Perplexity(const ScoreConfig& config) : ScoreCalculatorInterface(con
   config_ = ParseConfig<PerplexityScoreConfig>();
   std::stringstream ss;
   ss << ": model_type=" << config_.model_type();
-  if (config_.has_dictionary_name())
+  if (config_.has_dictionary_name()) {
     ss << ", dictionary_name=" << config_.dictionary_name();
+  }
   LOG(INFO) << "Perplexity score calculator created" << ss.str();
 }
 
@@ -32,7 +33,7 @@ void Perplexity::AppendScore(
     const artm::ProcessBatchesArgs& args,
     const std::vector<float>& theta,
     Score* score) {
-  int topic_size = p_wt.topic_size();
+  const int topic_size = p_wt.topic_size();
 
   // fields of proto messages for all classes
   std::unordered_map<::artm::core::ClassId, float> class_weight_map;
@@ -53,7 +54,7 @@ void Perplexity::AppendScore(
       zero_words_map.insert(std::make_pair(args.class_id(i), 0));
     }
   } else {
-    for (auto& class_id : config_.class_id()) {
+    for (const auto& class_id : config_.class_id()) {
       for (int i = 0; (i < args.class_id_size()) && (i < args.class_weight_size()); ++i) {
         if (class_id == args.class_id(i)) {
           class_weight_map.insert(std::make_pair(args.class_id(i), args.class_weight(i)));
@@ -69,7 +70,7 @@ void Perplexity::AppendScore(
       return;
     }
   }
-  bool use_class_ids = !class_weight_map.empty();
+  const bool use_class_ids = !class_weight_map.empty();
 
   // count perplexity normalizer n_d
   for (int token_index = 0; token_index < item.token_weight_size(); ++token_index) {
@@ -89,8 +90,9 @@ void Perplexity::AppendScore(
 
   // check dictionary existence for replacing zero pwt sums
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
-  if (config_.has_dictionary_name())
+  if (config_.has_dictionary_name()) {
     dictionary_ptr = dictionary(config_.dictionary_name());
+  }
 
   bool use_document_unigram_model = true;
   if (config_.has_model_type()) {
@@ -109,19 +111,21 @@ void Perplexity::AppendScore(
   std::vector<float> helper_vector(topic_size, 0.0f);
   for (int token_index = 0; token_index < item.token_weight_size(); ++token_index) {
     double sum = 0.0;
-    const artm::core::Token& token = token_dict[item.token_id(token_index)];
+    const auto& token = token_dict[item.token_id(token_index)];
 
     float class_weight = 1.0f;
     if (use_class_ids) {
       auto class_weight_iter = class_weight_map.find(token.class_id);
-      if (class_weight_iter == class_weight_map.end())
+      if (class_weight_iter == class_weight_map.end()) {
         continue;
+      }
       class_weight = class_weight_iter->second;
     }
 
     float token_weight = class_weight * item.token_weight(token_index);
-    if (token_weight == 0.0f)
+    if (token_weight == 0.0f) {
       continue;
+    }
 
 
     int p_wt_token_index = p_wt.token_index(token);
@@ -131,7 +135,7 @@ void Perplexity::AppendScore(
         sum += theta[topic_index] * helper_vector[topic_index];
       }
     }
-    if (sum == 0.0) {
+    if (sum == 0.0f) {
       if (use_document_unigram_model) {
         sum = token_weight / (use_class_ids ? normalizer_map[token.class_id] : normalizer);
       } else {
@@ -257,7 +261,7 @@ void Perplexity::AppendScore(const Score& score, Score* target) {
             << ", zero_words=" << dst->zero_words();
   }
 
-  perplexity_target->set_value(exp(- pre_value));
+  perplexity_target->set_value(exp(-pre_value));
 }
 
 }  // namespace score

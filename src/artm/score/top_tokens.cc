@@ -16,12 +16,13 @@ namespace artm {
 namespace score {
 
 std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_wt) {
-  int topic_size = p_wt.topic_size();
-  int token_size = p_wt.token_size();
+  const int topic_size = p_wt.topic_size();
+  const int token_size = p_wt.token_size();
 
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
-  if (config_.has_cooccurrence_dictionary_name())
+  if (config_.has_cooccurrence_dictionary_name()) {
     dictionary_ptr = dictionary(config_.cooccurrence_dictionary_name());
+  }
   bool count_coherence = dictionary_ptr != nullptr;
 
   std::vector<int> topic_ids;
@@ -42,8 +43,9 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
   }
 
   ::artm::core::ClassId class_id = ::artm::core::DefaultClass;
-  if (config_.has_class_id())
+  if (config_.has_class_id()) {
     class_id = config_.class_id();
+  }
 
   std::vector<artm::core::Token> tokens;
   for (int token_index = 0; token_index < token_size; token_index++) {
@@ -63,9 +65,10 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
     p_wt_local.reserve(tokens.size());
 
     for (int token_index = 0; token_index < token_size; token_index++) {
-      auto token = p_wt.token(token_index);
-      if (token.class_id != class_id)
+      const auto& token = p_wt.token(token_index);
+      if (token.class_id != class_id) {
         continue;
+      }
 
       float weight = p_wt.get(token_index, topic_ids[i]);
       p_wt_local.push_back(std::pair<float, int>(weight, p_wt_local.size()));
@@ -75,21 +78,27 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
 
     int first_index = p_wt_local.size() - 1;
     int last_index = (p_wt_local.size() - config_.num_tokens());
-    if (last_index < 0) last_index = 0;
+    if (last_index < 0) {
+      last_index = 0;
+    }
 
     std::vector<core::Token> tokens_for_coherence;
     for (int token_index = first_index; token_index >= last_index; token_index--) {
       ::artm::core::Token token = tokens[p_wt_local[token_index].second];
       float weight = p_wt_local[token_index].first;
-      if (weight < config_.eps())
+      if (weight < config_.eps()) {
         continue;
+      }
+
       top_tokens_score->add_token(token.keyword);
       top_tokens_score->add_weight(weight);
       top_tokens_score->add_topic_index(topic_ids[i]);
       top_tokens_score->add_topic_name(topic_name.Get(topic_ids[i]));
-      num_entries++;
+      ++num_entries;
 
-      if (count_coherence && weight > 0.0f) tokens_for_coherence.push_back(token);
+      if (count_coherence && weight > 0.0f) {
+        tokens_for_coherence.push_back(token);
+      }
     }
 
     if (count_coherence) {

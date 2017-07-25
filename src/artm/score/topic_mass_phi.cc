@@ -11,10 +11,10 @@ namespace artm {
 namespace score {
 
 std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix& p_wt) {
-  int topic_size = p_wt.topic_size();
-  int token_size = p_wt.token_size();
-
   // parameters preparation
+  const int topic_size = p_wt.topic_size();
+  const int token_size = p_wt.token_size();
+
   std::vector<bool> topics_to_score;
   int topics_to_score_size = topic_size;
   if (config_.topic_name_size() == 0) {
@@ -30,13 +30,14 @@ std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix&
   }
 
   std::vector<float> topic_mass;
-  topic_mass.assign(topics_to_score_size, 0.0);
+  topic_mass.assign(topics_to_score_size, 0.0f);
   double denominator = 0.0;
   double numerator = 0.0;
 
   for (int token_index = 0; token_index < token_size; token_index++) {
-    if (!use_all_classes && !core::is_member(p_wt.token(token_index).class_id, config_.class_id()))
+    if (!use_all_classes && !core::is_member(p_wt.token(token_index).class_id, config_.class_id())) {
       continue;
+    }
 
     int real_topic_index = 0;
     for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
@@ -53,14 +54,16 @@ std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix&
   TopicMassPhiScore* topic_mass_score = new TopicMassPhiScore();
   std::shared_ptr<Score> retval(topic_mass_score);
 
-  float value = 0.0;
-  if (denominator > config_.eps())
+  float value = 0.0f;
+  if (denominator > config_.eps()) {
     value = static_cast<float>(numerator / denominator);
+  }
   topic_mass_score->set_value(value);
 
   for (int i = 0; i < topic_size; ++i) {
-    if (topics_to_score[i])
+    if (topics_to_score[i]) {
       topic_mass_score->add_topic_name(p_wt.topic_name(i));
+    }
   }
 
   for (const auto& elem : topic_mass) {
