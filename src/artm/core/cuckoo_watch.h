@@ -18,28 +18,30 @@ class CuckooWatch {
  public:
   explicit CuckooWatch(std::string message)
       : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(nullptr),
-        threshold_ms_(0) {}
+        threshold_ms_(0) { }
   explicit CuckooWatch(std::string message, int threshold_ms)
       : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(nullptr),
-        threshold_ms_(threshold_ms) {}
+        threshold_ms_(threshold_ms) { }
   CuckooWatch(std::string message, CuckooWatch* parent)
       : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(parent),
-        threshold_ms_(1) {}
+        threshold_ms_(1) { }
   CuckooWatch(std::string message, CuckooWatch* parent, int threshold_ms)
       : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(parent),
-        threshold_ms_(threshold_ms) {}
+        threshold_ms_(threshold_ms) { }
 
   ~CuckooWatch() {
     auto delta = (std::chrono::system_clock::now() - start_);
     auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
-    if (delta_ms.count() < threshold_ms_)
+    if (delta_ms.count() < threshold_ms_) {
       return;
+    }
 
     if (parent_ == nullptr) {
       std::stringstream ss;
       ss << delta_ms.count() << "ms in " << message_;
-      if (!submessage_.empty())
+      if (!submessage_.empty()) {
         ss << " [including " << submessage_ << "]";
+      }
       LOG(INFO) << ss.str();
     } else {
       std::stringstream ss;

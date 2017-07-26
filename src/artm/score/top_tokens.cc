@@ -50,8 +50,9 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
   std::vector<artm::core::Token> tokens;
   for (int token_index = 0; token_index < token_size; token_index++) {
     auto token = p_wt.token(token_index);
-    if (token.class_id == class_id)
+    if (token.class_id == class_id) {
       tokens.push_back(token);
+    }
   }
 
   TopTokensScore* top_tokens_score = new TopTokensScore();

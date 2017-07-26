@@ -35,15 +35,16 @@ namespace artm {
 namespace core {
 
 BatchNameGenerator::BatchNameGenerator(int length, bool use_guid_name)
-  : length_(length),
-    next_name_(std::string()),
-    use_guid_name_(use_guid_name) {
+  : length_(length)
+  , next_name_(std::string())
+  , use_guid_name_(use_guid_name) {
   next_name_ = std::string(length, 'a');
 }
 
 std::string BatchNameGenerator::next_name(const Batch& batch) {
-  if (use_guid_name_)
+  if (use_guid_name_) {
     return batch.id();
+  }
 
   std::string old_next_name = next_name_;
 
@@ -52,10 +53,11 @@ std::string BatchNameGenerator::next_name(const Batch& batch) {
       next_name_[i] += 1;
       break;
     } else {
-      if (i == 0)
+      if (i == 0) {
           BOOST_THROW_EXCEPTION(InvalidOperation("Parser can't create more batches"));
-      else
+      } else {
           next_name_[i] = 'a';
+      }
     }
   }
 
@@ -63,14 +65,16 @@ std::string BatchNameGenerator::next_name(const Batch& batch) {
 }
 
 static bool useClassId(const ClassId& class_id, const CollectionParserConfig& config) {
-  if (config.class_id_size() == 0) return true;
-  if (class_id.empty() || class_id == DefaultClass)
+  if (config.class_id_size() == 0) {
+    return true;
+  }
+  if (class_id.empty() || class_id == DefaultClass) {
     return is_member(std::string(), config.class_id()) || is_member(DefaultClass, config.class_id());
+  }
   return is_member(class_id, config.class_id());
 }
 
-CollectionParser::CollectionParser(const ::artm::CollectionParserConfig& config)
-    : config_(config) {}
+CollectionParser::CollectionParser(const ::artm::CollectionParserConfig& config) : config_(config) { }
 
 CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
   BatchNameGenerator batch_name_generator(kBatchNameLength,
@@ -145,7 +149,9 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
     boost::algorithm::trim(str);
     ++line_no;
     progress.Set(docword.tellg());
-    if (str.empty()) continue;
+    if (str.empty()) {
+      continue;
+    }
 
     std::vector<std::string> strs;
     boost::split(strs, str, boost::is_any_of("\t "));
@@ -160,8 +166,9 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
     token_id = std::stoi(strs[1]);
     token_weight = std::stof(strs[2]);
 
-    if (config_.use_unity_based_indices())
+    if (config_.use_unity_based_indices()) {
       token_id--;  // convert 1-based to zero-based index
+    }
 
     if (token_map->find(token_id) == token_map->end())  {
       std::stringstream ss;
@@ -203,8 +210,9 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
     }
 
     // Skip token when it is not among modalities that user has requested to parse
-    if (!useClassId((*token_map)[token_id].class_id, config_))
+    if (!useClassId((*token_map)[token_id].class_id, config_)) {
       continue;
+    }
 
     auto iter = batch_dictionary.find(token_id);
     if (iter == batch_dictionary.end()) {
@@ -267,8 +275,9 @@ CollectionParser::TokenMap CollectionParser::ParseVocabBagOfWordsUci() {
   int token_id = 0;
   while (!vocab.eof()) {
     std::getline(vocab, str);
-    if (vocab.eof() && str.empty())
+    if (vocab.eof() && str.empty()) {
       break;
+    }
 
     boost::algorithm::trim(str);
     if (str.empty()) {
@@ -346,8 +355,9 @@ class CollectionParser::BatchCollector {
   }
 
   void Record(Token token, float token_weight) {
-    if (global_map_.find(token) == global_map_.end())
+    if (global_map_.find(token) == global_map_.end()) {
       global_map_.insert(std::make_pair(token, CollectionParserTokenInfo(token.keyword, token.class_id)));
+    }
     if (local_map_.find(token) == local_map_.end()) {
       local_map_.insert(std::make_pair(token, batch_.token_size()));
       batch_.add_token(token.keyword);
@@ -357,7 +367,10 @@ class CollectionParser::BatchCollector {
     CollectionParserTokenInfo& token_info = global_map_[token];
     int local_token_id = local_map_[token];
 
-    if (item_ == nullptr) StartNewItem();
+    if (item_ == nullptr) {
+      StartNewItem();
+    }
+
     item_->add_token_id(local_token_id);
     item_->add_token_weight(token_weight);
 
@@ -368,7 +381,9 @@ class CollectionParser::BatchCollector {
   }
 
   void FinishItem(int item_id, std::string item_title) {
-    if (item_ == nullptr) StartNewItem();  // this item fill be empty;
+    if (item_ == nullptr) {
+      StartNewItem();  // this item fill be empty;
+    }
 
     item_->set_id(item_id);
     item_->set_title(item_title);
@@ -432,22 +447,25 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
       {
         std::lock_guard<std::mutex> guard(lock);
         first_line_no_for_batch = global_line_no;
-        if (docword.eof())
+        if (docword.eof()) {
           return;
+	}
 
         while ((int64_t) all_strs_for_batch.size() < config.num_items_per_batch()) {
           std::string str;
           std::getline(docword, str);
           global_line_no++;
           progress.Set(docword.tellg());
-          if (docword.eof())
+          if (docword.eof()) {
             break;
+	  }
 
           all_strs_for_batch.push_back(str);
         }
 
-        if (all_strs_for_batch.size() > 0)
+        if (all_strs_for_batch.size() > 0) {
           batch_name = batch_name_generator.next_name(batch_collector.batch());
+	}
       }
 
       for (int str_index = 0; str_index < (int64_t) all_strs_for_batch.size(); ++str_index) {
@@ -469,18 +487,22 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
         ClassId class_id = DefaultClass;
         for (unsigned elem_index = 1; elem_index < strs.size(); ++elem_index) {
           std::string elem = strs[elem_index];
-          if (elem.size() == 0)
+          if (elem.size() == 0) {
             continue;
+          }
+
           if (elem[0] == '|') {
             class_id = elem.substr(1);
-            if (class_id.empty())
+            if (class_id.empty()) {
               class_id = DefaultClass;
+            }
             continue;
           }
 
           // Skip token when it is not among modalities that user has requested to parse
-          if (!useClassId(class_id, config))
+          if (!useClassId(class_id, config)) {
             continue;
+	  }
 
           float token_weight = 1.0f;
           std::string token = elem;
@@ -516,8 +538,9 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
         {
           std::lock_guard<std::mutex> guard(lock);
           batch = batch_collector.FinishBatch(&parser_info);
-          for (int token_id = 0; token_id < batch.token_size(); ++token_id)
+          for (int token_id = 0; token_id < batch.token_size(); ++token_id) {
             token_map[artm::core::Token(batch.class_id(token_id), batch.token(token_id))] = true;
+	  }
         }
         ::artm::core::Helpers::SaveBatch(batch, config.target_folder(), batch_name);
       }
@@ -542,11 +565,13 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
   // This exception will be re-thrown on the main thread.
   // http://stackoverflow.com/questions/14222899/exception-propagation-and-stdfuture
   std::vector<std::shared_future<void>> tasks;
-  for (int i = 0; i < num_threads; i++)
+  for (int i = 0; i < num_threads; i++) {
     tasks.push_back(std::move(std::async(std::launch::async, func)));
+  }
 
-  for (int i = 0; i < num_threads; i++)
+  for (int i = 0; i < num_threads; i++) {
     tasks[i].get();
+  }
 
   parser_info.set_dictionary_size(token_map.size());
   return parser_info;

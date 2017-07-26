@@ -45,7 +45,7 @@ class ProtobufSerialization {
   static std::string ConvertBinaryToJson(const std::string& binary, google::protobuf::Message* temporary);
 
  private:
-  ProtobufSerialization() : use_json_format_(false) {}
+  ProtobufSerialization() : use_json_format_(false) { }
   bool use_json_format_;
 };
 

@@ -37,7 +37,7 @@ using namespace artm;
 
 class CuckooWatch {
  public:
-  explicit CuckooWatch() : start_(std::chrono::system_clock::now()) {}
+  explicit CuckooWatch() : start_(std::chrono::system_clock::now()) { }
 
   long long elapsed_ms() const {
     auto delta = (std::chrono::system_clock::now() - start_);
@@ -79,7 +79,7 @@ class CsvEscape {
   char delimiter_;
 
  public:
-  explicit CsvEscape(char delimiter) : delimiter_(delimiter) {}
+  explicit CsvEscape(char delimiter) : delimiter_(delimiter) { }
 
   std::string apply(const std::string& in) {
     if (delimiter_ == '\0') {
@@ -166,7 +166,7 @@ std::vector<std::pair<std::string, T>> parseKeyValuePairs(const std::string& inp
     T single_value = boost::lexical_cast<T>(input);
     retval.push_back(std::make_pair(std::string(), single_value));
     return retval;
-  } catch (...) {}
+  } catch (...) { }
 
   // Handle the case when "input" is a set of "group:value" pairs, separated by ; or ,
   std::vector<std::string> strs;
@@ -772,7 +772,7 @@ class ScoreHelper {
          score_arg = boost::lexical_cast<float>(score_type.substr(langle + 1, rangle - langle - 1));
          score_type = score_type.substr(0, langle);
        }
-       catch (...) {}
+       catch (...) { }
      }
 
      ::artm::ScoreConfig& score_config = *config_->add_score_config();
@@ -1048,7 +1048,7 @@ class ScoreHelper {
      elapsed /= 60;
      int h = elapsed % 24;
      int days = elapsed / 24;
-     char buffer[128] = {};
+     char buffer[128] = { };
      sprintf(buffer, "%02d:%02d:%02d.%03d", h, m, s, ms);
      if (days > 0) {
        return std::to_string(days) + " days " + buffer;
@@ -1064,7 +1064,7 @@ class BatchVectorizer {
   std::string cleanup_folder_;
 
  public:
-  BatchVectorizer(const artm_options& options) : batch_folder_(), options_(options), cleanup_folder_() {}
+  BatchVectorizer(const artm_options& options) : batch_folder_(), options_(options), cleanup_folder_() { }
 
   void Vectorize() {
     const bool parse_vw_format = !options_.read_vw_corpus.empty();
@@ -1151,7 +1151,7 @@ class BatchVectorizer {
   ~BatchVectorizer() {
     if (options_.save_batches.empty() && !cleanup_folder_.empty()) {
       try { boost::filesystem::remove_all(cleanup_folder_); }
-      catch (...) {}
+      catch (...) { }
     }
   }
 

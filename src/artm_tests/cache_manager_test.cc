@@ -65,7 +65,7 @@ void RunTest(bool disk_cache, std::string ptd_name) {
   }
 
   try { boost::filesystem::remove_all(target_path); }
-  catch (...) {}
+  catch (...) { }
 }
 
 // To run this particular test:

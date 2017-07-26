@@ -128,7 +128,7 @@ void OverwriteTopicModel_internal(::artm::MatrixLayout matrix_layout) {
   api2.OverwriteModel(master_component.GetTopicModel(get_topic_model_args));
 
   std::string file_name = ::artm::test::Helpers::getUniqueString();
-  artm::core::call_on_destruction c([&]() { try { boost::filesystem::remove(file_name); } catch (...) {} });  // NOLINT
+  artm::core::call_on_destruction c([&]() { try { boost::filesystem::remove(file_name); } catch (...) { } });  // NOLINT
   ::artm::ExportModelArgs export_args;
   export_args.set_model_name(master_config.pwt_name());
   export_args.set_file_name(file_name);

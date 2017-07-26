@@ -13,8 +13,8 @@ namespace artm {
 namespace regularizer {
 
 SmoothSparsePhi::SmoothSparsePhi(const SmoothSparsePhiConfig& config)
-    : config_(config),
-      transform_function_(nullptr) {
+    : config_(config)
+    , transform_function_(nullptr) {
   if (config.has_transform_config()) {
     transform_function_ = artm::core::TransformFunction::create(config.transform_config());
   } else {
@@ -60,7 +60,10 @@ bool SmoothSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
       }
     }
 
-    if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) continue;
+    if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) {
+      continue;
+    }
+
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
         float value = transform_function_->apply(p_wt.get(token_id, topic_id));

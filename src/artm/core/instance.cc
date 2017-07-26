@@ -94,17 +94,19 @@ Instance::Instance(const Instance& rhs)
   Reconfigure(*rhs.config());
 
   std::vector<std::string> batch_name = rhs.batches_.keys();
-  for (auto& key : batch_name) {
+  for (const auto& key : batch_name) {
     std::shared_ptr<Batch> value = rhs.batches_.get(key);
-    if (value != nullptr)
+    if (value != nullptr) {
       batches_.set(key, value);  // store same batch as rhs (OK as batches here are read-only)
+    }
   }
 
   std::vector<ModelName> model_name = rhs.models_.keys();
-  for (auto& key : model_name) {
+  for (const auto& key : model_name) {
     std::shared_ptr<const PhiMatrix> value = rhs.GetPhiMatrix(key);
-    if (value != nullptr)
+    if (value != nullptr) {
       this->SetPhiMatrix(key, value->Duplicate());
+    }
   }
 
   cache_manager_->CopyFrom(*rhs.cache_manager_);
@@ -120,23 +122,26 @@ std::shared_ptr<Instance> Instance::Duplicate() const {
 
 void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
   auto config = master_model_config_.get();
-  if (config != nullptr)
+  if (config != nullptr) {
     master_info->mutable_config()->CopyFrom(*config);
+  }
 
-  for (auto key : regularizers_.keys()) {
+  for (const auto& key : regularizers_.keys()) {
     auto regularizer = regularizers_.get(key);
-    if (regularizer == nullptr)
+    if (regularizer == nullptr) {
       continue;
+    }
 
     MasterComponentInfo::RegularizerInfo* info = master_info->add_regularizer();
     info->set_name(key);
     info->set_type(typeid(*regularizer).name());
   }
 
-  for (auto key : score_calculators_.keys()) {
+  for (const auto& key : score_calculators_.keys()) {
     auto score_calculator = score_calculators_.get(key);
-    if (score_calculator == nullptr)
+    if (score_calculator == nullptr) {
       continue;
+    }
 
     MasterComponentInfo::ScoreInfo* info = master_info->add_score();
     info->set_name(key);
@@ -145,10 +150,11 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
 
   cache_manager_->RequestMasterComponentInfo(master_info);
 
-  for (auto& name : dictionaries()->keys()) {
+  for (const auto& name : dictionaries()->keys()) {
     std::shared_ptr<Dictionary> dict = dictionaries()->get(name);
-    if (dict == nullptr)
+    if (dict == nullptr) {
       continue;
+    }
 
     MasterComponentInfo::DictionaryInfo* info = master_info->add_dictionary();
     info->set_name(name);
@@ -156,10 +162,11 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
     info->set_byte_size(dict->ByteSize());
   }
 
-  for (auto& name : batches_.keys()) {
+  for (const auto& name : batches_.keys()) {
     std::shared_ptr<Batch> batch = batches_.get(name);
-    if (batch == nullptr)
+    if (batch == nullptr) {
       continue;
+    }
 
     MasterComponentInfo::BatchInfo* info = master_info->add_batch();
     info->set_name(name);
@@ -167,7 +174,7 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
     info->set_num_items(batch->item_size());
   }
 
-  for (auto& name : models_.keys()) {
+  for (const auto& name : models_.keys()) {
     std::shared_ptr<const PhiMatrix> p_wt = this->GetPhiMatrix(name);
     if (p_wt != nullptr) {
       MasterComponentInfo::ModelInfo* info = master_info->add_model();
@@ -421,8 +428,9 @@ void Instance::Reconfigure(const MasterModelConfig& master_config) {
   if (master_config.has_disk_cache_path()) {
     boost::filesystem::path dir(master_config.disk_cache_path());
     if (!boost::filesystem::is_directory(dir)) {
-      if (!boost::filesystem::create_directory(dir))
+      if (!boost::filesystem::create_directory(dir)) {
         BOOST_THROW_EXCEPTION(DiskWriteException("Unable to create folder '" + master_config.disk_cache_path() + "'"));
+      }
     }
   }
 }
@@ -435,15 +443,17 @@ Instance::GetPhiMatrix(ModelName model_name) const {
 std::shared_ptr<const ::artm::core::PhiMatrix>
 Instance::GetPhiMatrixSafe(ModelName model_name) const {
   std::shared_ptr<const PhiMatrix> retval = models_.get(model_name);
-  if (retval == nullptr)
+  if (retval == nullptr) {
     BOOST_THROW_EXCEPTION(InvalidOperation("Model " + model_name + " does not exist"));
+  }
   return retval;
 }
 
 void Instance::SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix) {
   models_.erase(model_name);
-  if (phi_matrix != nullptr)
+  if (phi_matrix != nullptr) {
     models_.set(model_name, phi_matrix);
+  }
 }
 
 }  // namespace core

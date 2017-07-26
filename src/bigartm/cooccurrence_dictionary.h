@@ -44,20 +44,20 @@ struct CoocPair {
 };
 
 struct CooccurrenceInfo {
-  CooccurrenceInfo(const int doc_id) : cooc_tf(1), cooc_df(1), prev_doc_id(doc_id) {}
+  CooccurrenceInfo(const int doc_id) : cooc_tf(1), cooc_df(1), prev_doc_id(doc_id) { }
   long long cooc_tf;
   int cooc_df;
   int prev_doc_id;
 };
 
 struct FirstTokenInfo {
-  FirstTokenInfo(const int doc_id) : num_of_documents(1), prev_doc_id(doc_id) {}
+  FirstTokenInfo(const int doc_id) : num_of_documents(1), prev_doc_id(doc_id) { }
   int num_of_documents;
   int prev_doc_id;
 };
 
 struct PpmiCountersValues {
-  PpmiCountersValues() : n_u_tf(0), n_u_df(0) {}
+  PpmiCountersValues() : n_u_tf(0), n_u_df(0) { }
   long long n_u_tf;
   int n_u_df;
 };
@@ -67,7 +67,7 @@ struct PpmiCountersValues {
 // Cell consists of header (first three fields) and records.
 // You need firstly to read cell header then records
 struct Cell {
-  Cell() : first_token_id(-1), num_of_documents(0), num_of_records(0) {}
+  Cell() : first_token_id(-1), num_of_documents(0), num_of_records(0) { }
   int first_token_id;
   int num_of_documents; // when cell is read, it's necessary to know how many triples to read
   unsigned num_of_records;

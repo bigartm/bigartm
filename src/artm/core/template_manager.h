@@ -70,7 +70,7 @@ class TemplateManager : boost::noncopyable {
 
  private:
   // Singleton (make constructor private)
-  TemplateManager() : lock_(), next_id_(1) {}
+  TemplateManager() : lock_(), next_id_(1) { }
 
   mutable boost::mutex lock_;
 

@@ -169,7 +169,7 @@ TEST(Supcry, Fit) {
   export_model_args.set_file_name("artm_model.bin");
 
   try { boost::filesystem::remove("artm_model.bin"); }
-  catch (...) {}
+  catch (...) { }
   master_model.ExportModel(export_model_args);
 
   // Step 9. Memory export
@@ -264,7 +264,7 @@ TEST(Supcry, FitFromDiskFolder) {
   // Step 2. Generate batches and save them to disk
   std::string batch_folder = "./batch_folder";
   try { boost::filesystem::remove_all(batch_folder); }
-  catch (...) {}
+  catch (...) { }
   boost::filesystem::create_directory(batch_folder);
 
   std::vector< ::artm::Batch> batches;

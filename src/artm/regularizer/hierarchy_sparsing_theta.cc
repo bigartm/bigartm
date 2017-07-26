@@ -57,12 +57,13 @@ void HierarchySparsingThetaAgent::Apply(int inner_iter,
 
   for (int item_id = 0; item_id < item_size; ++item_id) {
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-      if (n_td(topic_id, item_id) > 0.0f)
+      if (n_td(topic_id, item_id) > 0.0f) {
         (*r_td)(topic_id, item_id) += alpha_weight[inner_iter] * topic_weight[topic_id] *
         (prior_parent_topic_probability
         - n_td(topic_id, item_id) / n_d[item_id]
         * parent_topic_proportion[item_id]
         / n_t[topic_id]);
+      }
     }
   }
 }
@@ -118,8 +119,9 @@ HierarchySparsingTheta::CreateRegularizeThetaAgent(const Batch& batch,
 
   agent->topic_weight.resize(topic_size, 0.0f);
   if (config_.topic_name_size() == 0) {
-    for (int i = 0; i < topic_size; ++i)
+    for (int i = 0; i < topic_size; ++i) {
       agent->topic_weight[i] = -tau;
+    }
   } else {
     if (topic_size != args.topic_name_size()) {
       LOG(ERROR) << "args.num_topics() != args.topic_name_size()";

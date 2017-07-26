@@ -32,14 +32,16 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
           break;
         }
       }
-      if (!valid_topic)
+      if (!valid_topic) {
         LOG(WARNING) << "Topic name " << s << " is not presented into model and will be ignored";
+      }
     }
   }
 
   std::unordered_map<std::string, int> all_topics;
-  for (int i = 0; i < p_wt.topic_name().size(); ++i)
+  for (int i = 0; i < p_wt.topic_name().size(); ++i) {
     all_topics.insert(std::make_pair(p_wt.topic_name(i), i));
+  }
 
   bool use_all_classes = false;
   if (config_.class_id_size() == 0) {
@@ -56,8 +58,9 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
       // simple case (without topic_pairs)
       if (!use_topic_pairs) {
         // create general normalizer
-        for (const auto& pair : topics_to_regularize)
+        for (const auto& pair : topics_to_regularize) {
           weights_sum += p_wt.get(token_id, pair.second);
+	}
 
         // process every topic from topic_names
         for (const auto& pair : topics_to_regularize) {

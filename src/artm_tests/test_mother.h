@@ -37,7 +37,7 @@ class Helpers {
 
 class TestMother {
  public:
-  TestMother() : regularizer_name("regularizer1") {}
+  TestMother() : regularizer_name("regularizer1") { }
   RegularizerConfig GenerateRegularizerConfig() const;
   static MasterModelConfig GenerateMasterModelConfig(int nTopics);
   static std::vector<std::shared_ptr< ::artm::Batch>> GenerateBatches(

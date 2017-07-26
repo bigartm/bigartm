@@ -15,7 +15,7 @@ namespace test {
 // Defines additional APIs, not exposed through ::artm::MasterModel interface.
 class Api {
  public:
-  explicit Api(MasterModel& master_model) : master_model_(master_model) {}
+  explicit Api(MasterModel& master_model) : master_model_(master_model) { }
 
   // Methods wrapping c_interface
   TopicModel AttachTopicModel(const AttachModelArgs& args, Matrix* matrix);

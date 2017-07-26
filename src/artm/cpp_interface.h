@@ -40,10 +40,10 @@ enum ArtmErrorCodes {
 namespace artm {
 
 // Exception handling in cpp_interface
-#define DEFINE_EXCEPTION_TYPE(Type, BaseType)                  \
-class Type : public BaseType { public:  /*NOLINT*/             \
-  Type() : BaseType("") {}                                     \
-  explicit Type(std::string message) : BaseType(message) {}    \
+#define DEFINE_EXCEPTION_TYPE(Type, BaseType)                   \
+class Type : public BaseType { public:  /*NOLINT*/              \
+  Type() : BaseType("") { }                                     \
+  explicit Type(std::string message) : BaseType(message) { }    \
 };
 
 DEFINE_EXCEPTION_TYPE(InternalError, std::runtime_error);

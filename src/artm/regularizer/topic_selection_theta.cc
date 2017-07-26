@@ -28,8 +28,9 @@ void TopicSelectionThetaAgent::Apply(int item_index, int inner_iter, int topics_
   }
 
   for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
-    if (n_td[topic_id] > 0.0f)
+    if (n_td[topic_id] > 0.0f) {
       r_td[topic_id] += alpha_weight[inner_iter] * topic_weight[topic_id] * topic_value[topic_id] * n_td[topic_id];
+    }
   }
 }
 

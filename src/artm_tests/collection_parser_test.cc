@@ -90,7 +90,7 @@ TEST(CollectionParser, UciBagOfWords) {
   dictionary_checker("../../../test_data/vocab.parser_test_no_newline.txt", "no_newline_dictionary");
 
   try { fs::remove_all(target_folder); }
-  catch (...) {}
+  catch (...) { }
 }
 
 TEST(CollectionParser, ErrorHandling) {
@@ -139,7 +139,7 @@ TEST(CollectionParser, MatrixMarket) {
   ASSERT_EQ(batches_count, 1);
 
   try { fs::remove_all(target_folder); }
-  catch (...) {}
+  catch (...) { }
 }
 
 TEST(CollectionParser, Multiclass) {
@@ -212,7 +212,7 @@ TEST(CollectionParser, Multiclass) {
   ASSERT_APPROX_EQ(dictionary_ptr.token_value(2), 9.0 / 14.0);
 
   try { fs::remove_all(target_folder); }
-  catch (...) {}
+  catch (...) { }
 }
 
 // To run this particular test:
@@ -253,6 +253,6 @@ TEST(CollectionParser, VowpalWabbit) {
   ASSERT_EQ(batches_count, 2);
 
   try { fs::remove_all(target_folder); }
-  catch (...) {}
+  catch (...) { }
 }
 // vim: set ts=2 sw=2 sts=2:

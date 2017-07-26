@@ -17,7 +17,7 @@ namespace core {
 // An object that accepts a lambda expression end executes it in destructor
 class call_on_destruction {
  public:
-  explicit call_on_destruction(std::function<void()> f) : f_(f) {}
+  explicit call_on_destruction(std::function<void()> f) : f_(f) { }
   ~call_on_destruction() { f_(); }
 
  private:

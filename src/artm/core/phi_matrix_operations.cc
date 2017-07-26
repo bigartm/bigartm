@@ -30,9 +30,10 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
   if (get_model_args.token_size() > 0) {
     bool use_default_class = (get_model_args.class_id_size() == 0);
 
-    if (!use_default_class && (get_model_args.token_size() != get_model_args.class_id_size()))
+    if (!use_default_class && (get_model_args.token_size() != get_model_args.class_id_size())) {
       BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(
-        "GetTopicModelArgs: token_size != class_id_size, both greater then zero"));
+          "GetTopicModelArgs: token_size != class_id_size, both greater then zero"));
+    }
 
     for (int i = 0; i < get_model_args.token_size(); ++i) {
       Token token(use_default_class ? DefaultClass : get_model_args.class_id(i),
@@ -75,8 +76,9 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
       topics_to_use.push_back(topic_index);
     }
   } else {
-    for (int i = 0; i < phi_matrix.topic_size(); ++i)
+    for (int i = 0; i < phi_matrix.topic_size(); ++i) {
       topics_to_use.push_back(i);
+    }
   }
 
   LOG(INFO) << "RetrieveExternalTopicModel() with "
@@ -86,8 +88,9 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
   auto this_topic_names = phi_matrix.topic_name();
 
   // Populate num_topics and topic_name fields in the resulting message
-  for (int topic_index : topics_to_use)
+  for (int topic_index : topics_to_use) {
     topic_model->add_topic_name(this_topic_names.Get(topic_index));
+  }
   topic_model->set_num_topics(static_cast<int>(topics_to_use.size()));
 
   // Populate all non-internal part of the resulting message
@@ -102,8 +105,9 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
 
     if (!has_sparse_format) {
       target->mutable_value()->Reserve(static_cast<int>(topics_to_use.size()));
-      for (int topic_index : topics_to_use)
+      for (int topic_index : topics_to_use) {
         target->add_value(phi_matrix.get(token_index, topic_index));
+      }
     } else {
       ::artm::IntArray* sparse_topic_indices = topic_model->add_topic_indices();
       for (unsigned topics_to_use_index = 0; topics_to_use_index < topics_to_use.size(); topics_to_use_index++) {
@@ -121,7 +125,9 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
 void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& topic_model,
                                                    float apply_weight, bool add_missing_tokens,
                                                    PhiMatrix* phi_matrix) {
-  if (!ValidateMessage(topic_model, /* throw_error=*/ false)) return;
+  if (!ValidateMessage(topic_model, /* throw_error=*/ false)) {
+    return;
+  }
 
   const bool has_sparse_format = (topic_model.topic_indices_size() > 0);
   const int this_topic_size = phi_matrix->topic_size();
@@ -131,25 +137,30 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
     for (auto& topic_name : topic_model.topic_name()) {
       int index = repeated_field_index_of(phi_matrix->topic_name(), topic_name);
       target_topic_index.push_back(index);
-      if (index != -1) ok = true;
+      if (index != -1) {
+        ok = true; 
+      }
     }
     if (!ok) {
       LOG(ERROR) << "None of TopicModel.topic_name match topic names in target model";
       return;
     }
   } else {
-    if (phi_matrix->topic_size() != topic_model.num_topics())
+    if (phi_matrix->topic_size() != topic_model.num_topics()) {
       BOOST_THROW_EXCEPTION(InvalidOperation("Mismatch between target num_topics and TopicModel.num_topics"));
-    for (int i = 0; i < topic_model.num_topics(); ++i)
+    }
+    for (int i = 0; i < topic_model.num_topics(); ++i) {
       target_topic_index.push_back(i);
+    }
   }
 
   bool optimized_execution = false;
   if ((apply_weight == 1.0f) && (target_topic_index.size() == this_topic_size)) {
     bool ok = true;
     for (unsigned topic_index = 0; topic_index < target_topic_index.size(); ++topic_index) {
-      if (target_topic_index[topic_index] != topic_index)
+      if (target_topic_index[topic_index] != topic_index) {
         ok = false;
+      }
     }
     optimized_execution = ok;
   }
@@ -166,22 +177,25 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
     int current_token_id = phi_matrix->token_index(token);
     {  // previously this corresponded to TopicModel_OperationType_Increment case
       if (current_token_id == -1) {
-        if (!add_missing_tokens)
+        if (!add_missing_tokens) {
           continue;
+	}
         current_token_id = phi_matrix->AddToken(token);
       }
 
       if (optimized_execution && !has_sparse_format_local && (counters.value_size() == this_topic_size)) {
-        for (int topic_index = 0; topic_index < this_topic_size; ++topic_index)
+        for (int topic_index = 0; topic_index < this_topic_size; ++topic_index) {
           phi_matrix->increase(current_token_id, topic_index, counters.value(topic_index));
+	}
         continue;
       }
 
       for (int i = 0; i < counters.value_size(); ++i) {
         int topic_index = has_sparse_format_local ? sparse_topic_indices->value(i) : i;
         assert(topic_index < target_topic_index.size());
-        if (target_topic_index[topic_index] == -1)
+        if (target_topic_index[topic_index] == -1) {
           continue;
+	}
         phi_matrix->increase(current_token_id, target_topic_index[topic_index], apply_weight * counters.value(i));
       }
     }
@@ -225,8 +239,9 @@ void PhiMatrixOperations::InvokePhiRegularizers(
       }
 
       bool retval = regularizer->RegularizePhi(p_wt, n_wt, &local_r_wt);
-      if (!retval)
+      if (!retval) {
         continue;
+      }
 
       // count n and r_i for relative regularization, if necessary
       // prepare next structure with parameters:
@@ -239,15 +254,19 @@ void PhiMatrixOperations::InvokePhiRegularizers(
         std::vector<core::ClassId> class_ids;
         if (regularizer->class_ids_to_regularize().size() > 0) {
           auto class_ids_to_regularize = regularizer->class_ids_to_regularize();
-          for (const auto& class_id : class_ids_to_regularize) class_ids.push_back(class_id);
+          for (const auto& class_id : class_ids_to_regularize) {
+            class_ids.push_back(class_id);
+	  }
         } else {
           boost::copy(n_t_all | boost::adaptors::map_keys, std::back_inserter(class_ids));
         }
 
-        if (regularizer->topics_to_regularize().size() > 0)
+        if (regularizer->topics_to_regularize().size() > 0) {
           topics_to_regularize = core::is_member(n_wt.topic_name(), regularizer->topics_to_regularize());
-        else
+	}
+        else {
           topics_to_regularize.assign(topic_size, true);
+	}
 
         for (const auto& class_id : class_ids) {
           auto iter = n_t_all.find(class_id);
@@ -266,7 +285,9 @@ void PhiMatrixOperations::InvokePhiRegularizers(
 
               float r_it_current = 0.0f;
               for (int token_id = 0; token_id < token_size; ++token_id) {
-                if (n_wt.token(token_id).class_id != iter->first) continue;
+                if (n_wt.token(token_id).class_id != iter->first) {
+                  continue;
+                }
 
                 r_it_current += fabs(local_r_wt.get(token_id, topic_id));
               }
@@ -290,13 +311,17 @@ void PhiMatrixOperations::InvokePhiRegularizers(
       for (int token_id = 0; token_id < token_size; ++token_id) {
         auto iter = parameters.find(n_wt.token(token_id).class_id);
         if (relative_reg) {
-          if (iter == parameters.end()) continue;
+          if (iter == parameters.end()) {
+            continue;
+          }
         }
         // ToDo (MelLain): move this loop outside the outer one
         for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
           float coefficient = 1.0f;
           if (relative_reg) {
-            if (!topics_to_regularize[topic_id]) continue;
+            if (!topics_to_regularize[topic_id]) {
+              continue;
+            }
 
             float gamma = reg_iterator->gamma();
             float n_t = iter->second.first.second[topic_id];
@@ -330,8 +355,9 @@ static std::map<ClassId, std::vector<float> > FindNormalizersImpl(const PhiMatri
 
     for (int topic_id = 0; topic_id < n_wt.topic_size(); ++topic_id) {
       const float sum = n_wt.get(token_id, topic_id) + ((r_wt == nullptr) ? 0.0f : r_wt->get(token_id, topic_id));
-      if (sum > 0)
+      if (sum > 0) {
         iter->second[topic_id] += sum;
+      }
     }
   }
 
@@ -357,8 +383,9 @@ static void FindPwtImpl(const PhiMatrix& n_wt, const PhiMatrix* r_wt, PhiMatrix*
     assert(p_wt->token(token_id) == token);
     const std::vector<float>& nt = n_t[token.class_id];
     for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-      if (nt[topic_index] <= 0)
+      if (nt[topic_index] <= 0) {
         continue;
+      }
 
       float nwt_value = n_wt.get(token_id, topic_index);
       float rwt_value = (r_wt == nullptr) ? 0.0f : r_wt->get(token_id, topic_index);
@@ -393,27 +420,35 @@ void PhiMatrixOperations::FindPwt(const PhiMatrix& n_wt, const PhiMatrix& r_wt, 
 }
 
 bool PhiMatrixOperations::HasEqualShape(const PhiMatrix& first, const PhiMatrix& second) {
-  if (first.topic_size() != second.topic_size())
+  if (first.topic_size() != second.topic_size()) {
     return false;
+  }
 
-  for (int i = 0; i < first.topic_size(); ++i)
-    if (first.topic_name(i) != second.topic_name(i))
+  for (int i = 0; i < first.topic_size(); ++i) {
+    if (first.topic_name(i) != second.topic_name(i)) {
       return false;
+    }
+  }
 
-  if (first.token_size() != second.token_size())
+  if (first.token_size() != second.token_size()) {
     return false;
+  }
 
-  for (int i = 0; i < first.token_size(); ++i)
-    if (first.token(i) != second.token(i))
+  for (int i = 0; i < first.token_size(); ++i) {
+    if (first.token(i) != second.token(i)) {
       return false;
+    }
+  }
 
   return true;
 }
 
 void PhiMatrixOperations::AssignValue(float value, PhiMatrix* phi_matrix) {
-  for (int token_index = 0; token_index < phi_matrix->token_size(); token_index++)
-    for (int topic_index = 0; topic_index < phi_matrix->topic_size(); topic_index++)
+  for (int token_index = 0; token_index < phi_matrix->token_size(); token_index++) {
+    for (int topic_index = 0; topic_index < phi_matrix->topic_size(); topic_index++) {
       phi_matrix->set(token_index, topic_index, value);
+    }
+  }
 }
 
 }  // namespace core

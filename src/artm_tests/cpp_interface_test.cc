@@ -276,13 +276,13 @@ void RunBasicTest(bool serialize_as_json) {
   ASSERT_EQ(new_topic_model3.token(2), "my_tok_3");
 
   try { boost::filesystem::remove_all(target_path); }
-  catch (...) {}
+  catch (...) { }
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest
 TEST(CppInterface, BasicTest) {
   bool wasJson = ArtmProtobufMessageFormatIsJson();
-  try { RunBasicTest(false); } catch (...) {}
+  try { RunBasicTest(false); } catch (...) { }
   wasJson ? ArtmSetProtobufMessageFormatToJson() : ArtmSetProtobufMessageFormatToBinary();
 }
 
@@ -495,7 +495,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   }
 
   try { boost::filesystem::remove_all(target_folder); }
-  catch (...) {}
+  catch (...) { }
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.AttachModel
@@ -563,7 +563,7 @@ TEST(CppInterface, AttachModel) {
 
 
   try { boost::filesystem::remove_all(target_folder); }
-  catch (...) {}
+  catch (...) { }
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.AsyncProcessBatches
@@ -659,10 +659,10 @@ TEST(CppInterface, Dictionaries) {
   ASSERT_GT(dictionary.token_value(0), 0);
 
   try { boost::filesystem::remove_all(target_folder); }
-  catch (...) {}
+  catch (...) { }
 
   try { boost::filesystem::remove(import_args.file_name()); }
-  catch (...) {}
+  catch (...) { }
 }
 
 // artm_tests.exe --gtest_filter=ProtobufMessages.Json

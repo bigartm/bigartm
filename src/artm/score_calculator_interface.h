@@ -30,9 +30,9 @@ class Instance;
 class ScoreCalculatorInterface {
  public:
   explicit ScoreCalculatorInterface(const ScoreConfig& score_config)
-    : score_config_(score_config),
-      dictionaries_(nullptr),
-      instance_(nullptr) {}
+    : score_config_(score_config)
+    , dictionaries_(nullptr)
+    , instance_(nullptr) { }
 
   virtual ~ScoreCalculatorInterface() { }
 
@@ -61,7 +61,7 @@ class ScoreCalculatorInterface {
       const Batch& batch,
       const artm::core::PhiMatrix& p_wt,
       const artm::ProcessBatchesArgs& args,
-      Score* score) {}
+      Score* score) { }
 
   std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);
   std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(const std::string& model_name);
@@ -84,12 +84,14 @@ class ScoreCalculatorInterface {
 template<typename ConfigType>
 ConfigType ScoreCalculatorInterface::ParseConfig() const {
   ConfigType config;
-  if (!score_config_.has_config())
+  if (!score_config_.has_config()) {
     return config;
+  }
 
   const std::string& config_blob = score_config_.config();
-  if (!config.ParseFromString(config_blob))
+  if (!config.ParseFromString(config_blob)) {
     BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException("Unable to parse score config"));
+  }
   return config;
 }
 
