@@ -362,9 +362,10 @@ void DensePhiMatrix::Clear() {
 
 int64_t DensePhiMatrix::ByteSize() const {
   int64_t retval = PhiMatrixFrame::ByteSize();
-  for (auto& value : values_) retval += value.ByteSize(); {
-    return retval;
+  for (const auto& value : values_) {
+    retval += value.ByteSize();
   }
+  return retval;
 }
 
 int DensePhiMatrix::AddToken(const Token& token) {

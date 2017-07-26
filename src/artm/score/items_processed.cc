@@ -10,13 +10,12 @@
 namespace artm {
 namespace score {
 
-void ItemsProcessed::AppendScore(
-    const Batch& batch,
-    const artm::core::PhiMatrix& p_wt,
-    const artm::ProcessBatchesArgs& args,
-    Score* score) {
-    float token_weight = 0.0f;
-    float token_weight_in_effect = 0.0f;
+void ItemsProcessed::AppendScore(const Batch& batch,
+                                 const artm::core::PhiMatrix& p_wt,
+                                 const artm::ProcessBatchesArgs& args,
+                                 Score* score) {
+  float token_weight = 0.0f;
+  float token_weight_in_effect = 0.0f;
 
   for (const auto& item : batch.item()) {
     for (int token_index = 0; token_index < item.token_id_size(); token_index++) {

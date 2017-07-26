@@ -432,15 +432,15 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
         float p_dw_val = 0;
         for (int k = 0; k < num_topics; ++k) {
           p_dw_val += phi_ptr[k] * theta_ptr[k];
-	}
+        }
         if (p_dw_val == 0) {
           continue;
-	}
+        }
 
         const float alpha = sparse_ndw.val()[i] / p_dw_val;
         for (int k = 0; k < num_topics; ++k) {
           ntd_ptr[k] += alpha * phi_ptr[k];
-	}
+        }
       }
 
       for (int k = 0; k < num_topics; ++k) {
@@ -468,7 +468,7 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
         float p_dw_val = blas->sdot(num_topics, &phi_matrix(w, 0), 1, &(*theta_matrix)(0, d), 1);  // NOLINT
         if (p_dw_val == 0) {
           continue;
-	}
+        }
         blas->saxpy(num_topics, sparse_ndw.val()[i] / p_dw_val, &phi_matrix(w, 0), 1, &helper_td(0, d), 1);
       }
     }
@@ -583,11 +583,11 @@ InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, 
 
         if (p_dw_val == 0) {
           continue;
-	}
+        }
         const float Z = 1.0f / p_dw_val;
         for (int k = 0; k < num_topics; ++k) {
           ptdw_ptr[k] *= Z;
-	}
+        }
       }
 
       ptdw_agents.Apply(d, inner_iter, &local_ptdw);
@@ -595,18 +595,18 @@ InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, 
       if (!last_iteration) {  // update theta matrix (except for the last iteration)
         for (int k = 0; k < num_topics; ++k) {
           ntd_ptr[k] = 0.0f;
-	}
+        }
         for (int i = begin_index; i < end_index; ++i) {
           const float n_dw = sparse_ndw.val()[i];
           const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
           for (int k = 0; k < num_topics; ++k) {
             ntd_ptr[k] += n_dw * ptdw_ptr[k];
-	  }
+          }
         }
 
         for (int k = 0; k < num_topics; ++k) {
           theta_ptr[k] = ntd_ptr[k];
-	}
+        }
 
         r_td.InitializeZeros();
         theta_agents.Apply(d, inner_iter, num_topics, theta_ptr, r_td.get_data());
@@ -619,7 +619,7 @@ InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, 
 
             for (int k = 0; k < num_topics; ++k) {
               values[k] = ptdw_ptr[k] * n_dw;
-	    }
+            }
 
             int w = sparse_ndw.col_ind()[i];
             nwt_writer->Store(w, token_id[w], values);
@@ -798,7 +798,7 @@ void Processor::ThreadFunction() {
           model_description << part->nwt_target_name();
         } else {
           model_description << &p_wt;
-	}
+        }
         VLOG(0) << "Processor: start processing batch " << batch.id() << " into model " << model_description.str();
 
         std::shared_ptr<CsrMatrix<float>> sparse_ndw;
@@ -810,7 +810,7 @@ void Processor::ThreadFunction() {
         std::shared_ptr<ThetaMatrix> cache;
         if (part->has_reuse_theta_cache_manager()) {
           cache = part->reuse_theta_cache_manager()->FindCacheEntry(batch);
-	}
+        }
         std::shared_ptr<LocalThetaMatrix<float>> theta_matrix =
           InitializeTheta(p_wt.topic_size(), batch, args, cache.get());
 

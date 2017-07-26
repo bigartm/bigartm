@@ -101,14 +101,14 @@ SmoothSparseTheta::CreateRegularizeThetaAgent(const Batch& batch,
   agent->topic_weight.resize(topic_size, 0.0f);
   if (config_.topic_name_size() == 0) {
     for (int i = 0; i < topic_size; ++i) {
-      agent->topic_weight[i] = static_cast<float>(tau);
+      agent->topic_weight[i] = tau;
     }
   } else {
     for (int topic_id = 0; topic_id < config_.topic_name_size(); ++topic_id) {
       int topic_index = ::artm::core::repeated_field_index_of(
         args.topic_name(), config_.topic_name(topic_id));
-      if (topic_index != -1) { 
-        agent->topic_weight[topic_index] = static_cast<float>(tau);
+      if (topic_index != -1) {
+        agent->topic_weight[topic_index] = tau;
       }
     }
   }

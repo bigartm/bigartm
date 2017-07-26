@@ -120,7 +120,7 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, const Dictio
             if (tf_iter == cooc_tfs_info->end() || df_iter == cooc_dfs_info->end()) {
               BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
                   args.dictionary_name() + " has internal cooc tf/df inconsistence"));
-	    }
+            }
 
             cooc_dict_data.add_cooc_tf(tf_iter->second);
             cooc_dict_data.add_cooc_df(df_iter->second);
@@ -225,9 +225,9 @@ std::shared_ptr<Dictionary> DictionaryOperations::Import(const ImportDictionaryA
 class TokenValues {
  public:
   TokenValues()
-    : token_value(0.0f)
-    , token_tf(0.0f)
-    , token_df(0.0f) { }
+      : token_value(0.0f)
+      , token_tf(0.0f)
+      , token_df(0.0f) { }
 
   float token_value;
   float token_tf;

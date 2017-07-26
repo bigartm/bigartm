@@ -140,7 +140,7 @@ static bool PopulateThetaMatrixFromCacheEntry(const ThetaMatrix& cache,
         // dense output -- dense cache
         for (int topic_index : topics_to_use) {
           theta_vec->add_value(item_theta.value(topic_index));
-	}
+        }
       }
     } else {
       ::artm::IntArray* sparse_topic_indices = theta_matrix->add_topic_indices();

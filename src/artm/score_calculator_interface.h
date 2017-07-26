@@ -30,9 +30,9 @@ class Instance;
 class ScoreCalculatorInterface {
  public:
   explicit ScoreCalculatorInterface(const ScoreConfig& score_config)
-    : score_config_(score_config)
-    , dictionaries_(nullptr)
-    , instance_(nullptr) { }
+      : score_config_(score_config)
+      , dictionaries_(nullptr)
+      , instance_(nullptr) { }
 
   virtual ~ScoreCalculatorInterface() { }
 

@@ -35,9 +35,9 @@ namespace artm {
 namespace core {
 
 BatchNameGenerator::BatchNameGenerator(int length, bool use_guid_name)
-  : length_(length)
-  , next_name_(std::string())
-  , use_guid_name_(use_guid_name) {
+    : length_(length)
+    , next_name_(std::string())
+    , use_guid_name_(use_guid_name) {
   next_name_ = std::string(length, 'a');
 }
 
@@ -449,7 +449,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
         first_line_no_for_batch = global_line_no;
         if (docword.eof()) {
           return;
-	}
+        }
 
         while ((int64_t) all_strs_for_batch.size() < config.num_items_per_batch()) {
           std::string str;
@@ -458,14 +458,14 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
           progress.Set(docword.tellg());
           if (docword.eof()) {
             break;
-	  }
+          }
 
           all_strs_for_batch.push_back(str);
         }
 
         if (all_strs_for_batch.size() > 0) {
           batch_name = batch_name_generator.next_name(batch_collector.batch());
-	}
+        }
       }
 
       for (int str_index = 0; str_index < (int64_t) all_strs_for_batch.size(); ++str_index) {
@@ -502,7 +502,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
           // Skip token when it is not among modalities that user has requested to parse
           if (!useClassId(class_id, config)) {
             continue;
-	  }
+          }
 
           float token_weight = 1.0f;
           std::string token = elem;
@@ -540,7 +540,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
           batch = batch_collector.FinishBatch(&parser_info);
           for (int token_id = 0; token_id < batch.token_size(); ++token_id) {
             token_map[artm::core::Token(batch.class_id(token_id), batch.token(token_id))] = true;
-	  }
+          }
         }
         ::artm::core::Helpers::SaveBatch(batch, config.target_folder(), batch_name);
       }

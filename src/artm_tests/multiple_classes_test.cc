@@ -476,7 +476,7 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
       for (int j = 0; j < args.class_id_size(); ++j) {
         if (args.class_id(j) == tm_sparse.class_id(i)) {
           contains = true;
-	}
+        }
       }
       EXPECT_TRUE(contains);  // only return classes that had been requested
     }

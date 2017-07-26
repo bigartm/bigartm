@@ -24,9 +24,9 @@ class SmoothPtdwAgent : public RegularizePtdwAgent {
 
  public:
   SmoothPtdwAgent(const SmoothPtdwConfig& config, const ProcessBatchesArgs& args, float tau)
-    : config_(config)
-    , args_(args)
-    , tau_(tau) { }
+      : config_(config)
+      , args_(args)
+      , tau_(tau) { }
 
   virtual void Apply(int item_index, int inner_iter, ::artm::utility::LocalPhiMatrix<float>* ptdw) const;
 };

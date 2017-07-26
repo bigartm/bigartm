@@ -88,7 +88,7 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
         if (topics_to_score[topic_index]) {
           p_w += p_wt.get(token_index, topic_index) * n_t[topic_index];
-	}
+        }
       }
 
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {

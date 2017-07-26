@@ -127,8 +127,8 @@ void RunBasicTest(bool serialize_as_json) {
   ::artm::FitOfflineMasterModelArgs offline_args = api.Initialize(batches);
 
   artm::TopicModel topic_model;
-  double expected_normalizer = 0;
-  float previous_perplexity = 0;
+  double expected_normalizer = 0.0;
+  float previous_perplexity = 0.0f;
   for (int iter = 0; iter < 5; ++iter) {
     master_component.FitOfflineModel(offline_args);
     {

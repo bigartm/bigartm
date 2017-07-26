@@ -60,7 +60,7 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
         // create general normalizer
         for (const auto& pair : topics_to_regularize) {
           weights_sum += p_wt.get(token_id, pair.second);
-	}
+        }
 
         // process every topic from topic_names
         for (const auto& pair : topics_to_regularize) {

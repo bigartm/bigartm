@@ -628,7 +628,7 @@ inline void FixMessage(::artm::Batch* message) {
         field.mutable_token_weight()->Reserve(field.token_count_size());
         for (int i = 0; i < field.token_count_size(); ++i) {
           field.add_token_weight(static_cast<float>(field.token_count(i)));
-	}
+        }
         field.clear_token_count();
       }
     }

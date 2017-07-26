@@ -13,7 +13,7 @@ namespace artm {
 namespace score {
 
 std::shared_ptr<Score> BackgroundTokensRatio::CalculateScore(const artm::core::PhiMatrix& p_wt) {
-  // parameters preparation 
+  // parameters preparation
   const int topic_size = p_wt.topic_size();
   const int token_size = p_wt.token_size();
 
@@ -70,14 +70,14 @@ std::shared_ptr<Score> BackgroundTokensRatio::CalculateScore(const artm::core::P
 
           if (p_tw > 0.0f) {
             kl_value += direct_kl ? (p_t * log(p_t / p_tw)) : (p_tw * log(p_tw / p_t));
-	  }
+          }
         }
 
         if (kl_value > delta_threshold) {
-          num_bgr_tokens++;
+          ++num_bgr_tokens;
           if (save_tokens) {
             bcg_tokens.push_back(token);
-	  }
+          }
         }
       }
     }

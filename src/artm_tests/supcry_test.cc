@@ -201,7 +201,7 @@ TEST(Supcry, TransformAfterImport) {
 
   // Step 4. Find theta matrix
   ::artm::TransformMasterModelArgs transform_args;
-  for (auto& batch : batches) {
+  for (const auto& batch : batches) {
     transform_args.add_batch()->CopyFrom(batch);
   }
   ::artm::ThetaMatrix theta = master_model.Transform(transform_args);
@@ -238,7 +238,7 @@ TEST(Supcry, TransformAfterOverwrite) {
 
   // Step 4. Find theta matrix
   ::artm::TransformMasterModelArgs transform_args;
-  for (auto& batch : batches) {
+  for (const auto& batch : batches) {
     transform_args.add_batch()->CopyFrom(batch);
   }
   ::artm::ThetaMatrix theta = master_model.Transform(transform_args);

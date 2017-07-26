@@ -61,11 +61,11 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
       if (mode_topics) {
         if (n_wt.token(local_index).class_id != config_.class_id()) {
           continue;
-	}
+        }
       } else {
         if (!topics_to_regularize[local_index]) {
           continue;
-	}
+        }
       }
 
       const auto value = std::pair<int, float>(local_index,

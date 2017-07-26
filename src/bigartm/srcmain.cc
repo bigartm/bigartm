@@ -219,8 +219,8 @@ std::vector<std::pair<std::string, std::vector<std::string>>> parseTopicGroups(c
 std::vector<std::string> parseTopics(const std::string& topics) {
   std::vector<std::string> result;
   std::vector<std::pair<std::string, std::vector<std::string>>> pairs = parseTopicGroups(topics);
-  for (auto& pair : pairs) {
-    for (auto& topic_name : pair.second) {
+  for (const auto& pair : pairs) {
+    for (const auto& topic_name : pair.second) {
       result.push_back(topic_name);
     }
   }
@@ -235,11 +235,11 @@ std::vector<std::string> parseTopics(const std::string& topics, const std::strin
   auto all_topics_set = std::set<std::string>(all_topics.begin(), all_topics.end());
   std::vector<std::pair<std::string, std::vector<std::string>>> pairs = parseTopicGroups(topic_groups);
   std::vector<std::string> topic_names = parseTopics(topics);
-  for (auto& topic_name : topic_names) {
+  for (const auto& topic_name : topic_names) {
     bool found = false;
-    for (auto& pair : pairs) {
+    for (const auto& pair : pairs) {
       if (pair.first == topic_name) {
-        for (auto& group_topic : pair.second) {
+        for (const auto& group_topic : pair.second) {
           result.push_back(group_topic);
 	}
         found = true;

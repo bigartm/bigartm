@@ -112,9 +112,9 @@ TEST(Regularizers, SmoothSparseTheta) {
 
   // nDocs x nTopics
   std::vector<std::vector<float> > expected_values = {
-    { 0.0,  0.0,   0.0,   0.0 },
-    { 0.265, 0.224, 0.247, 0.264 },
-    { 0.0,  0.0,   0.0,   0.0 }
+    { 0.0f,  0.0f,   0.0f,   0.0f },
+    { 0.265f, 0.224f, 0.247f, 0.264f },
+    { 0.0f,  0.0f,   0.0f,   0.0f }
   };
 
   for (int i = 0; i < nDocs; ++i) {

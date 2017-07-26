@@ -138,7 +138,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
       int index = repeated_field_index_of(phi_matrix->topic_name(), topic_name);
       target_topic_index.push_back(index);
       if (index != -1) {
-        ok = true; 
+        ok = true;
       }
     }
     if (!ok) {
@@ -179,14 +179,14 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
       if (current_token_id == -1) {
         if (!add_missing_tokens) {
           continue;
-	}
+        }
         current_token_id = phi_matrix->AddToken(token);
       }
 
       if (optimized_execution && !has_sparse_format_local && (counters.value_size() == this_topic_size)) {
         for (int topic_index = 0; topic_index < this_topic_size; ++topic_index) {
           phi_matrix->increase(current_token_id, topic_index, counters.value(topic_index));
-	}
+        }
         continue;
       }
 
@@ -195,7 +195,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
         assert(topic_index < target_topic_index.size());
         if (target_topic_index[topic_index] == -1) {
           continue;
-	}
+        }
         phi_matrix->increase(current_token_id, target_topic_index[topic_index], apply_weight * counters.value(i));
       }
     }
@@ -256,17 +256,16 @@ void PhiMatrixOperations::InvokePhiRegularizers(
           auto class_ids_to_regularize = regularizer->class_ids_to_regularize();
           for (const auto& class_id : class_ids_to_regularize) {
             class_ids.push_back(class_id);
-	  }
+          }
         } else {
           boost::copy(n_t_all | boost::adaptors::map_keys, std::back_inserter(class_ids));
         }
 
         if (regularizer->topics_to_regularize().size() > 0) {
           topics_to_regularize = core::is_member(n_wt.topic_name(), regularizer->topics_to_regularize());
-	}
-        else {
+        } else {
           topics_to_regularize.assign(topic_size, true);
-	}
+        }
 
         for (const auto& class_id : class_ids) {
           auto iter = n_t_all.find(class_id);
