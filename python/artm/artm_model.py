@@ -70,15 +70,15 @@ def _topic_selection_regularizer_func(self, regularizers):
         if no_score:
             self._internal_topic_mass_score_name = 'ITMScore_{}'.format(str(uuid.uuid4()))
             self.scores.add(TopicMassPhiScore(name=self._internal_topic_mass_score_name,
-                                              model_name=self.model_nwt))  # ugly hack!
+                                              model_name=self.model_nwt))
 
         if not self._synchronizations_processed or no_score:
-            phi = self.get_phi(class_ids=['@default_class'])  # ugly hack!
+            phi = self.get_phi()
             n_t = list(phi.sum(axis=0))
         else:
+            last_topic_mass = self.score_tracker[self._internal_topic_mass_score_name].last_topic_mass
             for i, n in enumerate(self.topic_names):
-                n_t[i] = self.score_tracker[
-                    self._internal_topic_mass_score_name].last_topic_mass[n]
+                n_t[i] = last_topic_mass[n]
 
         n = sum(n_t)
         for name in topic_selection_regularizer_name:
