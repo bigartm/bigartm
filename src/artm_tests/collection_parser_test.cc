@@ -238,10 +238,12 @@ TEST(CollectionParser, VowpalWabbit) {
       ::artm::core::Helpers::LoadMessage(it->path().string(), &batch);
       ASSERT_TRUE(batch.class_id_size() == 3 || batch.class_id_size() == 2);
       for (int i = 0; i < batch.token_size(); ++i) {
-        if (batch.token(i) == "hello" || batch.token(i) == "world")
+        if (batch.token(i) == "hello" || batch.token(i) == "world") {
           ASSERT_EQ(batch.class_id(i), "@default_class");
-        if (batch.token(i) == "noname" || batch.token(i) == "alex")
+        }
+        if (batch.token(i) == "noname" || batch.token(i) == "alex") {
           ASSERT_EQ(batch.class_id(i), "author");
+        }
       }
       ASSERT_EQ(batch.item_size(), 1);
     }

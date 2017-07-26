@@ -55,10 +55,12 @@ TEST(Async, MultipleTasks) {
 
   const int num_threads = 4;
   std::vector<std::shared_future<void>> tasks;
-  for (int i = 0; i < num_threads; i++)
+  for (int i = 0; i < num_threads; i++) {
     tasks.push_back(std::move(std::async(std::launch::async, func)));
-  for (int i = 0; i < num_threads; i++)
+  }
+  for (int i = 0; i < num_threads; i++) {
     tasks[i].wait();
+  }
 
   ASSERT_EQ(counter, num_threads);
 }

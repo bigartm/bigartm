@@ -34,8 +34,9 @@ std::string runOfflineTest() {
   auto batches = ::artm::test::TestMother::GenerateBatches(batches_size, nTokens);
   auto offline_args = api.Initialize(batches);
 
-  for (int iter = 0; iter < 3; ++iter)
+  for (int iter = 0; iter < 3; ++iter) {
     master_component.FitOfflineModel(offline_args);
+  }
 
   ::artm::TopicModel topic_model = master_component.GetTopicModel();
   std::stringstream ss;
@@ -56,8 +57,9 @@ std::string runOfflineTest() {
 TEST(RepeatableResult, Offline) {
   std::string first_result = runOfflineTest();
   std::string second_result = runOfflineTest();
-  if (first_result != second_result)
+  if (first_result != second_result) {
     std::cout << first_result << "\n" << second_result;
+  }
   ASSERT_EQ(first_result, second_result);
 }
 
@@ -108,8 +110,9 @@ void OverwriteTopicModel_internal(::artm::MatrixLayout matrix_layout) {
   ::artm::ImportBatchesArgs import_args;
   auto offline_args = api.Initialize(batches, &import_args);
 
-  for (int iter = 0; iter < 3; ++iter)
+  for (int iter = 0; iter < 3; ++iter) {
     master_component.FitOfflineModel(offline_args);
+  }
 
   ::artm::MasterModel master2(master_config);
   master2.ImportBatches(import_args);

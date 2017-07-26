@@ -29,7 +29,9 @@ void RunTest(bool disk_cache, std::string ptd_name) {
   ::artm::MasterModelConfig master_config = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
   master_config.set_reuse_theta(true);
   master_config.set_ptd_name(ptd_name);
-  if (disk_cache) master_config.set_disk_cache_path(target_path);
+  if (disk_cache) {
+    master_config.set_disk_cache_path(target_path);
+  }
   ::artm::MasterModel master_component(master_config);
   ::artm::test::Api api(master_component);
   EXPECT_TRUE(master_component.info().config().cache_theta());
@@ -37,10 +39,13 @@ void RunTest(bool disk_cache, std::string ptd_name) {
   auto batches = ::artm::test::TestMother::GenerateBatches(batches_size, nTokens);
   auto fit_offline_args = api.Initialize(batches);
 
-  for (int iter = 0; iter < 3; ++iter)
+  for (int iter = 0; iter < 3; ++iter) {
     master_component.FitOfflineModel(fit_offline_args);
+  }
 
-  if (ptd_name.empty()) EXPECT_GT(master_component.info().cache_entry_size(), 0);
+  if (ptd_name.empty()) {
+    EXPECT_GT(master_component.info().cache_entry_size(), 0);
+  }
   ::artm::ThetaMatrix theta1 = master_component.GetThetaMatrix();
   EXPECT_EQ(theta1.num_topics(), nTopics);
   EXPECT_GE(theta1.item_id_size(), 1);

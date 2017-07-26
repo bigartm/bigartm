@@ -43,8 +43,9 @@ artm::DictionaryData Helpers::GenerateDictionary(int nTokens, std::string class1
     std::stringstream str;
     str << "token" << i;
     std::string class_id = (i % 2 == 0) ? class1 : class2;
-    if (class_id.empty())
+    if (class_id.empty()) {
       continue;
+    }
     dictionary_data.add_token(str.str());
     dictionary_data.add_class_id(class_id);
   }
@@ -56,7 +57,7 @@ void Helpers::ConfigurePerplexityScore(std::string score_name,
                                        std::vector<std::string> class_ids) {
   ::artm::ScoreConfig score_config;
   ::artm::PerplexityScoreConfig perplexity_config;
-  for (auto& s : class_ids) {
+  for (const auto& s : class_ids) {
     perplexity_config.add_class_id(s);
   }
   score_config.set_config(perplexity_config.SerializeAsString());
@@ -67,8 +68,9 @@ void Helpers::ConfigurePerplexityScore(std::string score_name,
 
 MasterModelConfig TestMother::GenerateMasterModelConfig(int nTopics) {
   MasterModelConfig config;
-  for (int i = 0; i < nTopics; ++i)
+  for (int i = 0; i < nTopics; ++i) {
     config.add_topic_name("Topic" + boost::lexical_cast<std::string>(i));
+  }
   ::artm::core::ModelName model_name =
     boost::lexical_cast<std::string>(boost::uuids::random_generator()());
   config.set_pwt_name(boost::lexical_cast<std::string>(model_name));
@@ -77,8 +79,9 @@ MasterModelConfig TestMother::GenerateMasterModelConfig(int nTopics) {
 
 RegularizerConfig TestMother::GenerateRegularizerConfig() const {
   ::artm::SmoothSparseThetaConfig regularizer_1_config;
-  for (int i = 0; i < 12; ++i)
+  for (int i = 0; i < 12; ++i) {
     regularizer_1_config.add_alpha_iter(0.8f);
+  }
 
   ::artm::RegularizerConfig general_regularizer_1_config;
   general_regularizer_1_config.set_name(regularizer_name);
@@ -102,8 +105,9 @@ TestMother::GenerateBatches(int batches_size, int nTokens, ::artm::DictionaryDat
       str << "token" << i;
       batch.add_token(str.str());
 
-      if (dictionary != nullptr && first_iter)
+      if (dictionary != nullptr && first_iter) {
         dictionary->add_token(str.str());
+      }
     }
 
     artm::Item* item = batch.add_item();
@@ -153,8 +157,9 @@ void Helpers::CompareTopicModels(const ::artm::TopicModel& tm1, const ::artm::To
   ASSERT_EQ(tm1.token_size(), tm2.token_size());
   ASSERT_EQ(tm1.token_weights_size(), tm2.token_weights_size());
   ASSERT_EQ(tm1.topic_indices_size(), tm2.topic_indices_size());
-  if (tm1.topic_indices_size() > 0)
+  if (tm1.topic_indices_size() > 0) {
     ASSERT_EQ(tm1.topic_indices_size(), tm1.token_size());
+  }
 
   for (int i = 0; i < tm1.token_size(); ++i) {
     ASSERT_EQ(tm1.token(i), tm2.token(i));
@@ -162,8 +167,12 @@ void Helpers::CompareTopicModels(const ::artm::TopicModel& tm1, const ::artm::To
     for (int j = 0; j < tm1.token_weights(i).value_size(); ++j) {
       float tm1_value = tm1.token_weights(i).value(j);
       float tm2_value = tm2.token_weights(i).value(j);
-      if (fabs(tm1_value) < 1e-12) tm1_value = 0.0f;
-      if (fabs(tm2_value) < 1e-12) tm2_value = 0.0f;
+      if (fabs(tm1_value) < 1e-12) {
+        tm1_value = 0.0f;
+      }
+      if (fabs(tm2_value) < 1e-12) {
+        tm2_value = 0.0f;
+      }
       ASSERT_APPROX_EQ(tm1_value, tm2_value);
     }
     if (tm1.topic_indices_size() > 0) {
@@ -181,14 +190,16 @@ void Helpers::CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm:
   ASSERT_EQ(tm1.item_id_size(), tm2.item_id_size());
   ASSERT_EQ(tm1.item_weights_size(), tm2.item_weights_size());
   ASSERT_EQ(tm1.topic_indices_size(), tm2.topic_indices_size());
-  if (tm1.topic_indices_size() > 0)
+  if (tm1.topic_indices_size() > 0) {
     ASSERT_EQ(tm1.topic_indices_size(), tm1.item_id_size());
+  }
 
   for (int i = 0; i < tm1.item_id_size(); ++i) {
     ASSERT_EQ(tm1.item_id(i), tm2.item_id(i));
     ASSERT_EQ(tm1.item_weights(i).value_size(), tm2.item_weights(i).value_size());
-    for (int j = 0; j < tm1.item_weights(i).value_size(); ++j)
+    for (int j = 0; j < tm1.item_weights(i).value_size(); ++j) {
       ASSERT_APPROX_EQ(tm1.item_weights(i).value(j), tm2.item_weights(i).value(j));
+    }
     if (tm1.topic_indices_size() > 0) {
       ASSERT_EQ(tm1.topic_indices(i).value_size(), tm2.topic_indices(i).value_size());
       for (int j = 0; j < tm1.topic_indices(i).value_size(); ++j) {
@@ -201,8 +212,9 @@ void Helpers::CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm:
 
 void TestMother::GenerateBatches(int batches_size, int nTokens, const std::string& target_folder) {
   auto batches = GenerateBatches(batches_size, nTokens);
-  for (unsigned i = 0; i < batches.size(); ++i)
+  for (unsigned i = 0; i < batches.size(); ++i) {
     artm::core::Helpers::SaveBatch(*batches[i], target_folder, batches[i]->id());
+  }
 }
 
 }  // namespace test
