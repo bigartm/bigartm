@@ -128,7 +128,7 @@ Refer to [tutorials](http://docs.bigartm.org/en/latest/tutorials/python_tutorial
 
 ## Contributing
 
-Refer to the [Developer's Guide](http://docs.bigartm.org/en/latest/devguide.html).
+Refer to the [Developer's Guide](http://docs.bigartm.org/en/latest/devguide.html) and follows [Code Style](https://github.com/bigartm/bigartm/wiki/Code-style).
 
 To report a bug use [issue tracker](https://github.com/bigartm/bigartm/issues). To ask a question use [our mailing list](https://groups.google.com/forum/#!forum/bigartm-users). Feel free to make [pull request](https://github.com/bigartm/bigartm/pulls).
 
