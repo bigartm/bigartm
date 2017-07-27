@@ -35,7 +35,7 @@ class ThetaCacheEntry : boost::noncopyable {
 };
 
 // CacheManager class is responsible for caching ThetaMatrix in between calls to different APIs.
-// This class is used when the user calls FitOffline / FitOnline / Transfor to store the resulting theta matrix.
+// This class is used when the user calls FitOffline / FitOnline / Transform to store the resulting theta matrix.
 // (at least when theta_matrix_type is set to ThetaMatrixType_Cache).
 // Later user may retrieve the data from CacheManager via calls to ArtmRequestThetaMatrix.
 // The cache is organized as a set of entries, each entry associated with a single batch.
