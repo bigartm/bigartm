@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_MASTER_COMPONENT_H_
-#define SRC_ARTM_CORE_MASTER_COMPONENT_H_
+#pragma once
 
 #include <functional>
 #include <memory>
@@ -122,5 +121,3 @@ class MasterComponent : boost::noncopyable {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_MASTER_COMPONENT_H_

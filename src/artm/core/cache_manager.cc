@@ -18,17 +18,21 @@ namespace artm {
 namespace core {
 
 ThetaCacheEntry::ThetaCacheEntry()
-    : theta_matrix_(std::make_shared<ThetaMatrix>()), filename_() {}
+    : theta_matrix_(std::make_shared<ThetaMatrix>())
+    , filename_() { }
 
 ThetaCacheEntry::~ThetaCacheEntry() {
   if (!filename_.empty()) {
     try { fs::remove(fs::path(filename_)); }
-    catch (...) {}
+    catch (...) { }
   }
 }
 
 CacheManager::CacheManager(const std::string& disk_path, Instance* instance)
-    : lock_(), disk_path_(disk_path), instance_(instance), cache_() {
+    : lock_()
+    , disk_path_(disk_path)
+    , instance_(instance)
+    , cache_() {
   Clear();
 }
 
@@ -46,10 +50,11 @@ void CacheManager::Clear() {
 }
 
 void CacheManager::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
-  for (auto& key : cache_.keys()) {
+  for (const auto& key : cache_.keys()) {
     std::shared_ptr<ThetaCacheEntry> entry = cache_.get(key);
-    if (entry == nullptr)
+    if (entry == nullptr) {
       continue;
+    }
 
     MasterComponentInfo::CacheEntryInfo* info = master_info->add_cache_entry();
     info->set_key(boost::lexical_cast<std::string>(key));
@@ -83,36 +88,44 @@ static bool PopulateThetaMatrixFromCacheEntry(const ThetaMatrix& cache,
     }
   } else {  // use all topics
     assert(cache.topic_name_size() > 0);
-    for (int i = 0; i < cache.topic_name_size(); ++i)
+    for (int i = 0; i < cache.topic_name_size(); ++i) {
       topics_to_use.push_back(i);
+    }
     use_all_topics = true;
   }
 
   // Populate num_topics and topic_name fields in the resulting message
   ::google::protobuf::RepeatedPtrField< ::std::string> result_topic_name;
-  for (int topic_index : topics_to_use)
+  for (int topic_index : topics_to_use) {
     result_topic_name.Add()->assign(cache.topic_name(topic_index));
+  }
 
   if (theta_matrix->topic_name_size() == 0) {
     // Assign
     theta_matrix->set_num_topics(result_topic_name.size());
     assert(theta_matrix->topic_name_size() == 0);
-    for (const TopicName& topic_name : result_topic_name)
+    for (const TopicName& topic_name : result_topic_name) {
       theta_matrix->add_topic_name(topic_name);
+    }
   } else {
     // Verify
-    if (theta_matrix->num_topics() != result_topic_name.size())
+    if (theta_matrix->num_topics() != result_topic_name.size()) {
       BOOST_THROW_EXCEPTION(artm::core::InternalError("theta_matrix->num_topics() != result_topic_name.size()"));
+    }
+
     for (int i = 0; i < theta_matrix->topic_name_size(); ++i) {
-      if (theta_matrix->topic_name(i) != result_topic_name.Get(i))
+      if (theta_matrix->topic_name(i) != result_topic_name.Get(i)) {
         BOOST_THROW_EXCEPTION(artm::core::InternalError("theta_matrix->topic_name(i) != result_topic_name.Get(i)"));
+      }
     }
   }
 
   bool has_title = (cache.item_title_size() == cache.item_id_size());
   for (int item_index = 0; item_index < cache.item_id_size(); ++item_index) {
     theta_matrix->add_item_id(cache.item_id(item_index));
-    if (has_title) theta_matrix->add_item_title(cache.item_title(item_index));
+    if (has_title) {
+      theta_matrix->add_item_title(cache.item_title(item_index));
+    }
     ::artm::FloatArray* theta_vec = theta_matrix->add_item_weights();
 
     const artm::FloatArray& item_theta = cache.item_weights(item_index);
@@ -125,8 +138,9 @@ static bool PopulateThetaMatrixFromCacheEntry(const ThetaMatrix& cache,
         }
       } else {
         // dense output -- dense cache
-        for (int topic_index : topics_to_use)
+        for (int topic_index : topics_to_use) {
           theta_vec->add_value(item_theta.value(topic_index));
+        }
       }
     } else {
       ::artm::IntArray* sparse_topic_indices = theta_matrix->add_topic_indices();
@@ -179,8 +193,9 @@ void CacheManager::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
       cached_theta.add_item_id(-1);  // not available
       ::artm::FloatArray* item_weights = cached_theta.add_item_weights();
       phi_matrix->get(token_id, &values);
-      for (int topic_index = 0; topic_index < phi_matrix->topic_size(); topic_index++)
+      for (int topic_index = 0; topic_index < phi_matrix->topic_size(); topic_index++) {
         item_weights->add_value(values[topic_index]);
+      }
     }
 
     PopulateThetaMatrixFromCacheEntry(cached_theta, get_theta_args, theta_matrix);
@@ -188,10 +203,11 @@ void CacheManager::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
   }
 
   auto keys = cache_.keys();
-  for (auto &key : keys) {
+  for (const auto &key : keys) {
     std::shared_ptr<ThetaMatrix> cached_theta = FindCacheEntry(key);
-    if (cached_theta != nullptr)
+    if (cached_theta != nullptr) {
       PopulateThetaMatrixFromCacheEntry(*cached_theta, get_theta_args, theta_matrix);
+    }
   }
 }
 
@@ -205,15 +221,23 @@ std::shared_ptr<ThetaMatrix> CacheManager::FindCacheEntry(const Batch& batch) co
     std::vector<float> values; values.resize(phi_matrix->topic_size());
     for (int item_id = 0; item_id < batch.item_size(); item_id++) {
       Token token(DocumentsClass, batch.item(item_id).title());
-      if (token.keyword.empty()) continue;
+
+      if (token.keyword.empty()) {
+        continue;
+      }
+
       int token_index = phi_matrix->token_index(token);
-      if (token_index < 0) continue;
+      if (token_index < 0) {
+        continue;
+      }
+
       cached_theta->add_item_title(batch.item(item_id).title());
       cached_theta->add_item_id(batch.item(item_id).id());
       ::artm::FloatArray* item_weights = cached_theta->add_item_weights();
       phi_matrix->get(token_index, &values);
-      for (int topic_index = 0; topic_index < phi_matrix->topic_size(); topic_index++)
+      for (int topic_index = 0; topic_index < phi_matrix->topic_size(); topic_index++) {
         item_weights->add_value(values[topic_index]);
+      }
     }
 
     return cached_theta;
@@ -224,16 +248,18 @@ std::shared_ptr<ThetaMatrix> CacheManager::FindCacheEntry(const Batch& batch) co
 
 std::shared_ptr<ThetaMatrix> CacheManager::FindCacheEntry(const std::string& batch_id) const {
   std::shared_ptr<ThetaCacheEntry> retval = cache_.get(batch_id);
-  if (retval == nullptr)
+  if (retval == nullptr) {
     return nullptr;
-  if (retval->filename().empty())
+  }
+  if (retval->filename().empty()) {
     return retval->theta_matrix();
+  }
 
   try {
     std::shared_ptr<ThetaMatrix> copy(std::make_shared<ThetaMatrix>());
     Helpers::LoadMessage(retval->filename(), copy.get());
     return copy;
-  } catch(...) {
+  } catch (...) {
     LOG(ERROR) << "Unable to reload cache for " << retval->filename();
   }
 
@@ -249,9 +275,12 @@ void CacheManager::UpdateCacheEntry(const std::string& batch_id, const ThetaMatr
     for (int i = 0; i < theta_matrix.item_title_size(); i++) {
       Token token(DocumentsClass, theta_matrix.item_title(i));
       int token_id = phi_matrix->token_index(token);
-      if (token_id < 0) token_id = mutable_phi_matrix->AddToken(token);
-      for (int topic_index = 0; topic_index < theta_matrix.topic_name_size(); topic_index++)
+      if (token_id < 0) {
+        token_id = mutable_phi_matrix->AddToken(token);
+      }
+      for (int topic_index = 0; topic_index < theta_matrix.topic_name_size(); topic_index++) {
         mutable_phi_matrix->set(token_id, topic_index, theta_matrix.item_weights(i).value(topic_index));
+      }
     }
     return;
   }
@@ -278,8 +307,9 @@ void CacheManager::UpdateCacheEntry(const std::string& batch_id, const ThetaMatr
 void CacheManager::CopyFrom(const CacheManager& cache_manager) {
   disk_path_ = cache_manager.disk_path_;
   auto keys = cache_manager.cache_.keys();
-  for (auto key : keys)
+  for (const auto& key : keys) {
     cache_.set(key, cache_manager.cache_.get(key));
+  }
 }
 
 }  // namespace core

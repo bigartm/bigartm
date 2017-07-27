@@ -48,9 +48,10 @@ void ScoreManager::Clear() {
 bool ScoreManager::RequestScore(const ScoreName& score_name,
                                 ScoreData *score_data) const {
   auto score_calculator = instance_->scores_calculators()->get(score_name);
-  if (score_calculator == nullptr)
+  if (score_calculator == nullptr) {
     BOOST_THROW_EXCEPTION(InvalidOperation(
       std::string("Attempt to request non-existing score: " + score_name)));
+  }
 
   if (score_calculator->is_cumulative()) {
     boost::lock_guard<boost::mutex> guard(lock_);
@@ -71,20 +72,23 @@ bool ScoreManager::RequestScore(const ScoreName& score_name,
 }
 
 void ScoreManager::RequestAllScores(::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data) const {
-  if (score_data == nullptr)
+  if (score_data == nullptr) {
     return;
+  }
 
   std::vector<ScoreName> score_names;
   {
     boost::lock_guard<boost::mutex> guard(lock_);
-    for (auto& elem : score_map_)
+    for (const auto& elem : score_map_) {
       score_names.push_back(elem.first);
+    }
   }
 
   for (auto& score_name : score_names) {
     ScoreData requested_score_data;
-    if (RequestScore(score_name, &requested_score_data))
+    if (RequestScore(score_name, &requested_score_data)) {
       score_data->Add()->Swap(&requested_score_data);
+    }
   }
 }
 

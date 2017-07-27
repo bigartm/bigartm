@@ -25,7 +25,7 @@ TEST(Scores, Perplexity) {
   ::artm::MasterModelConfig master_config_2 = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
   master_config_2.add_class_id("@default_class"); master_config_2.add_class_weight(1.0f);
   master_config_2.add_class_id("@some_class"); master_config_2.add_class_weight(2.0f);
-  ::artm::test::Helpers::ConfigurePerplexityScore("perplexity_1", &master_config_2, {});
+  ::artm::test::Helpers::ConfigurePerplexityScore("perplexity_1", &master_config_2, { });
   ::artm::test::Helpers::ConfigurePerplexityScore("perplexity_2", &master_config_2, { "@default_class" });
   ::artm::test::Helpers::ConfigurePerplexityScore("perplexity_3", &master_config_2,
                                                   { "@default_class", "@some_class" });
@@ -35,7 +35,7 @@ TEST(Scores, Perplexity) {
   ::artm::test::Api api_2(master_2);
 
   ::artm::MasterModelConfig master_config_3 = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
-  ::artm::test::Helpers::ConfigurePerplexityScore("perplexity", &master_config_3, {});
+  ::artm::test::Helpers::ConfigurePerplexityScore("perplexity", &master_config_3, { });
   ::artm::MasterModel master_3(master_config_3);
   ::artm::test::Api api_3(master_3);
 
@@ -73,7 +73,7 @@ TEST(Scores, Perplexity) {
   ASSERT_DOUBLE_EQ(score.normalizer(), 0.0);
   ASSERT_EQ(score.zero_words(), 0);
   ASSERT_EQ(score.class_id_info_size(), 2);
-  double value_1 = score.value();
+  float value_1 = score.value();
 
   gs.set_score_name("perplexity_3");
   score = master_2.GetScoreAs< ::artm::PerplexityScore>(gs);
@@ -82,7 +82,7 @@ TEST(Scores, Perplexity) {
   ASSERT_DOUBLE_EQ(score.normalizer(), 0.0);
   ASSERT_EQ(score.zero_words(), 0);
   ASSERT_EQ(score.class_id_info_size(), 2);
-  double value_2 = score.value();
+  float value_2 = score.value();
 
   ASSERT_DOUBLE_EQ(value_1, value_2);
 
@@ -174,5 +174,5 @@ TEST(Scores, ScoreTrackerExportImport) {
   }
 
   try { boost::filesystem::remove(target_name); }
-  catch (...) {}
+  catch (...) { }
 }

@@ -4,8 +4,7 @@
 // All methods must be inside "extern "C"" scope. All complex data structures should be passed in
 // as Google Protobuf Messages, defined in messages.proto.
 
-#ifndef SRC_ARTM_C_INTERFACE_H_
-#define SRC_ARTM_C_INTERFACE_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -104,5 +103,3 @@ extern "C" {
   DLL_PUBLIC int64_t ArtmSetProtobufMessageFormatToBinary();
   DLL_PUBLIC int64_t ArtmProtobufMessageFormatIsJson();
 }
-
-#endif  // SRC_ARTM_C_INTERFACE_H_

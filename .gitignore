@@ -59,6 +59,8 @@ src/Win32/*
 *.log.ERROR.*
 *.batch
 
+*\#*\#*
+
 # Binaries
 /src/artm/unittests/
 /src/cpp_client/cpp_client

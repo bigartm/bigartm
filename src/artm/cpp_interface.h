@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CPP_INTERFACE_H_
-#define SRC_ARTM_CPP_INTERFACE_H_
+#pragma once
 
 #include <memory>
 #include <stdexcept>
@@ -41,10 +40,10 @@ enum ArtmErrorCodes {
 namespace artm {
 
 // Exception handling in cpp_interface
-#define DEFINE_EXCEPTION_TYPE(Type, BaseType)                  \
-class Type : public BaseType { public:  /*NOLINT*/             \
-  Type() : BaseType("") {}                                     \
-  explicit Type(std::string message) : BaseType(message) {}    \
+#define DEFINE_EXCEPTION_TYPE(Type, BaseType)                   \
+class Type : public BaseType { public:  /*NOLINT*/              \
+  Type() : BaseType("") { }                                     \
+  explicit Type(std::string message) : BaseType(message) { }    \
 };
 
 DEFINE_EXCEPTION_TYPE(InternalError, std::runtime_error);
@@ -177,5 +176,3 @@ std::vector<T> MasterModel::GetScoreArrayAs(const GetScoreArrayArgs& args) {
 }
 
 }  // namespace artm
-
-#endif  // SRC_ARTM_CPP_INTERFACE_H_

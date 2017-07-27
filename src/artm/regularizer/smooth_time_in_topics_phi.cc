@@ -20,20 +20,22 @@ bool SmoothTimeInTopicsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   const int token_size = p_wt.token_size();
 
   std::vector<bool> topics_to_regularize;
-  if (config_.topic_name().size() == 0)
+  if (config_.topic_name().size() == 0) {
     topics_to_regularize.assign(topic_size, true);
-  else
+  } else {
     topics_to_regularize = core::is_member(p_wt.topic_name(), config_.topic_name());
+  }
 
   // proceed the regularization
   // will update only tokens of given modality, that have prev and post tokens of this modality
   int index_prev_prev = -1;
   int index_prev = -1;
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    const ::artm::core::Token& token = p_wt.token(token_id);
+    const auto& token = p_wt.token(token_id);
 
-    if (token.class_id != config_.class_id())
+    if (token.class_id != config_.class_id()) {
       continue;
+    }
 
     if (index_prev_prev < 0) {
       index_prev_prev = token_id;
@@ -47,7 +49,7 @@ bool SmoothTimeInTopicsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
 
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
-        double value = p_wt.get(index_prev, topic_id);
+        float value = p_wt.get(index_prev, topic_id);
 
         value *= ((p_wt.get(index_prev_prev, topic_id) - value) > 0.0 ? 1.0 : -1.0) +
                  ((p_wt.get(token_id, topic_id) - value) > 0.0 ? 1.0 : -1.0);

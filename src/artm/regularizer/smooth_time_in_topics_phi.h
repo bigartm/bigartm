@@ -18,8 +18,7 @@
    Note: regularizer ignores first and last tokens of given modality.
 */
 
-#ifndef SRC_ARTM_REGULARIZER_SMOOTH_TIME_IN_TOPICS_PHI_H_
-#define SRC_ARTM_REGULARIZER_SMOOTH_TIME_IN_TOPICS_PHI_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -48,5 +47,3 @@ class SmoothTimeInTopicsPhi : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_SMOOTH_TIME_IN_TOPICS_PHI_H_

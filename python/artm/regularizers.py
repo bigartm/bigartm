@@ -45,7 +45,7 @@ class KlFunctionInfo(object):
     def __init__(self, function_type='log', power_value=2.0):
         """
         :param str function_type: the type of function, 'log' (logarithm) or 'pol' (polynomial)
-        :param float power_value: the double power of polynomial, ignored if type = 'log'
+        :param float power_value: the float power of polynomial, ignored if type = 'log'
         """
         if function_type not in ['log', 'pol']:
             raise ValueError('Function type can be only "log" or "pol"')
@@ -390,16 +390,16 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
                            User should guarantee the existence and correctness of\
                            document titles in batches (e.g. in src files with data, like WV).
         :type doc_titles: list of strings
-        :param doc_topic_coef: Two cases: 1) list of doubles with length equal to num of topics.\
+        :param doc_topic_coef: Two cases: 1) list of floats with length equal to num of topics.\
                                Means additional multiplier in M-step formula besides alpha and\
                                tau, unique for each topic, but general for all processing documents.\
-                               2) list of lists of doubles with outer list length equal to length\
+                               2) list of lists of floats with outer list length equal to length\
                                of doc_titles, and each inner list length equal to num of topics.\
                                Means case 1 with unique list of additional multipliers for each\
                                document from doc_titles. Other documents will not be regularized\
                                according to description of doc_titles parameter.\
                                Note, that doc_topic_coef and topic_names are both using.
-        :type doc_topic_coef: list of doubles or list of lists of doubles
+        :type doc_topic_coef: list of floats or list of lists of floats
         :param config: the low-level config of this regularizer
         :type config: protobuf object
         """
