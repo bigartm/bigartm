@@ -10,7 +10,7 @@
    
    where U is the set of tokens of specific vertex modality of documents graph,
    w_uv is a weight of edge between vertices u and v,
-   n_t is a normalized n_wt for tokens of U class_id,
+   n_t is a normalized n_wt for tokens of U class_id (n_t = \sum_{v \in U} n_vt),
    D is an array of weights of vertices, len(D) == |U|
    
    The parameters of the regularizer:
@@ -21,14 +21,14 @@
    - weights D_u (vector with weights D_u, if is not set, all weights should be 1.0)
    - symmetric_weights (flag that indicates if w_uv is a symmetric sparce matrix or not)
 
-   Note: max index of vertex in w_uv matrix should be less or equal to len(D).
+   Note: max index of vertex in w_uv matrix should be less or equal to len(D) - 1.
 */
 
-#ifndef SRC_ARTM_REGULARIZER_NET_PLSA_PHI_H_
-#define SRC_ARTM_REGULARIZER_NET_PLSA_PHI_H_
+#pragma once
 
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 #include "artm/regularizer_interface.h"
 
@@ -39,8 +39,7 @@ typedef std::unordered_map<int, std::unordered_map<int, float> > EdgeWeights;
 
 class NetPlsaPhi : public RegularizerInterface {
  public:
-  explicit NetPlsaPhi(const NetPlsaPhiConfig& config)
-    : config_(config) {
+  explicit NetPlsaPhi(const NetPlsaPhiConfig& config) : config_(config) {
     UpdateNetInfo(config);
   }
 
@@ -59,10 +58,8 @@ class NetPlsaPhi : public RegularizerInterface {
   NetPlsaPhiConfig config_;
   EdgeWeights edge_weights_;
   std::unordered_map<std::string, int> vertex_name2id_;
-  std::unordered_map<int, std::string> id2vertex_name_;
+  std::vector<std::string> vertex_name_;
 };
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_NET_PLSA_PHI_H_

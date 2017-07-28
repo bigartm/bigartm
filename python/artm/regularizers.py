@@ -991,7 +991,7 @@ class NetPlsaPhiRegularizer(BaseRegularizerPhi):
         if self._edge_weights == {}:
             self._edge_weights = None
 
-    def __init__(self, name=None, tau=1.0, gamma=None, class_id=None, symmetric_edge_weights=False,
+    def __init__(self, name=None, tau=1.0, gamma=None, class_id=None, symmetric_edge_weights=None,
                  topic_names=None, vertex_names=None, vertex_weights=None, edge_weights=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
@@ -1026,7 +1026,7 @@ class NetPlsaPhiRegularizer(BaseRegularizerPhi):
         elif config is not None and config.HasField('class_id'):
             self._class_id = config.class_id
 
-        self._symmetric_edge_weights = 20
+        self._symmetric_edge_weights = False
         if symmetric_edge_weights is not None:
             self._config.symmetric_edge_weights = symmetric_edge_weights
             self._symmetric_edge_weights = symmetric_edge_weights
