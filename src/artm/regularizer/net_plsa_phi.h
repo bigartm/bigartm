@@ -26,7 +26,6 @@
 
 #pragma once
 
-#include <unordered_map>
 #include <string>
 #include <vector>
 
@@ -57,7 +56,6 @@ class NetPlsaPhi : public RegularizerInterface {
 
   NetPlsaPhiConfig config_;
   EdgeWeights edge_weights_;
-  std::unordered_map<std::string, int> vertex_name2id_;
   std::vector<std::string> vertex_name_;
 };
 

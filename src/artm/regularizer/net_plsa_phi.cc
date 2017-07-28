@@ -31,10 +31,10 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   const auto& class_id = config_.class_id();
 
   bool has_weights = config_.vertex_weight_size();
-  if (has_weights && vertex_name2id_.size() != config_.vertex_weight_size()) {
+  if (has_weights && vertex_name_.size() != config_.vertex_weight_size()) {
     LOG(ERROR) << "Non-empty vertex_weight array should have the same length " <<
                   "with vertex_name array in NetPLSA regularizer config (" <<
-                  vertex_name2id_.size() << " != " << config_.vertex_weight_size() << ")";
+                  vertex_name_.size() << " != " << config_.vertex_weight_size() << ")";
   }
 
   auto normalizers = artm::core::PhiMatrixOperations::FindNormalizers(n_wt);
@@ -45,23 +45,18 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
   const auto& n_t = norm_iter->second;
 
-  for (const auto& vertex : vertex_name_) {
-    auto name_iter = vertex_name2id_.find(vertex);
-    if (name_iter == vertex_name2id_.end()) {
-      continue;
-    }
-
-    auto edge_iter = edge_weights_.find(name_iter->second);
+  for (int vertex_id = 0; vertex_id < vertex_name_.size(); ++vertex_id) {
+    auto edge_iter = edge_weights_.find(vertex_id);
     if (edge_iter == edge_weights_.end()) {
       continue;
     }
 
-    const int token_id = p_wt.token_index(::artm::core::Token(class_id, vertex));
+    const int token_id = p_wt.token_index(::artm::core::Token(class_id, vertex_name_[vertex_id]));
     if (token_id < 0) {
       continue;
     }
 
-    float D_u = has_weights ? config_.vertex_weight(name_iter->second) : 1.0;
+    float D_u = has_weights ? config_.vertex_weight(vertex_id) : 1.0;
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (!topics_to_regularize[topic_id]) {
         continue;
@@ -111,14 +106,10 @@ void NetPlsaPhi::UpdateNetInfo(const NetPlsaPhiConfig& config) {
   config_.clear_edge_weight();
   config_.clear_vertex_name();
 
-  vertex_name2id_.clear();
   vertex_name_.clear();
   int num_vertices = config.vertex_name_size();
-  if (num_vertices) {
-    for (int i = 0; i < num_vertices; ++i) {
-      vertex_name2id_[config.vertex_name(i)] = i;
-      vertex_name_.push_back(config.vertex_name(i));
-    }
+  for (int i = 0; i < num_vertices; ++i) {
+    vertex_name_.push_back(config.vertex_name(i));
   }
 
   edge_weights_.clear();

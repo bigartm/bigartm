@@ -230,19 +230,19 @@ TEST(Regularizers, NetPlsa) {
   regularizer_config->set_tau(-2.0f);
 
   ::artm::NetPlsaPhiConfig internal_config_2;
-  internal_config.set_class_id("@time_class");
-  internal_config.add_vertex_name("time_1");
-  internal_config.add_vertex_name("time_2");
-  internal_config.add_first_vertex_index(0);
-  internal_config.add_second_vertex_index(1);
-  internal_config.add_edge_weight(-3.0);
-  internal_config.add_first_vertex_index(1);
-  internal_config.add_second_vertex_index(0);
-  internal_config.add_edge_weight(8.0);
+  internal_config_2.set_class_id("@time_class");
+  internal_config_2.add_vertex_name("time_1");
+  internal_config_2.add_vertex_name("time_2");
+  internal_config_2.add_first_vertex_index(0);
+  internal_config_2.add_second_vertex_index(1);
+  internal_config_2.add_edge_weight(-3.0);
+  internal_config_2.add_first_vertex_index(1);
+  internal_config_2.add_second_vertex_index(0);
+  internal_config_2.add_edge_weight(8.0);
 
-  internal_config.set_symmetric_edge_weights(false);
+  internal_config_2.set_symmetric_edge_weights(false);
 
-  regularizer_config->set_config(internal_config.SerializeAsString());
+  regularizer_config->set_config(internal_config_2.SerializeAsString());
 
   artm::MasterModel master(master_config);
   ::artm::test::Api api(master);
@@ -289,12 +289,12 @@ TEST(Regularizers, NetPlsa) {
 
   std::vector<float> real_values;
   for (int j = 0; j < nDocs; ++j) {
-    real_values.push_back(theta_matrix.item_weights(j).value(0));
+    real_values.push_back(theta_matrix.item_weights(j).value(2));
   }
 
-  std::vector<float> expected_values = { 5.95393e-06f, 3.30627e-13f, 0.0f, 1.0f, 0.0f };
+  std::vector<float> expected_values = { 0.000f, 0.000f, 0.000f, 0.000f, 0.999f };
 
   for (int i = 0; i < nDocs; ++i) {
-    ASSERT_NEAR(real_values[i], expected_values[i], 1.0e-12);
+    ASSERT_NEAR(real_values[i], expected_values[i], 1.0e-3);
   }
 }
