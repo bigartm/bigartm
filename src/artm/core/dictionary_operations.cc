@@ -196,6 +196,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Import(const ImportDictionaryA
 
     // part with main dictionary
     if (dict_data.token_size() > 0) {
+      dictionary->SetNumItems(dict_data.num_items_in_collection());
       for (int token_id = 0; token_id < dict_data.token_size(); ++token_id) {
         dictionary->AddEntry(DictionaryEntry(Token(dict_data.class_id(token_id), dict_data.token(token_id)),
           dict_data.token_value(token_id), dict_data.token_tf(token_id), dict_data.token_df(token_id)));
@@ -445,6 +446,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 
 std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryArgs& args, const Dictionary& dict) {
   auto dictionary = std::make_shared<Dictionary>(Dictionary(args.dictionary_target_name()));
+  dictionary->SetNumItems(dict.num_items());
 
   auto& src_entries = dict.entries();
   auto& dictionary_token_index = dict.token_index();
@@ -453,7 +455,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
   float size = static_cast<float>(dict.num_items());
   std::vector<bool> entries_mask(src_entries.size(), false);
   std::vector<float> df_values;
-  int accepted_tokens_count = 0;
+  double new_tf_normalizer = 0.0;
 
   for (int entry_index = 0; entry_index < (int64_t) src_entries.size(); entry_index++) {
     auto& entry = src_entries[entry_index];
@@ -483,8 +485,9 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
       }
     }
 
-    entries_mask[entry_index] = true;  // pass all filters
+    entries_mask[entry_index] = true;  // have passed all filters
     df_values.push_back(entry.token_df());
+    new_tf_normalizer += entry.token_tf();
   }
 
   // Handle max_dictionary_size
@@ -493,15 +496,18 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
     std::sort(df_values.begin(), df_values.end(), std::greater<float>());
     float min_df_due_to_size = df_values[args.max_dictionary_size()];
 
+
     for (int entry_index = 0; entry_index < (int64_t) src_entries.size();
             entry_index++) {
       auto& entry = src_entries[entry_index];
       if (entry.token_df() <= min_df_due_to_size) {
         entries_mask[entry_index] = false;
+        new_tf_normalizer -= entry.token_tf();
       }
     }
   }
 
+  int accepted_tokens_count = 0;
   for (int entry_index = 0; entry_index < (int64_t) src_entries.size(); entry_index++) {
     if (!entries_mask[entry_index]) {
       continue;
@@ -509,8 +515,13 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
 
     // all filters were passed, add token to the new dictionary
     auto& entry = src_entries[entry_index];
-    accepted_tokens_count += 1;
-    dictionary->AddEntry(entry);
+    ++accepted_tokens_count;
+    if (args.recalculate_value()) {
+      float value = static_cast<float>(new_tf_normalizer > 0.0 ? entry.token_tf() / new_tf_normalizer : 0.0);
+      dictionary->AddEntry({ entry.token(), value, entry.token_tf(), entry.token_df() });
+    } else {
+      dictionary->AddEntry(entry);
+    }
 
     old_index_new_index.insert(std::pair<int, int>(dictionary_token_index.find(entry.token())->second,
       accepted_tokens_count - 1));

@@ -528,6 +528,7 @@ message FilterDictionaryArgs {
   optional float max_tf = 9;
 
   optional int64 max_dictionary_size = 10;
+  optional bool recalculate_value = 11 [default = false];
 }
 
 message GatherDictionaryArgs {

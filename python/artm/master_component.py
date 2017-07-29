@@ -339,6 +339,7 @@ class MasterComponent(object):
                           min_df_rate=None, max_df_rate=None,
                           min_tf=None, max_tf=None,
                           max_dictionary_size=None,
+                          recalculate_value=None,
                           args=None):
 
         """
@@ -353,6 +354,8 @@ class MasterComponent(object):
         :param float max_tf: max tf value to pass the filter
         :param float max_dictionary_size: give an easy option to limit dictionary size;
                                           rare tokens will be excluded until dictionary reaches given size.
+        :param bool recalculate_value: recalculate or not value field in dictionary after filtration\
+                                       according to new sun of tf values
         :param args: an instance of FilterDictionaryArgs
         """
         filter_args = messages.FilterDictionaryArgs()
@@ -378,6 +381,8 @@ class MasterComponent(object):
             filter_args.max_tf = max_tf
         if max_dictionary_size is not None:
             filter_args.max_dictionary_size = max_dictionary_size
+        if recalculate_value is not None:
+            filter_args.recalculate_value = recalculate_value
 
         self._lib.ArtmFilterDictionary(self.master_id, filter_args)
 
