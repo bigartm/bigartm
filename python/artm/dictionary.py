@@ -154,7 +154,7 @@ class Dictionary(object):
                                        symmetric_cooc_values=symmetric_cooc_values)
 
     def filter(self, class_id=None, min_df=None, max_df=None, min_df_rate=None, max_df_rate=None,
-               min_tf=None, max_tf=None, max_dictionary_size=None):
+               min_tf=None, max_tf=None, max_dictionary_size=None, recalculate_value=False):
         """
         :Description: filters the BigARTM dictionary of the collection, which\
                       was already loaded into the lib
@@ -170,6 +170,8 @@ class Dictionary(object):
         :param float max_tf: max tf value to pass the filter
         :param float max_dictionary_size: give an easy option to limit dictionary size;
                                           rare tokens will be excluded until dictionary reaches given size.
+        :param bool recalculate_value: recalculate or not value field in dictionary after filtration\
+                                       according to new sun of tf values
 
         :Note: the current dictionary will be replaced with filtered
         """
@@ -182,7 +184,8 @@ class Dictionary(object):
                                        max_df_rate=max_df_rate,
                                        min_tf=min_tf,
                                        max_tf=max_tf,
-                                       max_dictionary_size=max_dictionary_size)
+                                       max_dictionary_size=max_dictionary_size,
+                                       recalculate_value=recalculate_value)
 
     def __deepcopy__(self, memo):
         return self
