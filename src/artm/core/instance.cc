@@ -32,6 +32,7 @@
 #include "artm/regularizer/hierarchy_sparsing_theta.h"
 #include "artm/regularizer/topic_segmentation_ptdw.h"
 #include "artm/regularizer/smooth_time_in_topics_phi.h"
+#include "artm/regularizer/net_plsa_phi.h"
 
 #include "artm/score/items_processed.h"
 #include "artm/score/sparsity_theta.h"
@@ -295,6 +296,12 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
     case artm::RegularizerType_SmoothTimeInTopicsPhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::SmoothTimeInTopicsPhiConfig,
         ::artm::regularizer::SmoothTimeInTopicsPhi);
+      break;
+    }
+
+    case artm::RegularizerType_NetPlsaPhi: {
+      CREATE_OR_RECONFIGURE_REGULARIZER(::artm::NetPlsaPhiConfig,
+        ::artm::regularizer::NetPlsaPhi);
       break;
     }
 

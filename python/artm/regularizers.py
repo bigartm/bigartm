@@ -24,6 +24,7 @@ __all__ = [
     'HierarchySparsingThetaRegularizer',
     'TopicSegmentationPtdwRegularizer',
     'SmoothTimeInTopicsPhiRegularizer',
+    'NetPlsaPhiRegularizer',
 ]
 
 
@@ -964,3 +965,146 @@ class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
     @dictionary.setter
     def dictionary(self, dictionary):
         raise KeyError('No dictionary parameter')
+
+
+class NetPlsaPhiRegularizer(BaseRegularizerPhi):
+    _config_message = messages.NetPlsaPhiConfig
+    _type = const.RegularizerType_NetPlsaPhi
+
+    def _update_config(self, edge_weights):
+        self._config.ClearField('first_vertex_index')
+        self._config.ClearField('second_vertex_index')
+        self._config.ClearField('edge_weight')
+
+        for first_index, indices_and_values in iteritems(edge_weights):
+            for second_index, value in iteritems(indices_and_values):
+                self._config.first_vertex_index.append(first_index)
+                self._config.second_vertex_index.append(second_index)
+                self._config.edge_weight.append(value)
+
+    def _update_from_config(self, config):
+        self._edge_weights = {}
+        for f_index, s_index, value in zip(config.first_vertex_index, config.second_vertex_index, config.edge_weight):
+            if f_index not in self._edge_weights:
+                self._edge_weights[f_index] = {}
+            self._edge_weights[f_index][s_index] = value
+        if self._edge_weights == {}:
+            self._edge_weights = None
+
+    def __init__(self, name=None, tau=1.0, gamma=None, class_id=None, symmetric_edge_weights=None,
+                 topic_names=None, vertex_names=None, vertex_weights=None, edge_weights=None, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param float gamma: the coefficient of relative regularization for this regularizer
+        :param str class_id: name of class_id of special tokens-vertices
+        :param topic_names: list of names or single name of topic to regularize,\
+                            will regularize all topics if empty or None
+        :type topic_names: list of str or single str or None
+        :param edge_weights: information about edge weights of NetPLSA model, required.
+        :type edge_weights: dict, key - first token, value - dict with second tokens and float values
+        :param bool symmetric_edge_weights: use symmetric edge weights or not
+        :param list vertex_names: list of tokens-vertices of class_id modality, required.
+        :param list vertex_weights: list of weights of vertices, should has equal length with\
+                                    vertex_name, 1.0 values for all vertices will be used by default
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
+        BaseRegularizerPhi.__init__(self,
+                                    name=name,
+                                    tau=tau,
+                                    gamma=gamma,
+                                    config=config,
+                                    topic_names=topic_names,
+                                    class_ids=None,
+                                    dictionary=None)
+
+        self._class_id = None
+        if class_id is not None:
+            self._config.class_id = class_id
+            self._class_id = class_id
+        elif config is not None and config.HasField('class_id'):
+            self._class_id = config.class_id
+
+        self._symmetric_edge_weights = False
+        if symmetric_edge_weights is not None:
+            self._config.symmetric_edge_weights = symmetric_edge_weights
+            self._symmetric_edge_weights = symmetric_edge_weights
+        elif config is not None and config.HasField('symmetric_edge_weights'):
+            self._symmetric_edge_weights = config.symmetric_edge_weights
+
+        self._vertex_names = []
+        if vertex_names is not None:
+            self._config.ClearField('vertex_name')
+            for name in vertex_names:
+                self._config.vertex_name.append(name)
+                self._vertex_names.append(name)
+        elif config is not None and len(config.vertex_name):
+            self._vertex_names = [name for name in config.vertex_name]
+
+        self._vertex_weights = []
+        if vertex_weights is not None:
+            self._config.ClearField('vertex_weight')
+            for weight in vertex_weights:
+                self._config.vertex_weight.append(weight)
+                self._vertex_weights.append(weight)
+        elif config is not None and len(config.vertex_weight):
+            self._vertex_weights = [weight for weight in config.vertex_weight]
+
+        self._edge_weights = None
+        if edge_weights is not None:
+            self._update_config(edge_weights)
+            self._edge_weights = edge_weights
+        elif config is not None:
+            self._update_from_config(config)
+
+    @property
+    def class_id(self):
+        return self._class_id
+
+    @property
+    def class_ids(self):
+        raise KeyError('No class_ids parameter')
+
+    @property
+    def dictionary(self):
+        raise KeyError('No dictionary parameter')
+
+    @property
+    def edge_weights(self):
+        return self._edge_weights
+
+    @property
+    def vertex_names(self):
+        return self._vertex_names
+
+    @property
+    def vertex_weights(self):
+        return self._vertex_weights
+
+    @class_id.setter
+    def class_id(self, class_id):
+        _reconfigure_field(self, class_id, 'class_id')
+
+    @class_ids.setter
+    def class_ids(self, class_ids):
+        raise KeyError('No class_ids parameter')
+
+    @dictionary.setter
+    def dictionary(self, dictionary):
+        raise KeyError('No dictionary parameter')
+
+    @edge_weights.setter
+    def edge_weights(self, edge_weights):
+        if edge_weights is not None:
+            self._update_config(edge_weights)
+            self._edge_weights = edge_weights
+            self._master.reconfigure_regularizer(self.name, self._config, self.tau, self.gamma)
+
+    @vertex_names.setter
+    def vertex_names(self, vertex_names):
+        _reconfigure_field(self, vertex_names, 'vertex_name')
+
+    @vertex_weights.setter
+    def vertex_weights(self, vertex_weights):
+        _reconfigure_field(self, vertex_weights, 'vertex_weight')
