@@ -85,7 +85,8 @@ class Dictionary(object):
         """
         dictionary_data = self._master.get_dictionary(self._name)
         with codecs.open(dictionary_path, 'w', encoding) as fout:
-            fout.write(u'name: {}\n'.format(dictionary_data.name))
+            fout.write(u'name: {} num_items: {}\n'.format(dictionary_data.name,
+                                                          dictionary_data.num_items_in_collection))
             fout.write(u'token, class_id, token_value, token_tf, token_df\n')
 
             for i in range(len(dictionary_data.token)):
@@ -106,7 +107,9 @@ class Dictionary(object):
         self._reset()
         dictionary_data = messages.DictionaryData()
         with codecs.open(dictionary_path, 'r', encoding) as fin:
-            dictionary_data.name = fin.readline().split(' ')[1][0: -1]
+            first_str = fin.readline()[: -1].split(' ')
+            dictionary_data.name = first_str[1]
+            dictionary_data.num_items_in_collection = int(first_str[3])
             fin.readline()  # skip comment line
 
             for line in fin:

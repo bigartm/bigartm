@@ -16,6 +16,7 @@ def test_func():
     
     num_tokens = 6906
     num_filtered_tokens = 2852
+    num_rate_filtered_tokens = 122
     eps = 1e-5
     
     def _check_num_tokens_in_saved_text_dictionary(file_name, case_type=0):
@@ -52,7 +53,6 @@ def test_func():
 
         dictionary_1 = artm.Dictionary()
         dictionary_1.gather(data_path=batches_folder)
-        
         dictionary_1.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_1.txt'))
         _check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_1.txt'))
 
@@ -74,6 +74,8 @@ def test_func():
             dictionary_data.token_value.append(0.0)
             dictionary_data.token_df.append(0.0)
             dictionary_data.token_tf.append(1.0)
+        f = os.path.join(batches_folder, 'saved_text_dict_3.txt')
+        dictionary_data.num_items_in_collection = int(open(f).readline()[: -1].split(' ')[3])
 
         dictionary_4 = artm.Dictionary()
         dictionary_4.create(dictionary_data=dictionary_data)
@@ -93,9 +95,9 @@ def test_func():
         dictionary_6.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_6.txt'))
         _check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_6.txt'), case_type=2)
 
-        #dictionary_7.filter(min_df_rate=0.1, max_df_rate=0.8, recalculate_value=True)
-        #dictionary_7.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_7.txt'))
-        #_check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_7.txt'), case_type=3)
+        dictionary_6.filter(min_df_rate=0.001, max_df_rate=0.002, recalculate_value=True)
+        dictionary_6.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_6.txt'))
+        _check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_6.txt'), case_type=3)
     finally:
         shutil.rmtree(batches_folder)
-test_func()
+

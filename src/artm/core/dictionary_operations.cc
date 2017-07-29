@@ -196,6 +196,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Import(const ImportDictionaryA
 
     // part with main dictionary
     if (dict_data.token_size() > 0) {
+      dictionary->SetNumItems(dict_data.num_items_in_collection());
       for (int token_id = 0; token_id < dict_data.token_size(); ++token_id) {
         dictionary->AddEntry(DictionaryEntry(Token(dict_data.class_id(token_id), dict_data.token(token_id)),
           dict_data.token_value(token_id), dict_data.token_tf(token_id), dict_data.token_df(token_id)));
@@ -445,6 +446,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 
 std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryArgs& args, const Dictionary& dict) {
   auto dictionary = std::make_shared<Dictionary>(Dictionary(args.dictionary_target_name()));
+  dictionary->SetNumItems(dict.num_items());
 
   auto& src_entries = dict.entries();
   auto& dictionary_token_index = dict.token_index();
