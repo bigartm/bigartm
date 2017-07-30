@@ -34,6 +34,10 @@ The model will be saved in binary format, its parameters will be duplicated also
 
    To use these methods correctly you should either set ``cache_theta`` flag to False (and don't use Theta matrix) or set it to True and also set ``theta_name`` parameter (that will store Theta as Phi-like object).
 
+.. warning::
+
+  This method allows to store only plain (non-hierarchic, e.g. ARTM) topic models!
+
 You can use pair of ``dump_artm_model/load_artm_model`` functions in case of long fitting, when restoring parameters is much more easier than model re-fitting.
 
 * **Creating batches manually**:
