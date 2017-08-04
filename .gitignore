@@ -59,6 +59,8 @@ src/Win32/*
 *.log.ERROR.*
 *.batch
 
+*\#*\#*
+
 # Binaries
 /src/artm/unittests/
 /src/cpp_client/cpp_client
@@ -153,3 +155,14 @@ src/artm/messages.pb.h
 .ycm_extra_conf.py
 
 src/artm/version.h
+
+# MAC OS temp files
+*.DS_Store
+
+# bigartm logs
+*bigartm.ERROR
+*bigartm.INFO
+*bigartm.WARNING
+
+# test data
+kos/

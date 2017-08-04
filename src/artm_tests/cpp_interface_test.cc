@@ -31,10 +31,11 @@ TEST(CppInterface, Version) {
 }
 
 void RunBasicTest(bool serialize_as_json) {
-  if (serialize_as_json)
+  if (serialize_as_json) {
     ArtmSetProtobufMessageFormatToJson();
-  else
+  } else {
     ArtmSetProtobufMessageFormatToBinary();
+  }
 
   artm::ConfigureLoggingArgs log_args;
   log_args.set_minloglevel(2);
@@ -56,10 +57,11 @@ void RunBasicTest(bool serialize_as_json) {
   const int nTopics = master_config.topic_name_size();
 
   ::artm::ScoreConfig* score_config = master_config.add_score_config();
-  if (serialize_as_json)
+  if (serialize_as_json) {
     pb::util::MessageToJsonString(::artm::PerplexityScoreConfig(), score_config->mutable_config_json());
-  else
+  } else {
     score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
+  }
   score_config->set_type(::artm::ScoreType_Perplexity);
   score_config->set_name("PerplexityScore");
 
@@ -73,10 +75,11 @@ void RunBasicTest(bool serialize_as_json) {
   artm::DecorrelatorPhiConfig decor_config;
   reg_decor_config->set_name("decorrelator");
   reg_decor_config->set_type(artm::RegularizerType_DecorrelatorPhi);
-  if (serialize_as_json)
+  if (serialize_as_json) {
     pb::util::MessageToJsonString(decor_config, reg_decor_config->mutable_config_json());
-  else
+  } else {
     reg_decor_config->set_config(decor_config.SerializeAsString());
+  }
   reg_decor_config->set_tau(1.0);
 
   // Create master component
@@ -124,8 +127,8 @@ void RunBasicTest(bool serialize_as_json) {
   ::artm::FitOfflineMasterModelArgs offline_args = api.Initialize(batches);
 
   artm::TopicModel topic_model;
-  double expected_normalizer = 0;
-  double previous_perplexity = 0;
+  double expected_normalizer = 0.0;
+  float previous_perplexity = 0.0f;
   for (int iter = 0; iter < 5; ++iter) {
     master_component.FitOfflineModel(offline_args);
     {
@@ -143,10 +146,13 @@ void RunBasicTest(bool serialize_as_json) {
     ::artm::GetScoreValueArgs get_score_args;
     get_score_args.set_score_name("PerplexityScore");
     auto perplexity = master_component.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
-    if (serialize_as_json) EXPECT_FALSE(master_component.GetScore(get_score_args).data_json().empty());
+    if (serialize_as_json) {
+      EXPECT_FALSE(master_component.GetScore(get_score_args).data_json().empty());
+    }
 
-    if (iter > 0)
+    if (iter > 0) {
       EXPECT_EQ(perplexity.value(), previous_perplexity);
+    }
 
     ::artm::TransformMasterModelArgs transform_args;
     transform_args.add_batch_filename(batch.id());
@@ -270,13 +276,13 @@ void RunBasicTest(bool serialize_as_json) {
   ASSERT_EQ(new_topic_model3.token(2), "my_tok_3");
 
   try { boost::filesystem::remove_all(target_path); }
-  catch (...) {}
+  catch (...) { }
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest
 TEST(CppInterface, BasicTest) {
   bool wasJson = ArtmProtobufMessageFormatIsJson();
-  try { RunBasicTest(false); } catch (...) {}
+  try { RunBasicTest(false); } catch (...) { }
   wasJson ? ArtmSetProtobufMessageFormatToJson() : ArtmSetProtobufMessageFormatToBinary();
 }
 
@@ -489,7 +495,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   }
 
   try { boost::filesystem::remove_all(target_folder); }
-  catch (...) {}
+  catch (...) { }
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.AttachModel
@@ -557,7 +563,7 @@ TEST(CppInterface, AttachModel) {
 
 
   try { boost::filesystem::remove_all(target_folder); }
-  catch (...) {}
+  catch (...) { }
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.AsyncProcessBatches
@@ -653,10 +659,10 @@ TEST(CppInterface, Dictionaries) {
   ASSERT_GT(dictionary.token_value(0), 0);
 
   try { boost::filesystem::remove_all(target_folder); }
-  catch (...) {}
+  catch (...) { }
 
   try { boost::filesystem::remove(import_args.file_name()); }
-  catch (...) {}
+  catch (...) { }
 }
 
 // artm_tests.exe --gtest_filter=ProtobufMessages.Json

@@ -1,5 +1,5 @@
 Compiling .proto files on Windows
-=========================
+=================================
 
 1. Open a new command prompt
 

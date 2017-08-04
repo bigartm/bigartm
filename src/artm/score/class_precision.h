@@ -15,8 +15,7 @@
 
 */
 
-#ifndef SRC_ARTM_SCORE_CLASS_PRECISION_H_
-#define SRC_ARTM_SCORE_CLASS_PRECISION_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -54,5 +53,3 @@ class ClassPrecision : public ScoreCalculatorInterface {
 
 }  // namespace score
 }  // namespace artm
-
-#endif  // SRC_ARTM_SCORE_CLASS_PRECISION_H_

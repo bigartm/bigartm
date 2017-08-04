@@ -8,6 +8,10 @@ For this reason we recommend to review :doc:`messages`.
 For further reference about Python API refer to :doc:`/api_references/python_interface/artm_model`,
 `Q & A <https://github.com/bigartm/bigartm/wiki/Q&A>`_ or `tutorials <https://github.com/bigartm/bigartm-book/blob/master/README.md>`_.
 
+v0.8.4
+------
+* Remove flag ``process_in_memory`` from ``artm.BatchVectorizer``, and rename ``model`` parameter into ``process_in_memory_model``. Passing this parameter with ``data_format='batches'`` will trigger in-memory processing of batches specified in ``batches`` parameter.
+
 v0.8.3
 ------
 

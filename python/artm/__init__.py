@@ -1,6 +1,6 @@
 # Copyright 2017, Additive Regularization of Topic Models.
 
-from .artm_model import ARTM, version
+from .artm_model import ARTM, version, load_artm_model
 from .lda_model import LDA
 from .hierarchy_utils import hARTM
 from .dictionary import *

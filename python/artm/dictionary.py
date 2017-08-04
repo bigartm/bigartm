@@ -78,14 +78,15 @@ class Dictionary(object):
     def save_text(self, dictionary_path, encoding='utf-8'):
         """
         :Description: saves the BigARTM dictionary of the collection on the disk\
-                      in the human readable text format
+                      in the human-readable text format
 
         :param str dictionary_path: full file name for the text dictionary file
         :param str encoding: an encoding of text in diciotnary
         """
         dictionary_data = self._master.get_dictionary(self._name)
         with codecs.open(dictionary_path, 'w', encoding) as fout:
-            fout.write(u'name: {}\n'.format(dictionary_data.name))
+            fout.write(u'name: {} num_items: {}\n'.format(dictionary_data.name,
+                                                          dictionary_data.num_items_in_collection))
             fout.write(u'token, class_id, token_value, token_tf, token_df\n')
 
             for i in range(len(dictionary_data.token)):
@@ -98,7 +99,7 @@ class Dictionary(object):
     def load_text(self, dictionary_path, encoding='utf-8'):
         """
         :Description: loads the BigARTM dictionary of the collection from the disk\
-                      in the human readable text format
+                      in the human-readable text format
 
         :param str dictionary_path: full file name of the text dictionary file
         :param str encoding: an encoding of text in diciotnary
@@ -106,7 +107,9 @@ class Dictionary(object):
         self._reset()
         dictionary_data = messages.DictionaryData()
         with codecs.open(dictionary_path, 'r', encoding) as fin:
-            dictionary_data.name = fin.readline().split(' ')[1][0: -1]
+            first_str = fin.readline()[: -1].split(' ')
+            dictionary_data.name = first_str[1]
+            dictionary_data.num_items_in_collection = int(first_str[3])
             fin.readline()  # skip comment line
 
             for line in fin:
@@ -137,7 +140,7 @@ class Dictionary(object):
         :param str data_path: full path to batches folder
         :param str cooc_file_path: full path to the file with cooc info. Cooc info is a file with three\
                                    columns, first two a the zero-based indices of tokens in vocab file,\
-                                   and third one is a value of their coocurance in collection (or another)\
+                                   and third one is a value of their co-occurrence in collection (or another)\
                                    pairwise statistic.
         :param str vocab_file_path: full path to the file with vocabulary.\
                       If given, the dictionary token will have the same order, as in\
@@ -154,7 +157,7 @@ class Dictionary(object):
                                        symmetric_cooc_values=symmetric_cooc_values)
 
     def filter(self, class_id=None, min_df=None, max_df=None, min_df_rate=None, max_df_rate=None,
-               min_tf=None, max_tf=None, max_dictionary_size=None):
+               min_tf=None, max_tf=None, max_dictionary_size=None, recalculate_value=False):
         """
         :Description: filters the BigARTM dictionary of the collection, which\
                       was already loaded into the lib
@@ -170,6 +173,8 @@ class Dictionary(object):
         :param float max_tf: max tf value to pass the filter
         :param float max_dictionary_size: give an easy option to limit dictionary size;
                                           rare tokens will be excluded until dictionary reaches given size.
+        :param bool recalculate_value: recalculate or not value field in dictionary after filtration\
+                                       according to new sun of tf values
 
         :Note: the current dictionary will be replaced with filtered
         """
@@ -182,7 +187,8 @@ class Dictionary(object):
                                        max_df_rate=max_df_rate,
                                        min_tf=min_tf,
                                        max_tf=max_tf,
-                                       max_dictionary_size=max_dictionary_size)
+                                       max_dictionary_size=max_dictionary_size,
+                                       recalculate_value=recalculate_value)
 
     def __deepcopy__(self, memo):
         return self

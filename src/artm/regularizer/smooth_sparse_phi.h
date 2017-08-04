@@ -22,8 +22,7 @@
 
 */
 
-#ifndef SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_PHI_H_
-#define SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_PHI_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -54,5 +53,3 @@ class SmoothSparsePhi : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_PHI_H_

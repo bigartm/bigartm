@@ -1,6 +1,6 @@
-==================
+===========
 C Interface
-==================
+===========
 
 This document explains all public methods of the low level BigARTM interface, written in plain C language.
 

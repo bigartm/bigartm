@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_CACHE_MANAGER_H_
-#define SRC_ARTM_CORE_CACHE_MANAGER_H_
+#pragma once
 
 #include <algorithm>
 #include <string>
@@ -76,5 +75,3 @@ class CacheManager : boost::noncopyable {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_CACHE_MANAGER_H_

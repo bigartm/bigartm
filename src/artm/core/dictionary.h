@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_DICTIONARY_H_
-#define SRC_ARTM_CORE_DICTIONARY_H_
+#pragma once
 
 #include <map>
 #include <string>
@@ -78,8 +77,8 @@ class Dictionary {
   const DictionaryEntry* entry(const Token& token) const;
   const DictionaryEntry* entry(int index) const;
 
-  size_t size() const { return entries_.size(); }
-  size_t num_items() const { return num_items_in_collection_; }
+  int size() const { return entries_.size(); }
+  int num_items() const { return num_items_in_collection_; }
   const std::string& name() const { return name_; }
   bool has_valid_cooc_state() const;
   int64_t ByteSize() const;
@@ -115,5 +114,3 @@ class Dictionary {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_DICTIONARY_H_
