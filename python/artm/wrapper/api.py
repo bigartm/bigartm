@@ -42,22 +42,35 @@ class LibArtm(object):
         if sys.platform.startswith('darwin'):
             default_lib_name = 'libartm.dylib'
 
-        if lib_name is None:
-            # try to get library path from environment variable
-            lib_name = os.environ.get('ARTM_SHARED_LIBRARY')
-
-        if lib_name is None:
-            # set the default library name
-            lib_name = default_lib_name
-
-        try:
-            cdll = ctypes.CDLL(lib_name)
-        except OSError as e:
+        lib_names = []
+        
+        if lib_name is not None:
+            lib_names.append(lib_name)
+            
+        env_lib_name = os.environ.get('ARTM_SHARED_LIBRARY')
+        if env_lib_name is not None:
+            lib_names.append(env_lib_name)
+        
+        lib_names.append(default_lib_name)
+        lib_names.append(os.path.join(os.path.dirname(__file__), "..", default_lib_name))
+        
+        # We look into 4 places: lib_name, ARTM_SHARED_LIBRARY, default_lib_name and
+        # default_lib_name in the python package root
+        cdll = None
+        for ln in lib_names:
+            try:
+                cdll = ctypes.CDLL(ln)
+                break
+            except OSError as e:
+                if ln == default_lib_name:
+                    exc = e
+                continue
+        if cdll is None:
             exception_message = (
-                '{e}\n'
-                'Failed to load artm shared library. '
+                '{exc}\n'
+                'Failed to load artm shared library from `{lib_names}`. '
                 'Try to add the location of `{default_lib_name}` file into your PATH '
-                'system variable, or to set ARTM_SHARED_LIBRARY - a specific system variable '
+                'system variable, or to set ARTM_SHARED_LIBRARY - the specific system variable '
                 'which may point to `{default_lib_name}` file, including the full path.'
             ).format(**locals())
             raise OSError(exception_message)
