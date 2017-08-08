@@ -69,7 +69,8 @@ class BatchVectorizer(object):
         :param dict vocabulary: dict with vocabulary, key - index of n_wd, value - token
         :param bool gather_dictionary: create or not the default dictionary in vectorizer;\
                                        if data_format == 'bow_n_wd' - automatically set to True;\
-                                       and if data_weight is list - automatically set to False
+                                       and if data_format == 'batches' or data_weight is list -\
+                                       automatically set to False
         :param class_ids: list of class_ids or single class_id to parse and include in batches
         :type class_ids: list of str or str
         :param artm.ARTM process_in_memory_model: ARTM instance that will use this vectorizer, is\
@@ -99,7 +100,7 @@ class BatchVectorizer(object):
         self._batch_size = batch_size
 
         self._dictionary = None
-        if gather_dictionary and not isinstance(data_weight, list):
+        if gather_dictionary and not isinstance(data_weight, list) and data_format != 'batches':
             self._dictionary = Dictionary()
 
         if data_format == 'bow_n_wd':
@@ -215,10 +216,6 @@ class BatchVectorizer(object):
             else:
                 self._batches_list += [Batch(os.path.join(data_p, batch)) for batch in batches]
                 self._weights += [data_w for i in range(len(batches))]
-
-            # next code will be processed only if for-loop has only one iteration
-            if self._dictionary is not None:
-                self._dictionary.gather(data_path=data_p)
 
     def _parse_n_wd(self, data_weight=None, n_wd=None, vocab=None):
         def __reset_batch():
