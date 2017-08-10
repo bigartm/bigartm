@@ -364,7 +364,7 @@ class hARTM(object):
             level.save(os.path.join(path, "level" +
                                     str(level_idx) + "_pwt.model"), model_name="p_wt")
         info = {"parent_level_weight": [
-            level._phi_batch_weight for level in self._levels[1:]]}
+            level.parent_level_weight for level in self._levels[1:]]}
         with open(os.path.join(path, "info.dump"), "wb") as fout:
             pickle.dump(info, fout, protocol=2)
 
@@ -394,7 +394,7 @@ class hARTM(object):
             raise ValueError("Given path is not hARTM safe")
         self._levels = []
         sorted_model_filenames = sorted(model_filenames)
-        for level_idx in range(int(len(model_filenames) / 2)):
+        for level_idx in range(len(model_filenames) // 2):
             if not len(self._levels):
                 model = artm.ARTM(num_topics=1,
                                   seed=self._get_seed(level_idx),
