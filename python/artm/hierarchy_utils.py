@@ -287,7 +287,7 @@ class hARTM(object):
         if level_idx == -1:
             del self._levels[-1]
             return
-        for _ in xrange(level_idx, len(self._levels)):
+        for _ in range(level_idx, len(self._levels)):
             del self._levels[-1]
 
     def get_level(self, level_idx):
@@ -363,9 +363,9 @@ class hARTM(object):
             level.save(os.path.join(path, "level" +
                                     str(level_idx) + "_pwt.model"), model_name="p_wt")
         info = {"parent_level_weight": [
-            level.phi_batch_weight for level in self._levels[1:]]}
+            level._phi_batch_weight for level in self._levels[1:]]}
         with open(os.path.join(path, "info.dump"), "wb") as fout:
-            pickle.dump(info, fout)
+            pickle.dump(info, fout, protocol=2)
 
     def load(self, path):
         """
@@ -386,14 +386,14 @@ class hARTM(object):
         info_filename = glob.glob(os.path.join(path, "info.dump"))
         if len(info_filename) != 1:
             raise ValueError("Given path is not hARTM safe")
-        with open(info_filename[0]) as fin:
+        with open(info_filename[0], "rb") as fin:
             info = pickle.load(fin)
         model_filenames = glob.glob(os.path.join(path, "*.model"))
         if len({len(info["parent_level_weight"]) + 1, len(model_filenames) / 2}) > 1:
             raise ValueError("Given path is not hARTM safe")
         self._levels = []
         sorted_model_filenames = sorted(model_filenames)
-        for level_idx in xrange(len(model_filenames) / 2):
+        for level_idx in range(int(len(model_filenames) / 2)):
             if not len(self._levels):
                 model = artm.ARTM(num_topics=1,
                                   seed=self._get_seed(level_idx),
@@ -407,10 +407,10 @@ class hARTM(object):
                                    num_topics=1,
                                    seed=self._get_seed(level_idx),
                                    **self._common_models_args)
-            filename = sorted_model_filenames[2 * level_idx]
-            model.load(filename, "n_wt")
             filename = sorted_model_filenames[2 * level_idx + 1]
             model.load(filename, "p_wt")
+            filename = sorted_model_filenames[2 * level_idx]
+            model.load(filename, "n_wt")
             config = model.master._config
             config.opt_for_avx = False
             model.master._lib.ArtmReconfigureMasterModel(
