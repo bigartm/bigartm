@@ -4,13 +4,14 @@ import artm
 import uuid
 import copy
 import numpy as np
+import pandas
 import os.path
 import os
 import pickle
 import glob
 import warnings
-from pandas import DataFrame
-import pandas
+
+from six.moves import range
 
 
 class hARTM(object):
@@ -650,9 +651,9 @@ class ARTM_Level(artm.ARTM):
         _, nd_array = self.master.get_theta_matrix(topic_names=use_topic_names)
 
         titles_list = [item_title for item_title in theta_info.item_title]
-        theta_data_frame = DataFrame(data=nd_array.transpose(),
-                                     columns=titles_list,
-                                     index=use_topic_names)
+        theta_data_frame = pandas.DataFrame(data=nd_array.transpose(),
+                                            columns=titles_list,
+                                            index=use_topic_names)
         item_idxs = np.logical_not(
             theta_data_frame.columns.isin(self._parent_model.topic_names))
         theta_data_frame = theta_data_frame.drop(
