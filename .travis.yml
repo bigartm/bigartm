@@ -49,7 +49,7 @@ before_install:
   # we need latest pip to work with only-binary option
   - pip install -U pip
   - pip install -U pytest pep8
-  - pip install -U numpy scipy pandas tqdm --only-binary numpy scipy pandas
+  - pip install -U numpy pandas tqdm --only-binary numpy pandas
   - pip install protobuf==3.0.0
   # configure ccache
   # code from https://github.com/urho3d/Urho3D/blob/master/.travis.yml

@@ -223,50 +223,32 @@ class BatchVectorizer(object):
             batch.id = str(uuid.uuid4())
             return batch, {}
 
-        try:
-            from scipy.sparse.base import spmatrix
-        except ImportError:
-            spmatrix = tuple()
-
         os.mkdir(self._target_folder)
         global_vocab, global_n = {}, 0.0
         batch, batch_vocab = __reset_batch()
-        try:
-            n_wd_T = n_wd.T
-        except AttributeError:
-            raise TypeError("Expected a transposable matrix, got {}".format(type(n_wd)))
-        for item_id, column in enumerate(n_wd_T):
+        for item_id, column in enumerate(n_wd.T):
             item = batch.item.add()
             item.id = item_id
             for key in global_vocab.keys():
                 global_vocab[key][2] = False  # all tokens haven't appeared in this item yet
 
-            if isinstance(column, np.matrix):
-                enum = enumerate(np.squeeze(np.asarray(column), axis=0))
-            elif isinstance(column, np.ndarray):
-                enum = enumerate(column)
-            elif isinstance(column, spmatrix):
-                nnz = column.nonzero()[1]
-                enum = zip(nnz, np.squeeze(column[0, nnz].toarray(), axis=0))
-            else:
-                raise TypeError("Unsupported column type: %s" % type(column))
-            for token_id, value in enum:
-                if value <= GLOB_EPS:
-                    continue
-                token = vocab[token_id]
-                if token not in global_vocab:
-                    global_vocab[token] = [0, 0, False]  # token_tf, token_df, appeared in this item
+            col = column if isinstance(column, type(np.zeros([0]))) else column.tolist()[0]
+            for token_id, value in enumerate(col):
+                if value > GLOB_EPS:
+                    token = vocab[token_id]
+                    if token not in global_vocab:
+                        global_vocab[token] = [0, 0, False]  # token_tf, token_df, appeared in this item
 
-                global_vocab[token][0] += value
-                global_vocab[token][1] += 0 if global_vocab[token][2] else 1
-                global_n += value
+                    global_vocab[token][0] += value
+                    global_vocab[token][1] += 0 if global_vocab[token][2] else 1
+                    global_n += value
 
-                if token not in batch_vocab:
-                    batch_vocab[token] = len(batch.token)
-                    batch.token.append(token)
+                    if token not in batch_vocab:
+                        batch_vocab[token] = len(batch.token)
+                        batch.token.append(token)
 
-                item.token_id.append(batch_vocab[token])
-                item.token_weight.append(float(value))
+                    item.token_id.append(batch_vocab[token])
+                    item.token_weight.append(float(value))
 
             if ((item_id + 1) % self._batch_size == 0 and item_id != 0) or ((item_id + 1) == n_wd.shape[1]):
                 filename = os.path.join(self._target_folder, '{}.batch'.format(batch.id))

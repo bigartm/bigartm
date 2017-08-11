@@ -90,7 +90,7 @@ def _assert_score_values_equality(model_1, model_2):
     for name in model_1.scores.data.keys():
         if name == 'perp' or name == 'sp_theta' or name == 'sp_nwt':
             assert sum([abs(x - y) for x, y in zip(model_1.score_tracker[name].value,
-                                                   model_2.score_tracker[name].value)]) < 0.005
+                                                   model_2.score_tracker[name].value)]) < 0.001
         elif name == 'top_tok':
             assert set(model_1.score_tracker[name].last_tokens) == set(model_2.score_tracker[name].last_tokens)
         elif name == 'kernel':
