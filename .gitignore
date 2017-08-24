@@ -35,6 +35,9 @@ datasets/docword.*.txt
 */ipch/*
 *.vcxproj.user
 
+# CLion garbage
+.idea/
+
 # Auto-generated files (by pdflatex)
 collateral/*.aux
 collateral/*.log
@@ -130,6 +133,7 @@ src/Win32/*
 docs/_build/*
 
 build*
+cmake-build-debug*
 
 # protobuf generated files
 /python/artm/wrapper/messages_pb2.py
