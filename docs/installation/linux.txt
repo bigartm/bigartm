@@ -152,6 +152,12 @@ Example:
 
    cmake -DPYTHON=python3 -DCMAKE_INSTALL_PREFIX=/opt/bigartm ..
 
+By default you may run just:
+
+.. code-block:: bash
+
+   cmake ..
+
 Now build and install the library:
 
 .. code-block:: bash
