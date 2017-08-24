@@ -21,17 +21,6 @@
 #define COOCCURRENCE_INFO 1
 #define MAP_INFO 1
 
-// Note: user has to have some of the headers below on his system
-// ToDo: finish for mac, win, unices not caught below
-#if defined(_WIN32)
-#elif defined(__APPLE__)
-  //#include "TargetConditionals.h"
-#elif defined(__linux__) || defined(__linux) || defined(linux)
-  #include <sys/sysinfo.h>
-#elif defined(__unix__) // all unices not caught above
-#endif
-// https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
-
 struct CoocTriple {
   int second_token_id;
   long long cooc_tf;
@@ -69,8 +58,8 @@ struct PpmiCountersValues {
 struct Cell {
   Cell() : first_token_id(-1), num_of_documents(0), num_of_records(0) { }
   int first_token_id;
-  int num_of_documents; // when cell is read, it's necessary to know how many triples to read
-  unsigned num_of_records;
+  int num_of_documents;
+  unsigned num_of_records; // when cell is read, it's necessary to know how many triples to read
   std::vector<CoocTriple> records;
 };
 
@@ -96,7 +85,6 @@ class CooccurrenceDictionary {
   int  CooccurrenceBatchQuantity();
   void ReadAndMergeCooccurrenceBatches();
  private:
-  int SetItemsPerBatch();
   void SavePairOfTokens(const int first_token_id, const int second_token_id, const int doc_id,
           CoocMap& cooc_map);
   void AddInCoocMap(const int first_token_id, const int second_token_id, const int doc_id,
@@ -132,7 +120,7 @@ class CooccurrenceDictionary {
   int max_num_of_open_files_;
   unsigned total_num_of_pairs_;
   unsigned total_num_of_documents_;
-  unsigned items_per_batch_;
+  unsigned documents_per_batch_;
   int num_of_threads_;
 };
 

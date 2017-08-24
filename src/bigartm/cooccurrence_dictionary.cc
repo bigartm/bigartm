@@ -39,8 +39,8 @@ CooccurrenceDictionary::CooccurrenceDictionary(const int window_width,
         cooc_df_file_path_(cooc_df_file_path),
         ppmi_tf_file_path_(ppmi_tf_file_path),
         ppmi_df_file_path_(ppmi_df_file_path),
-        total_num_of_pairs_(0), total_num_of_documents_(0),
-        num_of_threads_(num_of_threads) {
+        open_files_counter_(0), max_num_of_open_files_(500), total_num_of_pairs_(0),
+        total_num_of_documents_(0), documents_per_batch_(16000), num_of_threads_(num_of_threads) {
   // This function works as follows:
   // 1. Get content from a vocab file and put it in dictionary
   // 2. Read Vowpal Wabbit file by portions, calculate co-occurrences for
@@ -62,17 +62,15 @@ CooccurrenceDictionary::CooccurrenceDictionary(const int window_width,
   if (!fs::create_directory(dir)) {
     throw std::invalid_argument("Failed to create directory");
   }
+
   path_to_batches_ = dir.string();
-  open_files_counter_ = 0;
-  max_num_of_open_files_ = 500;
   if (num_of_threads_ == -1) {
     num_of_threads_ = std::thread::hardware_concurrency();
     if (num_of_threads_ == 0) {
       num_of_threads_ = 1;
     }
   }
-  items_per_batch_ = SetItemsPerBatch();
-  std::cout << "items per batch = " << items_per_batch_ << std::endl;
+  std::cout << "documents per batch = " << documents_per_batch_ << std::endl;
 }
 
 CooccurrenceDictionary::~CooccurrenceDictionary() {
@@ -80,27 +78,24 @@ CooccurrenceDictionary::~CooccurrenceDictionary() {
 }
 
 void CooccurrenceDictionary::FetchVocab() {
-  // This func reads words from vocab, sets them unique id and collects pair
-  // in dictionary
+  // This function reads tokens from vocab, sets them unique id and collects pairs in dictionary
+  // If there was modality label, takes only tokens from default class
+
   std::ifstream vocab(path_to_vocab_, std::ios::in);
-  if (!vocab.is_open()) {
+  if (!vocab.good()) {
     throw std::invalid_argument("Failed to open vocab");
   }
-  int last_token_id = 1;
+
+  // ToDo: check one more time whether you read modality labes correctly
+  // (whether they are written in vocab the same way you try to read them)
   std::string str;
-
-  while (true) {
-    getline(vocab, str);
-    if (vocab.eof()) {
-      break;
-    }
-
+  for (int last_token_id = 0; getline(vocab, str); ++last_token_id) {
     boost::algorithm::trim(str);
     std::vector<std::string> strs;
     boost::split(strs, str, boost::is_any_of(" "));
     if (!strs[0].empty()) {
-      if (strs.size() == 1 || strcmp(strs[1].c_str(), "@default_class") == 0) {
-        vocab_dictionary_.insert(std::make_pair(strs[0], last_token_id++));
+      if (strs.size() == 1 || strcmp(strs[1].c_str(), "@default_class") == 0) { // check modality
+        vocab_dictionary_.insert(std::make_pair(strs[0], last_token_id));
       }
     }
   }
@@ -113,7 +108,7 @@ int CooccurrenceDictionary::VocabDictionarySize() {
 void CooccurrenceDictionary::ReadVowpalWabbit() {
   // This func works as follows:
   // 1. Acquire lock for reading from vowpal wabbit file
-  // 2. Read a portion (items_per_batch) of documents from file and save it
+  // 2. Read a portion (documents_per_batch) of documents from file and save it
   // in a local buffer (vetor<string>)
   // 3. Release the lock
   // 4. Cut every document into words, search for them in dictionary and for
@@ -125,12 +120,15 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
   // on external storage
   // Repeat 1-6 for all portions (can work in parallel for different portions)
 
-  std::cout << "Step 1: creation of cooccurrence batches\n";
+  std::cout << "Step 1: creation of co-occurrence batches" << std::endl;
+  std::string documents_processed = std::to_string(total_num_of_documents_);
+  std::cout << "Documents processed: " << documents_processed << std::flush;
   std::ifstream vowpal_wabbit_doc(path_to_vw_, std::ios::in);
   if (!vowpal_wabbit_doc.is_open()) {
     throw std::invalid_argument("Failed to open vocab");
   }
   std::mutex read_lock;
+  std::mutex stdout_lock;
 
   //unsigned critical_num_of_documents = 5000;
   //unsigned documents_processed = 0;
@@ -142,14 +140,14 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
         std::lock_guard<std::mutex> guard(read_lock);
         if (vowpal_wabbit_doc.eof()) {
           return;
-	}
+        }
 
         std::string str;
-        while (portion.size() < items_per_batch_) {
+        while (portion.size() < documents_per_batch_) {
           getline(vowpal_wabbit_doc, str);
           if (vowpal_wabbit_doc.eof()) {
             break;
-	  }
+          }
           portion.push_back(str);
         }
       }
@@ -166,7 +164,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
       CoocMap cooc_map;
 
       total_num_of_documents_ += portion.size();
-      // When the document is processed (element of vector portion),
+      // When the document is processed (element of portion vector),
       // memory for it can be freed by calling pop_back() from vector
       // (string will be popped)
       for (; portion.size() != 0; portion.pop_back()) {
@@ -174,7 +172,8 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
         boost::split(doc, portion.back(), boost::is_any_of(" \t\r"));
         if (doc.size() <= 1) {
           continue;
-	}
+        }
+
         const int default_class = 0;
         const int unusual_class = 1;
         int current_class = default_class;
@@ -234,7 +233,14 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
       if (!cooc_map.empty()) {
         UploadCooccurrenceBatchOnDisk(cooc_map);
       }
-      //std::cout << documents_processed << " documents proccessed\n";
+      {
+        std::lock_guard<std::mutex> guard(stdout_lock);
+        for (unsigned i = 0; i < documents_processed.size(); ++i) {
+          std::cout << '\b';
+        }
+        documents_processed = std::to_string(total_num_of_documents_);
+        std::cout << documents_processed << std::flush;
+      }
     }
   };
 
@@ -245,7 +251,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
   for (int i = 0; i < num_of_threads_; ++i) {
     tasks[i].get();
   }
-  std::cout << "Cooccurrence batches have been created\n";
+  std::cout << '\n' << "Co-occurrence batches have been created" << std::endl;
 }
 
 int CooccurrenceDictionary::CooccurrenceBatchQuantity() {
@@ -253,7 +259,7 @@ int CooccurrenceDictionary::CooccurrenceBatchQuantity() {
 }
 
 void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
-  std::cout << "Step 2: merging Batches\n";
+  std::cout << "Step 2: merging batches" << std::endl;
 
   // This buffer won't hold more than 1 element, because another element
   // means another first_token_id => all the data linked with current
@@ -311,51 +317,16 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   if (calculate_tf_cooc_) {
     res.cooc_tf_dict_out_.close();
   }
-
   if (calculate_df_cooc_) {
     res.cooc_df_dict_out_.close();
   }
 
-  std::cout << "Batches have been merged\n";
+  std::cout << "Batches have been merged" << std::endl;
   if (calculate_ppmi_) {
-    std::cout << "Step 3: start calculation ppmi\n";
+    std::cout << "Step 3: start calculation ppmi" << std::endl;
     res.CalculateAndWritePpmi();
   }
-  std::cout << "Ppmi's have been calculated\n";
-}
-
-// ToDo: finish for mac, win, unices not caught below
-// Note: user has to have some special headers on system (look in includes of)
-// cooccurrence_dictionary.h
-int CooccurrenceDictionary::SetItemsPerBatch() {
-  // Here is a tool that allows to define an otimal value of documents that
-  // should be load in ram. It depends on size of ram, window width and
-  // num of threads (because every thread holds its batch of documents)
-  const int custom_value = 6250;
-  const int default_value = 10000;
-  const double percent_of_ram = 0.4;
-  const long long std_ram_size = 4025409536; // 4 Gb
-  const int std_window_width = 10;
-  const int std_num_of_threads = 2;
-  long long totalram;
-#if defined(_WIN32)
-  return default_value;
-#elif defined(__APPLE__)
-  #if defined(TARGET_OS_MAC)
-    return default_value;
-  #endif
-#elif defined(__linux__) || defined(__linux) || defined(linux)
-  struct sysinfo ex;
-  sysinfo(&ex);
-  totalram = ex.totalram;
-#elif defined(__unix__) // all unices not caught above
-  return default_value;
-#else // other platforms
-  return default_value;
-#endif
-  return static_cast<double>(std_window_width) / window_width_ *
-      totalram / std_ram_size * std_num_of_threads / num_of_threads_ *
-      custom_value * percent_of_ram;
+  std::cout << "Ppmi's have been calculated" << std::endl;
 }
 
 void CooccurrenceDictionary::SavePairOfTokens(const int first_token_id,
@@ -545,8 +516,7 @@ ResultingBuffer::ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
         calculate_cooc_df_(calculate_cooc_df), calculate_ppmi_tf_(calculate_ppmi_tf),
         calculate_ppmi_df_(calculate_ppmi_df), calculate_ppmi_(calculate_ppmi),
         total_num_of_pairs_(total_num_of_pairs),
-        total_num_of_documents_(total_num_of_documents),
-        output_buf_size_(8500), open_files_in_buf_(0) {
+        total_num_of_documents_(total_num_of_documents), output_buf_size_(8500), open_files_in_buf_(0) {
 
   if (calculate_cooc_tf_) {
     OpenAndCheckOutputFile(cooc_tf_dict_out_, cooc_tf_file_path);
@@ -592,6 +562,7 @@ void ResultingBuffer::AddInBuffer(const CooccurrenceBatch& batch) {
   }
 }
 
+// ToDo: I've forgotten to add num_of_documents as n_u for documantal ppmi
 void ResultingBuffer::MergeWithExistingCell(const CooccurrenceBatch& batch) {
   std::vector<CoocTriple> old_vector = cell_.records;
   cell_.records.resize(old_vector.size() + batch.cell_.records.size());
@@ -629,7 +600,6 @@ void ResultingBuffer::PopPreviousContent() {
       }
       n_u.n_u_tf += cell_.records[i].cooc_tf;
     }
-
     if (output_buf_tf.tellg() > output_buf_size_) {
       cooc_tf_dict_out_ << output_buf_tf.str();
     }
@@ -639,7 +609,6 @@ void ResultingBuffer::PopPreviousContent() {
         output_buf_df << cell_.first_token_id << ' ' << cell_.records[i].second_token_id << ' ' << cell_.records[i].cooc_df << std::endl;
       }
     }
-
     if (output_buf_df.tellg() > output_buf_size_) {
       cooc_df_dict_out_ << output_buf_df.str();
     }
@@ -648,7 +617,6 @@ void ResultingBuffer::PopPreviousContent() {
   if (calculate_cooc_tf_) {
     cooc_tf_dict_out_ << output_buf_tf.str();
   }
-
   if (calculate_cooc_df_) {
     cooc_df_dict_out_ << output_buf_df.str();
   }
@@ -659,7 +627,7 @@ void ResultingBuffer::PopPreviousContent() {
   }
   // It's importants after pop to set size = 0, because this value will be checked later
   cell_.records.resize(0);
-  //std::cout << "Token " << cell_.first_token_id << " has been proccessed\n";
+  //std::cout << "Token " << cell_.first_token_id << " has been proccessed" << std::endl;
 }
 
 // ToDo: erase duplications of code
@@ -685,7 +653,7 @@ void ResultingBuffer::CalculateAndWritePpmi() {
         output_buf_tf << first_token_id << ' ' << second_token_id << ' ' << log(sub_log_tf_pmi) << std::endl;
         if (output_buf_tf.tellg() > output_buf_size_) {
           ppmi_tf_dict_ << output_buf_tf.str();
-	}
+        }
       }
     }
     ppmi_tf_dict_ << output_buf_tf.str();
@@ -704,7 +672,7 @@ void ResultingBuffer::CalculateAndWritePpmi() {
         output_buf_df << first_token_id << ' ' << second_token_id << ' ' << log(sub_log_df_pmi) << std::endl;
         if (output_buf_df.tellg() > output_buf_size_) {
           ppmi_df_dict_ << output_buf_df.str();
-	}
+        }
       }
     }
     ppmi_df_dict_ << output_buf_df.str();
