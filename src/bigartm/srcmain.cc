@@ -2005,15 +2005,23 @@ int main(int argc, char * argv[]) {
         throw std::invalid_argument("please specify name of cooc_df file");
       }
 
+      // Scheme of gathering of token co-occurrences statistics is the folowing:
+      // 1. Get unique tokens from vocab file
+      // 2. Read Vowpal Wabbit file by portions, calculate co-occurrences of 
+      // tokens from vocab for every portion and save it (in form of cooccurrence batch) on external storage
+      // 3. Read from external storage all the cooccurrence batches piece by
+      // piece and create resulting file with all co-occurrences
+      // 4. Use co-occurrence counters to calculate positive pmi of token pairs
+
       CooccurrenceDictionary cooc_dictionary(options.cooc_window,
           options.cooc_min_tf, options.cooc_min_df, options.read_uci_vocab,
           options.read_vw_corpus, options.write_cooc_tf,
           options.write_cooc_df, options.write_tf_ppmi, options.write_df_ppmi,
           options.threads);
       cooc_dictionary.FetchVocab();
-      if (cooc_dictionary.VocabDictionarySize() > 1) {
+      if (cooc_dictionary.VocabDictionarySize() >= 2) {
         cooc_dictionary.ReadVowpalWabbit();
-        if (cooc_dictionary.CooccurrenceBatchQuantity() != 0) {
+        if (cooc_dictionary.CooccurrenceBatchesQuantity() != 0) {
           cooc_dictionary.ReadAndMergeCooccurrenceBatches();
         }
       }

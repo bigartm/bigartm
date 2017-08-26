@@ -41,12 +41,7 @@ CooccurrenceDictionary::CooccurrenceDictionary(const int window_width,
         ppmi_df_file_path_(ppmi_df_file_path),
         open_files_counter_(0), max_num_of_open_files_(500), total_num_of_pairs_(0),
         total_num_of_documents_(0), documents_per_batch_(16000), num_of_threads_(num_of_threads) {
-  // This function works as follows:
-  // 1. Get content from a vocab file and put it in dictionary
-  // 2. Read Vowpal Wabbit file by portions, calculate co-occurrences for
-  // every portion and save it (cooccurrence batch) on external storage
-  // 3. Read from external storage all the cooccurrence batches piece by
-  // piece and create resulting file with all co-occurrences
+  // Calculation of token co-occurrence starts with this class
 
   calculate_tf_cooc_ = cooc_tf_file_path_.size() != 0;
   calculate_df_cooc_ = cooc_df_file_path_.size() != 0;
@@ -73,10 +68,6 @@ CooccurrenceDictionary::CooccurrenceDictionary(const int window_width,
   std::cout << "documents per batch = " << documents_per_batch_ << std::endl;
 }
 
-CooccurrenceDictionary::~CooccurrenceDictionary() {
-  fs::remove_all(path_to_batches_);
-}
-
 void CooccurrenceDictionary::FetchVocab() {
   // This function reads tokens from vocab, sets them unique id and collects pairs in dictionary
   // If there was modality label, takes only tokens from default class
@@ -99,6 +90,7 @@ void CooccurrenceDictionary::FetchVocab() {
       }
     }
   }
+  token_statistics_.resize(vocab_dictionary_.size()); // initialization of token_statistics
 }
 
 int CooccurrenceDictionary::VocabDictionarySize() {
@@ -106,18 +98,20 @@ int CooccurrenceDictionary::VocabDictionarySize() {
 }
 
 void CooccurrenceDictionary::ReadVowpalWabbit() {
-  // This func works as follows:
+  // This function works as follows:
   // 1. Acquire lock for reading from vowpal wabbit file
   // 2. Read a portion (documents_per_batch) of documents from file and save it
-  // in a local buffer (vetor<string>)
+  // in a local buffer (vector<string>)
   // 3. Release the lock
-  // 4. Cut every document into words, search for them in dictionary and for
-  // valid calculate co-occurrence, number of documents where these words
-  // were found close enough (in a window with width window_width) and save
-  // all in map (its own for each document)
-  // 5. merge all maps into one
-  // 6. If resulting map isn't empty create a batch and dump all information
-  // on external storage
+  // 4. Cut every document into tokens.
+  // 5. Search for each pair of tokens in vocab dictionary and if they're valid (were found),
+  // calculate their co-occurrences (absolute and documental) and othen statistics
+  // for future pmi calculation (in how many pairs and documents a specific token occured,
+  // total number of documents and pairs in collection).
+  // Co-occurrence counters are stored in map of maps (on external level of indexing are first_token_id's
+  // and on internal second_token_id's)
+  // Statistics that refer to unique tokens is stored in vector called token_statistics_
+  // 6. For each potion of documents create a batch (class CooccurrenceBatch) with co-occurrence statistics
   // Repeat 1-6 for all portions (can work in parallel for different portions)
 
   std::cout << "Step 1: creation of co-occurrence batches" << std::endl;
@@ -130,102 +124,80 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
   std::mutex read_lock;
   std::mutex stdout_lock;
 
-  //unsigned critical_num_of_documents = 5000;
-  //unsigned documents_processed = 0;
   auto func = [&]() {
-    while (true) {
-      std::vector<std::string> portion;
-
-      {
-        std::lock_guard<std::mutex> guard(read_lock);
-        if (vowpal_wabbit_doc.eof()) {
-          return;
-        }
-
-        std::string str;
-        while (portion.size() < documents_per_batch_) {
-          getline(vowpal_wabbit_doc, str);
-          if (vowpal_wabbit_doc.eof()) {
-            break;
-          }
-          portion.push_back(str);
-        }
-      }
-
+    while (true) { // Loop throgh portions.
+      // Steps 1-3:
+      std::vector<std::string> portion = ReadPortionOfDocuments(read_lock, vowpal_wabbit_doc);
       if (portion.size() == 0) {
-        continue;
+        break;
       }
-      //documents_processed += portion.size();
-      /*if (documents_processed >= critical_num_of_documents)
-        break;*/
+      total_num_of_documents_ += portion.size(); // statistics for ppmi
 
       // First elem in external map is first_token_id, in internal it's
       // second_token_id
       CoocMap cooc_map;
+      std::vector<unsigned> num_of_last_document_token_occured(vocab_dictionary_.size());
 
-      total_num_of_documents_ += portion.size();
       // When the document is processed (element of portion vector),
       // memory for it can be freed by calling pop_back() from vector
-      // (string will be popped)
-      for (; portion.size() != 0; portion.pop_back()) {
+      // (large string will be popped and destroyed)
+      for (; portion.size() != 0; portion.pop_back()) { // Loop through documents. Step 4:
         std::vector<std::string> doc;
         boost::split(doc, portion.back(), boost::is_any_of(" \t\r"));
-        if (doc.size() <= 1) {
-          continue;
-        }
 
-        const int default_class = 0;
-        const int unusual_class = 1;
-        int current_class = default_class;
-        for (unsigned j = 1; j < doc.size() - 1; ++j) {
+        // Check modality of first token
+        // Step 5:
+        // 5.a) There are rules how to consider modalities: now only tokens of default_class are processed
+        int first_token_current_class = DEFAULT_CLASS;
+        for (unsigned j = 1; j < doc.size(); ++j) { // Loop through tokens in document
           if (doc[j][0] == '|') {
-            if (strcmp(doc[j].c_str(), "|@default_class") == 0) {
-              current_class = default_class;
-            } else {
-              current_class = unusual_class;
-            }
+            first_token_current_class = SetModalityLabel(doc[j]);
             continue;
           }
-          if (current_class != default_class) {
+          if (first_token_current_class != DEFAULT_CLASS) {
             continue;
           }
 
+          // 5.b) Check if a token is valid
           auto first_token = vocab_dictionary_.find(doc[j]);
           if (first_token == vocab_dictionary_.end()) {
             continue;
           }
 
-          {
-            int current_class = default_class;
-            int first_token_id = first_token->second;
-            unsigned not_a_word_counter = 0;
-            // if there are some words beginnig on '|' in a text the window
-            // should be extended
-            for (unsigned k = 1; k <= window_width_ + not_a_word_counter && j + k < doc.size(); ++k) {
-              // ToDo: write macro here
-              if (doc[j + k][0] == '|') {
-                if (strcmp(doc[j + k].c_str(), "|@default_class") == 0) {
-                  current_class = default_class;
-                } else {
-                  current_class = unusual_class;
-                }
-                ++not_a_word_counter;
-                continue;
-              }
-              if (current_class != default_class) {
-                continue;
-              }
+          int second_token_current_class = DEFAULT_CLASS;
+          int first_token_id = first_token->second;
 
-              auto second_token = vocab_dictionary_.find(doc[j + k]);
-              if (second_token == vocab_dictionary_.end()) {
-                continue;
-              }
-              int second_token_id = second_token->second;
+          // 5.c) Collect statistics for ppmi (in how many documents every token occured)
+          if (num_of_last_document_token_occured[first_token_id] != portion.size()) {
+            num_of_last_document_token_occured[first_token_id] = portion.size();
+            ++token_statistics_[first_token_id].num_of_documents_token_occured_in;
+          }
 
-              SavePairOfTokens(first_token_id, second_token_id, portion.size(), cooc_map);
-              SavePairOfTokens(second_token_id, first_token_id, portion.size(), cooc_map);
-              total_num_of_pairs_ += 2;
+          // 5.d) Take windows_width tokens (parameter) to the right of the current one
+          // If there are some words beginnig on '|' in a text the window should be extended
+          // and it's extended using not_a_word_counter
+          unsigned not_a_word_counter = 0;
+          for (unsigned k = 1; k <= window_width_ + not_a_word_counter && j + k < doc.size(); ++k) { // Loop through tokens in window
+            // ToDo: write macro here
+            if (doc[j + k][0] == '|') {
+              second_token_current_class = SetModalityLabel(doc[j + k]);
+              ++not_a_word_counter;
+              continue;
             }
+            if (second_token_current_class != DEFAULT_CLASS) {
+              continue;
+            }
+
+            auto second_token = vocab_dictionary_.find(doc[j + k]);
+            if (second_token == vocab_dictionary_.end()) {
+              continue;
+            }
+            int second_token_id = second_token->second;
+
+            // 5.e) When it's known this 2 tokens are valid, remember their co-occurrence
+            SavePairOfTokens(first_token_id, second_token_id, portion.size(), cooc_map);
+            SavePairOfTokens(second_token_id, first_token_id, portion.size(), cooc_map);
+            total_num_of_pairs_ += 2; // statistics for ppmi
           }
         }
       }
@@ -233,7 +205,8 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
       if (!cooc_map.empty()) {
         UploadCooccurrenceBatchOnDisk(cooc_map);
       }
-      {
+
+      { // print number of documents which were precessed
         std::lock_guard<std::mutex> guard(stdout_lock);
         for (unsigned i = 0; i < documents_processed.size(); ++i) {
           std::cout << '\b';
@@ -254,7 +227,82 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
   std::cout << '\n' << "Co-occurrence batches have been created" << std::endl;
 }
 
-int CooccurrenceDictionary::CooccurrenceBatchQuantity() {
+std::vector<std::string> CooccurrenceDictionary::ReadPortionOfDocuments(std::mutex& read_lock, std::ifstream& vowpal_wabbit_doc) {
+  std::vector<std::string> portion;
+  std::lock_guard<std::mutex> guard(read_lock);
+  if (vowpal_wabbit_doc.eof()) {
+    return portion;
+  }
+  std::string str;
+  while (portion.size() < documents_per_batch_) {
+    getline(vowpal_wabbit_doc, str);
+    if (vowpal_wabbit_doc.eof()) {
+      break;
+    }
+    portion.push_back(str);
+  }
+  return portion;
+}
+
+int CooccurrenceDictionary::SetModalityLabel(std::string& modality_label) {
+  if (modality_label == "|@default_class") {
+    return DEFAULT_CLASS;
+  } else {
+    return UNUSUAL_CLASS;
+  }
+}
+
+void CooccurrenceDictionary::SavePairOfTokens(const int first_token_id,
+        const int second_token_id, const int doc_id, CoocMap& cooc_map) {
+  auto map_record = cooc_map.find(first_token_id);
+  if (map_record == cooc_map.end()) {
+    AddInCoocMap(first_token_id, second_token_id, doc_id, cooc_map);
+  } else {
+    ModifyCoocMapNode(second_token_id, doc_id, map_record->second);
+  }
+}
+
+void CooccurrenceDictionary::AddInCoocMap(const int first_token_id,
+        const int second_token_id, const int doc_id, CoocMap& cooc_map) {
+  FirstTokenInfo new_first_token(doc_id);
+  CooccurrenceInfo new_cooc_info(doc_id);
+  SecondTokenInfo new_second_token;
+  new_second_token.insert(std::pair<int, CooccurrenceInfo>(second_token_id, new_cooc_info));
+  cooc_map.insert(std::make_pair(first_token_id, std::make_pair(new_first_token, new_second_token)));
+}
+
+void CooccurrenceDictionary::ModifyCoocMapNode(const int second_token_id,
+        const int doc_id, std::pair<FirstTokenInfo, SecondTokenInfo>& map_info) {
+  if (std::get<FIRST_TOKEN_INFO>(map_info).prev_doc_id != doc_id) {
+    std::get<FIRST_TOKEN_INFO>(map_info).prev_doc_id = doc_id;
+    ++(std::get<FIRST_TOKEN_INFO>(map_info).num_of_documents);
+  }
+  SecondTokenInfo& map_node = std::get<SECOND_TOKEN_INFO>(map_info);
+  auto iter = map_node.find(second_token_id);
+  if (iter == map_node.end()) {
+    CooccurrenceInfo new_cooc_info(doc_id);
+    map_node.insert(std::pair<int, CooccurrenceInfo>(second_token_id, new_cooc_info));
+  } else {
+    ++(std::get<COOCCURRENCE_INFO>(*iter).cooc_tf);
+    if (std::get<COOCCURRENCE_INFO>(*iter).prev_doc_id != doc_id) {
+      std::get<COOCCURRENCE_INFO>(*iter).prev_doc_id = doc_id;
+      ++(std::get<COOCCURRENCE_INFO>(*iter).cooc_df);
+    }
+  }
+}
+
+void CooccurrenceDictionary::UploadCooccurrenceBatchOnDisk(CoocMap& cooc_map) {
+  std::unique_ptr<CooccurrenceBatch> batch(CreateNewCooccurrenceBatch());
+  OpenBatchOutputFile(*batch);
+  for (auto iter = cooc_map.begin(); iter != cooc_map.end(); ++iter) {
+    batch->FormNewCell(iter);
+    batch->WriteCell();
+  }
+  CloseBatchOutputFile(*batch);
+  vector_of_batches_.push_back(std::move(batch));
+}
+
+int CooccurrenceDictionary::CooccurrenceBatchesQuantity() {
   return vector_of_batches_.size();
 }
 
@@ -327,56 +375,6 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
     res.CalculateAndWritePpmi();
   }
   std::cout << "Ppmi's have been calculated" << std::endl;
-}
-
-void CooccurrenceDictionary::SavePairOfTokens(const int first_token_id,
-        const int second_token_id, const int doc_id, CoocMap& cooc_map) {
-  auto map_record = cooc_map.find(first_token_id);
-  if (map_record == cooc_map.end()) {
-    AddInCoocMap(first_token_id, second_token_id, doc_id, cooc_map);
-  } else {
-    ModifyCoocMapNode(second_token_id, doc_id, map_record->second);
-  }
-}
-
-void CooccurrenceDictionary::AddInCoocMap(const int first_token_id,
-        const int second_token_id, const int doc_id, CoocMap& cooc_map) {
-  FirstTokenInfo new_first_token(doc_id);
-  CooccurrenceInfo new_cooc_info(doc_id);
-  SecondTokenInfo new_second_token;
-  new_second_token.insert(std::pair<int, CooccurrenceInfo>(second_token_id, new_cooc_info));
-  cooc_map.insert(std::make_pair(first_token_id, std::make_pair(new_first_token, new_second_token)));
-}
-
-void CooccurrenceDictionary::ModifyCoocMapNode(const int second_token_id,
-        const int doc_id, std::pair<FirstTokenInfo, SecondTokenInfo>& map_info) {
-  if (std::get<FIRST_TOKEN_INFO>(map_info).prev_doc_id != doc_id) {
-    std::get<FIRST_TOKEN_INFO>(map_info).prev_doc_id = doc_id;
-    ++(std::get<FIRST_TOKEN_INFO>(map_info).num_of_documents);
-  }
-  SecondTokenInfo& map_node = std::get<SECOND_TOKEN_INFO>(map_info);
-  auto iter = map_node.find(second_token_id);
-  if (iter == map_node.end()) {
-    CooccurrenceInfo new_cooc_info(doc_id);
-    map_node.insert(std::pair<int, CooccurrenceInfo>(second_token_id, new_cooc_info));
-  } else {
-    ++(std::get<COOCCURRENCE_INFO>(*iter).cooc_tf);
-    if (std::get<COOCCURRENCE_INFO>(*iter).prev_doc_id != doc_id) {
-      std::get<COOCCURRENCE_INFO>(*iter).prev_doc_id = doc_id;
-      ++(std::get<COOCCURRENCE_INFO>(*iter).cooc_df);
-    }
-  }
-}
-
-void CooccurrenceDictionary::UploadCooccurrenceBatchOnDisk(CoocMap& cooc_map) {
-  std::unique_ptr<CooccurrenceBatch> batch(CreateNewCooccurrenceBatch());
-  OpenBatchOutputFile(*batch);
-  for (auto iter = cooc_map.begin(); iter != cooc_map.end(); ++iter) {
-    batch->FormNewCell(iter);
-    batch->WriteCell();
-  }
-  CloseBatchOutputFile(*batch);
-  vector_of_batches_.push_back(std::move(batch));
 }
 
 CooccurrenceBatch* CooccurrenceDictionary::CreateNewCooccurrenceBatch() {
@@ -677,4 +675,8 @@ void ResultingBuffer::CalculateAndWritePpmi() {
     }
     ppmi_df_dict_ << output_buf_df.str();
   }
+}
+
+CooccurrenceDictionary::~CooccurrenceDictionary() {
+  fs::remove_all(path_to_batches_);
 }

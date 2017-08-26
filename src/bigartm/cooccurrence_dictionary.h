@@ -9,6 +9,7 @@
 #include <sstream>
 #include <iomanip>
 #include <memory>
+#include <mutex>
 
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
@@ -63,6 +64,17 @@ struct Cell {
   std::vector<CoocTriple> records;
 };
 
+struct TokenInfo {
+  TokenInfo() : num_of_pairs_token_occured_in(0), num_of_documents_token_occured_in(0) { }
+  unsigned num_of_pairs_token_occured_in;
+  unsigned num_of_documents_token_occured_in;
+};
+
+enum modality_label {
+  DEFAULT_CLASS,
+  UNUSUAL_CLASS
+};
+
 typedef std::map<int, CooccurrenceInfo> SecondTokenInfo;
 typedef std::map<int, std::pair<FirstTokenInfo, SecondTokenInfo>> CoocMap;
 
@@ -82,7 +94,9 @@ class CooccurrenceDictionary {
   void FetchVocab();
   int  VocabDictionarySize();
   void ReadVowpalWabbit();
-  int  CooccurrenceBatchQuantity();
+  std::vector<std::string> ReadPortionOfDocuments(std::mutex& read_lock, std::ifstream& vowpal_wabbit_doc);
+  int  SetModalityLabel(std::string& modality_label);
+  int  CooccurrenceBatchesQuantity();
   void ReadAndMergeCooccurrenceBatches();
  private:
   void SavePairOfTokens(const int first_token_id, const int second_token_id, const int doc_id,
@@ -113,7 +127,8 @@ class CooccurrenceDictionary {
   bool calculate_ppmi_;
   bool calculate_tf_cooc_;
   bool calculate_df_cooc_;
-  std::unordered_map<std::string, int> vocab_dictionary_;
+  std::unordered_map<std::string, int> vocab_dictionary_; // mapping tokens to their indices
+  std::vector<TokenInfo> token_statistics_; // index here is token_id which can be hound in vocab_dictionary
   std::string path_to_batches_;
   std::vector<std::unique_ptr<CooccurrenceBatch>> vector_of_batches_;
   int open_files_counter_;
