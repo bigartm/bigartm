@@ -172,7 +172,8 @@ class ResultingBuffer {
       const std::string& cooc_tf_file_path,
       const std::string& cooc_df_file_path,
       const std::string& ppmi_tf_file_path,
-      const std::string& ppmi_df_file_path);
+      const std::string& ppmi_df_file_path,
+      const std::vector<TokenInfo>& token_statistics_);
   void OpenAndCheckInputFile(std::ifstream& ifile, const std::string& path);
   void OpenAndCheckOutputFile(std::ofstream& ofile, const std::string& path);
   void AddInBuffer(const CooccurrenceBatch& batch);
@@ -197,6 +198,7 @@ class ResultingBuffer {
   std::ofstream cooc_df_dict_out_;
   std::ofstream ppmi_tf_dict_;
   std::ofstream ppmi_df_dict_;
+  std::vector<TokenInfo> token_statistics_;
 
   Cell cell_;
   std::unordered_map<int, PpmiCountersValues> ppmi_counters_;

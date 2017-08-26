@@ -90,7 +90,7 @@ void CooccurrenceDictionary::FetchVocab() {
       }
     }
   }
-  token_statistics_.resize(vocab_dictionary_.size()); // initialization of token_statistics
+  token_statistics_.resize(vocab_dictionary_.size()); // initialization of token_statistics_
 }
 
 int CooccurrenceDictionary::VocabDictionarySize() {
@@ -128,7 +128,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
     while (true) { // Loop throgh portions.
       // Steps 1-3:
       std::vector<std::string> portion = ReadPortionOfDocuments(read_lock, vowpal_wabbit_doc);
-      if (portion.size() == 0) {
+      if (portion.empty()) {
         break;
       }
       total_num_of_documents_ += portion.size(); // statistics for ppmi
@@ -148,8 +148,9 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
         // Check modality of first token
         // Step 5:
         // 5.a) There are rules how to consider modalities: now only tokens of default_class are processed
+        // Start loop from 1 because the zeroth element is document title
         int first_token_current_class = DEFAULT_CLASS;
-        for (unsigned j = 1; j < doc.size(); ++j) { // Loop through tokens in document
+        for (unsigned j = 1; j < doc.size() - 1; ++j) { // Loop through tokens in document
           if (doc[j][0] == '|') {
             first_token_current_class = SetModalityLabel(doc[j]);
             continue;
@@ -316,7 +317,7 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   ResultingBuffer res(cooc_min_tf_, cooc_min_df_, calculate_tf_cooc_,
           calculate_df_cooc_, calculate_tf_ppmi_, calculate_df_ppmi_,
           calculate_ppmi_, total_num_of_pairs_, total_num_of_documents_,
-          cooc_tf_file_path_, cooc_df_file_path_, ppmi_tf_file_path_, ppmi_df_file_path_);
+          cooc_tf_file_path_, cooc_df_file_path_, ppmi_tf_file_path_, ppmi_df_file_path_, token_statistics_);
   // ToDo: invent another mothod to add and subtract this number
   open_files_counter_ += res.open_files_in_buf_;
 
@@ -407,6 +408,10 @@ void CooccurrenceDictionary::CloseBatchInputFile(CooccurrenceBatch& batch) {
 void CooccurrenceDictionary::CloseBatchOutputFile(CooccurrenceBatch& batch) {
   --open_files_counter_;
   batch.out_batch_.close();
+}
+
+CooccurrenceDictionary::~CooccurrenceDictionary() {
+  fs::remove_all(path_to_batches_);
 }
 
 // ********************Methods of class CoccurrenceBatch**************
@@ -509,12 +514,13 @@ ResultingBuffer::ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
     const std::string& cooc_tf_file_path,
     const std::string& cooc_df_file_path,
     const std::string& ppmi_tf_file_path,
-    const std::string& ppmi_df_file_path) : cooc_min_tf_(cooc_min_tf),
+    const std::string& ppmi_df_file_path,
+    const std::vector<TokenInfo>& token_statistics_) : cooc_min_tf_(cooc_min_tf),
         cooc_min_df_(cooc_min_df), calculate_cooc_tf_(calculate_cooc_tf),
         calculate_cooc_df_(calculate_cooc_df), calculate_ppmi_tf_(calculate_ppmi_tf),
         calculate_ppmi_df_(calculate_ppmi_df), calculate_ppmi_(calculate_ppmi),
         total_num_of_pairs_(total_num_of_pairs),
-        total_num_of_documents_(total_num_of_documents), output_buf_size_(8500), open_files_in_buf_(0) {
+        total_num_of_documents_(total_num_of_documents), output_buf_size_(8500), open_files_in_buf_(0), token_statistics_(token_statistics_) {
 
   if (calculate_cooc_tf_) {
     OpenAndCheckOutputFile(cooc_tf_dict_out_, cooc_tf_file_path);
@@ -664,8 +670,8 @@ void ResultingBuffer::CalculateAndWritePpmi() {
         continue;
       }
       double sub_log_df_pmi = (static_cast<double>(total_num_of_documents_) /
-          ppmi_counters_[first_token_id].n_u_df) /
-          (ppmi_counters_[second_token_id].n_u_df / static_cast<double>(cooc_df));
+          ppmi_counters_[first_token_id].n_u_df /*token_statistics_[first_token_id].num_of_documents_token_occured_in*/) /
+          (ppmi_counters_[second_token_id].n_u_df /*token_statistics_[second_token_id].num_of_documents_token_occured_in*/ / static_cast<double>(cooc_df));
       if (sub_log_df_pmi > 1.0) {
         output_buf_df << first_token_id << ' ' << second_token_id << ' ' << log(sub_log_df_pmi) << std::endl;
         if (output_buf_df.tellg() > output_buf_size_) {
@@ -675,8 +681,4 @@ void ResultingBuffer::CalculateAndWritePpmi() {
     }
     ppmi_df_dict_ << output_buf_df.str();
   }
-}
-
-CooccurrenceDictionary::~CooccurrenceDictionary() {
-  fs::remove_all(path_to_batches_);
 }
