@@ -85,7 +85,7 @@ void CooccurrenceDictionary::FetchVocab() {
     std::vector<std::string> strs;
     boost::split(strs, str, boost::is_any_of(" "));
     if (!strs[0].empty()) {
-      if (strs.size() == 1 || strcmp(strs[1].c_str(), "@default_class") == 0) { // check modality
+      if (strs.size() == 1 || strs[1] == "@default_class") { // check modality
         vocab_dictionary_.insert(std::make_pair(strs[0], last_token_id));
       }
     }
@@ -145,12 +145,14 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
         std::vector<std::string> doc;
         boost::split(doc, portion.back(), boost::is_any_of(" \t\r"));
 
-        // Check modality of first token
         // Step 5:
         // 5.a) There are rules how to consider modalities: now only tokens of default_class are processed
         // Start loop from 1 because the zeroth element is document title
         int first_token_current_class = DEFAULT_CLASS;
         for (unsigned j = 1; j < doc.size() - 1; ++j) { // Loop through tokens in document
+          if (doc[j].empty()) {
+            continue;
+          }
           if (doc[j][0] == '|') {
             first_token_current_class = SetModalityLabel(doc[j]);
             continue;
@@ -164,8 +166,6 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
           if (first_token == vocab_dictionary_.end()) {
             continue;
           }
-
-          int second_token_current_class = DEFAULT_CLASS;
           int first_token_id = first_token->second;
 
           // 5.c) Collect statistics for ppmi (in how many documents every token occured)
@@ -178,8 +178,12 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
           // If there are some words beginnig on '|' in a text the window should be extended
           // and it's extended using not_a_word_counter
           unsigned not_a_word_counter = 0;
+          int second_token_current_class = DEFAULT_CLASS;
           for (unsigned k = 1; k <= window_width_ + not_a_word_counter && j + k < doc.size(); ++k) { // Loop through tokens in window
             // ToDo: write macro here
+            if (doc[j + k].empty()) {
+              continue;
+            }
             if (doc[j + k][0] == '|') {
               second_token_current_class = SetModalityLabel(doc[j + k]);
               ++not_a_word_counter;
@@ -195,7 +199,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
             }
             int second_token_id = second_token->second;
 
-            // 5.e) When it's known this 2 tokens are valid, remember their co-occurrence
+            // 5.e) When it's known these 2 tokens are valid, remember their co-occurrence
             SavePairOfTokens(first_token_id, second_token_id, portion.size(), cooc_map);
             SavePairOfTokens(second_token_id, first_token_id, portion.size(), cooc_map);
             total_num_of_pairs_ += 2; // statistics for ppmi
@@ -520,7 +524,8 @@ ResultingBuffer::ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
         calculate_cooc_df_(calculate_cooc_df), calculate_ppmi_tf_(calculate_ppmi_tf),
         calculate_ppmi_df_(calculate_ppmi_df), calculate_ppmi_(calculate_ppmi),
         total_num_of_pairs_(total_num_of_pairs),
-        total_num_of_documents_(total_num_of_documents), output_buf_size_(8500), open_files_in_buf_(0), token_statistics_(token_statistics_) {
+        total_num_of_documents_(total_num_of_documents), output_buf_size_(8500),
+        open_files_in_buf_(0), token_statistics_(token_statistics_) {
 
   if (calculate_cooc_tf_) {
     OpenAndCheckOutputFile(cooc_tf_dict_out_, cooc_tf_file_path);
