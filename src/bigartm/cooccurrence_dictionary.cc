@@ -25,6 +25,8 @@
 
 namespace fs = boost::filesystem;
 
+// ***************************** Methods of class CooccurrenceDictionary ********************
+
 CooccurrenceDictionary::CooccurrenceDictionary(const int window_width,
     const int cooc_min_tf, const int cooc_min_df,
     const std::string& path_to_vocab, const std::string& path_to_vw,
@@ -133,8 +135,8 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
       }
       total_num_of_documents_ += portion.size(); // statistics for ppmi
 
-      // First elem in external map is first_token_id, in internal it's
-      // second_token_id
+      // CoocMap is temporary storage for co-occurrence statistics. (look in .h file CoocMap structure defintion for more details)
+      // First elem in external map is first_token_id, in internal it's second_token_id
       CoocMap cooc_map;
       std::vector<unsigned> num_of_last_document_token_occured(vocab_dictionary_.size());
 
@@ -149,7 +151,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
         // 5.a) There are rules how to consider modalities: now only tokens of default_class are processed
         // Start loop from 1 because the zeroth element is document title
         int first_token_current_class = DEFAULT_CLASS;
-        for (unsigned j = 1; j < doc.size() - 1; ++j) { // Loop through tokens in document
+        for (unsigned j = 1; j < doc.size(); ++j) { // Loop through tokens in document
           if (doc[j].empty()) {
             continue;
           }
@@ -208,6 +210,9 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
       }
 
       if (!cooc_map.empty()) {
+        // This function saves gathered statistics on disk
+        // After saving on disk statistics from all the batches needs to be merged
+        // This is implemented in ReadAndMergeCooccurrenceBatches(), so the next step is to call this method
         UploadCooccurrenceBatchOnDisk(cooc_map);
       }
 
@@ -224,7 +229,8 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
 
   std::vector<std::shared_future<void>> tasks;
   for (int i = 0; i < num_of_threads_; ++i) {
-    tasks.push_back(std::move(std::async(std::launch::async, func)));
+    //tasks.push_back(std::move(std::async(std::launch::async, func)));
+    tasks.emplace_back(std::async(std::launch::async, func));
   }
   for (int i = 0; i < num_of_threads_; ++i) {
     tasks[i].get();
@@ -259,6 +265,11 @@ int CooccurrenceDictionary::SetModalityLabel(std::string& modality_label) {
 
 void CooccurrenceDictionary::SavePairOfTokens(const int first_token_id,
         const int second_token_id, const int doc_id, CoocMap& cooc_map) {
+  // There are 2 levels of data stucture
+  // The first level keeps information about first token and the second level about co-occurrence between
+  // the first and the second tokens
+  // If first token id is known (exists in the structure, the method ModifyCoocMapNode is called),
+  // if it's unknown a new node is added in AddInCoocMap method
   auto map_record = cooc_map.find(first_token_id);
   if (map_record == cooc_map.end()) {
     AddInCoocMap(first_token_id, second_token_id, doc_id, cooc_map);
@@ -297,6 +308,12 @@ void CooccurrenceDictionary::ModifyCoocMapNode(const int second_token_id,
 }
 
 void CooccurrenceDictionary::UploadCooccurrenceBatchOnDisk(CoocMap& cooc_map) {
+  // When co-occurrence map is full. data from it is being serrialized
+  // This is implemented as follows:
+  // 1. Create an object CooccurrenceBatch and associate a file with it
+  // 2. For every unique fist token id create a cell and write it in file
+  // 3. Close the file
+  // 4. Save the batch
   std::unique_ptr<CooccurrenceBatch> batch(CreateNewCooccurrenceBatch());
   OpenBatchOutputFile(*batch);
   for (auto iter = cooc_map.begin(); iter != cooc_map.end(); ++iter) {
@@ -305,6 +322,21 @@ void CooccurrenceDictionary::UploadCooccurrenceBatchOnDisk(CoocMap& cooc_map) {
   }
   CloseBatchOutputFile(*batch);
   vector_of_batches_.push_back(std::move(batch));
+}
+
+CooccurrenceBatch* CooccurrenceDictionary::CreateNewCooccurrenceBatch() {
+  return new CooccurrenceBatch(path_to_batches_);
+}
+
+void CooccurrenceDictionary::OpenBatchOutputFile(CooccurrenceBatch& batch) {
+  assert(open_files_counter_ < max_num_of_open_files_);
+  ++open_files_counter_;
+  batch.out_batch_.open(batch.filename_, std::ios::out);
+}
+
+void CooccurrenceDictionary::CloseBatchOutputFile(CooccurrenceBatch& batch) {
+  --open_files_counter_;
+  batch.out_batch_.close();
 }
 
 int CooccurrenceDictionary::CooccurrenceBatchesQuantity() {
@@ -382,21 +414,11 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   std::cout << "Ppmi's have been calculated" << std::endl;
 }
 
-CooccurrenceBatch* CooccurrenceDictionary::CreateNewCooccurrenceBatch() {
-  return new CooccurrenceBatch(path_to_batches_);
-}
-
 void CooccurrenceDictionary::OpenBatchInputFile(CooccurrenceBatch& batch) {
   assert(open_files_counter_ < max_num_of_open_files_);
   ++open_files_counter_;
   batch.in_batch_.open(batch.filename_, std::ios::in);
   batch.in_batch_.seekg(batch.in_batch_offset_);
-}
-
-void CooccurrenceDictionary::OpenBatchOutputFile(CooccurrenceBatch& batch) {
-  assert(open_files_counter_ < max_num_of_open_files_);
-  ++open_files_counter_;
-  batch.out_batch_.open(batch.filename_, std::ios::out);
 }
 
 bool CooccurrenceDictionary::IsOpenBatchInputFile(CooccurrenceBatch& batch) {
@@ -409,16 +431,45 @@ void CooccurrenceDictionary::CloseBatchInputFile(CooccurrenceBatch& batch) {
   batch.in_batch_.close();
 }
 
-void CooccurrenceDictionary::CloseBatchOutputFile(CooccurrenceBatch& batch) {
-  --open_files_counter_;
-  batch.out_batch_.close();
-}
-
 CooccurrenceDictionary::~CooccurrenceDictionary() {
   fs::remove_all(path_to_batches_);
 }
 
-// ********************Methods of class CoccurrenceBatch**************
+// ******************* Methods of class CooccurrenceStatisticsHolder ***********************
+
+void CooccurrenceStatisticsHolder::SavePairOfTokens(int first_token_id, int second_token_id) {
+  // There are 2 levels of data stucture
+  // The first level keeps information about first token and the second level about co-occurrence between
+  // the first and the second tokens
+  // If first token id is known (exists in the structure, the method ModifyCoocMapNode is called),
+  // if it's unknown a new node is added in AddInCoocMap method
+  if (FindFirstToken(first_token_id) == NOT_FOUND) {
+    storage_.emplace_back(first_token_id);
+    storage_.back().second_token_reference.emplace_back(second_token_id);
+  } else {
+    ;
+  }
+}
+
+int CooccurrenceStatisticsHolder::FindFirstToken(int first_token_id) {
+  // Linear search
+  for (unsigned i = 0; i < storage_.size(); ++i) {
+    if (storage_[i].first_token_id == first_token_id) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+// *********************** Methods of class CoccurrenceBatch ***************************
+
+CooccurrenceBatch::CooccurrenceBatch(const std::string& path_to_batches) {
+  boost::uuids::uuid uuid = boost::uuids::random_generator()();
+  fs::path batch(boost::lexical_cast<std::string>(uuid));
+  fs::path full_filename = fs::path(path_to_batches) / batch;
+  filename_ = full_filename.string();
+  in_batch_offset_ = 0;
+}
 
 void CooccurrenceBatch::FormNewCell(const CoocMap::iterator& map_node) {
   // Every cooccurrence batch is divided into cells as folowing:
@@ -426,6 +477,7 @@ void CooccurrenceBatch::FormNewCell(const CoocMap::iterator& map_node) {
   // One cell contain records with euqal first token id
   // One cooccurrence batch can't hold 2 or more cells in ram simultaneously
   // Other cells are stored in output file
+  // Here is initialization of a new cell
   cell_.first_token_id = std::get<FIRST_TOKEN_ID>(*map_node);
   std::pair<FirstTokenInfo, SecondTokenInfo>& map_info = std::get<MAP_INFO>(*map_node);
   cell_.num_of_documents = std::get<FIRST_TOKEN_INFO>(map_info).num_of_documents;
@@ -460,6 +512,14 @@ void CooccurrenceBatch::WriteCell() {
   out_batch_ << ss.str();
 }
 
+bool CooccurrenceBatch::ReadCell() {
+  if (ReadCellHeader()) {
+    ReadRecords();
+    return true;
+  }
+  return false;
+}
+
 bool CooccurrenceBatch::ReadCellHeader() {
   // stringstream is used for fast bufferized i/o operations
   std::string str;
@@ -492,23 +552,7 @@ void CooccurrenceBatch::ReadRecords() {
   }
 }
 
-bool CooccurrenceBatch::ReadCell() {
-  if (ReadCellHeader()) {
-    ReadRecords();
-    return true;
-  }
-  return false;
-}
-
-CooccurrenceBatch::CooccurrenceBatch(const std::string& path_to_batches) {
-  boost::uuids::uuid uuid = boost::uuids::random_generator()();
-  fs::path batch(boost::lexical_cast<std::string>(uuid));
-  fs::path full_filename = fs::path(path_to_batches) / batch;
-  filename_ = full_filename.string();
-  in_batch_offset_ = 0;
-}
-
-// ********************Methods of class ResultingBuffer**************
+// ******************************* Methods of class ResultingBuffer ****************************
 
 ResultingBuffer::ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
     const bool calculate_cooc_tf, const bool calculate_cooc_df,

@@ -21,6 +21,7 @@
 #define SECOND_TOKEN_INFO 1
 #define COOCCURRENCE_INFO 1
 #define MAP_INFO 1
+#define NOT_FOUND -1
 
 struct CoocTriple {
   int second_token_id;
@@ -79,6 +80,7 @@ typedef std::map<int, CooccurrenceInfo> SecondTokenInfo;
 typedef std::map<int, std::pair<FirstTokenInfo, SecondTokenInfo>> CoocMap;
 
 class CooccurrenceDictionary;
+class CooccurrenceStatisticsHolder;
 class CooccurrenceBatch;
 class ResultingBuffer;
 
@@ -90,7 +92,6 @@ class CooccurrenceDictionary {
       const std::string& cooc_df_file_path,
       const std::string& ppmi_tf_file_path,
       const std::string& ppmi_df_file_path, const int num_of_threads);
-  ~CooccurrenceDictionary();
   void FetchVocab();
   int  VocabDictionarySize();
   void ReadVowpalWabbit();
@@ -98,6 +99,7 @@ class CooccurrenceDictionary {
   int  SetModalityLabel(std::string& modality_label);
   int  CooccurrenceBatchesQuantity();
   void ReadAndMergeCooccurrenceBatches();
+  ~CooccurrenceDictionary();
  private:
   void SavePairOfTokens(const int first_token_id, const int second_token_id, const int doc_id,
           CoocMap& cooc_map);
@@ -137,6 +139,28 @@ class CooccurrenceDictionary {
   unsigned total_num_of_documents_;
   unsigned documents_per_batch_;
   int num_of_threads_;
+};
+
+// Work in progress. It should replace CoocMap in future
+class CooccurrenceStatisticsHolder {
+ public:
+  void SortFirstTokens();
+  int FindFirstToken(int first_token_id);
+ private:
+  void SavePairOfTokens(int first_token_id, int second_token_id);
+
+  struct SecondTokenAndCooccurrence {
+    SecondTokenAndCooccurrence(int second_token_id) : second_token_id(second_token_id), cooc_tf(1), cooc_df(1) { }
+    int second_token_id;
+    unsigned cooc_tf;
+    unsigned cooc_df;
+  };
+  struct FirstToken {
+    FirstToken(int first_token_id) : first_token_id(first_token_id) { }
+    int first_token_id;
+    std::vector<SecondTokenAndCooccurrence> second_token_reference;
+  };
+  std::vector<FirstToken> storage_;
 };
 
 // Cooccurrence Batch is an intermidiate buffer between other data in RAM and
