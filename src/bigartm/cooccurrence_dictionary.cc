@@ -78,9 +78,6 @@ void CooccurrenceDictionary::FetchVocab() {
   if (!vocab.good()) {
     throw std::invalid_argument("Failed to open vocab");
   }
-
-  // ToDo: check one more time whether you read modality labes correctly
-  // (whether they are written in vocab the same way you try to read them)
   std::string str;
   for (int last_token_id = 0; getline(vocab, str); ++last_token_id) {
     boost::algorithm::trim(str);
@@ -182,7 +179,6 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
           unsigned not_a_word_counter = 0;
           int second_token_current_class = DEFAULT_CLASS;
           for (unsigned k = 1; k <= window_width_ + not_a_word_counter && j + k < doc.size(); ++k) { // Loop through tokens in window
-            // ToDo: write macro here
             if (doc[j + k].empty()) {
               continue;
             }
@@ -229,7 +225,6 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
 
   std::vector<std::shared_future<void>> tasks;
   for (int i = 0; i < num_of_threads_; ++i) {
-    //tasks.push_back(std::move(std::async(std::launch::async, func)));
     tasks.emplace_back(std::async(std::launch::async, func));
   }
   for (int i = 0; i < num_of_threads_; ++i) {
@@ -314,6 +309,8 @@ void CooccurrenceDictionary::UploadCooccurrenceBatchOnDisk(CoocMap& cooc_map) {
   // 2. For every unique fist token id create a cell and write it in file
   // 3. Close the file
   // 4. Save the batch
+  // CooccurrencesBatches are in wrapped in unique_ptrs beacause the are going to be
+  // moved and it's better to move pointers instead of reopening files
   std::unique_ptr<CooccurrenceBatch> batch(CreateNewCooccurrenceBatch());
   OpenBatchOutputFile(*batch);
   for (auto iter = cooc_map.begin(); iter != cooc_map.end(); ++iter) {
@@ -354,9 +351,9 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
           calculate_df_cooc_, calculate_tf_ppmi_, calculate_df_ppmi_,
           calculate_ppmi_, total_num_of_pairs_, total_num_of_documents_,
           cooc_tf_file_path_, cooc_df_file_path_, ppmi_tf_file_path_, ppmi_df_file_path_, token_statistics_);
-  // ToDo: invent another mothod to add and subtract this number
   open_files_counter_ += res.open_files_in_buf_;
 
+  // Here's why CooccurrenceBatches are wrapped in unique_ptrs -- it's easier to move them (no need to reopen files)
   auto CompareBatches = [](const std::unique_ptr<CooccurrenceBatch>& left,
                            const std::unique_ptr<CooccurrenceBatch>& right) {
     return left->cell_.first_token_id > right->cell_.first_token_id;
@@ -437,6 +434,7 @@ CooccurrenceDictionary::~CooccurrenceDictionary() {
 
 // ******************* Methods of class CooccurrenceStatisticsHolder ***********************
 
+// This class should replace CoocMap in future
 void CooccurrenceStatisticsHolder::SavePairOfTokens(int first_token_id, int second_token_id) {
   // There are 2 levels of data stucture
   // The first level keeps information about first token and the second level about co-occurrence between

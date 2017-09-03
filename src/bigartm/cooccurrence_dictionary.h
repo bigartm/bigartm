@@ -1,5 +1,7 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
+#pragma once
+
 #include <unordered_map>
 #include <string>
 #include <iostream>
