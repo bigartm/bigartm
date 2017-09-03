@@ -220,7 +220,7 @@ set(ARTM_LIB_DEPS  artm-static
 add_library(artm SHARED ${SRC_LIST}
     ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 
-target_link_libraries(artm ${ARTM_LIB_DEPS})
+target_link_libraries(artm ${ARTM_LIB_DEPS} rt)
 
 if (MSVC)
   install(TARGETS artm DESTINATION bin)

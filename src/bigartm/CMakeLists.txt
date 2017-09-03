@@ -27,7 +27,8 @@ else (WIN32)
     artm-static
     ${PROTOBUF_LIBRARIES}
     ${GLOG_LIBRARIES}
-    ${Boost_LIBRARIES})
+    ${Boost_LIBRARIES}
+    rt)
 endif (WIN32)
 
 install(TARGETS bigartm DESTINATION bin)
