@@ -135,6 +135,10 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
       // CoocMap is temporary storage for co-occurrence statistics. (look in .h file CoocMap structure defintion for more details)
       // First elem in external map is first_token_id, in internal it's second_token_id
       CoocMap cooc_map;
+
+      // Alternative:
+      CooccurrenceStatisticsHolder cooc_stat_holder;
+
       std::vector<unsigned> num_of_last_document_token_occured(vocab_dictionary_.size());
 
       // When the document is processed (element of portion vector),
@@ -200,6 +204,11 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
             // 5.e) When it's known these 2 tokens are valid, remember their co-occurrence
             SavePairOfTokens(first_token_id, second_token_id, portion.size(), cooc_map);
             SavePairOfTokens(second_token_id, first_token_id, portion.size(), cooc_map);
+
+            // Alternative: Save using CooccurrenceStatisticsHolder
+            cooc_stat_holder.SavePairOfTokens(first_token_id, second_token_id, portion.size());
+            cooc_stat_holder.SavePairOfTokens(second_token_id, first_token_id, portion.size());
+
             total_num_of_pairs_ += 2; // statistics for ppmi
           }
         }
@@ -435,17 +444,29 @@ CooccurrenceDictionary::~CooccurrenceDictionary() {
 // ******************* Methods of class CooccurrenceStatisticsHolder ***********************
 
 // This class should replace CoocMap in future
-void CooccurrenceStatisticsHolder::SavePairOfTokens(int first_token_id, int second_token_id) {
-  // There are 2 levels of data stucture
-  // The first level keeps information about first token and the second level about co-occurrence between
-  // the first and the second tokens
-  // If first token id is known (exists in the structure, the method ModifyCoocMapNode is called),
-  // if it's unknown a new node is added in AddInCoocMap method
-  if (FindFirstToken(first_token_id) == NOT_FOUND) {
+void CooccurrenceStatisticsHolder::SavePairOfTokens(int first_token_id, int second_token_id, unsigned doc_id) {
+  // There are 2 levels of indexing
+  // The first level keeps information about first token and the second level
+  // about co-occurrence between the first and the second tokens
+  // If first token id is known (exists in the structure), corresponding node should be modified
+  // else it should be added to the structure
+  int index1 = FindFirstToken(first_token_id);
+  if (index1 == NOT_FOUND) {
     storage_.emplace_back(first_token_id);
     storage_.back().second_token_reference.emplace_back(second_token_id);
   } else {
-    ;
+    std::vector<SecondTokenAndCooccurrence>& second_tokens = storage_[index1].second_token_reference;
+    int index2 = FindSecondToken(second_tokens, second_token_id);
+    if (index2 == NOT_FOUND) {
+      second_tokens.emplace_back(second_token_id);
+    } else {
+      SecondTokenAndCooccurrence& cooc_info = second_tokens[index2];
+      if (cooc_info.last_doc_id != doc_id) {
+        cooc_info.last_doc_id = doc_id;
+        ++cooc_info.cooc_df;
+      }
+      ++cooc_info.cooc_tf;
+    }
   }
 }
 
@@ -456,7 +477,19 @@ int CooccurrenceStatisticsHolder::FindFirstToken(int first_token_id) {
       return i;
     }
   }
-  return -1;
+  return NOT_FOUND;
+}
+
+int CooccurrenceStatisticsHolder::FindSecondToken(
+      std::vector<CooccurrenceStatisticsHolder::SecondTokenAndCooccurrence>& second_tokens,
+      int second_token_id) {
+  // Linear search
+  for (unsigned i = 0; i < second_tokens.size(); ++i) {
+    if (second_tokens[i].second_token_id == second_token_id) {
+      return i;
+    }
+  }
+  return NOT_FOUND;
 }
 
 // *********************** Methods of class CoccurrenceBatch ***************************
@@ -615,7 +648,7 @@ void ResultingBuffer::AddInBuffer(const CooccurrenceBatch& batch) {
 
 // ToDo: I've forgotten to add num_of_documents as n_u for documantal ppmi
 void ResultingBuffer::MergeWithExistingCell(const CooccurrenceBatch& batch) {
-  std::vector<CoocTriple> old_vector = cell_.records;
+  std::vector<CoocInfo> old_vector = cell_.records;
   cell_.records.resize(old_vector.size() + batch.cell_.records.size());
   auto fi_iter = old_vector.begin();
   auto se_iter = batch.cell_.records.begin();

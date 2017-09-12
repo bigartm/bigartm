@@ -25,25 +25,20 @@
 #define MAP_INFO 1
 #define NOT_FOUND -1
 
-struct CoocTriple {
+struct CoocInfo {
   int second_token_id;
   long long cooc_tf;
   int cooc_df;
 };
 
-struct CoocPair {
-  long long cooc_tf;
-  int cooc_df;
-};
-
-struct CooccurrenceInfo {
+struct CooccurrenceInfo { // is needed only in CoocMap
   CooccurrenceInfo(const int doc_id) : cooc_tf(1), cooc_df(1), prev_doc_id(doc_id) { }
   long long cooc_tf;
   int cooc_df;
   int prev_doc_id;
 };
 
-struct FirstTokenInfo {
+struct FirstTokenInfo { // is needed only in FirstTokenInfo
   FirstTokenInfo(const int doc_id) : num_of_documents(1), prev_doc_id(doc_id) { }
   int num_of_documents;
   int prev_doc_id;
@@ -64,7 +59,7 @@ struct Cell {
   int first_token_id;
   int num_of_documents;
   unsigned num_of_records; // when cell is read, it's necessary to know how many triples to read
-  std::vector<CoocTriple> records;
+  std::vector<CoocInfo> records;
 };
 
 struct TokenInfo {
@@ -143,26 +138,37 @@ class CooccurrenceDictionary {
   int num_of_threads_;
 };
 
-// Work in progress. It should replace CoocMap in future
+// ToDo. Work in progress. It should replace CoocMap in future
 class CooccurrenceStatisticsHolder {
  public:
-  void SortFirstTokens();
-  int FindFirstToken(int first_token_id);
- private:
-  void SavePairOfTokens(int first_token_id, int second_token_id);
+  struct FirstToken;
+  struct SecondTokenAndCooccurrence;
 
-  struct SecondTokenAndCooccurrence {
-    SecondTokenAndCooccurrence(int second_token_id) : second_token_id(second_token_id), cooc_tf(1), cooc_df(1) { }
-    int second_token_id;
-    unsigned cooc_tf;
-    unsigned cooc_df;
-  };
-  struct FirstToken {
-    FirstToken(int first_token_id) : first_token_id(first_token_id) { }
-    int first_token_id;
-    std::vector<SecondTokenAndCooccurrence> second_token_reference;
-  };
+  void SortFirstTokens();
+  void SavePairOfTokens(int first_token_id, int second_token_id, unsigned doc_id);
+  int FindFirstToken(int first_token_id);
+  int FindSecondToken(std::vector<SecondTokenAndCooccurrence>& second_tokens, int second_token_id);
+ private:
+
+  // Here's two-level structure storage_
+  // Vector was chosen because it has a very low memory overhead
   std::vector<FirstToken> storage_;
+};
+
+struct CooccurrenceStatisticsHolder::FirstToken {
+  FirstToken(int first_token_id) : first_token_id(first_token_id) { }
+  int first_token_id;
+  std::vector<SecondTokenAndCooccurrence> second_token_reference;
+};
+
+struct CooccurrenceStatisticsHolder::SecondTokenAndCooccurrence {
+  SecondTokenAndCooccurrence(int second_token_id) : second_token_id(second_token_id), cooc_tf(1), cooc_df(1) { }
+  int second_token_id;
+  // When a new pair comes, this field is checked and if current doc_id isn't
+  // equal to previous cooc_df should be incremented
+  unsigned last_doc_id;
+  unsigned cooc_tf;
+  unsigned cooc_df;
 };
 
 // Cooccurrence Batch is an intermidiate buffer between other data in RAM and
