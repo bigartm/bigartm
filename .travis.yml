@@ -5,12 +5,21 @@ language:
 # Currently Travis doesn't support multiple values for language variable
 #  - cpp
 
-# compiler:
+#compiler:
 #  - gcc
+
+# not sure whether the following configuration will be available
+# with non-C/C++ language (e.g python)
+#cache: ccache
+
+cache:
+  directories:
+    - $HOME/.ccache
 
 python:
   - "2.7"
   - "3.4"
+  - "3.5"
 
 addons:
   apt:
@@ -23,21 +32,35 @@ addons:
       - cmake-data
       - libboost1.55-all-dev
       - g++-4.9
+      - gcc-4.9
 
 env:
-  - COMPILER=g++-4.9
+  global:
+    # variables for caching
+    - CCACHE_DIR=$HOME/.ccache
+    - CCACHE_COMPILERCHECK=content
+    - CCACHE_COMPRESS=true
+    - CCACHE_NODISABLE=true
+    - CCACHE_MAXSIZE=500M
+  matrix:
+    - GCC_VER=4.9
 
 before_install:
   # we need latest pip to work with only-binary option
   - pip install -U pip
-  - pip install -U pytest pep8
-  - pip install -U numpy pandas tqdm --only-binary numpy pandas
+  - pip install -U pytest pep8 wheel
+  - pip install -U numpy scipy pandas tqdm --only-binary numpy scipy pandas
   - pip install protobuf==3.0.0
+  # configure ccache
+  # code from https://github.com/urho3d/Urho3D/blob/master/.travis.yml
+  - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
+  - export CXX=g++-$GCC_VER CC=gcc-$GCC_VER
+  - for compiler in gcc g++; do ln -s $(which ccache) $HOME/$compiler-$GCC_VER; done && export PATH=$HOME:$PATH
 
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then ./codestyle_checks.sh; fi
   - mkdir build
-  - pushd build && export CXX=$COMPILER && cmake -DBUILD_BIGARTM_CLI_STATIC=OFF .. && make -j2 && file ./bin/bigartm && popd
+  - pushd build && cmake -DBUILD_BIGARTM_CLI_STATIC=OFF .. && make -j2 && file ./bin/bigartm && popd
   - pushd python && python setup.py install && popd
 
 before_script:

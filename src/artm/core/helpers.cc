@@ -89,7 +89,9 @@ std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {
   }
 
   float sum = 0.0f;
-  for (int i = 0; i < size; ++i) sum += retval[i];
+  for (int i = 0; i < size; ++i) {
+    sum += retval[i];
+  }
   if (sum > 0) {
     for (int i = 0; i < size; ++i) retval[i] /= sum;
   }
@@ -101,16 +103,20 @@ std::vector<float> Helpers::GenerateRandomVector(int size, const Token& token, i
   size_t h = 1125899906842597L;  // prime
 
   if (token.class_id != DefaultClass) {
-    for (unsigned i = 0; i < token.class_id.size(); i++)
+    for (unsigned i = 0; i < token.class_id.size(); i++) {
       h = 31 * h + token.class_id[i];
+    }
   }
 
   h = 31 * h + 255;  // separate class_id and token
 
-  for (unsigned i = 0; i < token.keyword.size(); i++)
+  for (unsigned i = 0; i < token.keyword.size(); i++) {
     h = 31 * h + token.keyword[i];
+  }
 
-  if (seed > 0) h = 31 * h + seed;
+  if (seed > 0) {
+    h = 31 * h + seed;
+  }
 
   return GenerateRandomVector(size, h);
 }
@@ -135,8 +141,9 @@ std::vector<boost::filesystem::path> Helpers::ListAllBatches(const boost::filesy
 
 boost::uuids::uuid Helpers::SaveBatch(const Batch& batch,
                                       const std::string& disk_path, const std::string& name) {
-  if (!batch.has_id())
+  if (!batch.has_id()) {
     BOOST_THROW_EXCEPTION(InvalidOperation("Helpers::SaveBatch: batch expecting id"));
+  }
 
   boost::uuids::uuid uuid;
   try {
@@ -161,8 +168,9 @@ void Helpers::LoadMessage(const std::string& filename, const std::string& disk_p
 void Helpers::LoadMessage(const std::string& full_filename,
                           ::google::protobuf::Message* message) {
   std::ifstream fin(full_filename.c_str(), std::ifstream::binary);
-  if (!fin.is_open())
+  if (!fin.is_open()) {
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to open file " + full_filename));
+  }
 
   message->Clear();
   if (!message->ParseFromIstream(&fin)) {
@@ -180,7 +188,7 @@ void Helpers::LoadMessage(const std::string& full_filename,
       // Attempt to detect UUID based on batche's filename
       std::string filename_only = boost::filesystem::path(full_filename).stem().string();
       uuid = boost::lexical_cast<boost::uuids::uuid>(filename_only);
-    } catch (...) {}
+    } catch (...) { }
 
     if (uuid.is_nil()) {
       // Otherwise throw the exception
@@ -191,15 +199,17 @@ void Helpers::LoadMessage(const std::string& full_filename,
     batch->set_id(boost::lexical_cast<std::string>(uuid));
   }
 
-  if (batch != nullptr)
+  if (batch != nullptr) {
     FixAndValidateMessage(batch);
+  }
 }
 
 void Helpers::CreateFolderIfNotExists(const std::string& disk_path) {
   boost::filesystem::path dir(disk_path);
   if (!boost::filesystem::is_directory(dir)) {
-    if (!boost::filesystem::create_directory(dir))
+    if (!boost::filesystem::create_directory(dir)) {
       BOOST_THROW_EXCEPTION(DiskWriteException("Unable to create folder '" + disk_path + "'"));
+    }
   }
 }
 
@@ -207,8 +217,9 @@ void Helpers::SaveMessage(const std::string& filename, const std::string& disk_p
                           const ::google::protobuf::Message& message) {
   CreateFolderIfNotExists(disk_path);
   boost::filesystem::path full_filename = boost::filesystem::path(disk_path) / boost::filesystem::path(filename);
-  if (boost::filesystem::exists(full_filename))
+  if (boost::filesystem::exists(full_filename)) {
     LOG(WARNING) << "File already exists: " << full_filename.string();
+  }
 
   SaveMessage(full_filename.string(), message);
 }
@@ -216,8 +227,9 @@ void Helpers::SaveMessage(const std::string& filename, const std::string& disk_p
 void Helpers::SaveMessage(const std::string& full_filename,
                           const ::google::protobuf::Message& message) {
   std::ofstream fout(full_filename.c_str(), std::ofstream::binary);
-  if (!fout.is_open())
+  if (!fout.is_open()) {
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to create file " + full_filename));
+  }
 
   if (!message.SerializeToOstream(&fout)) {
     BOOST_THROW_EXCEPTION(DiskWriteException("Batch has not been serialized to disk."));

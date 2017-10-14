@@ -147,6 +147,10 @@ set(SRC_LIST
 	regularizer/hierarchy_sparsing_theta.h
 	regularizer/topic_segmentation_ptdw.cc
 	regularizer/topic_segmentation_ptdw.h
+	regularizer/smooth_time_in_topics_phi.cc
+	regularizer/smooth_time_in_topics_phi.h
+	regularizer/net_plsa_phi.cc
+	regularizer/net_plsa_phi.h
 	score/class_precision.cc
 	score/class_precision.h
 	score/items_processed.cc

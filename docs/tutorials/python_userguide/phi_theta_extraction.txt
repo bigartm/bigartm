@@ -1,5 +1,5 @@
 5. Phi and Theta Extraction. Transform Method
-=======
+=============================================
 
 Detailed description of all parameters and methods of BigARTM Python API classes can be found in :doc:`../../api_references/python_interface`.
 

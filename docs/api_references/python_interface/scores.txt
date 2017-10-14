@@ -1,5 +1,5 @@
 Scores
-================
+======
 
 This page describes *Scores classes.
 

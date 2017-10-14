@@ -37,8 +37,8 @@ class Batch(object):
 
 class BatchVectorizer(object):
     def __init__(self, batches=None, collection_name=None, data_path='', data_format='batches',
-                 target_folder=None, batch_size=1000, batch_name_type='code', data_weight=1.0,
-                 n_wd=None, vocabulary=None, gather_dictionary=True, class_ids=None):
+                 target_folder=None, batch_size=1000, batch_name_type='code', data_weight=1.0, n_wd=None,
+                 vocabulary=None, gather_dictionary=True, class_ids=None, process_in_memory_model=None):
         """
         :param str collection_name: the name of text collection (required if data_format == 'bow_uci')
         :param str data_path: 1) if data_format == 'bow_uci' => folder containing\
@@ -54,8 +54,10 @@ class BatchVectorizer(object):
         :param int batch_size: number of documents to be stored in each batch
         :param str target_folder: full path to folder for future batches storing;\
                                   if not set, no batches will be produced for further work
-        :param batches: list with non-full file names of batches (necessary parameters are\
-                              batches + data_path + data_fromat=='batches' in this case)
+        :param batches: if process_in_memory_model is None -> list with non-full file names of\
+                              batches (necessary parameters are batches + data_path +\
+                              data_fromat=='batches' in this case)\
+                        else -> list of batches (messages.Batch objects), loaded in memory
         :type batches: list of str
         :param str batch_name_type: name batches in natural order ('code') or using random guids (guid)
         :param float data_weight: weight for a group of batches from data_path;\
@@ -67,11 +69,22 @@ class BatchVectorizer(object):
         :param dict vocabulary: dict with vocabulary, key - index of n_wd, value - token
         :param bool gather_dictionary: create or not the default dictionary in vectorizer;\
                                        if data_format == 'bow_n_wd' - automatically set to True;\
-                                       and if data_weight is list - automatically set to False
+                                       and if data_format == 'batches' or data_weight is list -\
+                                       automatically set to False
         :param class_ids: list of class_ids or single class_id to parse and include in batches
         :type class_ids: list of str or str
+        :param artm.ARTM process_in_memory_model: ARTM instance that will use this vectorizer, is\
+                                                  required when one needs processing of batches from\
+                                                  disk in RAM (only if data_format == 'batches').\
+                                                  NOTE: makes vectorizer model specific.
         """
         self._remove_batches = False
+        self._process_in_memory = data_format == 'batches' and process_in_memory_model is not None
+        if not self._process_in_memory and process_in_memory_model is not None:
+            raise IOError("Correct configuration for in memory processing: data_format =="
+                          "'batches' + process_in_memory_model != None")
+
+        self._model = process_in_memory_model
         if data_format == 'bow_n_wd' or data_format == 'vowpal_wabbit' or data_format == 'bow_uci':
             self._remove_batches = target_folder is None
         elif data_format == 'batches':
@@ -87,7 +100,7 @@ class BatchVectorizer(object):
         self._batch_size = batch_size
 
         self._dictionary = None
-        if gather_dictionary and not isinstance(data_weight, list):
+        if gather_dictionary and not isinstance(data_weight, list) and data_format != 'batches':
             self._dictionary = Dictionary()
 
         if data_format == 'bow_n_wd':
@@ -108,6 +121,11 @@ class BatchVectorizer(object):
         self._data_path = data_path if data_format == 'batches' else self._target_folder
 
     def __dispose(self):
+        if self._process_in_memory:
+            for batch in self._batches_list:
+                self._model.master.remove_batch(batch)
+        self._process_in_memory = False
+
         if self._remove_batches:
             shutil.rmtree(self._target_folder)
         self._remove_batches = False
@@ -180,6 +198,11 @@ class BatchVectorizer(object):
                 self._dictionary.gather(data_path=target_f)
 
     def _parse_batches(self, data_weight=None, batches=None):
+        if self._process_in_memory:
+            self._model.master.import_batches(batches)
+            self._batches_list = [batch.id for batch in batches]
+            return
+
         data_paths, data_weights, target_folders = self._populate_data(data_weight, True)
         for (data_p, data_w, target_f) in zip(data_paths, data_weights, target_folders):
             if batches is None:
@@ -194,42 +217,56 @@ class BatchVectorizer(object):
                 self._batches_list += [Batch(os.path.join(data_p, batch)) for batch in batches]
                 self._weights += [data_w for i in range(len(batches))]
 
-            # next code will be processed only if for-loop has only one iteration
-            if self._dictionary is not None:
-                self._dictionary.gather(data_path=data_p)
-
     def _parse_n_wd(self, data_weight=None, n_wd=None, vocab=None):
         def __reset_batch():
             batch = messages.Batch()
             batch.id = str(uuid.uuid4())
             return batch, {}
 
+        try:
+            from scipy.sparse.base import spmatrix
+        except ImportError:
+            spmatrix = tuple()
+
         os.mkdir(self._target_folder)
         global_vocab, global_n = {}, 0.0
         batch, batch_vocab = __reset_batch()
-        for item_id, column in enumerate(n_wd.T):
+        try:
+            n_wd_T = n_wd.T
+        except AttributeError:
+            raise TypeError("Expected a transposable matrix, got {}".format(type(n_wd)))
+        for item_id, column in enumerate(n_wd_T):
             item = batch.item.add()
             item.id = item_id
             for key in global_vocab.keys():
                 global_vocab[key][2] = False  # all tokens haven't appeared in this item yet
 
-            col = column if isinstance(column, type(np.zeros([0]))) else column.tolist()[0]
-            for token_id, value in enumerate(col):
-                if value > GLOB_EPS:
-                    token = vocab[token_id]
-                    if token not in global_vocab:
-                        global_vocab[token] = [0, 0, False]  # token_tf, token_df, appeared in this item
+            if isinstance(column, np.matrix):
+                enum = enumerate(np.squeeze(np.asarray(column), axis=0))
+            elif isinstance(column, np.ndarray):
+                enum = enumerate(column)
+            elif isinstance(column, spmatrix):
+                nnz = column.nonzero()[1]
+                enum = zip(nnz, np.squeeze(column[0, nnz].toarray(), axis=0))
+            else:
+                raise TypeError("Unsupported column type: %s" % type(column))
+            for token_id, value in enum:
+                if value <= GLOB_EPS:
+                    continue
+                token = vocab[token_id]
+                if token not in global_vocab:
+                    global_vocab[token] = [0, 0, False]  # token_tf, token_df, appeared in this item
 
-                    global_vocab[token][0] += value
-                    global_vocab[token][1] += 0 if global_vocab[token][2] else 1
-                    global_n += value
+                global_vocab[token][0] += value
+                global_vocab[token][1] += 0 if global_vocab[token][2] else 1
+                global_n += value
 
-                    if token not in batch_vocab:
-                        batch_vocab[token] = len(batch.token)
-                        batch.token.append(token)
+                if token not in batch_vocab:
+                    batch_vocab[token] = len(batch.token)
+                    batch.token.append(token)
 
-                    item.token_id.append(batch_vocab[token])
-                    item.token_weight.append(float(value))
+                item.token_id.append(batch_vocab[token])
+                item.token_weight.append(float(value))
 
             if ((item_id + 1) % self._batch_size == 0 and item_id != 0) or ((item_id + 1) == n_wd.shape[1]):
                 filename = os.path.join(self._target_folder, '{}.batch'.format(batch.id))
@@ -252,9 +289,21 @@ class BatchVectorizer(object):
         self._dictionary.create(dictionary_data)
 
     @property
+    def batches_ids(self):
+        """
+        :return: list of batches filenames, if process_in_memory == False,\
+                 else - the list of in memory batches ids
+        """
+        if self._process_in_memory:
+            return self._batches_list
+        else:
+            return [batch.filename for batch in self._batches_list]
+
+    @property
     def batches_list(self):
         """
-        :return: list of batches names
+        : return: list of batches, if process_in_memory == False,\
+                  else - the list of in memory batches ids
         """
         return self._batches_list
 
@@ -292,6 +341,13 @@ class BatchVectorizer(object):
         :return: Dictionary object, if parameter gather_dictionary was True, else None
         """
         return self._dictionary
+
+    @property
+    def process_in_memory(self):
+        """
+        :return: if Vectorizer uses processing of batches in core memory
+        """
+        return self._process_in_memory
 
     def __repr__(self):
         return 'artm.BatchVectorizer(data_path="{0}", num_batches={1})'.format(

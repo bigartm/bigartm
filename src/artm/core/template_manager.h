@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_TEMPLATE_MANAGER_H_
-#define SRC_ARTM_CORE_TEMPLATE_MANAGER_H_
+#pragma once
 
 #include <map>
 #include <memory>
@@ -71,7 +70,7 @@ class TemplateManager : boost::noncopyable {
 
  private:
   // Singleton (make constructor private)
-  TemplateManager() : lock_(), next_id_(1) {}
+  TemplateManager() : lock_(), next_id_(1) { }
 
   mutable boost::mutex lock_;
 
@@ -81,5 +80,3 @@ class TemplateManager : boost::noncopyable {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_TEMPLATE_MANAGER_H_

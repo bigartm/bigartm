@@ -22,10 +22,11 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   const int token_size = n_wt.token_size();
 
   std::vector<bool> topics_to_regularize;
-  if (config_.topic_name().size() == 0)
+  if (config_.topic_name().size() == 0) {
     topics_to_regularize.assign(topic_size, true);
-  else
+  } else {
     topics_to_regularize = core::is_member(n_wt.topic_name(), config_.topic_name());
+  }
 
   bool use_all_classes = false;
   if (config_.class_id_size() == 0) {
@@ -33,13 +34,14 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
 
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
-  if (config_.has_dictionary_name())
+  if (config_.has_dictionary_name()) {
     dictionary_ptr = dictionary(config_.dictionary_name());
+  }
   bool has_dictionary = dictionary_ptr != nullptr;
 
   // proceed the regularization
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    const ::artm::core::Token& token = n_wt.token(token_id);
+    const auto& token = n_wt.token(token_id);
 
     float coefficient = 1.0f;
     if (has_dictionary) {
@@ -51,7 +53,9 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
       }
     }
 
-    if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) continue;
+    if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) {
+      continue;
+    }
 
     // count sum of weights
     float weights_sum = 0.0f;

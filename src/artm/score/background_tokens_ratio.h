@@ -17,8 +17,7 @@
                 default true)
 */
 
-#ifndef SRC_ARTM_SCORE_BACKGROUND_TOKENS_RATIO_H_
-#define SRC_ARTM_SCORE_BACKGROUND_TOKENS_RATIO_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -47,5 +46,3 @@ class BackgroundTokensRatio : public ScoreCalculatorInterface {
 
 }  // namespace score
 }  // namespace artm
-
-#endif  // SRC_ARTM_SCORE_BACKGROUND_TOKENS_RATIO_H_

@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_SCORE_MANAGER_H_
-#define SRC_ARTM_CORE_SCORE_MANAGER_H_
+#pragma once
 
 #include <map>
 #include <memory>
@@ -26,7 +25,7 @@ class Instance;
 // Its implementation is thread safe because it can be called simultaneoudly from multiple processor threads.
 class ScoreManager : boost::noncopyable {
  public:
-  explicit ScoreManager(Instance* instance) : instance_(instance), lock_(), score_map_() {}
+  explicit ScoreManager(Instance* instance) : instance_(instance), lock_(), score_map_() { }
 
   void Append(const ScoreName& score_name, const std::string& score_blob);
   void Clear();
@@ -47,11 +46,13 @@ class ScoreManager : boost::noncopyable {
 // This class stores both Phi-scores (non-cumulative) and Theta-scores (cumulative).
 class ScoreTracker : boost::noncopyable {
  public:
-  ScoreTracker() : lock_(), array_() {}
+  ScoreTracker() : lock_(), array_() { }
   void Clear();
   ScoreData* Add();
   void RequestScoreArray(const GetScoreArrayArgs& args, ScoreArray* score_data_array);
   void CopyFrom(const ScoreTracker& score_tracker);
+  const std::vector<std::shared_ptr<ScoreData>>& GetDataUnsafe() const { return array_; }
+  size_t Size() const { return array_.size(); }
 
  private:
   mutable boost::mutex lock_;
@@ -60,6 +61,3 @@ class ScoreTracker : boost::noncopyable {
 
 }  // namespace core
 }  // namespace artm
-
-
-#endif  // SRC_ARTM_CORE_SCORE_MANAGER_H_

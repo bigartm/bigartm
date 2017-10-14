@@ -27,11 +27,11 @@ TEST(CollectionParser, UciBagOfWords) {
 
   ::artm::ParseCollection(config);
 
-  boost::filesystem::recursive_directory_iterator it(target_folder);
-  boost::filesystem::recursive_directory_iterator endit;
+  fs::recursive_directory_iterator it(target_folder);
+  fs::recursive_directory_iterator endit;
   int batches_count = 0;
   while (it != endit) {
-    if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
+    if (fs::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
       ::artm::Batch batch;
       ::artm::core::Helpers::LoadMessage(it->path().string(), &batch);
@@ -89,8 +89,8 @@ TEST(CollectionParser, UciBagOfWords) {
   dictionary_checker(config.vocab_file_path(), "default_dictionary");
   dictionary_checker("../../../test_data/vocab.parser_test_no_newline.txt", "no_newline_dictionary");
 
-  try { boost::filesystem::remove_all(target_folder); }
-  catch (...) {}
+  try { fs::remove_all(target_folder); }
+  catch (...) { }
 }
 
 TEST(CollectionParser, ErrorHandling) {
@@ -122,11 +122,11 @@ TEST(CollectionParser, MatrixMarket) {
 
   ::artm::ParseCollection(config);
 
-  boost::filesystem::recursive_directory_iterator it(target_folder);
-  boost::filesystem::recursive_directory_iterator endit;
+  fs::recursive_directory_iterator it(target_folder);
+  fs::recursive_directory_iterator endit;
   int batches_count = 0;
   while (it != endit) {
-    if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
+    if (fs::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
 
       artm::Batch batch;
@@ -138,8 +138,8 @@ TEST(CollectionParser, MatrixMarket) {
 
   ASSERT_EQ(batches_count, 1);
 
-  try { boost::filesystem::remove_all(target_folder); }
-  catch (...) {}
+  try { fs::remove_all(target_folder); }
+  catch (...) { }
 }
 
 TEST(CollectionParser, Multiclass) {
@@ -153,11 +153,11 @@ TEST(CollectionParser, Multiclass) {
 
   ::artm::ParseCollection(config);
 
-  boost::filesystem::recursive_directory_iterator it(target_folder);
-  boost::filesystem::recursive_directory_iterator endit;
+  fs::recursive_directory_iterator it(target_folder);
+  fs::recursive_directory_iterator endit;
   int batches_count = 0;
   while (it != endit) {
-    if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
+    if (fs::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
       artm::Batch batch;
       ::artm::core::Helpers::LoadMessage(it->path().string(), &batch);
@@ -207,12 +207,12 @@ TEST(CollectionParser, Multiclass) {
   ASSERT_APPROX_EQ(dictionary_ptr.token_tf(1), 4.0);
   ASSERT_APPROX_EQ(dictionary_ptr.token_tf(2), 9.0);
 
-  ASSERT_APPROX_EQ(dictionary_ptr.token_value(0), 5.0 / 18.0);
-  ASSERT_APPROX_EQ(dictionary_ptr.token_value(1), 4.0 / 18.0);
-  ASSERT_APPROX_EQ(dictionary_ptr.token_value(2), 9.0 / 18.0);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_value(0), 5.0 / 14.0);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_value(1), 4.0 / 4.0);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_value(2), 9.0 / 14.0);
 
-  try { boost::filesystem::remove_all(target_folder); }
-  catch (...) {}
+  try { fs::remove_all(target_folder); }
+  catch (...) { }
 }
 
 // To run this particular test:
@@ -228,20 +228,22 @@ TEST(CollectionParser, VowpalWabbit) {
 
   ::artm::ParseCollection(config);
 
-  boost::filesystem::recursive_directory_iterator it(target_folder);
-  boost::filesystem::recursive_directory_iterator endit;
+  fs::recursive_directory_iterator it(target_folder);
+  fs::recursive_directory_iterator endit;
   int batches_count = 0;
   while (it != endit) {
-    if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
+    if (fs::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
       ::artm::Batch batch;
       ::artm::core::Helpers::LoadMessage(it->path().string(), &batch);
       ASSERT_TRUE(batch.class_id_size() == 3 || batch.class_id_size() == 2);
       for (int i = 0; i < batch.token_size(); ++i) {
-        if (batch.token(i) == "hello" || batch.token(i) == "world")
+        if (batch.token(i) == "hello" || batch.token(i) == "world") {
           ASSERT_EQ(batch.class_id(i), "@default_class");
-        if (batch.token(i) == "noname" || batch.token(i) == "alex")
+        }
+        if (batch.token(i) == "noname" || batch.token(i) == "alex") {
           ASSERT_EQ(batch.class_id(i), "author");
+        }
       }
       ASSERT_EQ(batch.item_size(), 1);
     }
@@ -250,7 +252,7 @@ TEST(CollectionParser, VowpalWabbit) {
 
   ASSERT_EQ(batches_count, 2);
 
-  try { boost::filesystem::remove_all(target_folder); }
-  catch (...) {}
+  try { fs::remove_all(target_folder); }
+  catch (...) { }
 }
 // vim: set ts=2 sw=2 sts=2:

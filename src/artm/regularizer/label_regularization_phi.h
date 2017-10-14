@@ -20,8 +20,7 @@
 
 */
 
-#ifndef SRC_ARTM_REGULARIZER_LABEL_REGULARIZATION_PHI_H_
-#define SRC_ARTM_REGULARIZER_LABEL_REGULARIZATION_PHI_H_
+#pragma once
 
 #include <string>
 
@@ -32,8 +31,7 @@ namespace regularizer {
 
 class LabelRegularizationPhi : public RegularizerInterface {
  public:
-  explicit LabelRegularizationPhi(const LabelRegularizationPhiConfig& config)
-    : config_(config) {}
+  explicit LabelRegularizationPhi(const LabelRegularizationPhiConfig& config) : config_(config) { }
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,
@@ -50,5 +48,3 @@ class LabelRegularizationPhi : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_LABEL_REGULARIZATION_PHI_H_

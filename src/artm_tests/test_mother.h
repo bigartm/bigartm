@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_TESTS_TEST_MOTHER_H_
-#define SRC_ARTM_TESTS_TEST_MOTHER_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -28,11 +27,17 @@ class Helpers {
   static std::string DescribeThetaMatrix(const ::artm::ThetaMatrix& theta_matrix);
   static void CompareTopicModels(const ::artm::TopicModel& tm1, const ::artm::TopicModel& tm2, bool* ok);
   static void CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm::ThetaMatrix& tm2, bool *ok);
+
+  static artm::Batch GenerateBatch(int nTokens, int nDocs, std::string class1, std::string class2);
+  static artm::DictionaryData GenerateDictionary(int nTokens, std::string class1, std::string class2);
+  static void ConfigurePerplexityScore(std::string score_name,
+                                       artm::MasterModelConfig* master_config,
+                                       std::vector<std::string> class_ids = { });
 };
 
 class TestMother {
  public:
-  TestMother() : regularizer_name("regularizer1") {}
+  TestMother() : regularizer_name("regularizer1") { }
   RegularizerConfig GenerateRegularizerConfig() const;
   static MasterModelConfig GenerateMasterModelConfig(int nTopics);
   static std::vector<std::shared_ptr< ::artm::Batch>> GenerateBatches(
@@ -45,5 +50,3 @@ class TestMother {
 
 }  // namespace test
 }  // namespace artm
-
-#endif  // SRC_ARTM_TESTS_TEST_MOTHER_H_

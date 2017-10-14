@@ -4,8 +4,7 @@
 // All methods must be inside "extern "C"" scope. All complex data structures should be passed in
 // as Google Protobuf Messages, defined in messages.proto.
 
-#ifndef SRC_ARTM_C_INTERFACE_H_
-#define SRC_ARTM_C_INTERFACE_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -81,8 +80,13 @@ extern "C" {
   DLL_PUBLIC int64_t ArtmRequestThetaMatrixExternal(int master_id, int64_t length, const char* get_theta_args);
   DLL_PUBLIC int64_t ArtmRequestTopicModel(int master_id, int64_t length, const char* get_model_args);
   DLL_PUBLIC int64_t ArtmRequestTopicModelExternal(int master_id, int64_t length, const char* get_model_args);
+
   DLL_PUBLIC int64_t ArtmRequestScore(int master_id, int64_t length, const char* get_score_args);
   DLL_PUBLIC int64_t ArtmRequestScoreArray(int master_id, int64_t length, const char* get_score_args);
+
+  DLL_PUBLIC int64_t ArtmExportScoreTracker(int master_id, int64_t length, const char* export_score_tracker_args);
+  DLL_PUBLIC int64_t ArtmImportScoreTracker(int master_id, int64_t length, const char* import_score_tracker_args);
+
   DLL_PUBLIC int64_t ArtmRequestMasterComponentInfo(int master_id, int64_t length, const char* get_master_info_args);
   DLL_PUBLIC int64_t ArtmRequestLoadBatch(const char* filename);
   DLL_PUBLIC int64_t ArtmCopyRequestedMessage(int64_t length, char* address);
@@ -99,5 +103,3 @@ extern "C" {
   DLL_PUBLIC int64_t ArtmSetProtobufMessageFormatToBinary();
   DLL_PUBLIC int64_t ArtmProtobufMessageFormatIsJson();
 }
-
-#endif  // SRC_ARTM_C_INTERFACE_H_

@@ -1,5 +1,5 @@
 Input Data Formats and Datasets
-=======
+===============================
 
 * **Formats**
 
@@ -9,7 +9,7 @@ meaning that all linguistic processing (lemmatization, tokenization, detection o
 
 1. `Vowpal Wabbit <https://github.com/JohnLangford/vowpal_wabbit/wiki/Input-format>`_ is a single-format file, based on the following principles:
 
-   * each document is depresented in a single line
+   * each document is represented in a single line
    * all tokens are represented as strings (no need to convert them into an integer identifier)
    * token frequency defaults to ``1.0``, and can be optionally specified after a colon (:)
    * namespaces (:attr:`Batch.class_id`) can be identified by a pipe (|)
@@ -72,35 +72,11 @@ meaning that all linguistic processing (lemmatization, tokenization, detection o
   
 3. Batches (binary BigARTM-specific format).
 
-   This is compact and efficient format, based on several protobuf messages in public BigARTM interface (:ref:`Batch <Batch>`, :ref:`Item <Item>` and :ref:`Field <Field>`).
+   This is compact and efficient format, based on several protobuf messages in public BigARTM interface (:ref:`Batch <Batch>` and :ref:`Item <Item>`).
    
    * A batch is a collection of several items
-   * An item is a collection of several fields
-   * A field is a collection of pairs ``(token_id, token_weight)``.
+   * An item is a collection of pairs ``(token_id, token_weight)``.
    
-   The following example shows a Python code that generates a synthetic batch.
-
-   .. code-block:: bash
-   
-      import artm.messages, random, uuid
-
-      num_tokens = 60
-      num_items = 100
-      batch = artm.messages.Batch()
-      batch.id = str(uuid.uuid4())
-      for token_id in range(0, num_tokens):
-          batch.token.append('token' + str(token_id))
-
-      for item_id in range(0, num_items):
-          item = batch.item.add()
-          item.id = item_id
-          field = item.field.add()
-          for token_id in range(0, num_tokens):
-              field.token_id.append(token_id)
-              background_count = random.randint(1, 5) if (token_id >= 40) else 0
-              topical_count = 10 if (token_id < 40) and ((token_id % 10) == (item_id % 10)) else 0
-              field.token_weight.append(background_count + topical_count)
-			  
    Note that the batch has its local dictionary, ``batch.token``.
    This dictionary which maps ``token_id`` into the actual token.
    In order to create a batch from textual files involve one needs to find all distinct words,

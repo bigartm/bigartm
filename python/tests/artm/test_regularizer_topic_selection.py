@@ -45,6 +45,5 @@ def test_func():
         for i in range(num_collection_passes):
             assert abs(model.score_tracker['PerplexityScore'].value[i] - perplexity_value[i]) < perplexity_eps
 
-        model.fit_online(batch_vectorizer=batch_vectorizer)
     finally:
         shutil.rmtree(batches_folder)

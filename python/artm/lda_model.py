@@ -324,7 +324,8 @@ class LDA(object):
             model, used earlier.
         """
         self._internal_model.load(filename=filename, model_name=model_name)
-        self._create_regularizers_and_scores()
+        if not len(self._internal_model.regularizers):
+            self._create_regularizers_and_scores()
 
     def get_top_tokens(self, num_tokens=10, with_weights=False):
         """
