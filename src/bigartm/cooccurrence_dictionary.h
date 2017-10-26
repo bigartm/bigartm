@@ -31,33 +31,18 @@ struct CoocInfo {
   int cooc_df;
 };
 
-struct CooccurrenceInfo { // is needed only in CoocMap
-  CooccurrenceInfo(const int doc_id) : cooc_tf(1), cooc_df(1), prev_doc_id(doc_id) { }
-  long long cooc_tf;
-  int cooc_df;
-  int prev_doc_id;
-};
-
-struct FirstTokenInfo { // is needed only in FirstTokenInfo
-  FirstTokenInfo(const int doc_id) : num_of_documents(1), prev_doc_id(doc_id) { }
-  int num_of_documents;
-  int prev_doc_id;
-};
-
 struct PpmiCountersValues {
   PpmiCountersValues() : n_u_tf(0), n_u_df(0) { }
   long long n_u_tf;
   int n_u_df;
 };
 
-// Data in Coccurrence batches is stored in cells
-// Every cell refers to its first token id and holds info about tokens that co-occurr with it
-// Cell consists of header (first three fields) and records.
+// Data in Coccurrence batches are stored in cells
+// Every cell refers to its first token id and holds info about tokens that co-occur with it
 // You need firstly to read cell header then records
 struct Cell {
-  Cell() : first_token_id(-1), num_of_documents(0), num_of_records(0) { }
+  Cell() : first_token_id(-1), num_of_records(0) { }
   int first_token_id;
-  int num_of_documents;
   unsigned num_of_records; // when cell is read, it's necessary to know how many triples to read
   std::vector<CoocInfo> records;
 };
@@ -73,13 +58,10 @@ enum modality_label {
   UNUSUAL_CLASS
 };
 
-typedef std::map<int, CooccurrenceInfo> SecondTokenInfo;
-typedef std::map<int, std::pair<FirstTokenInfo, SecondTokenInfo>> CoocMap;
-
 class CooccurrenceDictionary;
 class CooccurrenceStatisticsHolder;
 class CooccurrenceBatch;
-class ResultingBuffer;
+class ResultingBufferOfCoccurrences;
 
 class CooccurrenceDictionary {
  public:
@@ -94,17 +76,11 @@ class CooccurrenceDictionary {
   void ReadVowpalWabbit();
   std::vector<std::string> ReadPortionOfDocuments(std::mutex& read_lock, std::ifstream& vowpal_wabbit_doc);
   int  SetModalityLabel(std::string& modality_label);
+  void UploadOnDisk(CooccurrenceStatisticsHolder& cooc_stat_holder);
   int  CooccurrenceBatchesQuantity();
   void ReadAndMergeCooccurrenceBatches();
   ~CooccurrenceDictionary();
  private:
-  void SavePairOfTokens(const int first_token_id, const int second_token_id, const int doc_id,
-          CoocMap& cooc_map);
-  void AddInCoocMap(const int first_token_id, const int second_token_id, const int doc_id,
-          CoocMap& cooc_map);
-  void ModifyCoocMapNode(const int second_token_id, const int doc_id,
-          std::pair<FirstTokenInfo, SecondTokenInfo>& map_info);
-  void UploadCooccurrenceBatchOnDisk(CoocMap& cooc_map);
   CooccurrenceBatch* CreateNewCooccurrenceBatch();
   void OpenBatchInputFile(CooccurrenceBatch& batch);
   void OpenBatchOutputFile(CooccurrenceBatch& batch);
@@ -138,16 +114,18 @@ class CooccurrenceDictionary {
   int num_of_threads_;
 };
 
-// ToDo. Work in progress. It should replace CoocMap in future
 class CooccurrenceStatisticsHolder {
+ friend class CooccurrenceDictionary;
  public:
   struct FirstToken;
   struct SecondTokenAndCooccurrence;
 
-  void SortFirstTokens();
   void SavePairOfTokens(int first_token_id, int second_token_id, unsigned doc_id);
-  int FindFirstToken(int first_token_id);
-  int FindSecondToken(std::vector<SecondTokenAndCooccurrence>& second_tokens, int second_token_id);
+  int  FindFirstToken(int first_token_id);
+  int  FindSecondToken(std::vector<SecondTokenAndCooccurrence>& second_tokens, int second_token_id);
+  bool IsEmpty();
+  void SortFirstTokens();
+  void SortSecondTokens();
  private:
 
   // Here's two-level structure storage_
@@ -176,9 +154,9 @@ struct CooccurrenceStatisticsHolder::SecondTokenAndCooccurrence {
 // Also it's a wrapper around a ifstream and ofstream of an external file
 class CooccurrenceBatch: private boost::noncopyable {
  friend class CooccurrenceDictionary;
- friend class ResultingBuffer;
+ friend class ResultingBufferOfCoccurrences;
  public:
-  void FormNewCell(const CoocMap::iterator& map_node);
+  void FormNewCell(const std::vector<CooccurrenceStatisticsHolder::FirstToken>::iterator& cooc_stat_node);
   void WriteCell();
   bool ReadCellHeader();
   void ReadRecords();
@@ -193,10 +171,10 @@ class CooccurrenceBatch: private boost::noncopyable {
   long in_batch_offset_;
 };
 
-class ResultingBuffer {
+class ResultingBufferOfCoccurrences {
  friend class CooccurrenceDictionary;
  private:
-  ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
+  ResultingBufferOfCoccurrences(const int cooc_min_tf, const int cooc_min_df,
       const bool calculate_cooc_tf, const bool calculate_cooc_df,
       const bool calculate_ppmi_tf, const bool calculate_ppmi_df,
       const bool calculate_ppmi, const long long total_num_of_pairs_,
@@ -210,7 +188,7 @@ class ResultingBuffer {
   void OpenAndCheckOutputFile(std::ofstream& ofile, const std::string& path);
   void AddInBuffer(const CooccurrenceBatch& batch);
   void MergeWithExistingCell(const CooccurrenceBatch& batch);
-  void PopPreviousContent();
+  void WriteCoocFromBufferInFile(); // output file format (of variety of formats) is difined here
   void CalculateAndWritePpmi();
 
   const int cooc_min_tf_;

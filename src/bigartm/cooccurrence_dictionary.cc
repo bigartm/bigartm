@@ -96,6 +96,8 @@ int CooccurrenceDictionary::VocabDictionarySize() {
   return vocab_dictionary_.size();
 }
 
+// ToDo: decide how you are going to calculate variables for ppmi
+// ToDo: decide how to calculate n_u if it takes all the pairs with token u (even with unnecesery another token)
 void CooccurrenceDictionary::ReadVowpalWabbit() {
   // This function works as follows:
   // 1. Acquire lock for reading from vowpal wabbit file
@@ -132,18 +134,19 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
       }
       total_num_of_documents_ += portion.size(); // statistics for ppmi
 
-      // CoocMap is temporary storage for co-occurrence statistics. (look in .h file CoocMap structure defintion for more details)
-      // First elem in external map is first_token_id, in internal it's second_token_id
-      CoocMap cooc_map;
-
-      // Alternative:
+      // It will hold tf and df of pairs of tokens
+      // Every pair of valid tokens (both exist in vocab) is saved in this storage
+      // After walking through portion of documents all the statistics is dumped on disk
+      // and then this storage is destroyed
       CooccurrenceStatisticsHolder cooc_stat_holder;
 
+      // For every token from vocab keep the information about the last document this token occured in
       std::vector<unsigned> num_of_last_document_token_occured(vocab_dictionary_.size());
 
       // When the document is processed (element of portion vector),
       // memory for it can be freed by calling pop_back() from vector
       // (large string will be popped and destroyed)
+      // portion.size() can be used as doc_id (it will in method SavePairOfTokens)
       for (; portion.size() != 0; portion.pop_back()) { // Loop through documents. Step 4:
         std::vector<std::string> doc;
         boost::split(doc, portion.back(), boost::is_any_of(" \t\r"));
@@ -172,6 +175,9 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
           int first_token_id = first_token->second;
 
           // 5.c) Collect statistics for ppmi (in how many documents every token occured)
+          // In the beginning the zeros, so for evey value of portion.size() these values aren't equal
+          // and if it's the first document in the collection where a specific token occurred
+          // values aren't equal and counter of douments for specific token is incremented
           if (num_of_last_document_token_occured[first_token_id] != portion.size()) {
             num_of_last_document_token_occured[first_token_id] = portion.size();
             ++token_statistics_[first_token_id].num_of_documents_token_occured_in;
@@ -202,23 +208,21 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
             int second_token_id = second_token->second;
 
             // 5.e) When it's known these 2 tokens are valid, remember their co-occurrence
-            SavePairOfTokens(first_token_id, second_token_id, portion.size(), cooc_map);
-            SavePairOfTokens(second_token_id, first_token_id, portion.size(), cooc_map);
-
-            // Alternative: Save using CooccurrenceStatisticsHolder
+            // Here portion.size() is used to identify a document (it's unique id during one portion of documents)
             cooc_stat_holder.SavePairOfTokens(first_token_id, second_token_id, portion.size());
             cooc_stat_holder.SavePairOfTokens(second_token_id, first_token_id, portion.size());
-
             total_num_of_pairs_ += 2; // statistics for ppmi
           }
         }
       }
 
-      if (!cooc_map.empty()) {
+      if (!cooc_stat_holder.IsEmpty()) {
         // This function saves gathered statistics on disk
         // After saving on disk statistics from all the batches needs to be merged
         // This is implemented in ReadAndMergeCooccurrenceBatches(), so the next step is to call this method
-        UploadCooccurrenceBatchOnDisk(cooc_map);
+        cooc_stat_holder.SortFirstTokens(); // Sorting is needed before storing all pairs of tokens on disk (it's for future agregation)
+        cooc_stat_holder.SortSecondTokens();
+        UploadOnDisk(cooc_stat_holder);
       }
 
       { // print number of documents which were precessed
@@ -232,6 +236,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
     }
   };
 
+  // Launch reading and storing pairs of tokens in parallel
   std::vector<std::shared_future<void>> tasks;
   for (int i = 0; i < num_of_threads_; ++i) {
     tasks.emplace_back(std::async(std::launch::async, func));
@@ -242,7 +247,7 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
   std::cout << '\n' << "Co-occurrence batches have been created" << std::endl;
 }
 
-std::vector<std::string> CooccurrenceDictionary::ReadPortionOfDocuments(std::mutex& read_lock, std::ifstream& vowpal_wabbit_doc) {
+std::vector<std::string> CooccurrenceDictionary::ReadPortionOfDocuments(std::mutex& read_lock,std::ifstream& vowpal_wabbit_doc) {
   std::vector<std::string> portion;
   std::lock_guard<std::mutex> guard(read_lock);
   if (vowpal_wabbit_doc.eof()) {
@@ -267,62 +272,19 @@ int CooccurrenceDictionary::SetModalityLabel(std::string& modality_label) {
   }
 }
 
-void CooccurrenceDictionary::SavePairOfTokens(const int first_token_id,
-        const int second_token_id, const int doc_id, CoocMap& cooc_map) {
-  // There are 2 levels of data stucture
-  // The first level keeps information about first token and the second level about co-occurrence between
-  // the first and the second tokens
-  // If first token id is known (exists in the structure, the method ModifyCoocMapNode is called),
-  // if it's unknown a new node is added in AddInCoocMap method
-  auto map_record = cooc_map.find(first_token_id);
-  if (map_record == cooc_map.end()) {
-    AddInCoocMap(first_token_id, second_token_id, doc_id, cooc_map);
-  } else {
-    ModifyCoocMapNode(second_token_id, doc_id, map_record->second);
-  }
-}
+void CooccurrenceDictionary::UploadOnDisk(CooccurrenceStatisticsHolder& cooc_stat_holder) {
+  // Uploading is implemented as folowing:
+  // 1. Create a batch which is associated with a specific file on a disk
+  // 2. For every first token id create an object Cell and for every second token
+  // that co-occurred with first write it's id, cooc_tf, cooc_df
+  // 3. Write the cell in output file and continue the cicle while there are 
+  // first token ids in cooccurrence statistics holder 
+  // Note that there can't be two cells stored in ram simultaniously
+  // 4. Save batch in vector of objects
 
-void CooccurrenceDictionary::AddInCoocMap(const int first_token_id,
-        const int second_token_id, const int doc_id, CoocMap& cooc_map) {
-  FirstTokenInfo new_first_token(doc_id);
-  CooccurrenceInfo new_cooc_info(doc_id);
-  SecondTokenInfo new_second_token;
-  new_second_token.insert(std::pair<int, CooccurrenceInfo>(second_token_id, new_cooc_info));
-  cooc_map.insert(std::make_pair(first_token_id, std::make_pair(new_first_token, new_second_token)));
-}
-
-void CooccurrenceDictionary::ModifyCoocMapNode(const int second_token_id,
-        const int doc_id, std::pair<FirstTokenInfo, SecondTokenInfo>& map_info) {
-  if (std::get<FIRST_TOKEN_INFO>(map_info).prev_doc_id != doc_id) {
-    std::get<FIRST_TOKEN_INFO>(map_info).prev_doc_id = doc_id;
-    ++(std::get<FIRST_TOKEN_INFO>(map_info).num_of_documents);
-  }
-  SecondTokenInfo& map_node = std::get<SECOND_TOKEN_INFO>(map_info);
-  auto iter = map_node.find(second_token_id);
-  if (iter == map_node.end()) {
-    CooccurrenceInfo new_cooc_info(doc_id);
-    map_node.insert(std::pair<int, CooccurrenceInfo>(second_token_id, new_cooc_info));
-  } else {
-    ++(std::get<COOCCURRENCE_INFO>(*iter).cooc_tf);
-    if (std::get<COOCCURRENCE_INFO>(*iter).prev_doc_id != doc_id) {
-      std::get<COOCCURRENCE_INFO>(*iter).prev_doc_id = doc_id;
-      ++(std::get<COOCCURRENCE_INFO>(*iter).cooc_df);
-    }
-  }
-}
-
-void CooccurrenceDictionary::UploadCooccurrenceBatchOnDisk(CoocMap& cooc_map) {
-  // When co-occurrence map is full. data from it is being serrialized
-  // This is implemented as follows:
-  // 1. Create an object CooccurrenceBatch and associate a file with it
-  // 2. For every unique fist token id create a cell and write it in file
-  // 3. Close the file
-  // 4. Save the batch
-  // CooccurrencesBatches are in wrapped in unique_ptrs beacause the are going to be
-  // moved and it's better to move pointers instead of reopening files
   std::unique_ptr<CooccurrenceBatch> batch(CreateNewCooccurrenceBatch());
   OpenBatchOutputFile(*batch);
-  for (auto iter = cooc_map.begin(); iter != cooc_map.end(); ++iter) {
+  for (auto iter = cooc_stat_holder.storage_.begin(); iter != cooc_stat_holder.storage_.end(); ++iter) {
     batch->FormNewCell(iter);
     batch->WriteCell();
   }
@@ -349,14 +311,28 @@ int CooccurrenceDictionary::CooccurrenceBatchesQuantity() {
   return vector_of_batches_.size();
 }
 
+// ToDo: implement parallel merging (important!)
+// ToDo: may be create a new function (k-way merge)
 void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   std::cout << "Step 2: merging batches" << std::endl;
 
-  // This buffer won't hold more than 1 element, because another element
-  // means another first_token_id => all the data linked with current
-  // first_token_id can be filtered and be ready to be written in
-  // resulting file.
-  ResultingBuffer res(cooc_min_tf_, cooc_min_df_, calculate_tf_cooc_,
+  // After that all the statistics has been gathered and saved in form of batches on disk, it
+  // needs to be merged from batches into one storage (This is may be the most long-time part of co-occurrence gathering)
+  // All batches has it's local buffer in operating memory (look the CooccurrenceBatch class realization)
+  // Information in batches is stored in cells
+  // Here's the k-way merge algorithm:
+  // 1. Initially first cells of all the batches are read in their buffers
+  // 2. Then batches are sorted (std::make_heap) by first_token_id of the cell
+  // 3. Then a cell with the lowest first_token_id is extaracted and put in resulting buffer and the next cell
+  // is read from corresponding batch
+  // 4. If lowest first token id equals first token id of cell of this buffer, they are merged
+  // Else the current cell is written in file and the new one is loaded
+  // Writing and empting is done in order to keep low memory consumption
+  // If there would be a need to calculate ppmi or other values which depend on co-occurrences
+  // this data can be read back from the file
+
+  // There are some comments in class constructor which explain how this buffer works
+  ResultingBufferOfCooccurrences res(cooc_min_tf_, cooc_min_df_, calculate_tf_cooc_,
           calculate_df_cooc_, calculate_tf_ppmi_, calculate_df_ppmi_,
           calculate_ppmi_, total_num_of_pairs_, total_num_of_documents_,
           cooc_tf_file_path_, cooc_df_file_path_, ppmi_tf_file_path_, ppmi_df_file_path_, token_statistics_);
@@ -379,9 +355,10 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   }
   std::make_heap(vector_of_batches_.begin(), vector_of_batches_.end(), CompareBatches);
 
-  // Standard k-way merge as external sort
+  // k-way merge as external sort
   while (!vector_of_batches_.empty()) {
     // It's guaranteed that batches aren't empty (look ParseVowpalWabbit func)
+    // Addition in buffer can cause writing exesting data in file and putting other data on it's place
     res.AddInBuffer(*vector_of_batches_[0]);
     std::pop_heap(vector_of_batches_.begin(), vector_of_batches_.end(), CompareBatches);
     if (!vector_of_batches_.back()->in_batch_.is_open()) {
@@ -401,10 +378,11 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
       vector_of_batches_.pop_back();
     }
   }
-  if (res.cell_.records.size() != 0) {
-    res.PopPreviousContent();
+  if (!res.cell_.records.empty()) {
+    // unknown variables needed for ppmi calcualation are found here and during k-way merge
+    res.WriteCoocFromBufferInFile();
   }
-  // Files are close in order to really push data in files
+  // Files are explicitly closed here, because data needs to be pushed in files on this step
   if (calculate_tf_cooc_) {
     res.cooc_tf_dict_out_.close();
   }
@@ -443,7 +421,11 @@ CooccurrenceDictionary::~CooccurrenceDictionary() {
 
 // ******************* Methods of class CooccurrenceStatisticsHolder ***********************
 
-// This class should replace CoocMap in future
+// This class stores temporarily added statistics about pairs of tokens (how often these pairs occurred in documents
+// in a window, in how many documents they occurred together in a window)
+// It's necessery to keep all them with a little mamory overhead
+// That's why first tokens with some information about them and second tokens with info about co-occurrence
+// are stored in vector
 void CooccurrenceStatisticsHolder::SavePairOfTokens(int first_token_id, int second_token_id, unsigned doc_id) {
   // There are 2 levels of indexing
   // The first level keeps information about first token and the second level
@@ -492,6 +474,28 @@ int CooccurrenceStatisticsHolder::FindSecondToken(
   return NOT_FOUND;
 }
 
+bool CooccurrenceStatisticsHolder::IsEmpty() {
+  return storage_.empty();
+}
+
+void CooccurrenceStatisticsHolder::SortFirstTokens() {
+  auto CompareFirstTokens = [](const CooccurrenceStatisticsHolder::FirstToken& left,
+                               const CooccurrenceStatisticsHolder::FirstToken& right) {
+    return left.first_token_id < right.first_token_id;
+  };
+  std::sort(storage_.begin(), storage_.end(), CompareFirstTokens);
+}
+
+void CooccurrenceStatisticsHolder::SortSecondTokens() {
+  auto CompareSecondTokens = [](const CooccurrenceStatisticsHolder::SecondTokenAndCooccurrence& left,
+                                const CooccurrenceStatisticsHolder::SecondTokenAndCooccurrence& right) {
+    return left.second_token_id < right.second_token_id;
+  };
+  for (auto& iter : storage_) {
+    std::sort(iter.second_token_reference.begin(), iter.second_token_reference.end(), CompareSecondTokens);
+  }
+}
+
 // *********************** Methods of class CoccurrenceBatch ***************************
 
 CooccurrenceBatch::CooccurrenceBatch(const std::string& path_to_batches) {
@@ -502,37 +506,32 @@ CooccurrenceBatch::CooccurrenceBatch(const std::string& path_to_batches) {
   in_batch_offset_ = 0;
 }
 
-void CooccurrenceBatch::FormNewCell(const CoocMap::iterator& map_node) {
-  // Every cooccurrence batch is divided into cells as folowing:
-  // Different cells have different first token id values.
-  // One cell contain records with euqal first token id
-  // One cooccurrence batch can't hold 2 or more cells in ram simultaneously
-  // Other cells are stored in output file
+void CooccurrenceBatch::FormNewCell(const std::vector<CooccurrenceStatisticsHolder::FirstToken>::iterator& cooc_stat_node) {
   // Here is initialization of a new cell
-  cell_.first_token_id = std::get<FIRST_TOKEN_ID>(*map_node);
-  std::pair<FirstTokenInfo, SecondTokenInfo>& map_info = std::get<MAP_INFO>(*map_node);
-  cell_.num_of_documents = std::get<FIRST_TOKEN_INFO>(map_info).num_of_documents;
-  SecondTokenInfo& second_token_info = std::get<SECOND_TOKEN_INFO>(map_info);
-  cell_.num_of_records = second_token_info.size();
+  // A cell consists on first_token_id, number of records it includes
+  // Then records go, every reord consists on second_token_id, cooc_tf, cooc_df
+
+  cell_.first_token_id = cooc_stat_node->first_token_id;
+  // while reading from file it's necessery to know how many records to read
+  std::vector<CooccurrenceStatisticsHolder::SecondTokenAndCooccurrence>& second_token_reference = cooc_stat_node->second_token_reference;
+  cell_.num_of_records = second_token_reference.size();
   cell_.records.resize(cell_.num_of_records);
   int i = 0;
-  for (auto iter = second_token_info.begin(); iter != second_token_info.end(); ++iter, ++i) {
-    cell_.records[i].second_token_id = std::get<SECOND_TOKEN_ID>(*iter);
-    CooccurrenceInfo& cooc_info = std::get<COOCCURRENCE_INFO>(*iter);
-    cell_.records[i].cooc_tf = cooc_info.cooc_tf;
-    cell_.records[i].cooc_df = cooc_info.cooc_df;
+  for (auto iter = second_token_reference.begin(); iter != second_token_reference.end(); ++iter, ++i) {
+    cell_.records[i].second_token_id = iter->second_token_id;
+    cell_.records[i].cooc_tf = iter->cooc_tf;
+    cell_.records[i].cooc_df = iter->cooc_df;
   }
 }
 
-// Cells are written in following form: first line consists of first token id
-// and num of triples
-// the second line consists of numbers triples, which are separeted with a
-// space and numbers in these triples are separeted the same
 void CooccurrenceBatch::WriteCell() {
+  // Cells are written in following form: first line consists of first token id
+  // and num of triples
+  // the second line consists of numbers triples, which are separeted with a
+  // space and numbers in these triples are separeted the same
   // stringstream is used for fast bufferized i/o operations
   std::stringstream ss;
   ss << cell_.first_token_id << ' ';
-  ss << cell_.num_of_documents << ' ';
   ss << cell_.num_of_records << std::endl;
   for (unsigned i = 0; i < cell_.records.size(); ++i) {
     ss << cell_.records[i].second_token_id << ' ';
@@ -557,7 +556,6 @@ bool CooccurrenceBatch::ReadCellHeader() {
   getline(in_batch_, str);
   std::stringstream ss(str);
   ss >> cell_.first_token_id;
-  ss >> cell_.num_of_documents;
   ss >> cell_.num_of_records;
   if (!in_batch_.eof()) {
     return true;
@@ -583,9 +581,19 @@ void CooccurrenceBatch::ReadRecords() {
   }
 }
 
-// ******************************* Methods of class ResultingBuffer ****************************
+// ******************************* Methods of class ResultingBufferOfCooccurrences ****************************
 
-ResultingBuffer::ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
+// ToDo: Test collecting co-occurrences on some small-size exmaples
+// ToDo: think about deleting of unordered map from this class, it's unnecessery and all info should be stored in the main class
+
+// The main purpose of this class is to store statistics of co-occurrences and some 
+// variables calculated on base of them, perform that calculations, write that in file
+// resulting file and read from it. 
+// This class stores cells of data from batches before they are written in resulting files
+// A cell can from a batch can come in this buffer and be merged with current stored 
+// (in case first_token_ids of cells are equal) or the current cell can be pushed from buffer in file 
+// (in case first_token_ids aren't equal) and new cell takes place of the old one
+ResultingBufferOfCooccurrences::ResultingBufferOfCooccurrences(const int cooc_min_tf, const int cooc_min_df,
     const bool calculate_cooc_tf, const bool calculate_cooc_df,
     const bool calculate_ppmi_tf, const bool calculate_ppmi_df,
     const bool calculate_ppmi, const long long total_num_of_pairs,
@@ -621,7 +629,7 @@ ResultingBuffer::ResultingBuffer(const int cooc_min_tf, const int cooc_min_df,
   }
 }
 
-void ResultingBuffer::OpenAndCheckInputFile(std::ifstream& ifile, const std::string& path) {
+void ResultingBufferOfCooccurrences::OpenAndCheckInputFile(std::ifstream& ifile, const std::string& path) {
   ifile.open(path, std::ios::in);
   if (!ifile.good()) {
     throw std::invalid_argument("Failed to create a file in the working directory");
@@ -629,7 +637,7 @@ void ResultingBuffer::OpenAndCheckInputFile(std::ifstream& ifile, const std::str
   ++open_files_in_buf_;
 }
 
-void ResultingBuffer::OpenAndCheckOutputFile(std::ofstream& ofile, const std::string& path) {
+void ResultingBufferOfCooccurrences::OpenAndCheckOutputFile(std::ofstream& ofile, const std::string& path) {
   ofile.open(path, std::ios::out);
   if (!ofile.good()) {
     throw std::invalid_argument("Failed to create a file in the working directory");
@@ -637,17 +645,24 @@ void ResultingBuffer::OpenAndCheckOutputFile(std::ofstream& ofile, const std::st
   ++open_files_in_buf_;
 }
 
-void ResultingBuffer::AddInBuffer(const CooccurrenceBatch& batch) {
+void ResultingBufferOfCooccurrences::AddInBuffer(const CooccurrenceBatch& batch) {
   if (cell_.first_token_id == batch.cell_.first_token_id) {
     MergeWithExistingCell(batch);
   } else {
-    PopPreviousContent();
+    WriteCoocFromBufferInFile();
     cell_ = batch.cell_;
   }
 }
 
-// ToDo: I've forgotten to add num_of_documents as n_u for documantal ppmi
-void ResultingBuffer::MergeWithExistingCell(const CooccurrenceBatch& batch) {
+void ResultingBufferOfCooccurrences::MergeWithExistingCell(const CooccurrenceBatch& batch) {
+  // All the data in buffer are stored in a cell, so here are rules of updating each cell
+  // This function takes two vectors (one of the current cell and one which is stored in batch),
+  // merges them in folowing way:
+  // 1. If two elements of vector are different (different second token id), 
+  // stacks them one to another in ascending order
+  // 2. It these two elemnts are equal, adds their cooc_tf and cooc_df and 
+  // stores resulting cell with this parameters
+  // After merging resulting vector is sorted in ascending order
   std::vector<CoocInfo> old_vector = cell_.records;
   cell_.records.resize(old_vector.size() + batch.cell_.records.size());
   auto fi_iter = old_vector.begin();
@@ -672,16 +687,33 @@ void ResultingBuffer::MergeWithExistingCell(const CooccurrenceBatch& batch) {
   std::copy(se_iter, batch.cell_.records.end(), std::back_inserter(cell_.records));
 }
 
-void ResultingBuffer::PopPreviousContent() {
+// ToDo: continue here
+
+// Output file format (of variety of formats) is difined here
+void ResultingBufferOfCooccurrences::WriteCoocFromBufferInFile() {
+  // This function takes the cell of the buffer, writes data from cell in file,
+  // performing calculation of number of n_u (number of pairs where a specific 
+  // token u co-occurred with any token) in a window of specified width - this
+  // information will needed for ppmi computation
+  // So this function perform 2 different things - writing data in file
+  // and calculation of some variable needed in future ppmi, but it's
+  // more optimal to compute this variable while walking through co-occurence statistics
+  // then to do it in another moment separately
+
   // stringstream is used for fast bufferized i/o operations
   std::stringstream output_buf_tf;
   std::stringstream output_buf_df;
+
+  // Calculate statistics of occurrence for a new token (as a first token in some pair)
   PpmiCountersValues n_u;
   for (unsigned i = 0; i < cell_.records.size(); ++i) {
     if (calculate_cooc_tf_ && cell_.records[i].cooc_tf >= cooc_min_tf_) {
+      // Cooccurrence of the same tokens isn't interested for us
       if (cell_.first_token_id != cell_.records[i].second_token_id) {
-        output_buf_tf << cell_.first_token_id << ' ' << cell_.records[i].second_token_id << ' ' << cell_.records[i].cooc_tf << std::endl;
+        output_buf_tf << cell_.first_token_id << ' ' << cell_.records[i].second_token_id 
+                                              << ' ' << cell_.records[i].cooc_tf << std::endl;
       }
+      // That's how counter n_u used in ppmi formula is computed
       n_u.n_u_tf += cell_.records[i].cooc_tf;
     }
     if (output_buf_tf.tellg() > output_buf_size_) {
@@ -689,8 +721,10 @@ void ResultingBuffer::PopPreviousContent() {
     }
 
     if (calculate_cooc_df_ && cell_.records[i].cooc_df >= cooc_min_df_) {
+      // Cooccurrence of the same tokens isn't interested for us
       if (cell_.first_token_id != cell_.records[i].second_token_id) {
-        output_buf_df << cell_.first_token_id << ' ' << cell_.records[i].second_token_id << ' ' << cell_.records[i].cooc_df << std::endl;
+        output_buf_df << cell_.first_token_id << ' ' << cell_.records[i].second_token_id
+                                              << ' ' << cell_.records[i].cooc_df << std::endl;
       }
     }
     if (output_buf_df.tellg() > output_buf_size_) {
@@ -705,17 +739,14 @@ void ResultingBuffer::PopPreviousContent() {
     cooc_df_dict_out_ << output_buf_df.str();
   }
 
-  if (n_u.n_u_tf != 0) {
-    n_u.n_u_df = cell_.num_of_documents;
-    ppmi_counters_.insert(std::make_pair(cell_.first_token_id, n_u));
-  }
+  // Save calculated value in hash table of ppmi counters (because it's needed for ppmi calculation)
+  ppmi_counters_.insert(std::make_pair(cell_.first_token_id, n_u));
   // It's importants after pop to set size = 0, because this value will be checked later
   cell_.records.resize(0);
-  //std::cout << "Token " << cell_.first_token_id << " has been proccessed" << std::endl;
 }
 
 // ToDo: erase duplications of code
-void ResultingBuffer::CalculateAndWritePpmi() {
+void ResultingBufferOfCooccurrences::CalculateAndWritePpmi() {
   // stringstream is used for fast bufferized i/o operations
   std::stringstream output_buf_tf;
   std::stringstream output_buf_df;
