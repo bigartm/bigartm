@@ -96,8 +96,6 @@ int CooccurrenceDictionary::VocabDictionarySize() {
   return vocab_dictionary_.size();
 }
 
-// ToDo: decide how you are going to calculate variables for ppmi
-// ToDo: decide how to calculate n_u if it takes all the pairs with token u (even with unnecesery another token)
 void CooccurrenceDictionary::ReadVowpalWabbit() {
   // This function works as follows:
   // 1. Acquire lock for reading from vowpal wabbit file
@@ -313,6 +311,8 @@ int CooccurrenceDictionary::CooccurrenceBatchesQuantity() {
 
 // ToDo: implement parallel merging (important!)
 // ToDo: may be create a new function (k-way merge)
+// ToDo: split this function in several
+// ToDo: make it easy to read
 void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   std::cout << "Step 2: merging batches" << std::endl;
 
@@ -356,10 +356,16 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   std::make_heap(vector_of_batches_.begin(), vector_of_batches_.end(), CompareBatches);
 
   // k-way merge as external sort
+  // During this operation n_u is calculated and saved, so after merge all the information
+  // needed to calcualte ppmi is gathered
   while (!vector_of_batches_.empty()) {
-    // It's guaranteed that batches aren't empty (look ParseVowpalWabbit func)
-    // Addition in buffer can cause writing exesting data in file and putting other data on it's place
-    res.AddInBuffer(*vector_of_batches_[0]);
+    if (res.cell_.first_token_id == (*vector_of_batches_[0]).cell_.first_token_id) {
+      res.MergeWithExistingCell(*vector_of_batches_[0]);
+    } else {
+      // This function also performs n_u calculating
+      token_statistics_[res.cell_.first_token_id].num_of_pairs_token_occured_in = res.WriteCoocFromBufferInFile();
+      res.cell_ = (*vector_of_batches_[0]).cell_;
+    }
     std::pop_heap(vector_of_batches_.begin(), vector_of_batches_.end(), CompareBatches);
     if (!vector_of_batches_.back()->in_batch_.is_open()) {
       OpenBatchInputFile(*(vector_of_batches_.back()));
@@ -380,7 +386,9 @@ void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   }
   if (!res.cell_.records.empty()) {
     // unknown variables needed for ppmi calcualation are found here and during k-way merge
-    res.WriteCoocFromBufferInFile();
+    unsigned first_token_id = res.cell_.first_token_id;
+    // This function also performs n_u calculating
+    token_statistics_[first_token_id].num_of_pairs_token_occured_in = res.WriteCoocFromBufferInFile();
   }
   // Files are explicitly closed here, because data needs to be pushed in files on this step
   if (calculate_tf_cooc_) {
@@ -496,7 +504,7 @@ void CooccurrenceStatisticsHolder::SortSecondTokens() {
   }
 }
 
-// *********************** Methods of class CoccurrenceBatch ***************************
+// *********************** Methods of class CooccurrenceBatch ***************************
 
 CooccurrenceBatch::CooccurrenceBatch(const std::string& path_to_batches) {
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
@@ -583,9 +591,6 @@ void CooccurrenceBatch::ReadRecords() {
 
 // ******************************* Methods of class ResultingBufferOfCooccurrences ****************************
 
-// ToDo: Test collecting co-occurrences on some small-size exmaples
-// ToDo: think about deleting of unordered map from this class, it's unnecessery and all info should be stored in the main class
-
 // The main purpose of this class is to store statistics of co-occurrences and some 
 // variables calculated on base of them, perform that calculations, write that in file
 // resulting file and read from it. 
@@ -645,15 +650,6 @@ void ResultingBufferOfCooccurrences::OpenAndCheckOutputFile(std::ofstream& ofile
   ++open_files_in_buf_;
 }
 
-void ResultingBufferOfCooccurrences::AddInBuffer(const CooccurrenceBatch& batch) {
-  if (cell_.first_token_id == batch.cell_.first_token_id) {
-    MergeWithExistingCell(batch);
-  } else {
-    WriteCoocFromBufferInFile();
-    cell_ = batch.cell_;
-  }
-}
-
 void ResultingBufferOfCooccurrences::MergeWithExistingCell(const CooccurrenceBatch& batch) {
   // All the data in buffer are stored in a cell, so here are rules of updating each cell
   // This function takes two vectors (one of the current cell and one which is stored in batch),
@@ -687,25 +683,27 @@ void ResultingBufferOfCooccurrences::MergeWithExistingCell(const CooccurrenceBat
   std::copy(se_iter, batch.cell_.records.end(), std::back_inserter(cell_.records));
 }
 
-// ToDo: continue here
-
+// ToDo: Think about calcualting of n_u (and may be filtering of cell_) in another function
 // Output file format (of variety of formats) is difined here
-void ResultingBufferOfCooccurrences::WriteCoocFromBufferInFile() {
-  // This function takes the cell of the buffer, writes data from cell in file,
-  // performing calculation of number of n_u (number of pairs where a specific 
-  // token u co-occurred with any token) in a window of specified width - this
-  // information will needed for ppmi computation
-  // So this function perform 2 different things - writing data in file
-  // and calculation of some variable needed in future ppmi, but it's
-  // more optimal to compute this variable while walking through co-occurence statistics
-  // then to do it in another moment separately
+unsigned long long ResultingBufferOfCooccurrences::WriteCoocFromBufferInFile() {
+  // This function takes the cell of the buffer and writes data from cell in file
+  // and at the same time it calculates n_u (which is number of pairs where a 
+  // token u which is assosiated with the given cell co-occurred with any token 
+  // in a window of specified width. This information will be needed for ppmi
+  // computation. And this exact value is returned from the function (it goes in
+  // token_statistics_ variable from class CooccurrenceDictionary)
+  // So this function performs 2 different things - writing data in file
+  // and calculation of some variable needed in future ppmi
+  // It might seem strange, but it's more optimal to compute this variable while 
+  // walking through data which is going to be dumped in file right now, than to perform
+  // double walking through this data
 
   // stringstream is used for fast bufferized i/o operations
   std::stringstream output_buf_tf;
   std::stringstream output_buf_df;
 
   // Calculate statistics of occurrence for a new token (as a first token in some pair)
-  PpmiCountersValues n_u;
+  unsigned long long n_u = 0;
   for (unsigned i = 0; i < cell_.records.size(); ++i) {
     if (calculate_cooc_tf_ && cell_.records[i].cooc_tf >= cooc_min_tf_) {
       // Cooccurrence of the same tokens isn't interested for us
@@ -713,8 +711,8 @@ void ResultingBufferOfCooccurrences::WriteCoocFromBufferInFile() {
         output_buf_tf << cell_.first_token_id << ' ' << cell_.records[i].second_token_id 
                                               << ' ' << cell_.records[i].cooc_tf << std::endl;
       }
-      // That's how counter n_u used in ppmi formula is computed
-      n_u.n_u_tf += cell_.records[i].cooc_tf;
+      // That's how counter n_u (which is used in ppmi formula) is calculated
+      n_u += cell_.records[i].cooc_tf;
     }
     if (output_buf_tf.tellg() > output_buf_size_) {
       cooc_tf_dict_out_ << output_buf_tf.str();
@@ -739,16 +737,16 @@ void ResultingBufferOfCooccurrences::WriteCoocFromBufferInFile() {
     cooc_df_dict_out_ << output_buf_df.str();
   }
 
-  // Save calculated value in hash table of ppmi counters (because it's needed for ppmi calculation)
-  ppmi_counters_.insert(std::make_pair(cell_.first_token_id, n_u));
-  // It's importants after pop to set size = 0, because this value will be checked later
+  // It's importants to set size = 0 after popping, because this value will be checked later
   cell_.records.resize(0);
+  return n_u;
 }
 
 // ToDo: erase duplications of code
+// ToDo: write it
 void ResultingBufferOfCooccurrences::CalculateAndWritePpmi() {
   // stringstream is used for fast bufferized i/o operations
-  std::stringstream output_buf_tf;
+  /*std::stringstream output_buf_tf;
   std::stringstream output_buf_df;
   int first_token_id = 0;
   int second_token_id = 0;
@@ -781,8 +779,8 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi() {
         continue;
       }
       double sub_log_df_pmi = (static_cast<double>(total_num_of_documents_) /
-          ppmi_counters_[first_token_id].n_u_df /*token_statistics_[first_token_id].num_of_documents_token_occured_in*/) /
-          (ppmi_counters_[second_token_id].n_u_df /*token_statistics_[second_token_id].num_of_documents_token_occured_in*/ / static_cast<double>(cooc_df));
+          ppmi_counters_[first_token_id].n_u_df /*token_statistics_[first_token_id].num_of_documents_token_occured_in*/ /*) /
+          (ppmi_counters_[second_token_id].n_u_df /*token_statistics_[second_token_id].num_of_documents_token_occured_in*/ /*/ static_cast<double>(cooc_df));
       if (sub_log_df_pmi > 1.0) {
         output_buf_df << first_token_id << ' ' << second_token_id << ' ' << log(sub_log_df_pmi) << std::endl;
         if (output_buf_df.tellg() > output_buf_size_) {
@@ -791,5 +789,5 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi() {
       }
     }
     ppmi_df_dict_ << output_buf_df.str();
-  }
+  }*/
 }

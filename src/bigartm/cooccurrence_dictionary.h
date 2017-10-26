@@ -37,7 +37,7 @@ struct PpmiCountersValues {
   int n_u_df;
 };
 
-// Data in Coccurrence batches are stored in cells
+// Data in Cooccurrence batches are stored in cells
 // Every cell refers to its first token id and holds info about tokens that co-occur with it
 // You need firstly to read cell header then records
 struct Cell {
@@ -48,9 +48,9 @@ struct Cell {
 };
 
 struct TokenInfo {
-  TokenInfo() : num_of_pairs_token_occured_in(0), num_of_documents_token_occured_in(0) { }
-  unsigned num_of_pairs_token_occured_in;
+  TokenInfo() : num_of_documents_token_occured_in(0), num_of_pairs_token_occured_in(0) { }
   unsigned num_of_documents_token_occured_in;
+  unsigned long long num_of_pairs_token_occured_in;
 };
 
 enum modality_label {
@@ -61,7 +61,7 @@ enum modality_label {
 class CooccurrenceDictionary;
 class CooccurrenceStatisticsHolder;
 class CooccurrenceBatch;
-class ResultingBufferOfCoccurrences;
+class ResultingBufferOfCooccurrences;
 
 class CooccurrenceDictionary {
  public:
@@ -154,7 +154,7 @@ struct CooccurrenceStatisticsHolder::SecondTokenAndCooccurrence {
 // Also it's a wrapper around a ifstream and ofstream of an external file
 class CooccurrenceBatch: private boost::noncopyable {
  friend class CooccurrenceDictionary;
- friend class ResultingBufferOfCoccurrences;
+ friend class ResultingBufferOfCooccurrences;
  public:
   void FormNewCell(const std::vector<CooccurrenceStatisticsHolder::FirstToken>::iterator& cooc_stat_node);
   void WriteCell();
@@ -171,10 +171,10 @@ class CooccurrenceBatch: private boost::noncopyable {
   long in_batch_offset_;
 };
 
-class ResultingBufferOfCoccurrences {
+class ResultingBufferOfCooccurrences {
  friend class CooccurrenceDictionary;
  private:
-  ResultingBufferOfCoccurrences(const int cooc_min_tf, const int cooc_min_df,
+  ResultingBufferOfCooccurrences(const int cooc_min_tf, const int cooc_min_df,
       const bool calculate_cooc_tf, const bool calculate_cooc_df,
       const bool calculate_ppmi_tf, const bool calculate_ppmi_df,
       const bool calculate_ppmi, const long long total_num_of_pairs_,
@@ -186,9 +186,8 @@ class ResultingBufferOfCoccurrences {
       const std::vector<TokenInfo>& token_statistics_);
   void OpenAndCheckInputFile(std::ifstream& ifile, const std::string& path);
   void OpenAndCheckOutputFile(std::ofstream& ofile, const std::string& path);
-  void AddInBuffer(const CooccurrenceBatch& batch);
   void MergeWithExistingCell(const CooccurrenceBatch& batch);
-  void WriteCoocFromBufferInFile(); // output file format (of variety of formats) is difined here
+  unsigned long long WriteCoocFromBufferInFile(); // output file format (of variety of formats) is difined here
   void CalculateAndWritePpmi();
 
   const int cooc_min_tf_;
@@ -211,5 +210,4 @@ class ResultingBufferOfCoccurrences {
   std::vector<TokenInfo> token_statistics_;
 
   Cell cell_;
-  std::unordered_map<int, PpmiCountersValues> ppmi_counters_;
 };
