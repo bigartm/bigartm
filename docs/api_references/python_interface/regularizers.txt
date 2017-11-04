@@ -43,6 +43,22 @@ See detailed description of regularizers :doc:`../../tutorials/regularizers_desc
    :members:
    :special-members: __init__
 
+.. autoclass:: BitermsPhiRegularizer
+   :members:
+   :special-members: __init__
+
+.. autoclass:: HierarchySparsingThetaRegularizer
+   :members:
+   :special-members: __init__
+
 .. autoclass:: TopicSegmentationPtdwRegularizer
+   :members:
+   :special-members: __init__
+
+.. autoclass:: SmoothTimeInTopicsPhiRegularizer
+   :members:
+   :special-members: __init__
+
+.. autoclass:: NetPlsaPhiRegularizer
    :members:
    :special-members: __init__

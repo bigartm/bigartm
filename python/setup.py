@@ -127,14 +127,14 @@ class BinaryDistribution(Distribution):
     """
     def has_ext_modules(self):
         return True
-        
+
     def is_pure(self):
         return False
 
 
 setup_kwargs = dict(
     name='bigartm',
-    version='0.8.3',
+    version='0.9.0',
     packages=find_packages(),
     install_requires=[
         'pandas',

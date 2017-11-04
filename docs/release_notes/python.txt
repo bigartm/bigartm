@@ -8,9 +8,14 @@ For this reason we recommend to review :doc:`messages`.
 For further reference about Python API refer to :doc:`/api_references/python_interface/artm_model`,
 `Q & A <https://github.com/bigartm/bigartm/wiki/Q&A>`_ or `tutorials <https://github.com/bigartm/bigartm-book/blob/master/README.md>`_.
 
-v0.8.4
+v0.9.0
 ------
 * Remove flag ``process_in_memory`` from ``artm.BatchVectorizer``, and rename ``model`` parameter into ``process_in_memory_model``. Passing this parameter with ``data_format='batches'`` will trigger in-memory processing of batches specified in ``batches`` parameter.
+* ``artm.BatchVectorizer`` now can receive sparse matrices (subclasses of ``scipy.sparse.spmatrix``) for in-memory batch processing.
+* Enable custom decorrelation by specifying separate decorrelation coefficients for every pair of topics into ``artm.DecorrelatorPhiRegularizer`` via optional parameter ``topic_pairs``.
+* Add new regularizers: ``artm.SmoothTimeInTopicsPhiRegularizer`` and ``artm.NetPlsaRegularizer``.
+* Add support for entire model saving and loading via ``dump_artm_model`` and ``load_artm_model`` methods of ``artm.ARTM``.
+
 
 v0.8.3
 ------
