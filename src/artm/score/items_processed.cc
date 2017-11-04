@@ -10,14 +10,14 @@
 namespace artm {
 namespace score {
 
-void ItemsProcessed::AppendScore(
-    const Batch& batch,
-    const artm::core::PhiMatrix& p_wt,
-    const artm::ProcessBatchesArgs& args,
-    Score* score) {
-  double token_weight = 0.0;
-  double token_weight_in_effect = 0.0;
-  for (auto& item : batch.item()) {
+void ItemsProcessed::AppendScore(const Batch& batch,
+                                 const artm::core::PhiMatrix& p_wt,
+                                 const artm::ProcessBatchesArgs& args,
+                                 Score* score) {
+  float token_weight = 0.0f;
+  float token_weight_in_effect = 0.0f;
+
+  for (const auto& item : batch.item()) {
     for (int token_index = 0; token_index < item.token_id_size(); token_index++) {
       int token_id = item.token_id(token_index);
       token_weight += item.token_weight(token_index);
@@ -25,10 +25,13 @@ void ItemsProcessed::AppendScore(
       const std::string& class_id = batch.class_id(token_id);
 
       // Check whether token is in effect (e.g. present in the model, and belongs to relevant modality)
-      if (!p_wt.has_token(::artm::core::Token(class_id, token)))
+      if (!p_wt.has_token(::artm::core::Token(class_id, token))) {
         continue;
-      if (args.class_id_size() > 0 && !::artm::core::is_member(class_id, args.class_id()))
+      }
+
+      if (args.class_id_size() > 0 && !::artm::core::is_member(class_id, args.class_id())) {
         continue;
+      }
       token_weight_in_effect += item.token_weight(token_index);
     }
   }

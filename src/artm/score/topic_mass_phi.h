@@ -6,13 +6,12 @@
    
    Parameters:
    - topic_name (names of topics from which top tokens need to be extracted)
-   - class_id (class_id to use, empty == DefaultClass)
+   - class_id (class_id to use, empty == all modalities)
    - eps
 
 */
 
-#ifndef SRC_ARTM_SCORE_TOPIC_MASS_PHI_H_
-#define SRC_ARTM_SCORE_TOPIC_MASS_PHI_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -40,5 +39,3 @@ class TopicMassPhi : public ScoreCalculatorInterface {
 
 }  // namespace score
 }  // namespace artm
-
-#endif  // SRC_ARTM_SCORE_TOPIC_MASS_PHI_H_

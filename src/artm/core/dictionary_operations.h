@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_DICTIONARY_OPERATIONS_H_
-#define SRC_ARTM_CORE_DICTIONARY_OPERATIONS_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -30,5 +29,3 @@ class DictionaryOperations {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_DICTIONARY_OPERATIONS_H_

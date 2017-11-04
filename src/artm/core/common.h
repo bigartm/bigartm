@@ -3,8 +3,7 @@
 // File 'common.h' contains constants, helpers and typedefs used across the entire library.
 // The goal is to keep this file as short as possible.
 
-#ifndef SRC_ARTM_CORE_COMMON_H_
-#define SRC_ARTM_CORE_COMMON_H_
+#pragma once
 
 #include <string>
 
@@ -47,5 +46,3 @@ std::string to_string(T value) {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_COMMON_H_

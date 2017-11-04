@@ -15,8 +15,7 @@
 
 */
 
-#ifndef SRC_ARTM_SCORE_TOP_TOKENS_H_
-#define SRC_ARTM_SCORE_TOP_TOKENS_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -44,5 +43,3 @@ class TopTokens : public ScoreCalculatorInterface {
 
 }  // namespace score
 }  // namespace artm
-
-#endif  // SRC_ARTM_SCORE_TOP_TOKENS_H_

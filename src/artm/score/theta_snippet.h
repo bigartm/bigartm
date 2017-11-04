@@ -11,8 +11,7 @@
 
 */
 
-#ifndef SRC_ARTM_SCORE_THETA_SNIPPET_H_
-#define SRC_ARTM_SCORE_THETA_SNIPPET_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -50,5 +49,3 @@ class ThetaSnippet : public ScoreCalculatorInterface {
 
 }  // namespace score
 }  // namespace artm
-
-#endif  // SRC_ARTM_SCORE_THETA_SNIPPET_H_

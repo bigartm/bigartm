@@ -27,19 +27,13 @@ Scroll further below for more OS-specific insructinos.
 
     # Step 1. Update and install dependencies
     apt-get --yes update
-    apt-get --yes install git
-    apt-get --yes install make
-    apt-get --yes install cmake
-    apt-get --yes install build-essential
-    apt-get --yes install libboost-all-dev
+    apt-get --yes install git make cmake build-essential libboost-all-dev
 
     # Step 2. Insall python packages
-    apt-get --yes install python-numpy
-    apt-get --yes install python-pandas
+    apt-get --yes install python-numpy python-pandas python-scipy
     wget https://bootstrap.pypa.io/get-pip.py
     python get-pip.py
-    pip install protobuf
-    pip install tqdm
+    pip install protobuf tqdm wheel
 
     # Step 3. Clone repository and build
     git clone --branch=stable https://github.com/bigartm/bigartm.git
@@ -51,6 +45,9 @@ Scroll further below for more OS-specific insructinos.
     # Step 4. Install BigARTM
     make install
     export ARTM_SHARED_LIBRARY=/usr/local/lib/libartm.so
+    
+    # Alternative step 4 - installing only the Python package
+    pip install python/bigartm*.whl
 
 Now you should be able to use BigARTM command line utility (try ``bigartm --help``),
 or run BigARTM from python, like this: ``import artm; print(artm.version()); print(artm.ARTM(num_topics=10).info)``.
@@ -113,8 +110,8 @@ Currently openSUSE require to install Boost from sources:
    brew install git cmake boost
 
 Step 2. Python packages
-----------------------------------------------------------------
-BigARTM require Python packages ``numpy``, ``pandas``, ``protobuf`` and ``tqdm``.
+-----------------------
+BigARTM require Python packages ``numpy``, ``scipy``, ``pandas``, ``protobuf`` and ``tqdm``.
 We recommend to install them with recent versino of ``pip``.
 
 If ``pip`` is not available, install system package ``python-pip`` or ``python3-pip``
@@ -132,8 +129,8 @@ Then install required python packages:
 
 .. code-block:: bash
 
-   sudo pip2 install -U numpy pandas protobuf==3.0.0 tqdm # Python 2
-   sudo pip3 install -U numpy pandas protobuf==3.0.0 tqdm # Python 3
+   sudo pip2 install -U numpy scipy pandas protobuf==3.0.0 tqdm wheel # Python 2
+   sudo pip3 install -U numpy scipy pandas protobuf==3.0.0 tqdm wheel # Python 3
 
 Step 3. Build and install BigARTM library
 -----------------------------------------
@@ -154,6 +151,12 @@ Example:
 .. code-block:: bash
 
    cmake -DPYTHON=python3 -DCMAKE_INSTALL_PREFIX=/opt/bigartm ..
+
+By default you may run just:
+
+.. code-block:: bash
+
+   cmake ..
 
 Now build and install the library:
 

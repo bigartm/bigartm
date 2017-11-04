@@ -11,41 +11,63 @@ from six.moves import zip
 from .wrapper import messages_pb2 as messages
 from .wrapper import constants
 
+from . import regularizers
+from . import scores
+
 
 REGULARIZERS = (
     (
         messages.SmoothSparseThetaConfig,
-        constants.RegularizerType_SmoothSparseTheta
+        constants.RegularizerType_SmoothSparseTheta,
+        regularizers.SmoothSparseThetaRegularizer,
     ), (
         messages.SmoothSparsePhiConfig,
-        constants.RegularizerType_SmoothSparsePhi
+        constants.RegularizerType_SmoothSparsePhi,
+        regularizers.SmoothSparsePhiRegularizer,
     ), (
         messages.DecorrelatorPhiConfig,
-        constants.RegularizerType_DecorrelatorPhi
+        constants.RegularizerType_DecorrelatorPhi,
+        regularizers.DecorrelatorPhiRegularizer,
     ), (
         messages.LabelRegularizationPhiConfig,
-        constants.RegularizerType_LabelRegularizationPhi
+        constants.RegularizerType_LabelRegularizationPhi,
+        regularizers.LabelRegularizationPhiRegularizer,
     ), (
         messages.SpecifiedSparsePhiConfig,
-        constants.RegularizerType_SpecifiedSparsePhi
+        constants.RegularizerType_SpecifiedSparsePhi,
+        regularizers.SpecifiedSparsePhiRegularizer,
     ), (
         messages.ImproveCoherencePhiConfig,
-        constants.RegularizerType_ImproveCoherencePhi
+        constants.RegularizerType_ImproveCoherencePhi,
+        regularizers.ImproveCoherencePhiRegularizer,
     ), (
         messages.SmoothPtdwConfig,
-        constants.RegularizerType_SmoothPtdw
+        constants.RegularizerType_SmoothPtdw,
+        regularizers.SmoothPtdwRegularizer,
     ), (
         messages.TopicSelectionThetaConfig,
-        constants.RegularizerType_TopicSelectionTheta
+        constants.RegularizerType_TopicSelectionTheta,
+        regularizers.TopicSelectionThetaRegularizer,
     ), (
         messages.BitermsPhiConfig,
-        constants.RegularizerType_BitermsPhi
+        constants.RegularizerType_BitermsPhi,
+        regularizers.BitermsPhiRegularizer,
     ), (
         messages.HierarchySparsingThetaConfig,
-        constants.RegularizerType_HierarchySparsingTheta
+        constants.RegularizerType_HierarchySparsingTheta,
+        regularizers.HierarchySparsingThetaRegularizer,
     ), (
         messages.TopicSegmentationPtdwConfig,
-        constants.RegularizerType_TopicSegmentationPtdw
+        constants.RegularizerType_TopicSegmentationPtdw,
+        regularizers.TopicSegmentationPtdwRegularizer,
+    ), (
+        messages.SmoothTimeInTopicsPhiConfig,
+        constants.RegularizerType_SmoothTimeInTopicsPhi,
+        regularizers.SmoothTimeInTopicsPhiRegularizer,
+    ), (
+        messages.NetPlsaPhiConfig,
+        constants.RegularizerType_NetPlsaPhi,
+        regularizers.NetPlsaPhiRegularizer,
     ),
 )
 
@@ -53,61 +75,72 @@ SCORES = (
     (
         constants.ScoreType_Perplexity,
         messages.PerplexityScoreConfig,
-        messages.PerplexityScore
+        messages.PerplexityScore,
+        scores.PerplexityScore,
     ), (
         constants.ScoreType_SparsityTheta,
         messages.SparsityThetaScoreConfig,
-        messages.SparsityThetaScore
+        messages.SparsityThetaScore,
+        scores.SparsityThetaScore,
     ), (
         constants.ScoreType_SparsityPhi,
         messages.SparsityPhiScoreConfig,
-        messages.SparsityPhiScore
+        messages.SparsityPhiScore,
+        scores.SparsityPhiScore,
     ), (
         constants.ScoreType_ItemsProcessed,
         messages.ItemsProcessedScoreConfig,
-        messages.ItemsProcessedScore
+        messages.ItemsProcessedScore,
+        scores.ItemsProcessedScore,
     ), (
         constants.ScoreType_TopTokens,
         messages.TopTokensScoreConfig,
-        messages.TopTokensScore
+        messages.TopTokensScore,
+        scores.TopTokensScore,
     ), (
         constants.ScoreType_ThetaSnippet,
         messages.ThetaSnippetScoreConfig,
-        messages.ThetaSnippetScore
+        messages.ThetaSnippetScore,
+        scores.ThetaSnippetScore,
     ), (
         constants.ScoreType_TopicKernel,
         messages.TopicKernelScoreConfig,
-        messages.TopicKernelScore
+        messages.TopicKernelScore,
+        scores.TopicKernelScore,
     ), (
         constants.ScoreType_TopicMassPhi,
         messages.TopicMassPhiScoreConfig,
-        messages.TopicMassPhiScore
+        messages.TopicMassPhiScore,
+        scores.TopicMassPhiScore,
+
     ), (
         constants.ScoreType_ClassPrecision,
         messages.ClassPrecisionScoreConfig,
-        messages.ClassPrecisionScore
+        messages.ClassPrecisionScore,
+        scores.ClassPrecisionScore,
     ), (
         constants.ScoreType_BackgroundTokensRatio,
         messages.BackgroundTokensRatioScoreConfig,
-        messages.BackgroundTokensRatioScore
+        messages.BackgroundTokensRatioScore,
+        scores.BackgroundTokensRatioScore,
     ),
 )
 
 
 def _regularizer_type(config):
-    for mcls, const in REGULARIZERS:
+    for mcls, const, _ in REGULARIZERS:
         if isinstance(config, mcls):
             return const
 
 
 def _score_type(config):
-    for const, ccls, _ in SCORES:
+    for const, ccls, _, _ in SCORES:
         if isinstance(config, ccls):
             return const
 
 
 def _score_data_func(score_data_type):
-    for const, _, mfunc in SCORES:
+    for const, _, mfunc, _ in SCORES:
         if score_data_type == const:
             return mfunc
 
@@ -306,6 +339,7 @@ class MasterComponent(object):
                           min_df_rate=None, max_df_rate=None,
                           min_tf=None, max_tf=None,
                           max_dictionary_size=None,
+                          recalculate_value=None,
                           args=None):
 
         """
@@ -320,6 +354,8 @@ class MasterComponent(object):
         :param float max_tf: max tf value to pass the filter
         :param float max_dictionary_size: give an easy option to limit dictionary size;
                                           rare tokens will be excluded until dictionary reaches given size.
+        :param bool recalculate_value: recalculate or not value field in dictionary after filtration\
+                                       according to new sun of tf values
         :param args: an instance of FilterDictionaryArgs
         """
         filter_args = messages.FilterDictionaryArgs()
@@ -345,6 +381,8 @@ class MasterComponent(object):
             filter_args.max_tf = max_tf
         if max_dictionary_size is not None:
             filter_args.max_dictionary_size = max_dictionary_size
+        if recalculate_value is not None:
+            filter_args.recalculate_value = recalculate_value
 
         self._lib.ArtmFilterDictionary(self.master_id, filter_args)
 
@@ -484,8 +522,8 @@ class MasterComponent(object):
         :param regularizer_name: list of names of Phi regularizers to use
         :type regularizer_name: list of str
         :param regularizer_tau: list of tau coefficients for Phi regularizers
-        :type regularizer_tau: list of double
-        :type regularizer_tau: list of double
+        :type regularizer_tau: list of floats
+        :type regularizer_tau: list of floats
         """
         args = messages.RegularizeModelArgs(pwt_source_name=pwt,
                                             nwt_source_name=nwt,
@@ -601,6 +639,7 @@ class MasterComponent(object):
         """
         :param str name: the name of the future score
         :param config: an instance of \*\*\*ScoreConfig
+        :param model_name: pwt or nwt model name
         """
         master_config = messages.MasterModelConfig()
         master_config.CopyFrom(self._config)
@@ -734,6 +773,10 @@ class MasterComponent(object):
         return phi_matrix_info, numpy_ndarray
 
     def export_model(self, model, filename):
+        """
+        :param str model: name of matrix in BigARTM
+        :param str filename: the name of file to save model into binary format
+        """
         args = messages.ExportModelArgs(model_name=model, file_name=filename)
         result = self._lib.ArtmExportModel(self.master_id, args)
 
@@ -873,3 +916,36 @@ class MasterComponent(object):
         else:
             self._lib.ArtmRequestTransformMasterModel(self.master_id, args)
             return None, None
+
+    def import_batches(self, batches=None):
+        """
+        :param list batches: list of BigARTM batches loaded into RAM
+        """
+        args = messages.ImportBatchesArgs()
+        if batches is not None:
+            args.ClearField('batch')
+            for batch in batches:
+                batch_ref = args.batch.add()
+                batch_ref.CopyFrom(batch)
+        self._lib.ArtmImportBatches(self.master_id, args)
+
+    def remove_batch(self, batch_id=None):
+        """
+        :param unicode batch_id: id of batch, loaded in RAM
+        """
+        if batch_id is not None:
+            self._lib.ArtmDisposeBatch(self.master_id, batch_id)
+
+    def export_score_tracker(self, filename):
+        """
+        :param str filename: the name of file to save score tracker into binary format
+        """
+        args = messages.ExportScoreTrackerArgs(file_name=filename)
+        result = self._lib.ArtmExportScoreTracker(self.master_id, args)
+
+    def import_score_tracker(self, filename):
+        """
+        :param str filename: the name of file to load score tracker from binary format
+        """
+        args = messages.ImportScoreTrackerArgs(file_name=filename)
+        result = self._lib.ArtmImportScoreTracker(self.master_id, args)

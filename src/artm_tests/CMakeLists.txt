@@ -14,6 +14,7 @@ set(SRC_LIST
 	master_model_test.cc
 	multiple_classes_test.cc
 	regularizers_test.cc
+	scores_test.cc
 	repeatable_result_test.cc
 	supcry_test.cc
 	template_manager_test.cc

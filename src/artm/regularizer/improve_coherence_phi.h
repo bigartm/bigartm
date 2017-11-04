@@ -18,8 +18,7 @@
 
 */
 
-#ifndef SRC_ARTM_REGULARIZER_IMPROVE_COHERENCE_PHI_H_
-#define SRC_ARTM_REGULARIZER_IMPROVE_COHERENCE_PHI_H_
+#pragma once
 
 #include <string>
 
@@ -31,7 +30,7 @@ namespace regularizer {
 class ImproveCoherencePhi : public RegularizerInterface {
  public:
   explicit ImproveCoherencePhi(const ImproveCoherencePhiConfig& config)
-    : config_(config) {}
+    : config_(config) { }
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,
@@ -48,5 +47,3 @@ class ImproveCoherencePhi : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_IMPROVE_COHERENCE_PHI_H_

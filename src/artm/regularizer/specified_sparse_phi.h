@@ -19,8 +19,7 @@
 
 */
 
-#ifndef SRC_ARTM_REGULARIZER_SPECIFIED_SPARSE_PHI_H_
-#define SRC_ARTM_REGULARIZER_SPECIFIED_SPARSE_PHI_H_
+#pragma once
 
 #include <string>
 
@@ -31,8 +30,7 @@ namespace regularizer {
 
 class SpecifiedSparsePhi : public RegularizerInterface {
  public:
-  explicit SpecifiedSparsePhi(const SpecifiedSparsePhiConfig& config)
-    : config_(config) {}
+  explicit SpecifiedSparsePhi(const SpecifiedSparsePhiConfig& config) : config_(config) { }
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,
@@ -49,5 +47,3 @@ class SpecifiedSparsePhi : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_SPECIFIED_SPARSE_PHI_H_

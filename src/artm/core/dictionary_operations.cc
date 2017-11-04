@@ -53,12 +53,14 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, const Dictio
     file_name += ".dict";
   }
 
-  if (boost::filesystem::exists(file_name))
+  if (boost::filesystem::exists(file_name)) {
     BOOST_THROW_EXCEPTION(DiskWriteException("File already exists: " + file_name));
+  }
 
   std::ofstream fout(file_name, std::ofstream::binary);
-  if (!fout.is_open())
+  if (!fout.is_open()) {
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to create file " + file_name));
+  }
 
   if (!dict.has_valid_cooc_state()) {
     BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
@@ -115,9 +117,10 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, const Dictio
             auto tf_iter = cooc_tfs_info->find(iter->first);
             auto df_iter = cooc_dfs_info->find(iter->first);
 
-            if (tf_iter == cooc_tfs_info->end() || df_iter == cooc_dfs_info->end())
+            if (tf_iter == cooc_tfs_info->end() || df_iter == cooc_dfs_info->end()) {
               BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
-              args.dictionary_name() + " has internal cooc tf/df inconsistence"));
+                  args.dictionary_name() + " has internal cooc tf/df inconsistence"));
+            }
 
             cooc_dict_data.add_cooc_tf(tf_iter->second);
             cooc_dict_data.add_cooc_df(df_iter->second);
@@ -148,13 +151,15 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, const Dictio
 std::shared_ptr<Dictionary> DictionaryOperations::Import(const ImportDictionaryArgs& args) {
   auto dictionary = std::make_shared<Dictionary>(Dictionary(args.dictionary_name()));
 
-  if (!boost::algorithm::ends_with(args.file_name(), ".dict"))
+  if (!boost::algorithm::ends_with(args.file_name(), ".dict")) {
     BOOST_THROW_EXCEPTION(CorruptedMessageException(
       "The importing dictionary should have .dict exstension, abort."));
+  }
 
   std::ifstream fin(args.file_name(), std::ifstream::binary);
-  if (!fin.is_open())
+  if (!fin.is_open()) {
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to open file " + args.file_name()));
+  }
 
   LOG(INFO) << "Importing dictionary " << args.dictionary_name() << " from " << args.file_name();
 
@@ -169,24 +174,29 @@ std::shared_ptr<Dictionary> DictionaryOperations::Import(const ImportDictionaryA
   while (!fin.eof()) {
     int length;
     fin.read(reinterpret_cast<char *>(&length), sizeof(length));
-    if (fin.eof())
+    if (fin.eof()) {
       break;
+    }
 
-    if (length <= 0)
+    if (length <= 0) {
       BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
+    }
 
     std::string buffer(length, '\0');
     fin.read(&buffer[0], length);
     ::artm::DictionaryData dict_data;
-    if (!dict_data.ParseFromArray(buffer.c_str(), length))
+    if (!dict_data.ParseFromArray(buffer.c_str(), length)) {
       BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
+    }
 
     // move data from DictionaryData into dictionary
-    if ((dict_data.token_size() > 0) == (dict_data.cooc_value_size() > 0))
+    if ((dict_data.token_size() > 0) == (dict_data.cooc_value_size() > 0)) {
       BOOST_THROW_EXCEPTION(CorruptedMessageException("Error while reading from " + args.file_name()));
+    }
 
     // part with main dictionary
     if (dict_data.token_size() > 0) {
+      dictionary->SetNumItems(dict_data.num_items_in_collection());
       for (int token_id = 0; token_id < dict_data.token_size(); ++token_id) {
         dictionary->AddEntry(DictionaryEntry(Token(dict_data.class_id(token_id), dict_data.token(token_id)),
           dict_data.token_value(token_id), dict_data.token_tf(token_id), dict_data.token_df(token_id)));
@@ -215,7 +225,10 @@ std::shared_ptr<Dictionary> DictionaryOperations::Import(const ImportDictionaryA
 // TokenValues is used only from Dictionary::Gather method
 class TokenValues {
  public:
-  TokenValues() : token_value(0.0f), token_tf(0.0f), token_df(0.0f) { }
+  TokenValues()
+      : token_value(0.0f)
+      , token_tf(0.0f)
+      , token_df(0.0f) { }
 
   float token_value;
   float token_tf;
@@ -230,16 +243,18 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
   std::vector<std::string> batches;
 
   if (args.has_data_path()) {
-    for (auto& batch_path : Helpers::ListAllBatches(args.data_path()))
+    for (const auto& batch_path : Helpers::ListAllBatches(args.data_path())) {
       batches.push_back(batch_path.string());
+    }
     LOG(INFO) << "Found " << batches.size() << " batches in '" << args.data_path() << "' folder";
   } else {
-    for (auto& batch : args.batch_path())
+    for (const auto& batch : args.batch_path()) {
       batches.push_back(batch);
+    }
   }
 
   int total_items_count = 0;
-  double sum_w_tf = 0.0;
+  std::unordered_map<ClassId, float> sum_w_tf;
   for (const std::string& batch_file : batches) {
     std::shared_ptr<Batch> batch_ptr = mem_batches.get(batch_file);
     try {
@@ -253,9 +268,10 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
       continue;
     }
 
-    if (batch_ptr->token_size() == 0)
+    if (batch_ptr->token_size() == 0) {
       BOOST_THROW_EXCEPTION(InvalidOperation(
       "Dictionary::Gather() can not process batches with empty Batch.token field."));
+    }
 
     const Batch& batch = *batch_ptr;
 
@@ -273,21 +289,26 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
         token_n_w[token_id] += token_weight;
         local_token_df[token_id] = true;
       }
-      for (int i = 0; i < batch.token_size(); ++i)
-        token_df[i] += local_token_df[i] ? 1.0 : 0.0;
+      for (int i = 0; i < batch.token_size(); ++i) {
+        token_df[i] += local_token_df[i] ? 1.0f : 0.0f;
+      }
     }
 
     for (int index = 0; index < batch.token_size(); ++index) {
       // unordered_map.operator[] creates element using default constructor if the key doesn't exist
-      TokenValues& token_info = token_freq_map[Token(batch.class_id(index), batch.token(index))];
+      ClassId token_class_id = batch.class_id(index);
+      TokenValues& token_info = token_freq_map[Token(token_class_id, batch.token(index))];
       token_info.token_tf += token_n_w[index];
-      sum_w_tf += token_n_w[index];
       token_info.token_df += token_df[index];
+
+      sum_w_tf[token_class_id] += token_n_w[index];
     }
   }
 
-  for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter)
-    iter->second.token_value = static_cast<float>(iter->second.token_tf / sum_w_tf);
+  for (auto& token_freq : token_freq_map) {
+    token_freq.second.token_value = static_cast<float>(token_freq.second.token_tf /
+                                                       sum_w_tf[token_freq.first.class_id]);
+  }
 
   LOG(INFO) << "Find " << token_freq_map.size()
     << " unique tokens in " << total_items_count << " items";
@@ -307,8 +328,9 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
       int token_id = 0;
       while (!vocab.eof()) {
         std::getline(vocab, str);
-        if (vocab.eof() && str.empty())
+        if (vocab.eof() && str.empty()) {
           break;
+        }
 
         boost::algorithm::trim(str);
         if (str.empty()) {
@@ -350,12 +372,13 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 
   if (!use_vocab_file) {  // fill dictionary in map order
     collection_vocab.clear();
-    for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter)
+    for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
       collection_vocab.push_back(iter->first);
+    }
   }
 
   dictionary->SetNumItems(total_items_count);
-  for (auto& token : collection_vocab) {
+  for (const auto& token : collection_vocab) {
     dictionary->AddEntry(DictionaryEntry(token, token_freq_map[token].token_value,
       token_freq_map[token].token_tf, token_freq_map[token].token_df));
   }
@@ -423,6 +446,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 
 std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryArgs& args, const Dictionary& dict) {
   auto dictionary = std::make_shared<Dictionary>(Dictionary(args.dictionary_target_name()));
+  dictionary->SetNumItems(dict.num_items());
 
   auto& src_entries = dict.entries();
   auto& dictionary_token_index = dict.token_index();
@@ -431,23 +455,39 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
   float size = static_cast<float>(dict.num_items());
   std::vector<bool> entries_mask(src_entries.size(), false);
   std::vector<float> df_values;
-  int accepted_tokens_count = 0;
+  double new_tf_normalizer = 0.0;
 
   for (int entry_index = 0; entry_index < (int64_t) src_entries.size(); entry_index++) {
     auto& entry = src_entries[entry_index];
     if (!args.has_class_id() || (entry.token().class_id == args.class_id())) {
-      if (args.has_min_df() && entry.token_df() < args.min_df()) continue;
-      if (args.has_max_df() && entry.token_df() >= args.max_df()) continue;
+      if (args.has_min_df() && entry.token_df() < args.min_df()) {
+        continue;
+      }
 
-      if (args.has_min_df_rate() && entry.token_df() < (args.min_df_rate() * size)) continue;
-      if (args.has_max_df_rate() && entry.token_df() >= (args.max_df_rate() * size)) continue;
+      if (args.has_max_df() && entry.token_df() >= args.max_df()) {
+        continue;
+      }
 
-      if (args.has_min_tf() && entry.token_tf() < args.min_tf()) continue;
-      if (args.has_max_tf() && entry.token_tf() >= args.max_tf()) continue;
+      if (args.has_min_df_rate() && entry.token_df() < (args.min_df_rate() * size)) {
+        continue;
+      }
+
+      if (args.has_max_df_rate() && entry.token_df() >= (args.max_df_rate() * size)) {
+        continue;
+      }
+
+      if (args.has_min_tf() && entry.token_tf() < args.min_tf()) {
+        continue;
+      }
+
+      if (args.has_max_tf() && entry.token_tf() >= args.max_tf()) {
+        continue;
+      }
     }
 
-    entries_mask[entry_index] = true;  // pass all filters
+    entries_mask[entry_index] = true;  // have passed all filters
     df_values.push_back(entry.token_df());
+    new_tf_normalizer += entry.token_tf();
   }
 
   // Handle max_dictionary_size
@@ -456,22 +496,32 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
     std::sort(df_values.begin(), df_values.end(), std::greater<float>());
     float min_df_due_to_size = df_values[args.max_dictionary_size()];
 
+
     for (int entry_index = 0; entry_index < (int64_t) src_entries.size();
             entry_index++) {
       auto& entry = src_entries[entry_index];
-      if (entry.token_df() <= min_df_due_to_size)
+      if (entry.token_df() <= min_df_due_to_size) {
         entries_mask[entry_index] = false;
+        new_tf_normalizer -= entry.token_tf();
+      }
     }
   }
 
+  int accepted_tokens_count = 0;
   for (int entry_index = 0; entry_index < (int64_t) src_entries.size(); entry_index++) {
-    if (!entries_mask[entry_index])
+    if (!entries_mask[entry_index]) {
       continue;
+    }
 
     // all filters were passed, add token to the new dictionary
     auto& entry = src_entries[entry_index];
-    accepted_tokens_count += 1;
-    dictionary->AddEntry(entry);
+    ++accepted_tokens_count;
+    if (args.recalculate_value()) {
+      float value = static_cast<float>(new_tf_normalizer > 0.0 ? entry.token_tf() / new_tf_normalizer : 0.0);
+      dictionary->AddEntry({ entry.token(), value, entry.token_tf(), entry.token_df() });
+    } else {
+      dictionary->AddEntry(entry);
+    }
 
     old_index_new_index.insert(std::pair<int, int>(dictionary_token_index.find(entry.token())->second,
       accepted_tokens_count - 1));
@@ -481,11 +531,15 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
 
   for (auto iter = cooc_values.begin(); iter != cooc_values.end(); ++iter) {
     auto first_index_iter = old_index_new_index.find(iter->first);
-    if (first_index_iter == old_index_new_index.end()) continue;
+    if (first_index_iter == old_index_new_index.end()) {
+      continue;
+    }
 
     for (auto cooc_iter = iter->second.begin(); cooc_iter != iter->second.end(); ++cooc_iter) {
       auto second_index_iter = old_index_new_index.find(cooc_iter->first);
-      if (second_index_iter == old_index_new_index.end()) continue;
+      if (second_index_iter == old_index_new_index.end()) {
+        continue;
+      }
 
       dictionary->AddCoocValue(first_index_iter->second, second_index_iter->second, cooc_iter->second);
       // ToDo(MelLain): deal with tf/df

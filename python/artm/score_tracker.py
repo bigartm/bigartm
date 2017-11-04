@@ -66,6 +66,13 @@ def _get_score(score_name, master, field_attrs, last=False):
                 zip(score_arrays, topics)} for score_arrays, topics in score_topic_list_list])  # noqa
             return score_list_dict[-1] if last else score_list_dict
 
+        elif field_attrs[1] == 'repeated' and field_attrs[2] == 'struct':
+            score_list_dict = [{__getattr(s, field_attrs[3]): s for s in score_list}
+                               for score_list in score_list_list]  # noqa
+            return score_list_dict[-1] if last else score_list_dict
+        else:
+            raise ValueError('Unkown type of score tracker field')
+
 
 def _set_properties(class_ref, attr_data):
     for name, params in iteritems(attr_data):
@@ -128,16 +135,21 @@ class PerplexityScoreTracker(BaseScoreTracker):
         :Properties:
         * Note: every field is a list of info about score on all synchronizations.
         * value - values of perplexity.
-        * raw - raw values in formula for perplexity.
-        * normalizer - normalizer values in formula for perplexity.
-        * zero_tokens - number of zero p(w|d) = sum_t p(w|t) p(t|d).
+        * raw - raw values in formula for perplexity (in case of one class id).
+        * normalizer - normalizer values in formula for perplexity  (in case of one class id).
+        * zero_tokens - number of zero p(w|d) = sum_t p(w|t) p(t|d)  (in case of one class id).
+        * class_id_info - array of structures, each structure contains raw, normalizer\
+                          zero_tokens and class_id name (in case of several class ids).
         * Note: every field has a version with prefix 'last_', means retrieving only\
           info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
 
 _set_properties(PerplexityScoreTracker, {'value': {}, 'raw': {}, 'normalizer': {},
-                                         'zero_tokens': {'proto_name': 'zero_words'}})
+                                         'zero_tokens': {'proto_name': 'zero_words'},
+                                         'class_id_info': {'proto_qualifier': 'repeated',
+                                                           'proto_type': 'struct',
+                                                           'key_field_name': 'class_id'}})
 
 
 class ItemsProcessedScoreTracker(BaseScoreTracker):

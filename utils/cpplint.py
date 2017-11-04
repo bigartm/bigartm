@@ -1707,6 +1707,10 @@ def CheckForHeaderGuard(filename, clean_lines, error):
   for linenum, line in enumerate(raw_lines):
     linesplit = line.split()
     if len(linesplit) >= 2:
+      # MelLain (great-mel@yandex.ru) fix to find #pragma once
+      if len(linesplit) == 2 and linesplit[0] == '#pragma' and linesplit[1] == "once":
+        return
+
       # find the first occurrence of #ifndef and #define, save arg
       if not ifndef and linesplit[0] == '#ifndef':
         # set ifndef to the header guard presented on the #ifndef line.
@@ -1721,7 +1725,7 @@ def CheckForHeaderGuard(filename, clean_lines, error):
 
   if not ifndef or not define or ifndef != define:
     error(filename, 0, 'build/header_guard', 5,
-          'No #ifndef header guard found, suggested CPP variable is: %s' %
+          'No #pragma once or #ifndef header guard found, suggested CPP variable is: %s' %
           cppvar)
     return
 

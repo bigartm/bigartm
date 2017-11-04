@@ -1,5 +1,5 @@
 7. Attach Model and Custom Phi Initialization
-=======
+=============================================
 
 Detailed description of all parameters and methods of BigARTM Python API classes can be found in :doc:`../../api_references/python_interface`.
 
@@ -62,9 +62,7 @@ Now let's assume that you have created ``pwt_new`` matrix with the same size, fi
 
    .. code-block:: python
 
-      for tok in xrange(num_tokens):
-           for top in xrange(num_topics):
-      	        phi_ref[tok, top] = pwt_new[tok, top]  # CORRECT!
+      numpy.copyto(phi_ref, new_phi.values)  # CORRECT!
         
       phi_ref = pwt_new  # NO!
 

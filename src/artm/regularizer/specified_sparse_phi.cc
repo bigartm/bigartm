@@ -15,9 +15,9 @@ namespace artm {
 namespace regularizer {
 
 struct Comparator {
-    bool operator() (std::pair<int, float> left, std::pair<int, float> right) {
-        return left.second > right.second;
-    }
+  bool operator() (std::pair<int, float> left, std::pair<int, float> right) {
+    return left.second > right.second;
+  }
 };
 
 bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
@@ -28,21 +28,26 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   const int token_size = n_wt.token_size();
 
   std::vector<bool> topics_to_regularize;
-  if (config_.topic_name().size() == 0)
+  if (config_.topic_name().size() == 0) {
     topics_to_regularize.assign(topic_size, true);
-  else
+  } else {
     topics_to_regularize = core::is_member(n_wt.topic_name(), config_.topic_name());
+  }
 
-  // proceed the regularization
-  bool mode_topics = config_.mode() == artm::SpecifiedSparsePhiConfig_SparseMode_SparseTopics;
+  const  bool mode_topics = config_.mode() == artm::SpecifiedSparsePhiConfig_SparseMode_SparseTopics;
   const int global_end = mode_topics ? topic_size : token_size;
   const int local_end = !mode_topics ? topic_size : token_size;
 
+  // proceed the regularization
   for (int global_index = 0; global_index < global_end; ++global_index) {
     if (mode_topics) {
-      if (!topics_to_regularize[global_index]) continue;
+      if (!topics_to_regularize[global_index]) {
+        continue;
+      }
     } else {
-      if (n_wt.token(global_index).class_id != config_.class_id()) continue;
+      if (n_wt.token(global_index).class_id != config_.class_id()) {
+        continue;
+      }
     }
 
     google::protobuf::RepeatedField<int> indices_of_max;
@@ -54,12 +59,16 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
 
     for (int local_index = 0; local_index < local_end; ++local_index) {
       if (mode_topics) {
-        if (n_wt.token(local_index).class_id != config_.class_id()) continue;
+        if (n_wt.token(local_index).class_id != config_.class_id()) {
+          continue;
+        }
       } else {
-        if (!topics_to_regularize[local_index]) continue;
+        if (!topics_to_regularize[local_index]) {
+          continue;
+        }
       }
 
-      auto value = std::pair<int, float>(local_index,
+      const auto value = std::pair<int, float>(local_index,
           mode_topics ? n_wt.get(local_index, global_index) : n_wt.get(global_index, local_index));
       normalizer += value.second;
 

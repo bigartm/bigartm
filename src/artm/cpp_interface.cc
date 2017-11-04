@@ -110,8 +110,9 @@ std::shared_ptr<ResultT> ArtmRequestShared(int master_id, const ArgsT& args, Fun
 }
 
 void ArtmRequestMatrix(int no_rows, int no_cols, Matrix* matrix) {
-  if (matrix == nullptr)
+  if (matrix == nullptr) {
     return;
+  }
 
   matrix->resize(no_rows, no_cols);
 
@@ -145,8 +146,9 @@ MasterModel::MasterModel(int id) : id_(id), is_weak_ref_(true) {
 }
 
 MasterModel::~MasterModel() {
-  if (is_weak_ref_)
+  if (is_weak_ref_) {
     return;
+  }
 
   ArtmDisposeMasterComponent(id_);
 }
@@ -237,6 +239,14 @@ void MasterModel::ImportModel(const ImportModelArgs& args) {
   ArtmExecute(id_, args, ArtmImportModel);
 }
 
+void MasterModel::ExportScoreTracker(const ExportScoreTrackerArgs& args) {
+  ArtmExecute(id_, args, ArtmExportScoreTracker);
+}
+
+void MasterModel::ImportScoreTracker(const ImportScoreTrackerArgs& args) {
+  ArtmExecute(id_, args, ArtmImportScoreTracker);
+}
+
 void MasterModel::CreateDictionary(const DictionaryData& args) {
   ArtmExecute(id_, args, ArtmCreateDictionary);
 }
@@ -305,8 +315,9 @@ Matrix::Matrix() : no_rows_(0), no_columns_(0), data_() {
 }
 
 Matrix::Matrix(int no_rows, int no_columns) : no_rows_(no_rows), no_columns_(no_columns), data_() {
-  if (no_rows <= 0 || no_columns <= 0)
+  if (no_rows <= 0 || no_columns <= 0) {
     throw ArgumentOutOfRangeException("no_rows and no_columns must be positive");
+  }
 
   data_.resize(static_cast<int64_t>(no_rows_) * no_columns_);
 }
@@ -322,8 +333,9 @@ const float& Matrix::operator() (int index_row, int index_col) const {
 void Matrix::resize(int no_rows, int no_columns) {
   no_rows_ = no_rows;
   no_columns_ = no_columns;
-  if (no_rows > 0 && no_columns > 0)
+  if (no_rows > 0 && no_columns > 0) {
     data_.resize(static_cast<int64_t>(no_rows_) * no_columns_);
+  }
 }
 
 int Matrix::no_rows() const { return no_rows_; }

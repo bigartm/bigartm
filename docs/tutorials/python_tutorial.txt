@@ -1,5 +1,5 @@
 Python Tutorial
-===============================
+===============
 
 For more detailes about ``artm.LDA``, ``artm.ARTM``, ``artm.BatchVectorizer`` and ``artm.Dictionary`` see :doc:`../api_references/python_interface/` and :doc:`python_userguide/index`.
 

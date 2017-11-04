@@ -1,5 +1,5 @@
 1. Loading Data: BatchVectorizer and Dictionary
-=======
+===============================================
 
 Detailed description of all parameters and methods of BigARTM Python API classes can be found in :doc:`../../api_references/python_interface`.
 
@@ -66,7 +66,7 @@ In this case the token order in the dictionary (and in further :math:`\Phi` matr
 
 Take into consideration the fact that library will ignore any token from batches, that was not presented into vacab file, if you used it. ``Dictionary`` contains a lot of useful information about the collection. For example, each unique token in it has the corresponding variable - value. When BigARTM gathers the dictionary, it puts the relative frequency of this token in this variable. You can read about the use-cases of this variable in further sections.
 
-Well, now you have a dictionary. It can be saved on the dick to prevent it's re-creation. You can save it in the binary format:
+Well, now you have a dictionary. It can be saved on the disk to prevent it's re-creation. You can save it in the binary format:
 
 .. code-block:: python
 

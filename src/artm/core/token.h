@@ -1,7 +1,6 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_TOKEN_H_
-#define SRC_ARTM_CORE_TOKEN_H_
+#pragma once
 
 #include <string>
 
@@ -12,6 +11,7 @@ namespace core {
 
 typedef std::string ClassId;
 const std::string DefaultClass = "@default_class";
+const std::string DocumentsClass = "@documents_class";
 
 // Token is a pair of keyword and its class_id (also known as tokens' modality).
 // Pay attention to the order of the arguments in the constructor.
@@ -19,8 +19,8 @@ const std::string DefaultClass = "@default_class";
 struct Token {
  public:
   Token(const ClassId& _class_id, const std::string& _keyword)
-      : keyword(_keyword), class_id(_class_id),
-        hash_(calcHash(_class_id, _keyword)) {}
+      : keyword(_keyword), class_id(_class_id)
+      , hash_(calcHash(_class_id, _keyword)) { }
 
   Token& operator=(const Token &rhs) {
     if (this != &rhs) {
@@ -33,13 +33,16 @@ struct Token {
   }
 
   bool operator<(const Token& token) const {
-    if (keyword != token.keyword)
+    if (keyword != token.keyword) {
       return keyword < token.keyword;
+    }
     return class_id < token.class_id;
   }
 
   bool operator==(const Token& token) const {
-    if (keyword == token.keyword && class_id == token.class_id) return true;
+    if (keyword == token.keyword && class_id == token.class_id) {
+      return true;
+    }
     return false;
   }
 
@@ -70,5 +73,3 @@ struct TokenHasher {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_TOKEN_H_

@@ -1,5 +1,5 @@
 Source code
-=========================
+===========
 
 BigARTM is hosted in public GitHub repository:
 

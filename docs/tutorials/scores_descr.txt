@@ -1,12 +1,12 @@
 Scores Description
-=========
+==================
 
 This page describes the scores, that have already been implemented in the core of BigARTM library. Detailed description of parameters of the scores in the Python API can be seen in :doc:`../api_references/python_interface/scores`, and their return values in :doc:`../api_references/python_interface/score_tracker`.
 
 Examples of the usage of the scores can be found in :doc:`python_tutorial` and in :doc:`python_userguide/index`.
 
 Perplexity
--------------
+----------
 
 * **Description:**
 
@@ -24,7 +24,7 @@ This is one of the main scores as it indicates the level and speed of convergenc
 
 
 Sparsity Phi
--------------
+------------
 
 * **Description:**
 
@@ -36,7 +36,7 @@ One of the goals of regularization is to achive a sparse structure of :math:`\Ph
 
 
 Sparsity Theta
--------------
+--------------
 
 * **Description:**
 
@@ -48,11 +48,11 @@ One of the goals of regularization is to achive a sparse structure of :math:`\Th
 
 
 Top Tokens
--------------
+----------
 
 * **Description:**
 
-Return ``k`` (= requested number of top tokens) most probable tokens in each requested topic. If the number of tokens with :math:`p(w|t) > 0` in topic is less than ``k`` then only these tokens will be returned. Also the score can compute the coherence of top tokens in the topic using coocurancy dictionary (see :doc:`python_userguide/coherence` for detailes of usage from Python).
+Return ``k`` (= requested number of top tokens) most probable tokens in each requested topic. If the number of tokens with :math:`p(w|t) > 0` in topic is less than ``k`` then only these tokens will be returned. Also the score can compute the coherence of top tokens in the topic using co-occurrence dictionary (see :doc:`python_userguide/coherence` for detailes of usage from Python).
 
 The coherence formula for topic is defined as
 
@@ -64,14 +64,14 @@ where value is some pairwise information about tokens in collection dictionary, 
 
 Checking top tokens is one of the main ways of topic quality verification. But in practice the interpretation of top tokens not always correlated with the real sence of topic and it is useful to check the documents assigned to it.
 
-Coherence is one of the best measures for automatic inpretability checking. Note, that different types of ``value`` will lead to different types of coherence.
+Coherence is one of the best measures for automatic interpretability checking. Note, that different types of ``value`` will lead to different types of coherence.
 
 Topic Kernel Scores
--------------
+-------------------
 
 * **Description:**
 
-This score was created as one more way to control the inpretability of the topics. Let's define the `topic kernel` as :math:`W_t = \big\{ w \in W | p(t|w) > \mathrm{threashold}  \big\}`, and determine several measures, based on it:
+This score was created as one more way to control the interpretability of the topics. Let's define the `topic kernel` as :math:`W_t = \big\{ w \in W | p(t|w) > \mathrm{threashold}  \big\}`, and determine several measures, based on it:
 
   - :math:`\sum_{w \in W_t} p(w|t)` - the `purity` of the topic (higher values corresponds better topics);
   - :math:`\cfrac{1}{|W_t|}\sum_{w \in W_t} p(t|w)` - `contrast` of the topic (higher values corresponds better topics);
@@ -83,11 +83,11 @@ Also it can compute coherence topic kernels. The coherence formula is the same a
 
 * **Usage:**
 
-Average purity and contrast can be used as a measure of topics inpretability and difference. ``threahold`` parameter is recommended to be set to 0.5 and higher, it should be set once and fixed.
+Average purity and contrast can be used as a measure of topics interpretability and difference. ``threahold`` parameter is recommended to be set to 0.5 and higher, it should be set once and fixed.
 
 
 Topic Mass
--------------
+----------
 
 * **Description:**
 
@@ -98,21 +98,21 @@ Computes the :math:`n_t` values for each requested topic in :math:`\Phi` matrix.
 Can be useful in external (self written in Python) scores and regularizers, that requires :math:`n_t`. Much more faster than :math:`\Phi` extraction and normalization.
 
 
-Class Presicion
--------------
+Class Precision
+---------------
 
 ToDo(sashafrey)
 
 
 Background Tokens Ratio
--------------
+-----------------------
 
 * **Description:**
 
 Computes KL-divergence between :math:`p(t)` and :math:`p(t|w)` distributions :math:`\mathrm{KL}(p(t) || p(t|w))` (or via versa) for each token and counts the part of tokens that have this value greater than given ``delta``. Such tokens are considered to be background ones. Also returns all these tokens, if it was requested.
 
 Items Processed (technical)
--------------
+---------------------------
 
 * **Description:**
 
@@ -120,7 +120,7 @@ Computes the number of documents, that was used for model training since the sco
 
 
 Theta Snippet (technical)
--------------
+-------------------------
 
 * **Description:**
 

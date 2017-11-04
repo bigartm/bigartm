@@ -1,5 +1,5 @@
 Python code on Windows
-=========================
+======================
 
 * Install Python 2.7 (this step is already done if you are following the instructions above),
 

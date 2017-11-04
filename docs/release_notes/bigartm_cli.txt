@@ -1,6 +1,17 @@
 Changes in BigARTM CLI
 ======================
 
+v0.9.0
+------
+
+* added option ``--cooc-window`` to set width of window in which tokens are considered to occurr together.
+* added option ``--cooc-min-tf`` to set minimal value of absolute co-occurrence of tokens.
+* added option ``--cooc-min-df`` to set minimal value of documental frequency of token co-occurrerence.
+* added option ``--write-cooc-tf`` to set path of output file with absolute co-occurrences.
+* added option ``--write-cooc-df`` to set path of output file with documental frequency of token co-occurrences.
+* added option ``--write-ppmi-tf`` to set path of output file with ppmi's calculated on base of absolute co-occurrences.
+* added option ``--write-ppmi-df`` to set path of output file with ppmi's calculated on base of documental frequences of token co-occurrences.
+
 v0.8.2
 ------
 

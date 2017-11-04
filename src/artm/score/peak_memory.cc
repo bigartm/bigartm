@@ -28,6 +28,7 @@ std::shared_ptr<Score> PeakMemory::CalculateScore(const artm::core::PhiMatrix& p
   GetProcessMemoryInfo( GetCurrentProcess( ), &info, sizeof(info) );
   peak_memory_score->set_value((size_t)info.PeakWorkingSetSize);
 #else
+  // ToDo(ofrei): find and use some *nix tool for memory usage calculation
   peak_memory_score->set_value(0);
 #endif
 

@@ -1,9 +1,9 @@
 4. Multimodal Topic Models
-=======
+==========================
 
 Detailed description of all parameters and methods of BigARTM Python API classes can be found in :doc:`../../api_references/python_interface`.
 
-Now let's move to more complex cases. In last section цу mentioned the term `modality`. It's something that corresponds to each token. We prefer to think about it as about the type of token, For instance, some tokens form the main text in the document, some form the title, some from names of the authors, some from tags etc.
+Now let's move to more complex cases. In last section we mentioned the term `modality`. It's something that corresponds to each token. We prefer to think about it as about the type of token, For instance, some tokens form the main text in the document, some form the title, some from names of the authors, some from tags etc.
 
 In BigARTM each unique token has a modality. It is denoted as ``class_id`` (don't confuse with the classes in the task of classification). You can specify the ``class_id`` of the token, or the library will set it to ``@default_class``. This class id denotes the type of usual tokens, the type be default.
 
