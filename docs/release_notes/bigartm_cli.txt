@@ -1,7 +1,7 @@
 Changes in BigARTM CLI
 ======================
 
-v0.8.4
+v0.9.0
 ------
 
 * added option ``--cooc-window`` to set width of window in which tokens are considered to occurr together.

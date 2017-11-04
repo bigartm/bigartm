@@ -29,7 +29,7 @@ You may also get more information about builtin regularizers by typing ``bigartm
 
 .. code-block:: bash
 
-    BigARTM v0.8.3 - library for advanced topic modeling (http://bigartm.org):
+    BigARTM v0.9.0 - library for advanced topic modeling (http://bigartm.org):
 
     Input data:
       -c [ --read-vw-corpus ] arg           Raw corpus in Vowpal Wabbit format
