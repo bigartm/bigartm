@@ -144,7 +144,9 @@ Next step is to run ``cmake``. The following options are available.
 
 * ``-DPYTHON=python3`` - to use Python 3 instead of Python 2;
 * ``-DCMAKE_INSTALL_PREFIX=xxx`` - for custom install location instead of default ``/usr/local``;
-* ``-DBoost_USE_STATIC_LIBS=ON`` — required on openSUSE.
+* ``-DBoost_USE_STATIC_LIBS=ON`` -- required on openSUSE;
+* ``-DBUILD_BIGARTM_CLI_STATIC=OFF`` -- to use shared versions of Boost, C and C++ libraries for ``bigartm`` executable.
+
 
 Example:
 
