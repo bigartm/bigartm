@@ -138,8 +138,10 @@ class PerplexityScoreTracker(BaseScoreTracker):
         * raw - raw values in formula for perplexity (in case of one class id).
         * normalizer - normalizer values in formula for perplexity  (in case of one class id).
         * zero_tokens - number of zero p(w|d) = sum_t p(w|t) p(t|d)  (in case of one class id).
-        * class_id_info - array of structures, each structure contains raw, normalizer\
-                          zero_tokens and class_id name (in case of several class ids).
+        * transaction_type_info - array of structures, each structure contains raw, normalizer\
+                                  zero_tokens and transaction_type name\
+                                  (in case of several transaction types)\ Note, that in the case\
+                                  of non-transaction model transaction type is equal to class id.
         * Note: every field has a version with prefix 'last_', means retrieving only\
           info about the last synchronization.
         """
@@ -147,9 +149,9 @@ class PerplexityScoreTracker(BaseScoreTracker):
 
 _set_properties(PerplexityScoreTracker, {'value': {}, 'raw': {}, 'normalizer': {},
                                          'zero_tokens': {'proto_name': 'zero_words'},
-                                         'class_id_info': {'proto_qualifier': 'repeated',
-                                                           'proto_type': 'struct',
-                                                           'key_field_name': 'class_id'}})
+                                         'transaction_type_info': {'proto_qualifier': 'repeated',
+                                                                   'proto_type': 'struct',
+                                                                   'key_field_name': 'transaction_type'}})
 
 
 class ItemsProcessedScoreTracker(BaseScoreTracker):

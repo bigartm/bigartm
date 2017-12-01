@@ -27,7 +27,8 @@ artm::Batch Helpers::GenerateBatch(int nTokens, int nDocs, std::string class1, s
     artm::Item* item = batch.add_item();
     item->set_id(iDoc);
     for (int iToken = 0; iToken < nTokens; ++iToken) {
-      item->add_token_id(iToken);
+      item->add_transaction_token_id(iToken);
+      item->add_transaction_start_index(item->transaction_start_index_size());
       int background_count = (iToken > 40) ? (1 + rand() % 5) : 0;  // NOLINT
       int topical_count = ((iToken < 40) && ((iToken % 10) == (iDoc % 10))) ? 10 : 0;
       item->add_token_weight(static_cast<float>(background_count + topical_count));
@@ -58,7 +59,7 @@ void Helpers::ConfigurePerplexityScore(std::string score_name,
   ::artm::ScoreConfig score_config;
   ::artm::PerplexityScoreConfig perplexity_config;
   for (const auto& s : class_ids) {
-    perplexity_config.add_class_id(s);
+    perplexity_config.add_transaction_type(s);
   }
   score_config.set_config(perplexity_config.SerializeAsString());
   score_config.set_type(::artm::ScoreType_Perplexity);
@@ -115,7 +116,8 @@ TestMother::GenerateBatches(int batches_size, int nTokens, ::artm::DictionaryDat
     for (int iToken = 0; iToken < nTokens; ++iToken) {
       const int somewhat_random = iToken + iBatch + (iToken + 1)*(iBatch + 1);
       if (iToken == 0 || somewhat_random % 3 == 0) {  // NOLINT
-        item->add_token_id(iToken);
+        item->add_transaction_token_id(iToken);
+        item->add_transaction_start_index(item->transaction_start_index_size());
         item->add_token_weight(1.0);
       }
     }

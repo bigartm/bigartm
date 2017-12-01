@@ -38,6 +38,12 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   const int global_end = mode_topics ? topic_size : token_size;
   const int local_end = !mode_topics ? topic_size : token_size;
 
+  const auto& class_id = config_.class_id();
+  auto tt = ::artm::core::TransactionType(class_id);
+  if (config_.has_transaction_type()) {
+    tt = artm::core::TransactionType(config_.transaction_type());
+  }
+
   // proceed the regularization
   for (int global_index = 0; global_index < global_end; ++global_index) {
     if (mode_topics) {
@@ -45,7 +51,8 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
         continue;
       }
     } else {
-      if (n_wt.token(global_index).class_id != config_.class_id()) {
+      const auto& token = n_wt.token(global_index);
+      if (token.class_id != class_id || token.transaction_type != tt) {
         continue;
       }
     }
@@ -59,7 +66,8 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
 
     for (int local_index = 0; local_index < local_end; ++local_index) {
       if (mode_topics) {
-        if (n_wt.token(local_index).class_id != config_.class_id()) {
+        const auto& token = n_wt.token(local_index);
+        if (token.class_id != class_id || token.transaction_type != tt) {
           continue;
         }
       } else {
@@ -132,6 +140,13 @@ google::protobuf::RepeatedPtrField<std::string> SpecifiedSparsePhi::class_ids_to
   google::protobuf::RepeatedPtrField<std::string> retval;
   std::string* ptr = retval.Add();
   *ptr = config_.class_id();
+  return retval;
+}
+
+google::protobuf::RepeatedPtrField<std::string> SpecifiedSparsePhi::transaction_types_to_regularize() {
+  google::protobuf::RepeatedPtrField<std::string> retval;
+  std::string* ptr = retval.Add();
+  *ptr = config_.has_transaction_type() ? config_.transaction_type() : config_.class_id();
   return retval;
 }
 

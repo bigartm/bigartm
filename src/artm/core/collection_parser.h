@@ -6,6 +6,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -51,7 +52,7 @@ class CollectionParser : boost::noncopyable {
     int items_count;
   };
 
-  typedef std::map<int, CollectionParserTokenInfo> TokenMap;
+  typedef std::unordered_map<int, CollectionParserTokenInfo> TokenMap;
 
   class BatchCollector;
 

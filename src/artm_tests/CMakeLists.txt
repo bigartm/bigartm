@@ -21,6 +21,7 @@ set(SRC_LIST
 	test_mother.cc
 	thread_safe_holder_test.cc
 	topic_seg_test.cc
+	transactions_test.cc
 	${3RD_PARTY_DIR}/gtest/fused-src/gtest/gtest_main.cc
 	${3RD_PARTY_DIR}/gtest/fused-src/gtest/gtest-all.cc
 )

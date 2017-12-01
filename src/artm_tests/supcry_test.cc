@@ -22,11 +22,15 @@ void GenerateBatches(std::vector< ::artm::Batch>* batches, ::artm::DictionaryDat
   int nTokens = 40;
 
   // Generate global dictionary
+  std::vector<std::string> tokens;
   for (int i = 0; i < nTokens; i++) {
     std::stringstream str;
     str << "token" << i;
+
+    auto token = str.str();
+    tokens.push_back(token);
     if (dictionary != nullptr) {
-      dictionary->add_token(str.str());
+      dictionary->add_token(token);
     }
   }
 
@@ -36,13 +40,18 @@ void GenerateBatches(std::vector< ::artm::Batch>* batches, ::artm::DictionaryDat
     ::artm::Batch batch;
     batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
 
+    for (const auto& token : tokens) {
+      batch.add_token(token);
+    }
+
     for (int iItem = 0; iItem < nItemsPerBatch; ++iItem) {
       artm::Item* item = batch.add_item();
       item->set_id(itemId++);
       for (int iToken = 0; iToken < nTokens; ++iToken) {
         // Add each third token (randomly)
         if (rand() % 3 == 0) {  // NOLINT
-          item->add_token_id(iToken);
+          item->add_transaction_token_id(iToken);
+          item->add_transaction_start_index(item->transaction_start_index_size());
           item->add_token_weight(1.0);
         }
       }

@@ -12,7 +12,9 @@
 #include "artm_tests/test_mother.h"
 #include "artm_tests/api.h"
 
-void runBasicTest(bool skip_batch_dict) {
+// To run this particular test:
+// artm_tests.exe --gtest_filter=MasterModel.Basic
+TEST(MasterModel, Basic) {
   // Configure MasterModel
   ::artm::MasterModelConfig config;
   config.set_num_processors(2);
@@ -59,13 +61,6 @@ void runBasicTest(bool skip_batch_dict) {
   const int nTokens = 30;
   auto batches = ::artm::test::TestMother::GenerateBatches(nBatches, nTokens, &dictionary_data);
 
-  if (skip_batch_dict) {
-    for (auto& batch : batches) {
-      batch->clear_class_id();
-      batch->clear_token();  // cast tokens away!!!
-    }
-  }
-
   ::artm::ImportBatchesArgs import_batches_args;
   ::artm::GatherDictionaryArgs gather_args;
   for (auto& batch : batches) {
@@ -73,16 +68,6 @@ void runBasicTest(bool skip_batch_dict) {
     gather_args.add_batch_path(batch->id());
   }
   master_model.ImportBatches(import_batches_args);
-
-  if (skip_batch_dict) {
-    try {
-      gather_args.set_dictionary_target_name("tmp_dict");
-      master_model.GatherDictionary(gather_args);
-      ASSERT_TRUE(false);  // exception expected because batches have no tokens
-    }
-    catch (const ::artm::InvalidOperationException& ex) {
-    }
-  }
 
   // Create dictionary
   dictionary_data.set_name("dictionary");
@@ -161,18 +146,6 @@ void runBasicTest(bool skip_batch_dict) {
     ASSERT_EQ(theta.item_weights_size(), nBatches);
     ASSERT_EQ(theta.item_weights(0).value_size(), config.topic_name_size());
   }
-}
-
-// To run this particular test:
-// artm_tests.exe --gtest_filter=MasterModel.Basic
-TEST(MasterModel, Basic) {
-  runBasicTest(/*skip_batch_dict=*/ false);
-}
-
-// To run this particular test:
-// artm_tests.exe --gtest_filter=MasterModel.SkipBatchDict
-TEST(MasterModel, SkipBatchDict) {
-  runBasicTest(/*skip_batch_dict=*/ true);
 }
 
 // To run this particular test:

@@ -33,6 +33,16 @@ bool BitermsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     use_all_classes = true;
   }
 
+  bool use_all_tts = false;
+  if (config_.transaction_type_size() == 0) {
+    use_all_tts = true;
+  }
+  // ToDo(MelLain): refactor this regularizer for transaction model case
+  if (!use_all_tts) {
+    LOG(ERROR) << "BitermsPhi regularizer does not support transactions!";
+    return false;
+  }
+
   if (!config_.has_dictionary_name()) {
     LOG(ERROR) << "There's no dictionary for Biterms regularizer. Cancel it's launch.";
     return false;
@@ -62,7 +72,7 @@ bool BitermsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
 
   // proceed the regularization
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    auto token = n_wt.token(token_id);
+    const auto& token = n_wt.token(token_id);
     if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) {
       continue;
     }
@@ -119,6 +129,10 @@ google::protobuf::RepeatedPtrField<std::string> BitermsPhi::topics_to_regularize
 
 google::protobuf::RepeatedPtrField<std::string> BitermsPhi::class_ids_to_regularize() {
   return config_.class_id();
+}
+
+google::protobuf::RepeatedPtrField<std::string> BitermsPhi::transaction_types_to_regularize() {
+  return config_.transaction_type();
 }
 
 bool BitermsPhi::Reconfigure(const RegularizerConfig& config) {
