@@ -75,7 +75,13 @@ add_dependencies(internals_proto proto_generation)
 target_link_libraries(internals_proto ${PROTOBUF_LIBRARIES})
 target_link_libraries(messages_proto ${PROTOBUF_LIBRARIES})
 target_compile_definitions(messages_proto PRIVATE ARTM_STATIC_DEFINE)
-set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc PROPERTIES COMPILE_FLAGS "-include artm_export.h")
+if (MSVC)
+    set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
+        PROPERTIES COMPILE_FLAGS "/FI\"${CMAKE_CURRENT_BINARY_DIR}/artm_export.h\" /wd4244 /wd4267")
+else (MSVC)
+    set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
+        PROPERTIES COMPILE_FLAGS "-include artm_export.h")
+endif (MSVC)
 
 # Static 'artm' library
 
