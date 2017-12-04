@@ -13,7 +13,7 @@
 
 #include "artm/core/exceptions.h"
 
-#include "artm_export.h"
+#include "artm/artm_export.h"
 
 #if defined(_MSC_VER)
 #pragma warning(push)

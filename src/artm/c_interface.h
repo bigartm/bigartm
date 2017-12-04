@@ -7,7 +7,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "artm_export.h"
+#include "artm/artm_export.h"
 
 extern "C" {
   DLL_PUBLIC int64_t ArtmDuplicateMasterComponent(int master_id, int64_t length, const char* duplicate_master_args);

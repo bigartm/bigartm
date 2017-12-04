@@ -226,6 +226,8 @@ if (WIN32)
     target_link_libraries(artm-static psapi)
 endif (WIN32)
 
+target_include_directories(artm-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>)
+
 # Shared 'artm' library
 # We need to rebuild these .cc files in order to get dllexports
 set(SRC_LIST
@@ -239,14 +241,16 @@ source_group("" FILES ${SRC_LIST})
 add_library(artm SHARED ${SRC_LIST}
     ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 
+# Using PRIVATE here so that consumers of the library do not link explicitly
+# to boost, etc. This should be handled by the linker via DT_NEEDED or similar
+# But we have to repeat include dir here for artm_export.h
 target_link_libraries(artm PRIVATE artm-static)
 target_include_directories(artm PUBLIC $<TARGET_PROPERTY:glog,INTERFACE_INCLUDE_DIRECTORIES>)
+target_include_directories(artm PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>)
 
 include(GenerateExportHeader)
 generate_export_header(artm
 		EXPORT_MACRO_NAME DLL_PUBLIC)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
 
 if (MSVC)
   install(TARGETS artm DESTINATION bin)
