@@ -5,7 +5,6 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/../)
 set(SRC_LIST
 	srcmain.cc
 	cooccurrence_dictionary.cc
-	${CMAKE_SOURCE_DIR}/src/artm/cpp_interface.cc
 )
 
 set(Boost_USE_MULTITHREADED ON)
@@ -20,13 +19,10 @@ if (BUILD_BIGARTM_CLI_STATIC)
 endif (BUILD_BIGARTM_CLI_STATIC)
 
 if (WIN32)
-  target_link_libraries(bigartm artm ${Boost_LIBRARIES})
+  # FIXME find a way to export all needed symbols from protobuf without needing to link to it here
+  target_link_libraries(bigartm artm ${Boost_LIBRARIES} ${PROTOBUF_LIBRARIES})
 else (WIN32)
-  target_link_libraries(bigartm
-    messages_proto
-    artm-static
-    ${PROTOBUF_LIBRARIES}
-    ${Boost_LIBRARIES})
+  target_link_libraries(bigartm artm-static)
 endif (WIN32)
 
 install(TARGETS bigartm DESTINATION bin)

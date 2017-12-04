@@ -28,8 +28,6 @@ namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 
 #include "artm/cpp_interface.h"
-#include "artm/core/common.h"
-#include "glog/logging.h"
 
 #include "cooccurrence_dictionary.h"
 
