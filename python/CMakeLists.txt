@@ -19,6 +19,8 @@ if (BUILD_INTERNAL_PYTHON_API)
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
   add_dependencies(python_bigartm_wheel python_bigartm_build artm)
 
+  option(INSTALL_PYTHON_PACKAGE "Install python package as well during make install stage" OFF)
+
   if (MSVC)
     FILE(GLOB PYTHON_ARTM artm/*.py)
     install(FILES ${PYTHON_ARTM} DESTINATION python/artm)
@@ -28,9 +30,11 @@ if (BUILD_INTERNAL_PYTHON_API)
     install(FILES ${PYTHON_EXAMPLES} DESTINATION python/tests/wrapper)
     install(FILES setup.py DESTINATION python)
   elseif (UNIX)
-    install(CODE "message(\"Installing python package bigartm\")")
-    install(CODE "execute_process(COMMAND ${PYTHON} setup.py install
-                                  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})")
+    if (INSTALL_PYTHON_PACKAGE)
+      install(CODE "message(\"Installing python package bigartm\")")
+      install(CODE "execute_process(COMMAND ${PYTHON} setup.py install
+                                    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})")
+    endif (INSTALL_PYTHON_PACKAGE)
   endif (MSVC)
 endif (BUILD_INTERNAL_PYTHON_API)
 
