@@ -13,7 +13,9 @@
 
 #include "artm/core/exceptions.h"
 
-#if defined(WIN32)
+#include "artm_export.h"
+
+#if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable: 4244 4267)
 #include "artm/messages.pb.h"

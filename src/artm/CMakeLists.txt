@@ -10,7 +10,7 @@ add_custom_command(
   DEPENDS
   ${CMAKE_CURRENT_LIST_DIR}/messages.proto
   ${CMAKE_CURRENT_LIST_DIR}/core/internals.proto
-  COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/messages.proto --cpp_out=./
+  COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/messages.proto --cpp_out=dllexport_decl=DLL_PUBLIC:./
   COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/core/internals.proto --cpp_out=./
   COMMENT "Generating headers and sources from *.proto files"
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/..)
@@ -72,11 +72,18 @@ add_library(internals_proto STATIC EXCLUDE_FROM_ALL
     core/internals.pb.h)
 add_dependencies(internals_proto proto_generation)
 
+target_link_libraries(internals_proto ${PROTOBUF_LIBRARIES})
+target_link_libraries(messages_proto ${PROTOBUF_LIBRARIES})
+target_compile_definitions(messages_proto PRIVATE ARTM_STATIC_DEFINE)
+set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc PROPERTIES COMPILE_FLAGS "-include artm_export.h")
+
 # Static 'artm' library
 
 set(SRC_LIST
 	c_interface.cc
 	c_interface.h
+	cpp_interface.cc
+	cpp_interface.h
 	regularizer_interface.cc
 	regularizer_interface.h
 	score_calculator_interface.cc
@@ -188,6 +195,8 @@ FILE(GLOB_RECURSE SRC_LIST_OTHER
 	score_calculator_interface.h
 	c_interface.cc
 	c_interface.h
+	cpp_interface.cc
+	cpp_interface.h
 )
 
 FILE(GLOB_RECURSE SRC_LIST_CORE                core/*.cc                core/*.h                )
@@ -201,26 +210,37 @@ source_group("score"               FILES ${SRC_LIST_SCORE}               )
 source_group("utility"             FILES ${SRC_LIST_UTILITY}             )
 source_group(""                    FILES ${SRC_LIST_OTHER}               )
 
-add_definitions("-Dartm_EXPORTS")
 add_library(artm-static STATIC ${SRC_LIST})
-target_link_libraries(artm-static messages_proto internals_proto)
+target_link_libraries(artm-static messages_proto internals_proto glog ${Boost_LIBRARIES})
 add_dependencies(artm-static messages_proto internals_proto)
+target_compile_definitions(artm-static PRIVATE ARTM_STATIC_DEFINE)
 
+if (WIN32)
+    # This library is needed for GetProcessMemoryInfo and is not linked by default on MinGW
+    target_link_libraries(artm-static psapi)
+endif (WIN32)
 
 # Shared 'artm' library
-set(SRC_LIST c_interface.cc c_interface.h)
-source_group("" FILES c_interface.cc c_interface.h)
-
-set(ARTM_LIB_DEPS  artm-static
-                   gflags-static
-                   ${Boost_LIBRARIES}
-                   ${PROTOBUF_LIBRARIES}
-                   ${GLOG_LIBRARIES})
-
+# We need to rebuild these .cc files in order to get dllexports
+set(SRC_LIST
+		c_interface.h
+		c_interface.cc
+		cpp_interface.h
+		cpp_interface.cc
+		messages.pb.h
+		messages.pb.cc)
+source_group("" FILES ${SRC_LIST})
 add_library(artm SHARED ${SRC_LIST}
     ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 
-target_link_libraries(artm ${ARTM_LIB_DEPS})
+target_link_libraries(artm PRIVATE artm-static)
+target_include_directories(artm PUBLIC $<TARGET_PROPERTY:glog,INTERFACE_INCLUDE_DIRECTORIES>)
+
+include(GenerateExportHeader)
+generate_export_header(artm
+		EXPORT_MACRO_NAME DLL_PUBLIC)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
 
 if (MSVC)
   install(TARGETS artm DESTINATION bin)
