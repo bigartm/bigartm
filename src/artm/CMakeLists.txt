@@ -245,18 +245,58 @@ add_library(artm SHARED ${SRC_LIST}
 # to boost, etc. This should be handled by the linker via DT_NEEDED or similar
 # But we have to repeat include dir here for artm_export.h
 target_link_libraries(artm PRIVATE artm-static)
-target_include_directories(artm PUBLIC $<TARGET_PROPERTY:glog,INTERFACE_INCLUDE_DIRECTORIES>)
 target_include_directories(artm PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>)
+target_include_directories(artm PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
+# Support compiling with bundled protobuf headers from build-tree and from
+# installed package
+target_include_directories(artm PUBLIC
+    $<BUILD_INTERFACE:${PROTOBUF_INCLUDE_DIR}>
+    $<INSTALL_INTERFACE:include/artm>)
 
 include(GenerateExportHeader)
 generate_export_header(artm
 		EXPORT_MACRO_NAME DLL_PUBLIC)
 
-if (MSVC)
-  install(TARGETS artm DESTINATION bin)
-  install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)
-else (MSVC)
-  install(TARGETS artm DESTINATION lib)
-  # FIXME: install headers to /usr/include, protobuf and compiled messages --- to appropriate path
-  #install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)
-endif (MSVC)
+install(TARGETS artm EXPORT artm
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    INCLUDES DESTINATION include
+    )
+install(FILES
+    c_interface.h
+    cpp_interface.h
+    messages.pb.h
+    messages.proto
+    ${CMAKE_CURRENT_BINARY_DIR}/artm_export.h
+    DESTINATION include/artm
+    )
+
+export(EXPORT artm
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/artm-targets.cmake"
+    NAMESPACE artm::
+    )
+configure_file(cmake/artm-config.cmake
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/artm-config.cmake"
+    COPYONLY
+    )
+
+set(ConfigPackageLocation lib/cmake/artm)
+install(EXPORT artm
+    FILE artm-targets.cmake
+    NAMESPACE artm::
+    DESTINATION ${ConfigPackageLocation}
+    )
+install(FILES cmake/artm-config.cmake
+    DESTINATION ${ConfigPackageLocation}
+    )
+
+# This ugly hack calls cmake install script for protobuf directly and
+# installs only its headers
+install(CODE
+    "
+    set(COMPONENT_BACKUP \${CMAKE_INSTALL_COMPONENT})
+    set(CMAKE_INSTALL_COMPONENT \"protobuf-headers\")
+    include(${PROTOBUF_BINARY_DIR}/cmake_install.cmake)
+    set(CMAKE_INSTALL_COMPONENT \${COMPONENT_BACKUP})
+    "
+    )
