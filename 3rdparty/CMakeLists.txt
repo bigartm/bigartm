@@ -8,6 +8,10 @@ else (MSVC)
   add_definitions("-w")
 endif (MSVC)
 
+# This line enables install(EXPORT) in gflags
+# If it's missing, glog complains about it later in the build process
+# Nothing is actually installed due to ECLUDE_FROM_ALL
+set(INSTALL_STATIC_LIBS "ON")
 add_subdirectory(gflags EXCLUDE_FROM_ALL)
 
 # We use target included directly from gflags, so we need to disable find_package for it
