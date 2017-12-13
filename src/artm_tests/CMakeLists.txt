@@ -32,4 +32,6 @@ add_dependencies(artm_tests messages_proto)
 target_link_libraries(artm_tests artm-static)
 
 # add target for testing
-add_test(NAME core_tests COMMAND artm_tests)
+add_test(NAME core_tests
+    COMMAND artm_tests --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/junit.xml
+    )
