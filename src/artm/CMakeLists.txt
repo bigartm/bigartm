@@ -241,6 +241,10 @@ source_group("" FILES ${SRC_LIST})
 add_library(artm SHARED ${SRC_LIST}
     ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 
+if (WIN32)
+    set_target_properties(artm PROPERTIES PREFIX "")
+endif (WIN32)
+
 # Using PRIVATE here so that consumers of the library do not link explicitly
 # to boost, etc. This should be handled by the linker via DT_NEEDED or similar
 # But we have to repeat include dir here for artm_export.h
