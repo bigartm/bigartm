@@ -23,6 +23,13 @@ set(gflags_NAMESPACE "gflags")
 set(gflags_FOUND "ON")
 get_target_property(gflags_INCLUDE_DIR gflags INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(gflags_LIBRARIES gflags INTERFACE_LINK_LIBRARIES)
+if (NOT gflags_LIBRARIES)
+    # INTERFACE_LINK_LIBRARIES can legitimately be empty, but cmake sets them
+    # as NOTFOUND
+    # This happens e.g. on Alpine Linux
+    set(gflags_LIBRARIES "")
+endif ()
+
 set(gflags_LIBRARIES $<TARGET_FILE:gflags> ${gflags_LIBRARIES})
 
 add_subdirectory(glog EXCLUDE_FROM_ALL)
