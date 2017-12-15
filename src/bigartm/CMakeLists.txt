@@ -16,7 +16,6 @@ endif (BUILD_BIGARTM_CLI_STATIC)
 target_include_directories(bigartm PRIVATE $<TARGET_PROPERTY:glog,INTERFACE_INCLUDE_DIRECTORIES>)
 
 if (WIN32)
-  # FIXME find a way to export all needed symbols from protobuf without needing to link to it here
   target_link_libraries(bigartm artm)
 else (WIN32)
   target_link_libraries(bigartm artm-static)
