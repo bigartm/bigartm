@@ -90,9 +90,12 @@ find_package(Boost COMPONENTS REQUIRED ${BIGARTM_BOOST_COMPONENTS})
 if (NOT Boost_FOUND)
   message(SEND_ERROR "Failed to find required boost libraries.")
   return()
-else (NOT Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
 endif (NOT Boost_FOUND)
+
+set(BOOST_IMPORTED_TARGETS Boost::boost)
+foreach(boost_component ${BIGARTM_BOOST_COMPONENTS})
+    list(APPEND BOOST_IMPORTED_TARGETS Boost::${boost_component})
+endforeach(boost_component)
 
 add_subdirectory(3rdparty)  # gflags must be compiled without -std=c++11
 
