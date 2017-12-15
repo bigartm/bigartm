@@ -252,6 +252,11 @@ source_group("" FILES ${SRC_LIST})
 add_library(artm SHARED ${SRC_LIST}
     ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 
+# Make protobuf export symbols from our shared library
+target_compile_definitions(artm
+    PUBLIC PROTOBUF_USE_DLLS
+    PRIVATE LIBPROTOBUF_EXPORTS)
+
 if (WIN32)
     set_target_properties(artm PROPERTIES PREFIX "")
 endif (WIN32)
