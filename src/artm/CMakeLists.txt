@@ -72,8 +72,8 @@ add_library(internals_proto STATIC EXCLUDE_FROM_ALL
     core/internals.pb.h)
 add_dependencies(internals_proto proto_generation)
 
-target_link_libraries(internals_proto ${PROTOBUF_LIBRARIES})
-target_link_libraries(messages_proto ${PROTOBUF_LIBRARIES})
+target_link_libraries(internals_proto libprotobuf)
+target_link_libraries(messages_proto libprotobuf)
 target_compile_definitions(messages_proto PRIVATE ARTM_STATIC_DEFINE)
 if (MSVC)
     set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
@@ -225,7 +225,10 @@ source_group("utility"             FILES ${SRC_LIST_UTILITY}             )
 source_group(""                    FILES ${SRC_LIST_OTHER}               )
 
 add_library(artm-static STATIC ${SRC_LIST})
-target_link_libraries(artm-static messages_proto internals_proto glog ${Boost_LIBRARIES})
+target_link_libraries(artm-static
+    messages_proto internals_proto
+    glog ${BOOST_IMPORTED_TARGETS}
+    )
 add_dependencies(artm-static messages_proto internals_proto)
 target_compile_definitions(artm-static PRIVATE ARTM_STATIC_DEFINE)
 
@@ -259,11 +262,8 @@ endif (WIN32)
 target_link_libraries(artm PRIVATE artm-static)
 target_include_directories(artm PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>)
 target_include_directories(artm PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
-# Support compiling with bundled protobuf headers from build-tree and from
-# installed package
-target_include_directories(artm PUBLIC
-    $<BUILD_INTERFACE:${PROTOBUF_INCLUDE_DIR}>
-    $<INSTALL_INTERFACE:include/artm>)
+# Support compiling with bundled protobuf headers from build-tree
+target_include_directories(artm PUBLIC $<BUILD_INTERFACE:${PROTOBUF_INCLUDE_DIR}>)
 
 include(GenerateExportHeader)
 generate_export_header(artm
@@ -272,7 +272,7 @@ generate_export_header(artm
 install(TARGETS artm EXPORT artm
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
-    INCLUDES DESTINATION include
+    INCLUDES DESTINATION include/artm
     )
 install(FILES
     c_interface.h

@@ -1,8 +1,5 @@
 project(artm_tests)
 
-include_directories(${3RD_PARTY_DIR}/gtest/fused-src/)
-include_directories(${CMAKE_CURRENT_LIST_DIR}/../)
-
 set(SRC_LIST
 	api.cc
 	batch_manager_test.cc
@@ -29,7 +26,11 @@ set(SRC_LIST
 add_definitions("-Dartm_EXPORTS")
 add_executable(artm_tests ${SRC_LIST})
 add_dependencies(artm_tests messages_proto)
-target_link_libraries(artm_tests artm-static)
+target_link_libraries(artm_tests artm-static ${BOOST_IMPORTED_TARGETS})
+target_include_directories(artm_tests PRIVATE
+    ${3RD_PARTY_DIR}/gtest/fused-src/
+    ${CMAKE_CURRENT_LIST_DIR}/../
+    )
 
 # add target for testing
 add_test(NAME core_tests
