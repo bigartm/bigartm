@@ -5,8 +5,6 @@ find_package(ProtobufPlugin REQUIRED)
 if (NOT PROTOBUF_FOUND)
   message(SEND_ERROR "Failed to find protobuf.")
   return()
-else (NOT PROTOBUF_FOUND)
-  include_directories(${PROTOBUF_INCLUDE_DIRS})
 endif (NOT PROTOBUF_FOUND)
 
 add_subdirectory(artm)
