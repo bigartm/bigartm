@@ -24,16 +24,8 @@ python:
 
 addons:
   apt:
-    sources:
-      - boost-latest                       # for boost 1.55
-      - ubuntu-toolchain-r-test            # for g++-4.9
-      - george-edison55-precise-backports  # for cmake 3
     packages:
-      - cmake
-      - cmake-data
-      - libboost1.55-all-dev
-      - g++-5
-      - gcc-5
+      - libboost1.54-all-dev
 
 env:
   global:
@@ -44,7 +36,7 @@ env:
     - CCACHE_NODISABLE=true
     - CCACHE_MAXSIZE=500M
   matrix:
-    - GCC_VER=5
+    - GCC_VER=4.8
 
 before_install:
   # we need latest pip to work with only-binary option
@@ -61,7 +53,7 @@ before_install:
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then ./codestyle_checks.sh; fi
   - mkdir build
-  - pushd build && cmake -DBUILD_BIGARTM_CLI_STATIC=OFF .. && make -j2 && file ./bin/bigartm && popd
+  - pushd build && cmake .. && make -j2 && file ./bin/bigartm && popd
   - pushd python && python setup.py install && popd
 
 before_script:
