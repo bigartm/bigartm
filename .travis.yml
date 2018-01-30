@@ -20,6 +20,7 @@ python:
   - "2.7"
   - "3.4"
   - "3.5"
+  - "3.6"
 
 addons:
   apt:
@@ -31,8 +32,8 @@ addons:
       - cmake
       - cmake-data
       - libboost1.55-all-dev
-      - g++-4.9
-      - gcc-4.9
+      - g++-5
+      - gcc-5
 
 env:
   global:
@@ -43,14 +44,14 @@ env:
     - CCACHE_NODISABLE=true
     - CCACHE_MAXSIZE=500M
   matrix:
-    - GCC_VER=4.9
+    - GCC_VER=5
 
 before_install:
   # we need latest pip to work with only-binary option
   - pip install -U pip
   - pip install -U pytest pep8 wheel
-  - pip install -U numpy scipy pandas tqdm --only-binary numpy scipy pandas
-  - pip install protobuf==3.0.0
+  - pip install -U numpy scipy pandas tqdm --only-binary numpy,scipy,pandas
+  - pip install -U protobuf
   # configure ccache
   # code from https://github.com/urho3d/Urho3D/blob/master/.travis.yml
   - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
