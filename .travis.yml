@@ -20,19 +20,12 @@ python:
   - "2.7"
   - "3.4"
   - "3.5"
+  - "3.6"
 
 addons:
   apt:
-    sources:
-      - boost-latest                       # for boost 1.55
-      - ubuntu-toolchain-r-test            # for g++-4.9
-      - george-edison55-precise-backports  # for cmake 3
     packages:
-      - cmake
-      - cmake-data
-      - libboost1.55-all-dev
-      - g++-4.9
-      - gcc-4.9
+      - libboost1.54-all-dev
 
 env:
   global:
@@ -43,14 +36,14 @@ env:
     - CCACHE_NODISABLE=true
     - CCACHE_MAXSIZE=500M
   matrix:
-    - GCC_VER=4.9
+    - GCC_VER=4.8
 
 before_install:
   # we need latest pip to work with only-binary option
   - pip install -U pip
   - pip install -U pytest pep8 wheel
-  - pip install -U numpy scipy pandas tqdm --only-binary numpy scipy pandas
-  - pip install protobuf==3.0.0
+  - pip install -U numpy scipy pandas tqdm --only-binary numpy,scipy,pandas
+  - pip install -U protobuf
   # configure ccache
   # code from https://github.com/urho3d/Urho3D/blob/master/.travis.yml
   - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
@@ -60,7 +53,7 @@ before_install:
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then ./codestyle_checks.sh; fi
   - mkdir build
-  - pushd build && cmake -DBUILD_BIGARTM_CLI_STATIC=OFF .. && make -j2 && file ./bin/bigartm && popd
+  - pushd build && cmake .. && make -j2 && file ./bin/bigartm && popd
   - pushd python && python setup.py install && popd
 
 before_script:
