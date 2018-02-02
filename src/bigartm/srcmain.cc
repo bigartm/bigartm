@@ -1,4 +1,4 @@
-// Copyright 2017, Additive Regularization of Topic Models.
+// Copyright 2018, Additive Regularization of Topic Models.
 
 #include <stdlib.h>
 #include <algorithm>
@@ -273,6 +273,7 @@ struct artm_options {
   std::string dictionary_max_df;
   int dictionary_size;
   int cooc_window;
+  int doc_per_cooc_batch;
   int cooc_min_df;
   int cooc_min_tf;
 
@@ -1740,6 +1741,7 @@ int main(int argc, char * argv[]) {
       ("cooc-min-tf", po::value(&options.cooc_min_tf)->default_value(0), "minimal value of cooccurrences of a pair of tokens that are saved in dictionary of cooccurrences")
       ("cooc-min-df", po::value(&options.cooc_min_df)->default_value(0), "minimal value of documents in which a specific pair of tokens occurred together closely")
       ("cooc-window", po::value(&options.cooc_window)->default_value(5), "number of tokens around specific token, which are used in calculation of cooccurrences")
+      ("doc-per-cooc-batch", po::value(&options.doc_per_cooc_batch)->default_value(10000), "number of documents which will be processed and written in 1 cooc batch")
       ("dictionary-min-df", po::value(&options.dictionary_min_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary-max-df", po::value(&options.dictionary_max_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary-size", po::value(&options.dictionary_size)->default_value(0), "limit dictionary size by filtering out tokens with high document frequency")
@@ -2004,7 +2006,6 @@ int main(int argc, char * argv[]) {
       if (options.write_cooc_df.empty() && !options.write_df_ppmi.empty()) {
         throw std::invalid_argument("please specify name of cooc_df file");
       }
-
       // Scheme of gathering of token co-occurrences statistics is the folowing:
       // 1. Get unique tokens from vocab file
       // 2. Read Vowpal Wabbit file by portions, calculate co-occurrences of 
@@ -2012,17 +2013,18 @@ int main(int argc, char * argv[]) {
       // 3. Read from external storage all the cooccurrence batches piece by
       // piece and create resulting file with all co-occurrences
       // 4. Use co-occurrence counters to calculate positive pmi of token pairs
-
       CooccurrenceDictionary cooc_dictionary(options.cooc_window,
           options.cooc_min_tf, options.cooc_min_df, options.read_uci_vocab,
           options.read_vw_corpus, options.write_cooc_tf,
           options.write_cooc_df, options.write_tf_ppmi, options.write_df_ppmi,
-          options.threads);
-      cooc_dictionary.FetchVocab();
-      if (cooc_dictionary.VocabDictionarySize() >= 2) {
+          options.threads, options.doc_per_cooc_batch);
+      if (cooc_dictionary.VocabSize() >= 2) {
         cooc_dictionary.ReadVowpalWabbit();
         if (cooc_dictionary.CooccurrenceBatchesQuantity() != 0) {
-          cooc_dictionary.ReadAndMergeCooccurrenceBatches();
+          ResultingBufferOfCooccurrences res = cooc_dictionary.ReadAndMergeCooccurrenceBatches();
+          if (cooc_dictionary.GetCalculatePpmi()) {
+            res.CalculateAndWritePpmi();
+          }
         }
       }
     }

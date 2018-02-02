@@ -17,6 +17,9 @@
 #include "boost/filesystem.hpp"
 #include "boost/utility.hpp"
 
+namespace artm {
+namespace core {
+
 #define FIRST_TOKEN_ID 0
 #define FIRST_TOKEN_INFO 0
 #define SECOND_TOKEN_ID 0
@@ -230,3 +233,6 @@ class ResultingBufferOfCooccurrences {
   std::ofstream ppmi_df_dict_;
   Cell cell_;
 };
+
+}  // namespace core
+}  // namespace artm
