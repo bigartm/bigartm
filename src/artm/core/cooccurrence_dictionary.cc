@@ -1,6 +1,6 @@
 // Copyright 2018, Additive Regularization of Topic Models.
 
-#include "cooccurrence_dictionary.h"
+#include "artm/core/cooccurrence_dictionary.h"
 
 #include <unordered_map>
 #include <string>
@@ -25,7 +25,21 @@
 #include "boost/uuid/uuid_io.hpp"
 #include "boost/uuid/uuid_generators.hpp"
 
+#include "artm/core/common.h"
+#include "artm/core/exceptions.h"
+
 namespace fs = boost::filesystem;
+
+namespace artm {
+namespace core {
+
+// ToDo: move code in core
+// 1. find a point in code after collection parsing where this code can be inserted
+// 2. take parser config from Parse method and find batch folder name
+// 3. use method ListAllBatches to have vector of filenames
+// 4. read batches in some order and count co-occurrences (use method LoadBatches)
+// 4.a understand how to extract text from batches
+// 5. think how to specify ppmi and cooc output files
 
 // ****************************** Methods of class CooccurrenceDictionary ***********************************
 
@@ -56,10 +70,12 @@ CooccurrenceDictionary::CooccurrenceDictionary(const unsigned window_width,
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
   fs::path dir(boost::lexical_cast<std::string>(uuid));
   if (fs::exists(dir)) {
-    throw std::invalid_argument("Folder with uuid already exists");
+    BOOST_THROW_EXCEPTION(InvalidOperation("Folder with uuid " + 
+                                           boost::lexical_cast<std::string>(uuid) +
+                                           "already exists"));
   }
   if (!fs::create_directory(dir)) {
-    throw std::invalid_argument("Failed to create directory");
+    BOOST_THROW_EXCEPTION(InvalidOperation("Failed to create directory"));
   }
   token_statistics_.resize(vocab_.storage_.size());
   path_to_batches_ = dir.string();
@@ -71,7 +87,7 @@ CooccurrenceDictionary::CooccurrenceDictionary(const unsigned window_width,
   } else {
     num_of_cpu_ = num_of_cpu;
   }
-  std::cout << "documents per batch = " << doc_per_cooc_batch_ << std::endl;
+  // std::cout << "documents per batch = " << doc_per_cooc_batch_ << std::endl;
 }
 
 unsigned CooccurrenceDictionary::VocabSize() const {
@@ -94,12 +110,12 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
   // Statistics that refer to unique tokens is stored in vector called token_statistics_
   // 6. For each potion of documents create a batch (class CooccurrenceBatch) with co-occurrence statistics
   // Repeat 1-6 for all portions (can work in parallel for different portions)
-  std::cout << "Step 1: creation of co-occurrence batches" << std::endl;
+  // std::cout << "Step 1: creation of co-occurrence batches" << std::endl;
   std::string documents_processed = std::to_string(total_num_of_documents_);
-  std::cout << "Documents processed: " << documents_processed << std::flush;
+  // std::cout << "Documents processed: " << documents_processed << std::flush;
   std::ifstream vowpal_wabbit_doc(path_to_vw_, std::ios::in);
   if (!vowpal_wabbit_doc.is_open()) {
-    throw std::invalid_argument("Failed to open vowpal wabbit file");
+    BOOST_THROW_EXCEPTION(InvalidOperation("Failed to open vowpal wabbit file"));
   }
   std::mutex read_lock;
   std::mutex stdout_lock;
@@ -198,14 +214,14 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
         // Sorting is needed before storing all pairs of tokens on disk (it's for future agregation)
         UploadOnDisk(cooc_stat_holder);
       }
-      { // print number of documents which were precessed
+      /*{ // print number of documents which were precessed
         std::lock_guard<std::mutex> guard(stdout_lock);
         for (unsigned i = 0; i < documents_processed.size(); ++i) {
           std::cout << '\b';
         }
         documents_processed = std::to_string(total_num_of_documents_);
         std::cout << documents_processed << std::flush;
-      }
+      }*/
     }
   };
   // Launch reading and storing pairs of tokens in parallel
@@ -216,7 +232,6 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
   for (unsigned i = 0; i < num_of_cpu_; ++i) {
     tasks[i].get();
   }
-  std::cout << '\n' << "Co-occurrence batches have been created" << std::endl;
 }
 
 std::vector<std::string> CooccurrenceDictionary::ReadPortionOfDocuments(
@@ -307,7 +322,7 @@ unsigned CooccurrenceDictionary::CooccurrenceBatchesQuantity() const {
   // asynchroniously gathered, then merged using 1 thread and pushed in output file
   // Pro is that that's not necessery to collect some intermediate batches
   // Cons are: time of argegation depends on split, all the threads should wait for the slowest thread
-  std::cout << "Step 2: merging batches" << std::endl;
+  // std::cout << "Step 2: merging batches" << std::endl;
   // Stage 1: creation of intermediate batches
   unsigned num_of_threads = std::min(static_cast<unsigned>(vector_of_batches_.size()), num_of_cpu_);
   //num_of_threads = 1; // ToDo:
@@ -368,12 +383,12 @@ unsigned CooccurrenceDictionary::CooccurrenceBatchesQuantity() const {
     res.cooc_df_dict_out_.close();
   }
   open_files_counter_ -= 2;
-  std::cout << "Batches have been merged" << std::endl;
+  // std::cout << "Batches have been merged" << std::endl;
   return res;
 }*/
 
 ResultingBufferOfCooccurrences CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
-  std::cout << "Step 2: merging batches" << std::endl;
+  // std::cout << "Step 2: merging batches" << std::endl;
   ResultingBufferOfCooccurrences res(token_statistics_, cooc_min_tf_, cooc_min_df_,
                                      total_num_of_pairs_, total_num_of_documents_,
                                      calculate_tf_cooc_, calculate_df_cooc_,
@@ -390,7 +405,7 @@ ResultingBufferOfCooccurrences CooccurrenceDictionary::ReadAndMergeCooccurrenceB
     res.cooc_df_dict_out_.close();
   }
   open_files_counter_ -= 2;
-  std::cout << "Batches have been merged" << std::endl;
+  // std::cout << "Batches have been merged" << std::endl;
   return res;
 }
 
@@ -519,7 +534,7 @@ Vocab::Vocab(const std::string& path_to_vocab) {
   // sets them unique id and collects pairs in dictionary
   std::ifstream vocab_ifile(path_to_vocab, std::ios::in);
   if (!vocab_ifile.good()) {
-    throw std::invalid_argument("Failed to open vocab file, path = " + path_to_vocab);
+    BOOST_THROW_EXCEPTION(InvalidOperation("Failed to open vocab file, path = " + path_to_vocab));
   }
   std::string str;
   for (unsigned last_token_id = 0; getline(vocab_ifile, str); ++last_token_id) {
@@ -538,7 +553,7 @@ Vocab::Vocab(const std::string& path_to_vocab) {
       if (iter == storage_.end()) {
         storage_.insert(std::make_pair(key, last_token_id));
       } else {
-        throw std::invalid_argument("There repeated tokens in vocab file. Please remove all the duplications");
+        BOOST_THROW_EXCEPTION(InvalidOperation("There are repeated tokens in vocab file. Please remove all the duplications"));
       }
     }
   }
@@ -664,7 +679,7 @@ bool CooccurrenceBatch::ReadCellHeader() {
 void CooccurrenceBatch::ReadRecords() {
   // It's not good if there are no records in batch after header
   if (in_batch_.eof()) {
-    throw std::invalid_argument("Error while reading from batch. File is corrupted");
+    BOOST_THROW_EXCEPTION(InvalidOperation("Error while reading from batch. File is corrupted"));
   }
   std::string str;
   getline(in_batch_, str);
@@ -723,7 +738,7 @@ ResultingBufferOfCooccurrences::ResultingBufferOfCooccurrences(
 void ResultingBufferOfCooccurrences::OpenAndCheckInputFile(std::ifstream& ifile, const std::string& path) {
   ifile.open(path, std::ios::in);
   if (!ifile.good()) {
-    throw std::invalid_argument("Failed to create a file in working directory");
+    BOOST_THROW_EXCEPTION(InvalidOperation("Failed to create a file in working directory"));
   }
   ++open_files_in_buf_;
 }
@@ -731,7 +746,7 @@ void ResultingBufferOfCooccurrences::OpenAndCheckInputFile(std::ifstream& ifile,
 void ResultingBufferOfCooccurrences::OpenAndCheckOutputFile(std::ofstream& ofile, const std::string& path) {
   ofile.open(path, std::ios::out);
   if (!ofile.good()) {
-    throw std::invalid_argument("Failed to create a file in working directory");
+    BOOST_THROW_EXCEPTION(InvalidOperation("Failed to create a file in working directory"));
   }
   ++open_files_in_buf_;
 }
@@ -839,7 +854,7 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi() {
                   ' ' << token_statistics_[i].num_of_documents_token_occured_in << '\n';
     }
   }*/
-  std::cout << "Step 3: start calculation ppmi" << std::endl;
+  // std::cout << "Step 3: start calculation ppmi" << std::endl;
   // stringstream is used for fast bufferized i/o operations
   std::stringstream output_buf_tf;
   std::stringstream output_buf_df;
@@ -889,5 +904,9 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi() {
     }
     ppmi_df_dict_ << output_buf_df.str();
   }
-  std::cout << "Ppmi's have been calculated" << std::endl;
+  // std::cout << "Ppmi's have been calculated" << std::endl;
 }
+
+}  // namespace core
+}  // namespace artm
+// vim: set ts=2 sw=2:
