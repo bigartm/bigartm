@@ -30,8 +30,7 @@ namespace po = boost::program_options;
 #include "artm/cpp_interface.h"
 #include "artm/core/common.h"
 #include "glog/logging.h"
-
-#include "cooccurrence_dictionary.h"
+#include "artm/core/cooccurrence_dictionary.h"
 
 using namespace artm;
 
@@ -1353,7 +1352,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
 
   // Step 2. Collection parsing
   BatchVectorizer batch_vectorizer(options);
-  batch_vectorizer.Vectorize();
+  //batch_vectorizer.Vectorize();  // ToDo (MichaelSolotky): uncoment it
 
   // Step 3. Create master model.
   std::shared_ptr<MasterModel> master_component;
@@ -1404,7 +1403,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
           filter_dictionary_args.set_min_df_rate(value);
         } else {
           filter_dictionary_args.set_min_df(value);
-	}
+	      }
       } else {
         if (!options.dictionary_min_df.empty()) {
           std::cerr << "Error in parameter 'dictionary_min_df', the option will be ignored (" << options.dictionary_min_df << ")\n";
@@ -2000,12 +1999,6 @@ int main(int argc, char * argv[]) {
       if (options.read_uci_vocab.empty()) {
         throw std::invalid_argument("input file in UCI vocab format not specified");
       }
-      if (options.write_cooc_tf.empty() && !options.write_tf_ppmi.empty()) {
-        throw std::invalid_argument("please specify name of cooc_tf file");
-      }
-      if (options.write_cooc_df.empty() && !options.write_df_ppmi.empty()) {
-        throw std::invalid_argument("please specify name of cooc_df file");
-      }
       // Scheme of gathering of token co-occurrences statistics is the folowing:
       // 1. Get unique tokens from vocab file
       // 2. Read Vowpal Wabbit file by portions, calculate co-occurrences of 
@@ -2013,7 +2006,7 @@ int main(int argc, char * argv[]) {
       // 3. Read from external storage all the cooccurrence batches piece by
       // piece and create resulting file with all co-occurrences
       // 4. Use co-occurrence counters to calculate positive pmi of token pairs
-      CooccurrenceDictionary cooc_dictionary(options.cooc_window,
+      ::artm::core::CooccurrenceDictionary cooc_dictionary(options.cooc_window,
           options.cooc_min_tf, options.cooc_min_df, options.read_uci_vocab,
           options.read_vw_corpus, options.write_cooc_tf,
           options.write_cooc_df, options.write_tf_ppmi, options.write_df_ppmi,
@@ -2021,10 +2014,8 @@ int main(int argc, char * argv[]) {
       if (cooc_dictionary.VocabSize() >= 2) {
         cooc_dictionary.ReadVowpalWabbit();
         if (cooc_dictionary.CooccurrenceBatchesQuantity() != 0) {
-          ResultingBufferOfCooccurrences res = cooc_dictionary.ReadAndMergeCooccurrenceBatches();
-          if (cooc_dictionary.GetCalculatePpmi()) {
-            res.CalculateAndWritePpmi();
-          }
+          ::artm::core::ResultingBufferOfCooccurrences res = cooc_dictionary.ReadAndMergeCooccurrenceBatches();
+          res.CalculatePpmi();
         }
       }
     }
