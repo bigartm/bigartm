@@ -1352,7 +1352,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
 
   // Step 2. Collection parsing
   BatchVectorizer batch_vectorizer(options);
-  //batch_vectorizer.Vectorize();  // ToDo (MichaelSolotky): uncoment it
+  batch_vectorizer.Vectorize();
 
   // Step 3. Create master model.
   std::shared_ptr<MasterModel> master_component;
