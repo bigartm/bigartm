@@ -48,7 +48,7 @@
 #ifndef BASE_COMMANDLINEFLAGS_H__
 #define BASE_COMMANDLINEFLAGS_H__
 
-#include <glog-config.h>
+#include "config.h"
 #include <string>
 #include <string.h>               // for memchr
 #include <stdlib.h>               // for getenv
@@ -59,11 +59,7 @@
 
 #else
 
-#if _WIN32
-# include "windows/glog/logging.h"
-#else
-# include "glog/logging.h"
-#endif
+#include "glog/logging.h"
 
 #define DECLARE_VARIABLE(type, shorttype, name, tn)                     \
   namespace fL##shorttype {                                             \

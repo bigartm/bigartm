@@ -10,7 +10,7 @@ add_custom_command(
   DEPENDS
   ${CMAKE_CURRENT_LIST_DIR}/messages.proto
   ${CMAKE_CURRENT_LIST_DIR}/core/internals.proto
-  COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/messages.proto --cpp_out=./
+  COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/messages.proto --cpp_out=dllexport_decl=DLL_PUBLIC:./
   COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/core/internals.proto --cpp_out=./
   COMMENT "Generating headers and sources from *.proto files"
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/..)
@@ -35,10 +35,10 @@ add_custom_target(proto_generation ALL
   DEPENDS
   ${GENERATED_PROTO_FILES})
 
-# The version number, v0.8.2
+# The version number
 set(ARTM_VERSION_MAJOR 0)
-set(ARTM_VERSION_MINOR 8)
-set(ARTM_VERSION_PATCH 3)
+set(ARTM_VERSION_MINOR 9)
+set(ARTM_VERSION_PATCH 0)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
@@ -72,11 +72,24 @@ add_library(internals_proto STATIC EXCLUDE_FROM_ALL
     core/internals.pb.h)
 add_dependencies(internals_proto proto_generation)
 
+target_link_libraries(internals_proto ${PROTOBUF_LIBRARIES})
+target_link_libraries(messages_proto ${PROTOBUF_LIBRARIES})
+target_compile_definitions(messages_proto PRIVATE ARTM_STATIC_DEFINE)
+if (MSVC)
+    set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
+        PROPERTIES COMPILE_FLAGS "/FI\"${CMAKE_CURRENT_BINARY_DIR}/artm_export.h\" /wd4244 /wd4267")
+else (MSVC)
+    set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
+        PROPERTIES COMPILE_FLAGS "-include artm_export.h")
+endif (MSVC)
+
 # Static 'artm' library
 
 set(SRC_LIST
 	c_interface.cc
 	c_interface.h
+	cpp_interface.cc
+	cpp_interface.h
 	regularizer_interface.cc
 	regularizer_interface.h
 	score_calculator_interface.cc
@@ -190,6 +203,8 @@ FILE(GLOB_RECURSE SRC_LIST_OTHER
 	score_calculator_interface.h
 	c_interface.cc
 	c_interface.h
+	cpp_interface.cc
+	cpp_interface.h
 )
 
 FILE(GLOB_RECURSE SRC_LIST_CORE                core/*.cc                core/*.h                )
@@ -203,32 +218,87 @@ source_group("score"               FILES ${SRC_LIST_SCORE}               )
 source_group("utility"             FILES ${SRC_LIST_UTILITY}             )
 source_group(""                    FILES ${SRC_LIST_OTHER}               )
 
-add_definitions("-Dartm_EXPORTS")
 add_library(artm-static STATIC ${SRC_LIST})
-target_link_libraries(artm-static messages_proto internals_proto)
+target_link_libraries(artm-static messages_proto internals_proto glog ${Boost_LIBRARIES})
 add_dependencies(artm-static messages_proto internals_proto)
+target_compile_definitions(artm-static PRIVATE ARTM_STATIC_DEFINE)
 
+if (WIN32)
+    # This library is needed for GetProcessMemoryInfo and is not linked by default on MinGW
+    target_link_libraries(artm-static psapi)
+endif (WIN32)
+
+target_include_directories(artm-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>)
 
 # Shared 'artm' library
-set(SRC_LIST c_interface.cc c_interface.h)
-source_group("" FILES c_interface.cc c_interface.h)
-
-set(ARTM_LIB_DEPS  artm-static
-                   gflags-static
-                   ${Boost_LIBRARIES}
-                   ${PROTOBUF_LIBRARIES}
-                   ${GLOG_LIBRARIES})
-
+# We need to rebuild these .cc files in order to get dllexports
+set(SRC_LIST
+		c_interface.h
+		c_interface.cc
+		cpp_interface.h
+		cpp_interface.cc
+		messages.pb.h
+		messages.pb.cc)
+source_group("" FILES ${SRC_LIST})
 add_library(artm SHARED ${SRC_LIST}
     ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 
-target_link_libraries(artm ${ARTM_LIB_DEPS})
+# Using PRIVATE here so that consumers of the library do not link explicitly
+# to boost, etc. This should be handled by the linker via DT_NEEDED or similar
+# But we have to repeat include dir here for artm_export.h
+target_link_libraries(artm PRIVATE artm-static)
+target_include_directories(artm PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>)
+target_include_directories(artm PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
+# Support compiling with bundled protobuf headers from build-tree and from
+# installed package
+target_include_directories(artm PUBLIC
+    $<BUILD_INTERFACE:${PROTOBUF_INCLUDE_DIR}>
+    $<INSTALL_INTERFACE:include/artm>)
 
-if (MSVC)
-  install(TARGETS artm DESTINATION bin)
-  install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)
-else (MSVC)
-  install(TARGETS artm DESTINATION lib)
-  # FIXME: install headers to /usr/include, protobuf and compiled messages --- to appropriate path
-  #install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)
-endif (MSVC)
+include(GenerateExportHeader)
+generate_export_header(artm
+		EXPORT_MACRO_NAME DLL_PUBLIC)
+
+install(TARGETS artm EXPORT artm
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    INCLUDES DESTINATION include
+    )
+install(FILES
+    c_interface.h
+    cpp_interface.h
+    messages.pb.h
+    messages.proto
+    ${CMAKE_CURRENT_BINARY_DIR}/artm_export.h
+    DESTINATION include/artm
+    )
+
+export(EXPORT artm
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/artm-targets.cmake"
+    NAMESPACE artm::
+    )
+configure_file(cmake/artm-config.cmake
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/artm-config.cmake"
+    COPYONLY
+    )
+
+set(ConfigPackageLocation lib/cmake/artm)
+install(EXPORT artm
+    FILE artm-targets.cmake
+    NAMESPACE artm::
+    DESTINATION ${ConfigPackageLocation}
+    )
+install(FILES cmake/artm-config.cmake
+    DESTINATION ${ConfigPackageLocation}
+    )
+
+# This ugly hack calls cmake install script for protobuf directly and
+# installs only its headers
+install(CODE
+    "
+    set(COMPONENT_BACKUP \${CMAKE_INSTALL_COMPONENT})
+    set(CMAKE_INSTALL_COMPONENT \"protobuf-headers\")
+    include(${PROTOBUF_BINARY_DIR}/cmake_install.cmake)
+    set(CMAKE_INSTALL_COMPONENT \${COMPONENT_BACKUP})
+    "
+    )
