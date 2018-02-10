@@ -202,7 +202,7 @@ class ResultingBufferOfCooccurrences {  // ToDo (MichaelSolotky): make inharitan
  private:
   ResultingBufferOfCooccurrences(
       std::vector<TokenInfo>& token_statistics_,
-      Vocab& vocab, 
+      Vocab& vocab,
       const unsigned cooc_min_tf = 0,
       const unsigned cooc_min_df = 0,
       const unsigned num_of_cpu = 1,
@@ -217,8 +217,8 @@ class ResultingBufferOfCooccurrences {  // ToDo (MichaelSolotky): make inharitan
       const std::string& cooc_df_file_path = "",
       const std::string& ppmi_tf_file_path = "",
       const std::string& ppmi_df_file_path = "");
-  void OpenAndCheckInputFile(std::ifstream& ifile, const std::string& path);
-  void OpenAndCheckOutputFile(std::ofstream& ofile, const std::string& path);
+  std::ifstream OpenAndCheckInputFile(const std::string& path);
+  std::ofstream OpenAndCheckOutputFile(const std::string& path);
   void MergeWithExistingCell(const CooccurrenceBatch& batch);
   void CalculateTFStatistics();
   void WriteCoocFromCell(const std::string mode, const unsigned cooc_min);  // Output file formats are defined here

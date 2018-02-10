@@ -771,35 +771,37 @@ ResultingBufferOfCooccurrences::ResultingBufferOfCooccurrences(
         calculate_ppmi_tf_(calculate_ppmi_tf), calculate_ppmi_df_(calculate_ppmi_df),
         calc_symetric_cooc_(calc_symetric_cooc) {
   if (calculate_cooc_tf_) {
-    OpenAndCheckOutputFile(cooc_tf_dict_out_, cooc_tf_file_path);
-    OpenAndCheckInputFile(cooc_tf_dict_in_, cooc_tf_file_path);
+    cooc_tf_dict_out_ = OpenAndCheckOutputFile(cooc_tf_file_path);
+    cooc_tf_dict_in_ = OpenAndCheckInputFile(cooc_tf_file_path);
   }
   if (calculate_cooc_df_) {
-    OpenAndCheckOutputFile(cooc_df_dict_out_, cooc_df_file_path);
-    OpenAndCheckInputFile(cooc_df_dict_in_, cooc_df_file_path);
+    cooc_df_dict_out_ = OpenAndCheckOutputFile(cooc_df_file_path);
+    cooc_df_dict_in_ = OpenAndCheckInputFile(cooc_df_file_path);
   }
   if (calculate_ppmi_tf_) {
-    OpenAndCheckOutputFile(ppmi_tf_dict_, ppmi_tf_file_path);
+    ppmi_tf_dict_ = OpenAndCheckOutputFile(ppmi_tf_file_path);
   }
   if (calculate_ppmi_df_) {
-    OpenAndCheckOutputFile(ppmi_df_dict_, ppmi_df_file_path);
+    ppmi_df_dict_ = OpenAndCheckOutputFile(ppmi_df_file_path);
   }
 }
 
-void ResultingBufferOfCooccurrences::OpenAndCheckInputFile(std::ifstream& ifile, const std::string& path) {
-  ifile.open(path, std::ios::in);
+std::ifstream ResultingBufferOfCooccurrences::OpenAndCheckInputFile(const std::string& path) {
+  std::ifstream ifile(path, std::ios::in);
   if (!ifile.good()) {
     BOOST_THROW_EXCEPTION(InvalidOperation("Failed to create a file in working directory"));
   }
   ++open_files_in_buf_;
+  return ifile;
 }
 
-void ResultingBufferOfCooccurrences::OpenAndCheckOutputFile(std::ofstream& ofile, const std::string& path) {
-  ofile.open(path, std::ios::out);
+std::ofstream ResultingBufferOfCooccurrences::OpenAndCheckOutputFile(const std::string& path) {
+  std::ofstream ofile(path, std::ios::out);
   if (!ofile.good()) {
     BOOST_THROW_EXCEPTION(InvalidOperation("Failed to create a file in working directory"));
   }
   ++open_files_in_buf_;
+  return ofile;
 }
 
 // ToDo (MichaelSolotky): may be this can be implemented in more optimal way
