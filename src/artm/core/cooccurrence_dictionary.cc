@@ -771,18 +771,18 @@ ResultingBufferOfCooccurrences::ResultingBufferOfCooccurrences(
         calculate_ppmi_tf_(calculate_ppmi_tf), calculate_ppmi_df_(calculate_ppmi_df),
         calc_symetric_cooc_(calc_symetric_cooc) {
   if (calculate_cooc_tf_) {
-    cooc_tf_dict_out_ = OpenAndCheckOutputFile(cooc_tf_file_path);
-    cooc_tf_dict_in_ = OpenAndCheckInputFile(cooc_tf_file_path);
+    cooc_tf_dict_out_ = std::move(OpenAndCheckOutputFile(cooc_tf_file_path));
+    cooc_tf_dict_in_ = std::move(OpenAndCheckInputFile(cooc_tf_file_path));
   }
   if (calculate_cooc_df_) {
-    cooc_df_dict_out_ = OpenAndCheckOutputFile(cooc_df_file_path);
-    cooc_df_dict_in_ = OpenAndCheckInputFile(cooc_df_file_path);
+    cooc_df_dict_out_ = std::move(OpenAndCheckOutputFile(cooc_df_file_path));
+    cooc_df_dict_in_ = std::move(OpenAndCheckInputFile(cooc_df_file_path));
   }
   if (calculate_ppmi_tf_) {
-    ppmi_tf_dict_ = OpenAndCheckOutputFile(ppmi_tf_file_path);
+    ppmi_tf_dict_ = std::move(OpenAndCheckOutputFile(ppmi_tf_file_path));
   }
   if (calculate_ppmi_df_) {
-    ppmi_df_dict_ = OpenAndCheckOutputFile(ppmi_df_file_path);
+    ppmi_df_dict_ = std::move(OpenAndCheckOutputFile(ppmi_df_file_path));
   }
 }
 
