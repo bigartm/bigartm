@@ -792,7 +792,7 @@ std::ifstream ResultingBufferOfCooccurrences::OpenAndCheckInputFile(const std::s
     BOOST_THROW_EXCEPTION(InvalidOperation("Failed to create a file in working directory"));
   }
   ++open_files_in_buf_;
-  return ifile;
+  return std::move(ifile);
 }
 
 std::ofstream ResultingBufferOfCooccurrences::OpenAndCheckOutputFile(const std::string& path) {
