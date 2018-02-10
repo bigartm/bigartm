@@ -886,10 +886,10 @@ void ResultingBufferOfCooccurrences::WriteCoocFromCell(const std::string mode, c
 void ResultingBufferOfCooccurrences::CalculatePpmi() {  // Wrapper around CalculateAndWritePpmi
   std::cout << "Step 3: start calculation ppmi" << std::endl;
   if (calculate_ppmi_tf_) {
-    CalculateAndWritePpmi("tf", total_num_of_pairs_, cooc_tf_dict_in_, ppmi_tf_dict_);
+    CalculateAndWritePpmi("tf", total_num_of_pairs_);
   }
   if (calculate_ppmi_df_) {
-    CalculateAndWritePpmi("df", total_num_of_documents_, cooc_df_dict_in_, ppmi_df_dict_);
+    CalculateAndWritePpmi("df", total_num_of_documents_);
   }
   std::cout << "Ppmi's have been calculated" << std::endl;
 }
@@ -900,8 +900,7 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mod
   // Note: before writing in file all the information is stored in ram
   std::stringstream output_buf;
   std::string str;
-  std::ifstream& cooc_dict_in = mode == "tf" ? cooc_tf_dict_in_ : cooc_df_dict_in_;
-  while (getline(cooc_dict_in, str)) {
+  while (getline(mode == "tf" ? cooc_tf_dict_in_ : cooc_df_dict_in_, str)) {
     boost::algorithm::trim(str);
     std::string first_token_modality = "|@default_class";  // Here's how modality is indicated in output file
     bool new_first_token = true;
@@ -957,9 +956,9 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mod
     }
   }
   if (mode == "tf") {
-    ppmi_tf_dict_out_ << output_buf.str();
+    ppmi_tf_dict_ << output_buf.str();
   } else {
-    ppmi_df_dict_out_ << output_buf.str();
+    ppmi_df_dict_ << output_buf.str();
   }
 }
 
