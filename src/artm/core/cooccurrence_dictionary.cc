@@ -584,7 +584,7 @@ Vocab::Vocab(const std::string& path_to_vocab) {
   for (unsigned last_token_id = 0; getline(vocab_ifile, str); ++last_token_id) {
     boost::algorithm::trim(str);
     std::vector<std::string> strs;
-    boost::split(strs, str, boost::is_any_of(" "));
+    boost::split(strs, str, boost::is_any_of(" \t\r"));
     if (!strs[0].empty()) {
       std::string modality;
       if (strs.size() == 1) {
@@ -907,7 +907,7 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mod
     std::string first_token_modality = "|@default_class";  // Here's how modality is indicated in output file
     bool new_first_token = true;
     std::vector<std::string> strs;
-    boost::split(strs, str, boost::is_any_of(" :"));
+    boost::split(strs, str, boost::is_any_of(" :\t\r"));
     unsigned index_of_first_token = 0;
     // Find modality
     for (; index_of_first_token < strs.size() && (strs[index_of_first_token].empty() ||

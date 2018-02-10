@@ -396,7 +396,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 
         ClassId first_token_class_id = "|@default_class";  // Here's how modality is indicated in output file
         std::vector<std::string> strs;
-        boost::split(strs, str, boost::is_any_of(" :"));
+        boost::split(strs, str, boost::is_any_of(" :\t\r"));
         unsigned pos_of_first_token = 0;
         // Find modality
         for (; pos_of_first_token < strs.size() && (strs[pos_of_first_token].empty() ||
