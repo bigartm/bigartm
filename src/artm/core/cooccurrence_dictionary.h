@@ -223,8 +223,7 @@ class ResultingBufferOfCooccurrences {  // ToDo (MichaelSolotky): make inharitan
   void CalculateTFStatistics();
   void WriteCoocFromCell(const std::string mode, const unsigned cooc_min);  // Output file formats are defined here
   unsigned long long GetCoocFromCell(const std::string& mode, const unsigned record_pos) const;
-  void CalculateAndWritePpmi(const std::string mode, const long double n, 
-                      std::ifstream& cooc_dict_in, std::ofstream& ppmi_dict_out);
+  void CalculateAndWritePpmi(const std::string mode, const long double n);
   double GetTokenFreq(const std::string& mode, const int token_id) const;
 
   std::vector<TokenInfo>& token_statistics_;

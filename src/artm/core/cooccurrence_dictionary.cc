@@ -894,13 +894,13 @@ void ResultingBufferOfCooccurrences::CalculatePpmi() {  // Wrapper around Calcul
   std::cout << "Ppmi's have been calculated" << std::endl;
 }
 
-void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mode, const long double n,
-                                                           std::ifstream& cooc_dict_in, std::ofstream& ppmi_dict_out) {
+void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mode, const long double n) {
   // This function reads cooc file line by line, calculates ppmi and saves them in external file of ppmi
   // stringstream is used for fast bufferized i/o operations
   // Note: before writing in file all the information is stored in ram
   std::stringstream output_buf;
   std::string str;
+  std::ifstream& cooc_dict_in = mode == "tf" ? cooc_tf_dict_in_ : cooc_df_dict_in_;
   while (getline(cooc_dict_in, str)) {
     boost::algorithm::trim(str);
     std::string first_token_modality = "|@default_class";  // Here's how modality is indicated in output file
@@ -956,7 +956,11 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mod
       output_buf << '\n';
     }
   }
-  ppmi_dict_out << output_buf.str();
+  if (mode == "tf") {
+    ppmi_tf_dict_out_ << output_buf.str();
+  } else {
+    ppmi_df_dict_out_ << output_buf.str();
+  }
 }
 
 double ResultingBufferOfCooccurrences::GetTokenFreq(const std::string& mode, const int token_id) const {
