@@ -3,8 +3,8 @@ Downloads
 
 * **Windows**
 
-  * Latest 64 bit release: `BigARTM_v0.8.3_win64 <https://github.com/bigartm/bigartm/releases/download/v0.8.3/BigARTM_v0.8.3_win64.7z>`_
-  * Latest build from master branch: `BigARTM_master_win64.7z <https://ci.appveyor.com/api/projects/bigartm/bigartm/artifacts/BigARTM.7z?branch=stable&job=Environment%3A%20PYTHON_VERSION%3D3.5%2C%20MINICONDA%3DC%3A%5CMiniconda35-x64>`_ (warning, use this with caution)
+  * Latest 64 bit release: `BigARTM_v0.9.0_win64 <https://github.com/bigartm/bigartm/releases/download/v0.9.0/BigARTM_v0.9.0_win64.7z>`_
+  * Latest build from master branch: `BigARTM_master_win64.7z <https://ci.appveyor.com/api/projects/bigartm/bigartm/artifacts/BigARTM.7z?branch=master&job=Environment%3A%20PYTHON_VERSION%3D3.6%2C%20MINICONDA%3DC%3A%5CMiniconda36-x64>`_ (warning, use this with caution)
   * All previous releases are available at https://github.com/bigartm/bigartm/releases
 
 * **Linux, Mac OS-X**

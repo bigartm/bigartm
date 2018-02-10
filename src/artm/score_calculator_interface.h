@@ -12,6 +12,7 @@
 #include "artm/core/phi_matrix.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/token.h"
+#include "artm/artm_export.h"
 #include "artm/messages.pb.h"
 
 namespace artm {
