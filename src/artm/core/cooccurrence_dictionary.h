@@ -196,7 +196,7 @@ struct CooccurrenceBatch::CoocBatchComparator {
   }
 };
 
-class ResultingBufferOfCooccurrences {  // ToDo (MichaelSolotky): make inharitance from CooccurrenceDictionary
+class ResultingBufferOfCooccurrences {
  friend class CooccurrenceDictionary;
  public:
   void CalculatePpmi();

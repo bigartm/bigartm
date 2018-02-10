@@ -801,7 +801,7 @@ std::ofstream ResultingBufferOfCooccurrences::OpenAndCheckOutputFile(const std::
     BOOST_THROW_EXCEPTION(InvalidOperation("Failed to create a file in working directory"));
   }
   ++open_files_in_buf_;
-  return ofile;
+  return std::move(ofile);
 }
 
 // ToDo (MichaelSolotky): may be this can be implemented in more optimal way
