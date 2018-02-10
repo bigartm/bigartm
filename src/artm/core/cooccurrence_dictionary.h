@@ -97,13 +97,14 @@ class CooccurrenceDictionary {
   void ReadVowpalWabbit();
   std::vector<std::string> ReadPortionOfDocuments(std::mutex& read_lock, std::ifstream& vowpal_wabbit_doc);
   unsigned CooccurrenceBatchesQuantity() const;
-  ResultingBufferOfCooccurrences ReadAndMergeCooccurrenceBatches();
+  void ReadAndMergeCooccurrenceBatches();
   ~CooccurrenceDictionary();
  private:
   std::string CreateFileInBatchDir() const;
   void UploadOnDisk(CooccurrenceStatisticsHolder& cooc_stat_holder);
   void FirstStageOfMerging();
-  ResultingBufferOfCooccurrences SecondStageOfMerging(std::vector<std::unique_ptr<CooccurrenceBatch>>& intermediate_batches);
+  void SecondStageOfMerging(ResultingBufferOfCooccurrences& res,
+                            std::vector<std::unique_ptr<CooccurrenceBatch>>& intermediate_batches);
   void KWayMerge(ResultingBufferOfCooccurrences& res, const int mode,
                  std::vector<std::unique_ptr<CooccurrenceBatch>>& vector_of_batches,
                  CooccurrenceBatch& out_batch, std::mutex& open_file_lock);

@@ -324,7 +324,7 @@ unsigned CooccurrenceDictionary::CooccurrenceBatchesQuantity() const {
   return vector_of_batches_.size();
 }
 
-ResultingBufferOfCooccurrences CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
+void CooccurrenceDictionary::ReadAndMergeCooccurrenceBatches() {
   // After that all the statistics has been gathered and saved in form of cooc batches on disk, it
   // needs to be read and merged from cooc batches into one storage
   // If number of cooc batches <= number of files than can be open simultaniously, then
@@ -346,7 +346,18 @@ ResultingBufferOfCooccurrences CooccurrenceDictionary::ReadAndMergeCooccurrenceB
   while (vector_of_batches_.size() > min_num_of_batches) {
     FirstStageOfMerging();  // size is decreasing here
   }
-  return SecondStageOfMerging(vector_of_batches_);
+  ResultingBufferOfCooccurrences res(token_statistics_, vocab_,
+                                     cooc_min_tf_, cooc_min_df_, num_of_cpu_,
+                                     total_num_of_pairs_, total_num_of_documents_,
+                                     calculate_cooc_tf_, calculate_cooc_df_,
+                                     calculate_ppmi_tf_, calculate_ppmi_df_,
+                                     calc_symetric_cooc_,
+                                     cooc_tf_file_path_, cooc_df_file_path_,
+                                     ppmi_tf_file_path_, ppmi_df_file_path_);
+  open_files_counter_ += res.open_files_in_buf_;
+  SecondStageOfMerging(res, vector_of_batches_);
+  std::cout << "Batches have been merged" << std::endl;
+  res.CalculatePpmi();
 }
 
 void CooccurrenceDictionary::FirstStageOfMerging() {
@@ -411,18 +422,9 @@ void CooccurrenceDictionary::FirstStageOfMerging() {
   vector_of_batches_ = std::move(intermediate_batches);
 }
 
-ResultingBufferOfCooccurrences CooccurrenceDictionary::SecondStageOfMerging(
+void CooccurrenceDictionary::SecondStageOfMerging(ResultingBufferOfCooccurrences& res,
                                std::vector<std::unique_ptr<CooccurrenceBatch>>& intermediate_batches) {
   // Stage 2: merging of final batches (in single thread)
-  ResultingBufferOfCooccurrences res(token_statistics_, vocab_,
-                                     cooc_min_tf_, cooc_min_df_, num_of_cpu_,
-                                     total_num_of_pairs_, total_num_of_documents_,
-                                     calculate_cooc_tf_, calculate_cooc_df_,
-                                     calculate_ppmi_tf_, calculate_ppmi_df_,
-                                     calc_symetric_cooc_,
-                                     cooc_tf_file_path_, cooc_df_file_path_,
-                                     ppmi_tf_file_path_, ppmi_df_file_path_);
-  open_files_counter_ += res.open_files_in_buf_;
   std::mutex open_close_file_mutex;
   // Note: the 4th arg is fake, it's not used later if mode == OUTPUT_FILE
   KWayMerge(res, OUTPUT_FILE, intermediate_batches, *intermediate_batches[0], open_close_file_mutex);
@@ -434,8 +436,6 @@ ResultingBufferOfCooccurrences CooccurrenceDictionary::SecondStageOfMerging(
     res.cooc_df_dict_out_.close();
   }
   open_files_counter_ -= 2;
-  std::cout << "Batches have been merged" << std::endl;
-  return res;
 }
 
 void CooccurrenceDictionary::KWayMerge(ResultingBufferOfCooccurrences& res, const int mode,

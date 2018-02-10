@@ -2012,8 +2012,7 @@ int main(int argc, char * argv[]) {
       if (cooc_dictionary.VocabSize() >= 2) {
         cooc_dictionary.ReadVowpalWabbit();
         if (cooc_dictionary.CooccurrenceBatchesQuantity() != 0) {
-          ::artm::core::ResultingBufferOfCooccurrences res = cooc_dictionary.ReadAndMergeCooccurrenceBatches();
-          res.CalculatePpmi();
+          cooc_dictionary.ReadAndMergeCooccurrenceBatches();
         }
       }
     }
