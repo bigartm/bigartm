@@ -910,8 +910,8 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mod
     boost::split(strs, str, boost::is_any_of(" :"));
     unsigned index_of_first_token = 0;
     // Find modality
-    for (; index_of_first_token < strs.size() && (strs[index_of_first_token][0] == '|' ||
-                                                 strs[index_of_first_token].empty()); ++index_of_first_token) {
+    for (; index_of_first_token < strs.size() && (strs[index_of_first_token].empty() ||
+                                                  strs[index_of_first_token][0] == '|'); ++index_of_first_token) {
       if (strs[index_of_first_token].empty()) {
         continue;
       }
@@ -922,8 +922,8 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mod
     std::string prev_modality = first_token_modality;
     for (unsigned i = index_of_first_token + 1; i + not_a_word_counter < strs.size(); i += 2) {
       std::string second_token_modality = first_token_modality;
-      for (; i + not_a_word_counter < strs.size() && (strs[i + not_a_word_counter][0] == '|' ||
-                                                     strs[i + not_a_word_counter].empty()); ++not_a_word_counter) {
+      for (; i + not_a_word_counter < strs.size() && (strs[i + not_a_word_counter].empty() ||
+                                                      strs[i + not_a_word_counter][0] == '|'); ++not_a_word_counter) {
         if (strs[i + not_a_word_counter].empty()) {
           continue;
         }

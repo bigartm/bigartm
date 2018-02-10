@@ -399,8 +399,8 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
         boost::split(strs, str, boost::is_any_of(" :"));
         unsigned pos_of_first_token = 0;
         // Find modality
-        for (; pos_of_first_token < strs.size() && (strs[pos_of_first_token][0] == '|' ||
-                                                     strs[pos_of_first_token].empty()); ++pos_of_first_token) {
+        for (; pos_of_first_token < strs.size() && (strs[pos_of_first_token].empty() ||
+                                                    strs[pos_of_first_token][0] == '|'); ++pos_of_first_token) {
           if (strs[pos_of_first_token].empty()) {
             continue;
           }
@@ -411,8 +411,8 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
         unsigned not_a_word_counter = 0;
         for (unsigned i = pos_of_first_token + 1; i + not_a_word_counter < strs.size(); i += 2) {
           ClassId second_token_class_id = first_token_class_id;
-          for (; i + not_a_word_counter < strs.size() && (strs[i + not_a_word_counter][0] == '|' ||
-                                                         strs[i + not_a_word_counter].empty()); ++not_a_word_counter) {
+          for (; i + not_a_word_counter < strs.size() && (strs[i + not_a_word_counter].empty() ||
+                                                          strs[i + not_a_word_counter][0] == '|'); ++not_a_word_counter) {
             if (strs[i + not_a_word_counter].empty()) {
               continue;
             }
