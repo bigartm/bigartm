@@ -394,7 +394,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
         std::getline(user_cooc_data, str);
         boost::algorithm::trim(str);
 
-        ClassId first_token_class_id = "|@default_class";  // Here's how modality is indicated in output file
+        ClassId first_token_class_id = DefaultClass;  // Here's how modality is indicated in output file
         std::vector<std::string> strs;
         boost::split(strs, str, boost::is_any_of(" :\t\r"));
         unsigned pos_of_first_token = 0;
@@ -405,9 +405,16 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
             continue;
           }
           first_token_class_id = strs[pos_of_first_token];
+          first_token_class_id.erase(0);
         }
         std::string first_token_str = strs[pos_of_first_token];
         Token first_token(first_token_class_id, first_token_str);
+        auto first_token_ptr = token_to_token_id.find(first_token);
+        if (first_token_ptr == token_to_token_id.end()) {
+          std::stringstream ss;
+          ss << "Token (" << first_token.keyword << ", " << first_token.class_id << ") not found in vocab";
+          BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+        }
         unsigned not_a_word_counter = 0;
         for (unsigned i = pos_of_first_token + 1; i + not_a_word_counter < strs.size(); i += 2) {
           ClassId second_token_class_id = first_token_class_id;
@@ -417,14 +424,21 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
               continue;
             }
             second_token_class_id = strs[i + not_a_word_counter];
+            second_token_class_id.erase(0);
           }
           if (i + not_a_word_counter + 1 >= strs.size()) {
             break;
           }
           std::string second_token_str = strs[i + not_a_word_counter];
           Token second_token(second_token_class_id, second_token_str);
-          int first_index = token_to_token_id[first_token];
-          int second_index = token_to_token_id[second_token];
+          auto second_token_ptr = token_to_token_id.find(second_token);
+          if (second_token_ptr == token_to_token_id.end()) {
+            std::stringstream ss;
+            ss << "Token (" << second_token.keyword << ", " << second_token.class_id << ") not found in vocab";
+            BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+          }
+          int first_index = first_token_ptr->second;
+          int second_index = second_token_ptr->second;
           float value = std::stof(strs[i + not_a_word_counter + 1]);
 
           dictionary->AddCoocValue(first_index, second_index, value);
