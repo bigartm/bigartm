@@ -389,49 +389,67 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
       std::istream& user_cooc_data = stream_or_cin.get_stream();
 
       // Craft the co-occurence part of dictionary
-      int index = 0;
       std::string str;
-      bool last_line = false;
+      BOOST_THROW_EXCEPTION(InvalidOperation("not segfault\n"));
       while (!user_cooc_data.eof()) {
-        if (last_line) {
-          std::stringstream ss;
-          ss << "Empty pair of tokens at line " << index << ", file " << args.cooc_file_path();
-          BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-        }
         std::getline(user_cooc_data, str);
-        ++index;
         boost::algorithm::trim(str);
-        if (str.empty()) {
-          last_line = true;
+
+        ClassId first_token_class_id = DefaultClass;  // Here's how modality is indicated in output file
+        std::vector<std::string> strs;
+        boost::split(strs, str, boost::is_any_of(" :\t\r"));
+        unsigned pos_of_first_token = 0;
+        // Find modality and position of the first token
+        for (; pos_of_first_token < strs.size() && (strs[pos_of_first_token].empty() ||
+                                                    strs[pos_of_first_token][0] == '|'); ++pos_of_first_token) {
+          if (!strs[pos_of_first_token].empty()) {
+            first_token_class_id = strs[pos_of_first_token];
+            first_token_class_id.erase(0);
+          }
+        }
+        if (pos_of_first_token >= strs.size()) {
           continue;
         }
-
-        std::vector<std::string> strs;
-        boost::split(strs, str, boost::is_any_of("\t "));
-        if (strs.size() < 3) {
+        std::string first_token_str = strs[pos_of_first_token];
+        Token first_token(first_token_class_id, first_token_str);
+        auto first_token_ptr = token_to_token_id.find(first_token);
+        if (first_token_ptr == token_to_token_id.end()) {
           std::stringstream ss;
-          ss << "Error at line " << index << ", file " << args.cooc_file_path()
-            << ". Expected format: <token_id_1> <token_id_2> {<cooc_value>}";
+          ss << "Token (" << first_token.keyword << ", " << first_token.class_id << ") not found in vocab";
           BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
         }
+        unsigned not_a_word_counter = 0;
+        for (unsigned i = pos_of_first_token + 1; i + not_a_word_counter < strs.size(); i += 2) {
+          ClassId second_token_class_id = first_token_class_id;
+          for (; i + not_a_word_counter < strs.size() && (strs[i + not_a_word_counter].empty() ||
+                                                          strs[i + not_a_word_counter][0] == '|'); ++not_a_word_counter) {
+            if (!strs[i + not_a_word_counter].empty()) {
+              second_token_class_id = strs[i + not_a_word_counter];
+              second_token_class_id.erase(0);
+            }
+          }
+          if (i + not_a_word_counter + 1 >= strs.size()) {
+            break;
+          }
+          std::string second_token_str = strs[i + not_a_word_counter];
+          Token second_token(second_token_class_id, second_token_str);
+          auto second_token_ptr = token_to_token_id.find(second_token);
+          if (second_token_ptr == token_to_token_id.end()) {
+            std::stringstream ss;
+            ss << "Token (" << second_token.keyword << ", " << second_token.class_id << ") not found in vocab";
+            BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+          }
+          int first_index = first_token_ptr->second;
+          int second_index = second_token_ptr->second;
+          float value = std::stof(strs[i + not_a_word_counter + 1]);
 
-        if (strs.size() != 3) {
-          std::stringstream ss;
-          ss << "Error at line " << index << ", file " << args.cooc_file_path()
-            << ". Number of values in all lines should be equal to 3";
-          BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-        }
+          dictionary->AddCoocValue(first_index, second_index, value);
 
-        int first_index = std::stoi(strs[0]);
-        int second_index = std::stoi(strs[1]);
-        float value = std::stof(strs[2]);
+          // ToDo(MelLain): support adding tf/df in future
 
-        dictionary->AddCoocValue(first_index, second_index, value);
-
-        // ToDo(MelLain): support adding tf/df in future
-
-        if (args.symmetric_cooc_values()) {
-          dictionary->AddCoocValue(second_index, first_index, value);
+          if (args.symmetric_cooc_values()) {
+            dictionary->AddCoocValue(second_index, first_index, value);
+          }
         }
       }
     }
@@ -492,7 +510,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
 
   // Handle max_dictionary_size
   if (args.has_max_dictionary_size() &&
-          ((int64_t) args.max_dictionary_size() < df_values.size())) {
+          ((int64_t) args.max_dictionary_size() < (int64_t) df_values.size())) {
     std::sort(df_values.begin(), df_values.end(), std::greater<float>());
     float min_df_due_to_size = df_values[args.max_dictionary_size()];
 
