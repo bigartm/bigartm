@@ -912,10 +912,9 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mod
     // Find modality
     for (; index_of_first_token < strs.size() && (strs[index_of_first_token].empty() ||
                                                   strs[index_of_first_token][0] == '|'); ++index_of_first_token) {
-      if (strs[index_of_first_token].empty()) {
-        continue;
+      if (!strs[index_of_first_token].empty()) {
+        first_token_modality = strs[index_of_first_token];
       }
-      first_token_modality = strs[index_of_first_token];
     }
     std::string first_token_str = strs[index_of_first_token];
     unsigned not_a_word_counter = 0;
@@ -924,10 +923,9 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mod
       std::string second_token_modality = first_token_modality;
       for (; i + not_a_word_counter < strs.size() && (strs[i + not_a_word_counter].empty() ||
                                                       strs[i + not_a_word_counter][0] == '|'); ++not_a_word_counter) {
-        if (strs[i + not_a_word_counter].empty()) {
-          continue;
+        if (!strs[i + not_a_word_counter].empty()) {
+          second_token_modality = strs[i + not_a_word_counter];
         }
-        second_token_modality = strs[i + not_a_word_counter];
       }
       if (i + not_a_word_counter + 1 >= strs.size()) {
         break;

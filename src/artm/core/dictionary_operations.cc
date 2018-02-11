@@ -390,6 +390,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 
       // Craft the co-occurence part of dictionary
       std::string str;
+      BOOST_THROW_EXCEPTION(InvalidOperation("not segfault\n");
       while (!user_cooc_data.eof()) {
         std::getline(user_cooc_data, str);
         boost::algorithm::trim(str);
@@ -398,14 +399,16 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
         std::vector<std::string> strs;
         boost::split(strs, str, boost::is_any_of(" :\t\r"));
         unsigned pos_of_first_token = 0;
-        // Find modality
+        // Find modality and position of the first token
         for (; pos_of_first_token < strs.size() && (strs[pos_of_first_token].empty() ||
                                                     strs[pos_of_first_token][0] == '|'); ++pos_of_first_token) {
-          if (strs[pos_of_first_token].empty()) {
-            continue;
+          if (!strs[pos_of_first_token].empty()) {
+            first_token_class_id = strs[pos_of_first_token];
+            first_token_class_id.erase(0);
           }
-          first_token_class_id = strs[pos_of_first_token];
-          first_token_class_id.erase(0);
+        }
+        if (pos_of_first_token >= strs.size()) {
+          continue;
         }
         std::string first_token_str = strs[pos_of_first_token];
         Token first_token(first_token_class_id, first_token_str);
@@ -420,11 +423,10 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
           ClassId second_token_class_id = first_token_class_id;
           for (; i + not_a_word_counter < strs.size() && (strs[i + not_a_word_counter].empty() ||
                                                           strs[i + not_a_word_counter][0] == '|'); ++not_a_word_counter) {
-            if (strs[i + not_a_word_counter].empty()) {
-              continue;
+            if (!strs[i + not_a_word_counter].empty()) {
+              second_token_class_id = strs[i + not_a_word_counter];
+              second_token_class_id.erase(0);
             }
-            second_token_class_id = strs[i + not_a_word_counter];
-            second_token_class_id.erase(0);
           }
           if (i + not_a_word_counter + 1 >= strs.size()) {
             break;
