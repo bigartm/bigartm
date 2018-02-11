@@ -438,7 +438,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
             std::stringstream ss;
             ss << "Token (" << second_token.keyword << ", " << second_token.class_id << ") not found in vocab";
             BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-          }
+          } 
           int first_index = first_token_ptr->second;
           int second_index = second_token_ptr->second;
           float value = std::stof(strs[i + not_a_word_counter + 1]);
