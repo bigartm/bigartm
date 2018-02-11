@@ -390,7 +390,6 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 
       // Craft the co-occurence part of dictionary
       std::string str;
-      BOOST_THROW_EXCEPTION(InvalidOperation("not segfault\n"));
       while (!user_cooc_data.eof()) {
         std::getline(user_cooc_data, str);
         boost::algorithm::trim(str);
