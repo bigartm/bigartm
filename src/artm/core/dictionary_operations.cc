@@ -447,7 +447,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 
           // ToDo(MelLain): support adding tf/df in future
 
-          if (args.symmetric_cooc_values()) { 
+          if (args.symmetric_cooc_values()) {
             dictionary->AddCoocValue(second_index, first_index, value);
           }
         }
