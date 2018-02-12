@@ -28,7 +28,7 @@ namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 
 #include "artm/cpp_interface.h"
-//#include "artm/core/cooccurrence_dictionary.h"
+#include "artm/core/cooccurrence_dictionary.h"
 
 using namespace artm;
 

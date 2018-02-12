@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "artm/c_interface.h"
-#include "artm/core/cooccurrence_dictionary.h"
 
 #if defined(_MSC_VER)
 #pragma warning(push)
