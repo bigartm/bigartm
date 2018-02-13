@@ -11,7 +11,7 @@
 #include <sstream>
 #include <iomanip>
 #include <memory>
-#include <mutex>
+#include <mutex>  // NOLINT
 
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
@@ -32,7 +32,7 @@ namespace core {
 
 struct CoocInfo {
   int second_token_id;
-  unsigned long long cooc_tf;
+  int64_t cooc_tf;
   unsigned cooc_df;
 };
 
@@ -40,9 +40,9 @@ struct CoocInfo {
 // Every cell refers to its first token id and holds info about tokens that co-occur with it
 // You need firstly to read cell header then records
 struct Cell {
-  Cell(int first_token_id = -1, unsigned num_of_records = 0) : 
+  explicit Cell(int first_token_id = -1, unsigned num_of_records = 0) :
        first_token_id(first_token_id), num_of_records(num_of_records) { }
-  unsigned long long GetCoocFromCell(const std::string& mode, const unsigned record_pos) const {
+  int64_t GetCoocFromCell(const std::string& mode, const unsigned record_pos) const {
     if (mode == "tf") {
       return records[record_pos].cooc_tf;
     } else {
@@ -57,7 +57,7 @@ struct Cell {
 struct TokenInfo {
   TokenInfo() : num_of_documents_token_occured_in(0), num_of_pairs_token_occured_in(0) { }
   unsigned num_of_documents_token_occured_in;
-  unsigned long long num_of_pairs_token_occured_in;
+  int64_t num_of_pairs_token_occured_in;
 };
 
 class CooccurrenceDictionary;
@@ -67,17 +67,19 @@ class CooccurrenceBatch;
 class ResultingBufferOfCooccurrences;
 
 class Vocab {
- friend class CooccurrenceDictionary;
- friend class ResultingBufferOfCooccurrences;
+  friend class CooccurrenceDictionary;
+  friend class ResultingBufferOfCooccurrences;
  public:
   struct TokenModality {
     TokenModality() { }
-    TokenModality(const std::string token_str, const std::string modality) : token_str(token_str), modality(modality) { }
+    TokenModality(const std::string token_str, const std::string modality) :
+                  token_str(token_str), modality(modality) { }
     std::string token_str;
     std::string modality;
   };
+
  private:
-  Vocab(const std::string& path_to_vocab);
+  explicit Vocab(const std::string& path_to_vocab);
   std::string MakeKey(const std::string& token_str, const std::string& modality) const;
   int FindTokenId(const std::string& token_str, const std::string& modality) const;
   TokenModality FindTokenStr(const int token_id) const;
@@ -99,6 +101,7 @@ class CooccurrenceDictionary {
   unsigned CooccurrenceBatchesQuantity() const;
   void ReadAndMergeCooccurrenceBatches();
   ~CooccurrenceDictionary();
+
  private:
   std::string CreateFileInBatchDir() const;
   void UploadOnDisk(CooccurrenceStatisticsHolder& cooc_stat_holder);
@@ -128,24 +131,26 @@ class CooccurrenceDictionary {
   bool calculate_ppmi_tf_;
   bool calculate_ppmi_df_;
   bool calc_symetric_cooc_;
-  Vocab vocab_; // Holds mapping tokens to their indices
-  std::vector<TokenInfo> token_statistics_; // index here is token_id which can be hound in vocab_dictionary
+  Vocab vocab_;  // Holds mapping tokens to their indices
+  std::vector<TokenInfo> token_statistics_;  // index here is token_id which can be hound in vocab_dictionary
   std::string path_to_batches_;
   std::vector<std::unique_ptr<CooccurrenceBatch>> vector_of_batches_;
   unsigned open_files_counter_;
   unsigned max_num_of_open_files_;
-  unsigned long long total_num_of_pairs_;
+  int64_t total_num_of_pairs_;
   unsigned total_num_of_documents_;
   unsigned doc_per_cooc_batch_;
   unsigned num_of_cpu_;
 };
 
 class CooccurrenceStatisticsHolder {
- friend class CooccurrenceDictionary;
+  friend class CooccurrenceDictionary;
  public:
   struct FirstToken;
   struct SecondTokenAndCooccurrence;
-  void SavePairOfTokens(const int first_token_id, const int second_token_id, const unsigned doc_id, const double weight = 1);
+  void SavePairOfTokens(const int first_token_id, const int second_token_id,
+                        const unsigned doc_id, const double weight = 1);
+
  private:
   // Here's two-level structure storage_
   // Vector was chosen because it has a very low memory overhead
@@ -157,12 +162,12 @@ struct CooccurrenceStatisticsHolder::FirstToken {
 };
 
 struct CooccurrenceStatisticsHolder::SecondTokenAndCooccurrence {
-  SecondTokenAndCooccurrence(const unsigned doc_id, const unsigned long long cooc_tf = 1) :
-                             last_doc_id(doc_id), cooc_tf(cooc_tf), cooc_df(1) { }
+  explicit SecondTokenAndCooccurrence(const unsigned doc_id, const int64_t cooc_tf = 1) :
+                                      last_doc_id(doc_id), cooc_tf(cooc_tf), cooc_df(1) { }
   // When a new pair comes, this field is checked and if current doc_id isn't
   // equal to previous cooc_df should be incremented
-  unsigned last_doc_id; // id of the last document where the pair occurred
-  unsigned long long cooc_tf;
+  unsigned last_doc_id;  // id of the last document where the pair occurred
+  int64_t cooc_tf;
   unsigned cooc_df;
 };
 
@@ -170,8 +175,8 @@ struct CooccurrenceStatisticsHolder::SecondTokenAndCooccurrence {
 // a spesific file stored on disc. This buffer holds only one cell at a time.
 // Also it's a wrapper around a ifstream and ofstream of an external file
 class CooccurrenceBatch: private boost::noncopyable {
- friend class CooccurrenceDictionary;
- friend class ResultingBufferOfCooccurrences;
+  friend class CooccurrenceDictionary;
+  friend class ResultingBufferOfCooccurrences;
  public:
   struct CoocBatchComparator;
   void FormNewCell(const std::map<int, CooccurrenceStatisticsHolder::FirstToken>::iterator& cooc_stat_node);
@@ -179,14 +184,15 @@ class CooccurrenceBatch: private boost::noncopyable {
   bool ReadCellHeader();
   void ReadRecords();
   bool ReadCell(); // Initiates reading of a cell from a file (e.g. call of ReadCellHeader() and ReadRecords())
+
  private:
-  CooccurrenceBatch(const std::string& path_to_batches);
+  explicit CooccurrenceBatch(const std::string& path_to_batches);
 
   Cell cell_;
   std::ifstream in_batch_;
   std::ofstream out_batch_;
   std::string filename_;
-  long in_batch_offset_;
+  int64_t in_batch_offset_;
 };
 
 struct CooccurrenceBatch::CoocBatchComparator {
@@ -197,9 +203,10 @@ struct CooccurrenceBatch::CoocBatchComparator {
 };
 
 class ResultingBufferOfCooccurrences {
- friend class CooccurrenceDictionary;
+  friend class CooccurrenceDictionary;
  public:
   void CalculatePpmi();
+
  private:
   ResultingBufferOfCooccurrences(
       std::vector<TokenInfo>& token_statistics_,
@@ -207,7 +214,7 @@ class ResultingBufferOfCooccurrences {
       const unsigned cooc_min_tf = 0,
       const unsigned cooc_min_df = 0,
       const unsigned num_of_cpu = 1,
-      const unsigned long long total_num_of_pairs = 0,
+      const int64_t total_num_of_pairs = 0,
       const unsigned total_num_of_documents = 0,
       const bool calculate_cooc_tf = false,
       const bool calculate_cooc_df = false,
@@ -218,12 +225,12 @@ class ResultingBufferOfCooccurrences {
       const std::string& cooc_df_file_path = "",
       const std::string& ppmi_tf_file_path = "",
       const std::string& ppmi_df_file_path = "");
-  void CheckInputFile(std::ifstream& file);
-  void CheckOutputFile(std::ofstream& file);
+  void CheckInputFile(std::ifstream& file, const std::string& filename);
+  void CheckOutputFile(std::ofstream& file, const std::string& filename);
   void MergeWithExistingCell(const CooccurrenceBatch& batch);
   void CalculateTFStatistics();
   void WriteCoocFromCell(const std::string mode, const unsigned cooc_min);  // Output file formats are defined here
-  unsigned long long GetCoocFromCell(const std::string& mode, const unsigned record_pos) const;
+  int64_t GetCoocFromCell(const std::string& mode, const unsigned record_pos) const;
   void CalculateAndWritePpmi(const std::string mode, const long double n);
   double GetTokenFreq(const std::string& mode, const int token_id) const;
 
@@ -232,7 +239,7 @@ class ResultingBufferOfCooccurrences {
   const unsigned cooc_min_tf_;
   const unsigned cooc_min_df_;
   const unsigned num_of_cpu_;
-  const unsigned long long total_num_of_pairs_;
+  const int64_t total_num_of_pairs_;
   const unsigned total_num_of_documents_;
   unsigned open_files_in_buf_;
   const bool calculate_cooc_tf_;

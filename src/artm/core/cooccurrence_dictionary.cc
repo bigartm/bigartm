@@ -8,16 +8,17 @@
 #include <fstream>
 #include <map>
 #include <vector>
-#include <future>
-#include <mutex>
+#include <future>  // NOLINT
+#include <mutex>  // NOLINT
+#include <thread>  // NOLINT
 #include <sstream>
 #include <iomanip>
 #include <memory>
 #include <cassert>
 #include <stdexcept>
-#include <chrono>
-#include <thread>
 #include <queue>
+#include <algorithm>
+#include <utility>
 
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
@@ -42,8 +43,8 @@ namespace core {
 // 4.a understand how to extract text from batches
 // 5. think how to specify ppmi and cooc output files
 
-// ToDo (MichaelSolotky): add vw output format and edit method Gather
 // ToDo (MichaelSolotky): write docs
+// ToDo (MichaelSolotky): gather cooc depending on modalities set in collection perser config
 
 // ****************************** Methods of class CooccurrenceDictionary ***********************************
 
@@ -55,7 +56,7 @@ CooccurrenceDictionary::CooccurrenceDictionary(const unsigned window_width,
     const std::string& ppmi_tf_file_path,
     const std::string& ppmi_df_file_path, const int num_of_cpu,
     const unsigned doc_per_cooc_batch) :
-        window_width_(window_width), cooc_min_tf_(cooc_min_tf), cooc_min_df_(cooc_min_df), 
+        window_width_(window_width), cooc_min_tf_(cooc_min_tf), cooc_min_df_(cooc_min_df),
         path_to_vw_(path_to_vw),
         cooc_tf_file_path_(cooc_tf_file_path),
         cooc_df_file_path_(cooc_df_file_path),
@@ -64,12 +65,21 @@ CooccurrenceDictionary::CooccurrenceDictionary(const unsigned window_width,
         calc_symetric_cooc_(true), vocab_(path_to_vocab),
         open_files_counter_(0), max_num_of_open_files_(500), total_num_of_pairs_(0),
         total_num_of_documents_(0), doc_per_cooc_batch_(doc_per_cooc_batch) {
-  // Calculation of token co-occurrence starts with this class
+  // ToDo (MichaelSolotky): rewrite it
+  // Calculation of token co-occurrence starts with this class.
+  // Scheme of gathering of token co-occurrences statistics is the folowing:
+  // 1. Get unique tokens from vocab file
+  // 2. Read Vowpal Wabbit file by portions, calculate co-occurrences of
+  // tokens from vocab for every portion and save it (in form of cooccurrence batch) on external storage
+  // 3. Read from external storage all the cooccurrence batches piece by
+  // piece and create resulting file with all co-occurrences
+  // 4. Use co-occurrence counters to calculate positive pmi of token pairs
+
   // Initialize path to batches
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
   fs::path dir(boost::lexical_cast<std::string>(uuid));
   if (fs::exists(dir)) {
-    BOOST_THROW_EXCEPTION(InvalidOperation("Folder with uuid " + 
+    BOOST_THROW_EXCEPTION(InvalidOperation("Folder with uuid " +
                                            boost::lexical_cast<std::string>(uuid) +
                                            "already exists"));
   }
@@ -141,8 +151,9 @@ void CooccurrenceDictionary::ReadVowpalWabbit() {
   std::mutex total_num_of_documents_arg_access;
   std::mutex total_num_of_pairs_arg_access;
 
-  auto func = [&]() {
-    unsigned long long local_num_of_pairs = 0;
+  auto func = [&read_mutex, &stdout_mutex, &token_statistics_arg_access, &total_num_of_documents_arg_access,
+               &total_num_of_pairs_arg_access, &vowpal_wabbit_doc, &documents_processed, this]() {
+    int64_t local_num_of_pairs = 0;
     while (true) {  // Loop throgh portions.
       // Steps 1-3:
       std::vector<std::string> portion = ReadPortionOfDocuments(read_mutex, vowpal_wabbit_doc);
@@ -287,8 +298,8 @@ void CooccurrenceDictionary::UploadOnDisk(CooccurrenceStatisticsHolder& cooc_sta
   // 1. Create a batch which is associated with a specific file on a disk
   // 2. For every first token id create an object Cell and for every second token
   // that co-occurred with first write it's id, cooc_tf, cooc_df
-  // 3. Write the cell in output file and continue the cicle while there are 
-  // first token ids in cooccurrence statistics holder 
+  // 3. Write the cell in output file and continue the cicle while there are
+  // first token ids in cooccurrence statistics holder
   // Note that there can't be two cells stored in ram simultaniously
   // 4. Save batch in vector of objects
   std::unique_ptr<CooccurrenceBatch> batch(CreateNewCooccurrenceBatch());
@@ -368,13 +379,9 @@ void CooccurrenceDictionary::FirstStageOfMerging() {
 
   unsigned portion_size = std::min(static_cast<unsigned>(vector_of_batches_.size() / num_of_threads),
                                    (max_num_of_open_files_ - num_of_threads) / num_of_threads);
-  std::vector<std::unique_ptr<CooccurrenceBatch>> intermediate_batches;
   std::mutex open_close_file_mutex;
-  std::mutex worker_thread_mutex;
-  std::mutex intermediate_batches_access;
-  std::queue<unsigned> queue_of_indices;
 
-  auto func = [&](unsigned i) {  // Wrapper around KWayMerge
+  auto func = [&open_close_file_mutex, portion_size, this](unsigned i) {  // Wrapper around KWayMerge
     std::unique_ptr<CooccurrenceBatch> batch(CreateNewCooccurrenceBatch());
     OpenBatchOutputFile(*batch);
     ResultingBufferOfCooccurrences intermediate_buffer(token_statistics_, vocab_);
@@ -388,7 +395,13 @@ void CooccurrenceDictionary::FirstStageOfMerging() {
     return batch;
   };
 
-  auto worker_thread = [&]() {
+  std::vector<std::unique_ptr<CooccurrenceBatch>> intermediate_batches;
+  std::mutex worker_thread_mutex;
+  std::mutex intermediate_batches_access;
+  std::queue<unsigned> queue_of_indices;
+
+  auto worker_thread = [&intermediate_batches, &worker_thread_mutex,
+                        &intermediate_batches_access, &queue_of_indices, &func]() {
     while (true) {
       unsigned index;
       {  // take one task from queue of tasks
@@ -598,7 +611,8 @@ Vocab::Vocab(const std::string& path_to_vocab) {
         token_map_.insert(std::make_pair(key, last_token_id));
         inverse_token_map_.insert(std::make_pair(last_token_id, TokenModality(strs[0], modality)));
       } else {
-        BOOST_THROW_EXCEPTION(InvalidOperation("There are repeated tokens in vocab file. Please remove all the duplications"));
+        BOOST_THROW_EXCEPTION(InvalidOperation(
+          "There are repeated tokens in vocab file. Please remove all the duplications"));
       }
     }
   }
@@ -659,7 +673,7 @@ void CooccurrenceStatisticsHolder::SavePairOfTokens(const int first_token_id, co
   }
 }
 
-// **************************************** Methods of class CooccurrenceBatch ********************************************
+// ************************************** Methods of class CooccurrenceBatch ******************************************
 
 CooccurrenceBatch::CooccurrenceBatch(const std::string& path_to_batches) : in_batch_offset_(0) {
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
@@ -668,14 +682,15 @@ CooccurrenceBatch::CooccurrenceBatch(const std::string& path_to_batches) : in_ba
   filename_ = full_filename.string();
 }
 
-void CooccurrenceBatch::FormNewCell(const std::map<int, CooccurrenceStatisticsHolder::FirstToken>::iterator& cooc_stat_node) {
+void CooccurrenceBatch::FormNewCell(const std::map<int, CooccurrenceStatisticsHolder::FirstToken>
+                                             ::iterator& cooc_stat_node) {
   // Here is initialization of a new cell
   // A cell consists on first_token_id, number of records it includes
   // Then records go, every reord consists on second_token_id, cooc_tf, cooc_df
 
   cell_.first_token_id = cooc_stat_node->first;
   // while reading from file it's necessery to know how many records to read
-  std::map<int, CooccurrenceStatisticsHolder::SecondTokenAndCooccurrence>& 
+  std::map<int, CooccurrenceStatisticsHolder::SecondTokenAndCooccurrence>&
                                   second_token_reference = cooc_stat_node->second.second_token_reference;
   cell_.num_of_records = second_token_reference.size();
   cell_.records.resize(cell_.num_of_records);
@@ -747,17 +762,17 @@ void CooccurrenceBatch::ReadRecords() {
 
 // **************************** Methods of class ResultingBufferOfCooccurrences ********************************
 
-// The main purpose of this class is to store statistics of co-occurrences and some 
+// The main purpose of this class is to store statistics of co-occurrences and some
 // variables calculated on base of them, perform that calculations, write that in file
-// resulting file and read from it. 
+// resulting file and read from it.
 // This class stores cells of data from batches before they are written in resulting files
-// A cell can from a batch can come in this buffer and be merged with current stored 
-// (in case first_token_ids of cells are equal) or the current cell can be pushed from buffer in file 
+// A cell can from a batch can come in this buffer and be merged with current stored
+// (in case first_token_ids of cells are equal) or the current cell can be pushed from buffer in file
 // (in case first_token_ids aren't equal) and new cell takes place of the old one
 ResultingBufferOfCooccurrences::ResultingBufferOfCooccurrences(
     std::vector<TokenInfo>& token_statistics, Vocab& vocab,
     const unsigned cooc_min_tf, const unsigned cooc_min_df, const unsigned num_of_cpu,
-    const unsigned long long total_num_of_pairs, const unsigned total_num_of_documents,
+    const int64_t total_num_of_pairs, const unsigned total_num_of_documents,
     const bool calculate_cooc_tf, const bool calculate_cooc_df,
     const bool calculate_ppmi_tf, const bool calculate_ppmi_df,
     const bool calc_symetric_cooc,
@@ -770,37 +785,39 @@ ResultingBufferOfCooccurrences::ResultingBufferOfCooccurrences(
         calculate_cooc_tf_(calculate_cooc_tf), calculate_cooc_df_(calculate_cooc_df),
         calculate_ppmi_tf_(calculate_ppmi_tf), calculate_ppmi_df_(calculate_ppmi_df),
         calc_symetric_cooc_(calc_symetric_cooc) {
-  if (calculate_cooc_tf_) {
-    cooc_tf_dict_in_.open(cooc_tf_file_path, std::ios::in);
-    CheckInputFile(cooc_tf_dict_in_);
+  if (calculate_cooc_tf_) {  // It's important firstly to create file (open output file)
     cooc_tf_dict_out_.open(cooc_tf_file_path, std::ios::out);
-    CheckOutputFile(cooc_tf_dict_out_);
+    CheckOutputFile(cooc_tf_dict_out_, cooc_tf_file_path);
+    cooc_tf_dict_in_.open(cooc_tf_file_path, std::ios::in);
+    CheckInputFile(cooc_tf_dict_in_, cooc_tf_file_path);
   }
   if (calculate_cooc_df_) {
-    cooc_df_dict_in_.open(cooc_df_file_path, std::ios::in);
-    CheckInputFile(cooc_df_dict_in_);
     cooc_df_dict_out_.open(cooc_df_file_path, std::ios::out);
-    CheckOutputFile(cooc_df_dict_out_);
+    CheckOutputFile(cooc_df_dict_out_, cooc_df_file_path);
+    cooc_df_dict_in_.open(cooc_df_file_path, std::ios::in);
+    CheckInputFile(cooc_df_dict_in_, cooc_tf_file_path);
   }
   if (calculate_ppmi_tf_) {
     ppmi_tf_dict_.open(ppmi_tf_file_path, std::ios::out);
-    CheckOutputFile(ppmi_tf_dict_);
+    CheckOutputFile(ppmi_tf_dict_, ppmi_tf_file_path);
   }
   if (calculate_ppmi_df_) {
     ppmi_df_dict_.open(ppmi_df_file_path, std::ios::out);
-    CheckOutputFile(ppmi_df_dict_);
+    CheckOutputFile(ppmi_df_dict_, ppmi_df_file_path);
   }
 }
 
-void ResultingBufferOfCooccurrences::CheckInputFile(std::ifstream& file) {
+void ResultingBufferOfCooccurrences::CheckInputFile(std::ifstream& file, const std::string& filename) {
   if (!file.good()) {
-    BOOST_THROW_EXCEPTION(InvalidOperation("Failed to create a file in working directory"));
+    BOOST_THROW_EXCEPTION(InvalidOperation("Failed to open input file " +
+                                            filename + " in working directory"));
   }
 }
 
-void ResultingBufferOfCooccurrences::CheckOutputFile(std::ofstream& file) {
+void ResultingBufferOfCooccurrences::CheckOutputFile(std::ofstream& file, const std::string& filename) {
   if (!file.good()) {
-    BOOST_THROW_EXCEPTION(InvalidOperation("Failed to create a file in working directory"));
+    BOOST_THROW_EXCEPTION(InvalidOperation("Failed to open or create output file " +
+                                            filename + " in working directory"));
   }
 }
 
@@ -840,7 +857,7 @@ void ResultingBufferOfCooccurrences::MergeWithExistingCell(const CooccurrenceBat
 
 void ResultingBufferOfCooccurrences::CalculateTFStatistics() {
   // Calculate statistics of occurrence (of first token which is associated with current cell)
-  unsigned long long n_u = 0;
+  int64_t n_u = 0;
   for (unsigned i = 0; i < cell_.records.size(); ++i) {
     if (calc_symetric_cooc_ && cell_.first_token_id != cell_.records[i].second_token_id) {
       token_statistics_[cell_.records[i].second_token_id].num_of_pairs_token_occured_in += cell_.records[i].cooc_tf;
@@ -931,7 +948,7 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mod
         break;
       }
       std::string second_token_str = strs[i + not_a_word_counter];
-      unsigned long long cooc = std::stoull(strs[i + not_a_word_counter + 1]);
+      int64_t cooc = std::stoull(strs[i + not_a_word_counter + 1]);
       long double n_u = GetTokenFreq(mode, vocab_.FindTokenId(first_token_str, first_token_modality));
       long double n_v = GetTokenFreq(mode, vocab_.FindTokenId(second_token_str, second_token_modality));
       long double n_uv = static_cast<long double>(cooc);
@@ -972,7 +989,8 @@ double ResultingBufferOfCooccurrences::GetTokenFreq(const std::string& mode, con
 
 class FileWrapper {  // ToDo (MichaelSolotky): finish it (and replace fsrteams with c-style files)
  public:
-  FileWrapper(const std::string& filename, const std::string mode) : file_ptr_(fopen(filename.c_str(), mode.c_str())) { }
+  FileWrapper(const std::string& filename, const std::string mode) :
+              file_ptr_(fopen(filename.c_str(), mode.c_str())) { }
   std::vector<char> ReadLine() {
     std::vector<char> buf(256);
     fscanf(file_ptr_, "%s", &buf[0]);

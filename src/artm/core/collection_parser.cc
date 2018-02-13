@@ -28,6 +28,7 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/core/protobuf_helpers.h"
+#include "artm/core/cooccurrence_dictionary.h"
 
 using ::artm::utility::ifstream_or_cin;
 
@@ -425,6 +426,19 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
   std::unordered_map<Token, bool, TokenHasher> token_map;
   CollectionParserInfo parser_info;
 
+  ::artm::core::CooccurrenceDictionary cooc_dictionary(  // ToDo (MichaelSolotky): divide into pieces
+      config_.cooc_window_width(), config_.cooc_min_tf(), config_.cooc_min_df(),
+      config_.vocab_file_path(), config_.docword_file_path(),
+      config_.cooc_tf_file_path(), config_.cooc_df_file_path(),
+      config_.ppmi_tf_file_path(), config_.ppmi_df_file_path(),
+      config_.num_threads(), config_.num_items_per_batch());
+  if (cooc_dictionary.VocabSize() >= 2) {
+    cooc_dictionary.ReadVowpalWabbit();
+    if (cooc_dictionary.CooccurrenceBatchesQuantity() != 0) {
+      cooc_dictionary.ReadAndMergeCooccurrenceBatches();
+    }
+  }
+
   // The function defined below works as follows:
   // 1. Acquire lock for reading from docword file
   // 2. Read num_items_per_batch lines from docword file, and store them in a local buffer (vector<string>)
@@ -589,6 +603,9 @@ CollectionParserInfo CollectionParser::Parse() {
       return ParseDocwordBagOfWordsUci(&token_map);
 
     case CollectionParserConfig_CollectionFormat_VowpalWabbit:
+      if (config_.gather_cooc() && config_.has_vocab_file_path()) {
+        token_map = ParseVocabBagOfWordsUci();
+      }
       return ParseVowpalWabbit();
 
     default:

@@ -28,7 +28,6 @@ namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 
 #include "artm/cpp_interface.h"
-#include "artm/core/cooccurrence_dictionary.h"
 
 using namespace artm;
 
@@ -304,8 +303,8 @@ struct artm_options {
   std::string write_predictions;
   std::string write_cooc_tf;
   std::string write_cooc_df;
-  std::string write_tf_ppmi;
-  std::string write_df_ppmi;
+  std::string write_ppmi_tf;
+  std::string write_ppmi_df;
   std::string write_class_predictions;
   std::string write_scores;
   std::string write_vw_corpus;
@@ -1112,9 +1111,35 @@ class BatchVectorizer {
         if (!options_.read_uci_vocab.empty()) {
           collection_parser_config.set_vocab_file_path(options_.read_uci_vocab);
         }
+
         collection_parser_config.set_target_folder(batch_folder_);
         collection_parser_config.set_num_items_per_batch(options_.batch_size);
         collection_parser_config.set_name_type(options_.b_guid_batch_name ? CollectionParserConfig_BatchNameType_Guid : CollectionParserConfig_BatchNameType_Code);
+
+        // Settings for co-occurrence gathering
+        if (!options_.write_cooc_tf.empty()) {
+          collection_parser_config.set_cooc_tf_file_path(options_.write_cooc_tf);
+        }
+        if (!options_.write_cooc_df.empty()) {
+          collection_parser_config.set_cooc_df_file_path(options_.write_cooc_df);
+        }
+        if (!options_.write_ppmi_tf.empty()) {
+          collection_parser_config.set_ppmi_tf_file_path(options_.write_ppmi_tf);
+        }
+        if (!options_.write_ppmi_df.empty()) {
+          collection_parser_config.set_ppmi_df_file_path(options_.write_ppmi_df);
+        }
+
+        collection_parser_config.set_gather_cooc_tf(collection_parser_config.has_cooc_tf_file_path() ||
+                                                    collection_parser_config.has_ppmi_tf_file_path());
+        collection_parser_config.set_gather_cooc_df(collection_parser_config.has_cooc_df_file_path() ||
+                                                    collection_parser_config.has_ppmi_df_file_path());
+
+        collection_parser_config.set_gather_cooc(collection_parser_config.gather_cooc_tf() ||
+                                                 collection_parser_config.gather_cooc_df());
+        collection_parser_config.set_cooc_window_width(options_.cooc_window);
+        collection_parser_config.set_cooc_min_tf(options_.cooc_min_tf);
+        collection_parser_config.set_cooc_min_df(options_.cooc_min_df);
 
         // If user specifies specific modalities "use_modality", pass it to collection parser to limit set of modalities available in batches
         std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options_.use_modality);
@@ -1771,8 +1796,8 @@ int main(int argc, char * argv[]) {
     output_options.add_options()
       ("write-cooc-tf", po::value(&options.write_cooc_tf)->default_value(""), "save dictionary of co-occurrences with frequencies of co-occurrences of every specific pair of tokens in whole collection")
       ("write-cooc-df", po::value(&options.write_cooc_df)->default_value(""), "save dictionary of co-occurrences with number of documents in which every specific pair occured together")
-      ("write-ppmi-tf", po::value(&options.write_tf_ppmi)->default_value(""), "save values of positive pmi of pairs of tokens from cooc_tf dictionary")
-      ("write-ppmi-df", po::value(&options.write_df_ppmi)->default_value(""), "save values of positive pmi of pairs of tokens from cooc_df dictionary")
+      ("write-ppmi-tf", po::value(&options.write_ppmi_tf)->default_value(""), "save values of positive pmi of pairs of tokens from cooc_tf dictionary")
+      ("write-ppmi-df", po::value(&options.write_ppmi_df)->default_value(""), "save values of positive pmi of pairs of tokens from cooc_df dictionary")
       ("save-model", po::value(&options.save_model)->default_value(""), "save the model to binary file after processing")
       ("save-batches", po::value(&options.save_batches)->default_value(""), "batch folder")
       ("save-dictionary", po::value(&options.save_dictionary)->default_value(""), "filename of dictionary file")
@@ -1986,35 +2011,6 @@ int main(int argc, char * argv[]) {
         args.set_minloglevel(options.log_level);
       }
       ::artm::ConfigureLogging(args);
-    }
-
-    if (!options.write_cooc_tf.empty() || !options.write_cooc_df.empty() ||
-        !options.write_tf_ppmi.empty() || !options.write_df_ppmi.empty()) {
-      if (options.read_vw_corpus.empty()) {
-        throw std::invalid_argument("input file in VowpalWabbit format not specified");
-        throw "input file in VowpalWabbit format not specified";
-      }
-      if (options.read_uci_vocab.empty()) {
-        throw std::invalid_argument("input file in UCI vocab format not specified");
-      }
-      // Scheme of gathering of token co-occurrences statistics is the folowing:
-      // 1. Get unique tokens from vocab file
-      // 2. Read Vowpal Wabbit file by portions, calculate co-occurrences of 
-      // tokens from vocab for every portion and save it (in form of cooccurrence batch) on external storage
-      // 3. Read from external storage all the cooccurrence batches piece by
-      // piece and create resulting file with all co-occurrences
-      // 4. Use co-occurrence counters to calculate positive pmi of token pairs
-      ::artm::core::CooccurrenceDictionary cooc_dictionary(options.cooc_window,
-          options.cooc_min_tf, options.cooc_min_df, options.read_uci_vocab,
-          options.read_vw_corpus, options.write_cooc_tf,
-          options.write_cooc_df, options.write_tf_ppmi, options.write_df_ppmi,
-          options.threads, options.doc_per_cooc_batch);
-      if (cooc_dictionary.VocabSize() >= 2) {
-        cooc_dictionary.ReadVowpalWabbit();
-        if (cooc_dictionary.CooccurrenceBatchesQuantity() != 0) {
-          cooc_dictionary.ReadAndMergeCooccurrenceBatches();
-        }
-      }
     }
 
     return execute(options, argc, argv);

@@ -475,11 +475,21 @@ message CollectionParserConfig {
   optional string docword_file_path = 2;
   optional string vocab_file_path = 3;
   optional string target_folder = 4;
-  optional int32 num_items_per_batch = 5 [default = 1000];
-  optional bool use_unity_based_indices = 6 [default = true];
-  optional BatchNameType name_type = 7 [default = Guid];
-  optional int32 num_threads = 8;
-  repeated string class_id = 9;
+  optional string cooc_tf_file_path = 5;
+  optional string cooc_df_file_path = 6;
+  optional string ppmi_tf_file_path = 7;
+  optional string ppmi_df_file_path = 8;
+  optional bool gather_cooc_tf = 9;
+  optional bool gather_cooc_df = 10;
+  optional bool gather_cooc = 11;
+  optional int32 cooc_window_width = 12 [default = 10];
+  optional int32 cooc_min_tf = 13 [default = 1];
+  optional int32 cooc_min_df = 14 [default = 1];
+  optional int32 num_items_per_batch = 15 [default = 1000];
+  optional bool use_unity_based_indices = 16 [default = true];
+  optional BatchNameType name_type = 17 [default = Guid];
+  optional int32 num_threads = 18;
+  repeated string class_id = 19;
 }
 
 // Misc statistics produced by collection parser
