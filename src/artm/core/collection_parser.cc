@@ -426,18 +426,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
   std::unordered_map<Token, bool, TokenHasher> token_map;
   CollectionParserInfo parser_info;
 
-  ::artm::core::CooccurrenceCollector cooc_collector(  // ToDo (MichaelSolotky): divide into pieces
-      config_.cooc_window_width(), config_.cooc_min_tf(), config_.cooc_min_df(),
-      config_.vocab_file_path(), config_.docword_file_path(),
-      config_.cooc_tf_file_path(), config_.cooc_df_file_path(),
-      config_.ppmi_tf_file_path(), config_.ppmi_df_file_path(),
-      config_.num_threads(), config_.num_items_per_batch());
-  if (cooc_collector.VocabSize() >= 2) {
-    cooc_collector.ReadVowpalWabbit();
-    if (cooc_collector.CooccurrenceBatchesQuantity() != 0) {
-      cooc_collector.ReadAndMergeCooccurrenceBatches();
-    }
-  }
+  ::artm::core::CooccurrenceCollector cooc_collector(config_);
 
   // The function defined below works as follows:
   // 1. Acquire lock for reading from docword file
@@ -574,6 +563,13 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
   }
 
   Helpers::CreateFolderIfNotExists(config.target_folder());
+
+  if (config.gather_cooc() && cooc_collector.VocabSize() >= 2) {
+    cooc_collector.ReadVowpalWabbit();
+    if (cooc_collector.CooccurrenceBatchesQuantity() != 0) {
+      cooc_collector.ReadAndMergeCooccurrenceBatches();
+    }
+  }  // ToDo (MichaelSolotky): rewrite ReadVowpalWabbit
 
   // The func may throw an exception if docword is malformed.
   // This exception will be re-thrown on the main thread.

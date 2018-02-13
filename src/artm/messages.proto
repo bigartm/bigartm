@@ -501,6 +501,30 @@ message CollectionParserInfo {
   optional float total_token_weight = 5;
 }
 
+// Represents a configuration of a cooccurrence collector.
+message CooccurrenceCollectorConfig {
+  optional bool gather_cooc = 1;
+  optional bool gather_cooc_tf = 2;
+  optional bool gather_cooc_df = 3;
+  optional bool calc_symetric_cooc = 4;
+  optional bool calculate_ppmi_tf = 5;
+  optional bool calculate_ppmi_df = 6;
+  optional string vw_file_path = 7;
+  optional string vocab_file_path = 8;
+  optional string target_folder = 9;
+  optional string cooc_tf_file_path = 10;
+  optional string cooc_df_file_path = 11;
+  optional string ppmi_tf_file_path = 12;
+  optional string ppmi_df_file_path = 13;
+  optional int32 cooc_window_width = 14 [default = 10];
+  optional int32 cooc_min_tf = 15 [default = 1];
+  optional int32 cooc_min_df = 16 [default = 1];
+  optional int32 max_num_of_open_files = 17;
+  optional int32 num_items_per_batch = 18 [default = 1000];
+  optional int32 num_of_cpu = 19;
+  repeated string class_id = 20;
+}
+
 // Represents an argument of 'initialize model' operation
 message InitializeModelArgs {
   optional string model_name = 1;
