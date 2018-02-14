@@ -94,11 +94,6 @@ class Vocab {
 class CooccurrenceCollector {
  public:
   CooccurrenceCollector(const CollectionParserConfig& config);
-  CooccurrenceCollector(const unsigned window_width, const unsigned cooc_min_tf,
-      const unsigned cooc_min_df, const std::string& path_to_vocab,
-      const std::string& path_to_vw, const std::string& cooc_tf_file_path,
-      const std::string& cooc_df_file_path, const std::string& ppmi_tf_file_path,
-      const std::string& ppmi_df_file_path, const int num_of_cpu, const unsigned doc_per_cooc_batch);
   unsigned VocabSize() const;
   void ReadVowpalWabbit();
   std::vector<std::string> ReadPortionOfDocuments(std::mutex& read_lock, std::ifstream& vowpal_wabbit_doc);
@@ -122,30 +117,13 @@ class CooccurrenceCollector {
   void CloseBatchInputFile(CooccurrenceBatch& batch);
   void CloseBatchOutputFile(CooccurrenceBatch& batch);
 
-  const unsigned window_width_;
-  const unsigned cooc_min_tf_;
-  const unsigned cooc_min_df_;
-  const std::string path_to_vw_;
-  mutable std::string cooc_tf_file_path_;
-  mutable std::string cooc_df_file_path_;
-  const std::string ppmi_tf_file_path_;
-  const std::string ppmi_df_file_path_;
-  bool calculate_cooc_tf_;
-  bool calculate_cooc_df_;
-  bool calculate_ppmi_tf_;
-  bool calculate_ppmi_df_;
-  bool calc_symetric_cooc_;
-  bool gather_cooc_;
   Vocab vocab_;  // Holds mapping tokens to their indices
   std::vector<TokenInfo> token_statistics_;  // index here is token_id which can be found in vocab object
-  std::string path_to_batches_;
   std::vector<std::unique_ptr<CooccurrenceBatch>> vector_of_batches_;
-  unsigned open_files_counter_;
-  unsigned max_num_of_open_files_;
+  int open_files_counter_;
   int64_t total_num_of_pairs_;
   unsigned total_num_of_documents_;
-  unsigned doc_per_cooc_batch_;
-  unsigned num_of_cpu_;
+  CooccurrenceCollectorConfig config_;
 };
 
 class CooccurrenceStatisticsHolder {
@@ -213,23 +191,10 @@ class ResultingBufferOfCooccurrences {
   void CalculatePpmi();
 
  private:
-  ResultingBufferOfCooccurrences(
-      std::vector<TokenInfo>& token_statistics_,
-      Vocab& vocab,
-      const unsigned cooc_min_tf = 0,
-      const unsigned cooc_min_df = 0,
-      const unsigned num_of_cpu = 1,
-      const int64_t total_num_of_pairs = 0,
-      const unsigned total_num_of_documents = 0,
-      const bool calculate_cooc_tf = false,
-      const bool calculate_cooc_df = false,
-      const bool calculate_ppmi_tf = false,
-      const bool calculate_ppmi_df = false,
-      const bool calc_symetric_cooc = false,
-      const std::string& cooc_tf_file_path = "",
-      const std::string& cooc_df_file_path = "",
-      const std::string& ppmi_tf_file_path = "",
-      const std::string& ppmi_df_file_path = "");
+  ResultingBufferOfCooccurrences(std::vector<TokenInfo>& token_statistics_, Vocab& vocab,
+                                 const int64_t total_num_of_pairs,
+                                 const unsigned total_num_of_documents,
+                                 const CooccurrenceCollectorConfig& config);
   void CheckInputFile(std::ifstream& file, const std::string& filename);
   void CheckOutputFile(std::ofstream& file, const std::string& filename);
   void MergeWithExistingCell(const CooccurrenceBatch& batch);
@@ -241,17 +206,9 @@ class ResultingBufferOfCooccurrences {
 
   std::vector<TokenInfo>& token_statistics_;
   Vocab& vocab_;  // Holds mapping tokens to their indices
-  const unsigned cooc_min_tf_;
-  const unsigned cooc_min_df_;
-  const unsigned num_of_cpu_;
-  const int64_t total_num_of_pairs_;
-  const unsigned total_num_of_documents_;
-  unsigned open_files_in_buf_;
-  const bool calculate_cooc_tf_;
-  const bool calculate_cooc_df_;
-  const bool calculate_ppmi_tf_;
-  const bool calculate_ppmi_df_;
-  const bool calc_symetric_cooc_;
+  int open_files_in_buf_;
+  int64_t total_num_of_pairs_;
+  unsigned total_num_of_documents_;
   std::ifstream cooc_tf_dict_in_;
   std::ofstream cooc_tf_dict_out_;
   std::ifstream cooc_df_dict_in_;
@@ -259,6 +216,7 @@ class ResultingBufferOfCooccurrences {
   std::ofstream ppmi_tf_dict_;
   std::ofstream ppmi_df_dict_;
   Cell cell_;
+  CooccurrenceCollectorConfig config_;
 };
 
 }  // namespace core
