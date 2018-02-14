@@ -17,6 +17,8 @@
 #include "boost/filesystem.hpp"
 #include "boost/utility.hpp"
 
+#include "artm/core/collection_parser.h"
+
 #define FIRST_TOKEN_ID 0
 #define FIRST_TOKEN_INFO 0
 #define SECOND_TOKEN_ID 0
@@ -79,6 +81,7 @@ class Vocab {
   };
 
  private:
+  Vocab();
   explicit Vocab(const std::string& path_to_vocab);
   std::string MakeKey(const std::string& token_str, const std::string& modality) const;
   int FindTokenId(const std::string& token_str, const std::string& modality) const;
@@ -90,6 +93,7 @@ class Vocab {
 
 class CooccurrenceCollector {
  public:
+  CooccurrenceCollector(const CollectionParserConfig& config);
   CooccurrenceCollector(const unsigned window_width, const unsigned cooc_min_tf,
       const unsigned cooc_min_df, const std::string& path_to_vocab,
       const std::string& path_to_vw, const std::string& cooc_tf_file_path,
@@ -131,6 +135,7 @@ class CooccurrenceCollector {
   bool calculate_ppmi_tf_;
   bool calculate_ppmi_df_;
   bool calc_symetric_cooc_;
+  bool gather_cooc_;
   Vocab vocab_;  // Holds mapping tokens to their indices
   std::vector<TokenInfo> token_statistics_;  // index here is token_id which can be found in vocab object
   std::string path_to_batches_;

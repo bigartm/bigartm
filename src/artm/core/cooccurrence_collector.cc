@@ -29,6 +29,7 @@
 
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
+#include "artm/core/collection_parser.h"
 
 namespace fs = boost::filesystem;
 
@@ -45,8 +46,60 @@ namespace core {
 
 // ToDo (MichaelSolotky): write docs
 // ToDo (MichaelSolotky): gather cooc depending on modalities set in collection perser config
+// ToDo (MichaelSolotky): make your own config as protobuf message
 
 // ****************************** Methods of class CooccurrenceCollector ***********************************
+
+// ToDo (MichaelSolotky): erase duplications of code
+CooccurrenceCollector::CooccurrenceCollector(const CollectionParserConfig& config) :
+        window_width_(config.cooc_window_width()),
+        cooc_min_tf_(config.cooc_min_tf()), cooc_min_df_(config.cooc_min_df()),
+        path_to_vw_(config.docword_file_path()),
+        cooc_tf_file_path_(config.cooc_tf_file_path()),
+        cooc_df_file_path_(config.cooc_df_file_path()),
+        ppmi_tf_file_path_(config.ppmi_tf_file_path()),
+        ppmi_df_file_path_(config.ppmi_df_file_path()),
+        calc_symetric_cooc_(true), gather_cooc_(config.gather_cooc()),
+        open_files_counter_(0), max_num_of_open_files_(500), total_num_of_pairs_(0),
+        total_num_of_documents_(0), doc_per_cooc_batch_(config.num_items_per_batch()) {
+  if (gather_cooc_) {
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    fs::path dir(boost::lexical_cast<std::string>(uuid));
+    if (fs::exists(dir)) {
+      BOOST_THROW_EXCEPTION(InvalidOperation("Folder with uuid " +
+                                             boost::lexical_cast<std::string>(uuid) +
+                                             "already exists"));
+    }
+    if (!fs::create_directory(dir)) {
+      BOOST_THROW_EXCEPTION(InvalidOperation("Failed to create directory"));
+    }
+    token_statistics_.resize(vocab_.token_map_.size());
+    path_to_batches_ = dir.string();
+    // If cooc path weren't spessified they need to be created in batch dir
+    if (!ppmi_tf_file_path_.empty() && cooc_tf_file_path_.empty()) {
+      cooc_tf_file_path_ = CreateFileInBatchDir();
+    }
+    if (!ppmi_df_file_path_.empty() && cooc_df_file_path_.empty()) {
+      cooc_df_file_path_ = CreateFileInBatchDir();
+    }
+    calculate_cooc_tf_ = cooc_tf_file_path_.size() != 0;
+    calculate_cooc_df_ = cooc_df_file_path_.size() != 0;
+    calculate_ppmi_tf_ = ppmi_tf_file_path_.size() != 0;
+    calculate_ppmi_df_ = ppmi_df_file_path_.size() != 0;
+    if (config.has_vocab_file_path()) {
+      vocab_ = Vocab(config.vocab_file_path());
+    }  // ToDo (MichaelSolotky): write cooc gathering without dictionary
+    if (config.num_threads() <= 0) {
+      num_of_cpu_ = std::thread::hardware_concurrency();
+      if (num_of_cpu_ == 0) {
+        num_of_cpu_ = 1;
+      }
+    } else {
+      num_of_cpu_ = config.num_threads();
+    }
+    std::cout << "Co-occurrence gathering...\n";
+  }
+}
 
 CooccurrenceCollector::CooccurrenceCollector(const unsigned window_width,
     const unsigned cooc_min_tf, const unsigned cooc_min_df,
@@ -62,7 +115,7 @@ CooccurrenceCollector::CooccurrenceCollector(const unsigned window_width,
         cooc_df_file_path_(cooc_df_file_path),
         ppmi_tf_file_path_(ppmi_tf_file_path),
         ppmi_df_file_path_(ppmi_df_file_path),
-        calc_symetric_cooc_(true), vocab_(path_to_vocab),
+        calc_symetric_cooc_(true), gather_cooc_(true), vocab_(path_to_vocab),
         open_files_counter_(0), max_num_of_open_files_(500), total_num_of_pairs_(0),
         total_num_of_documents_(0), doc_per_cooc_batch_(doc_per_cooc_batch) {
   // ToDo (MichaelSolotky): rewrite it
@@ -580,11 +633,15 @@ void CooccurrenceCollector::CloseBatchInputFile(CooccurrenceBatch& batch) {
 }
 
 CooccurrenceCollector::~CooccurrenceCollector() {
-  fs::remove_all(path_to_batches_);
-  std::cout << "Co-occurrences are gathered.\n";
+  if (gather_cooc_) {
+    fs::remove_all(path_to_batches_);
+    std::cout << "Co-occurrences are gathered.\n";
+  }
 }
 
 // ********************************** Methods of class Vocab *****************************************
+
+Vocab::Vocab() { }
 
 Vocab::Vocab(const std::string& path_to_vocab) {
   // This function constructs vocab object: reads tokens from vocab file,

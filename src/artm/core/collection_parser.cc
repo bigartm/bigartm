@@ -426,12 +426,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
   std::unordered_map<Token, bool, TokenHasher> token_map;
   CollectionParserInfo parser_info;
 
-  ::artm::core::CooccurrenceCollector cooc_collector(  // ToDo (MichaelSolotky): divide into pieces
-      config_.cooc_window_width(), config_.cooc_min_tf(), config_.cooc_min_df(),
-      config_.vocab_file_path(), config_.docword_file_path(),
-      config_.cooc_tf_file_path(), config_.cooc_df_file_path(),
-      config_.ppmi_tf_file_path(), config_.ppmi_df_file_path(),
-      config_.num_threads(), config_.num_items_per_batch());
+  ::artm::core::CooccurrenceCollector cooc_collector(config_);  // ToDo (MichaelSolotky): divide into pieces
   if (cooc_collector.VocabSize() >= 2) {
     cooc_collector.ReadVowpalWabbit();
     if (cooc_collector.CooccurrenceBatchesQuantity() != 0) {
