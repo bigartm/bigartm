@@ -56,12 +56,6 @@ struct Cell {
   std::vector<CoocInfo> records;
 };
 
-struct TokenInfo {
-  TokenInfo() : num_of_documents_token_occured_in(0), num_of_pairs_token_occured_in(0) { }
-  unsigned num_of_documents_token_occured_in;
-  int64_t num_of_pairs_token_occured_in;
-};
-
 class CooccurrenceCollector;
 class Vocab;
 class CooccurrenceStatisticsHolder;
@@ -71,6 +65,7 @@ class ResultingBufferOfCooccurrences;
 class Vocab {
   friend class CooccurrenceCollector;
   friend class ResultingBufferOfCooccurrences;
+  friend class CollectionParser;
  public:
   struct TokenModality {
     TokenModality() { }
@@ -92,34 +87,36 @@ class Vocab {
 };
 
 class CooccurrenceCollector {
+  friend class CollectionParser;
  public:
-  CooccurrenceCollector(const CollectionParserConfig& config);
+  explicit CooccurrenceCollector(const CollectionParserConfig& config);
   unsigned VocabSize() const;
   void ReadVowpalWabbit();
-  std::vector<std::string> ReadPortionOfDocuments(std::mutex& read_lock, std::ifstream& vowpal_wabbit_doc);
+  std::vector<std::string> ReadPortionOfDocuments(std::shared_ptr<std::mutex> read_lock,
+                                                  std::shared_ptr<std::ifstream> vowpal_wabbit_doc_ptr);
   unsigned CooccurrenceBatchesQuantity() const;
   void ReadAndMergeCooccurrenceBatches();
-  ~CooccurrenceCollector();
 
  private:
   std::string CreateFileInBatchDir() const;
-  void UploadOnDisk(CooccurrenceStatisticsHolder& cooc_stat_holder);
+  void UploadOnDisk(const CooccurrenceStatisticsHolder& cooc_stat_holder);
   void FirstStageOfMerging();
-  void SecondStageOfMerging(ResultingBufferOfCooccurrences& res,
-                            std::vector<std::unique_ptr<CooccurrenceBatch>>& intermediate_batches);
-  void KWayMerge(ResultingBufferOfCooccurrences& res, const int mode,
-                 std::vector<std::unique_ptr<CooccurrenceBatch>>& vector_of_batches,
-                 CooccurrenceBatch& out_batch, std::mutex& open_file_lock);
+  void SecondStageOfMerging(ResultingBufferOfCooccurrences* res,
+                            std::vector<std::shared_ptr<CooccurrenceBatch>>* intermediate_batches);
+  void KWayMerge(ResultingBufferOfCooccurrences* res, const int mode,
+                 std::vector<std::shared_ptr<CooccurrenceBatch>>* vector_of_batches_ptr,
+                 std::shared_ptr<CooccurrenceBatch> out_batch,
+                 std::shared_ptr<std::mutex> open_close_file_mutex_ptr);
   CooccurrenceBatch* CreateNewCooccurrenceBatch() const;
-  void OpenBatchInputFile(CooccurrenceBatch& batch);
-  void OpenBatchOutputFile(CooccurrenceBatch& batch);
+  void OpenBatchInputFile(std::shared_ptr<CooccurrenceBatch> batch);
+  void OpenBatchOutputFile(std::shared_ptr<CooccurrenceBatch> batch);
   bool IsOpenBatchInputFile(const CooccurrenceBatch& batch) const;
-  void CloseBatchInputFile(CooccurrenceBatch& batch);
-  void CloseBatchOutputFile(CooccurrenceBatch& batch);
+  void CloseBatchInputFile(std::shared_ptr<CooccurrenceBatch> batch);
+  void CloseBatchOutputFile(std::shared_ptr<CooccurrenceBatch> batch);
 
   Vocab vocab_;  // Holds mapping tokens to their indices
-  std::vector<TokenInfo> token_statistics_;  // index here is token_id which can be found in vocab object
-  std::vector<std::unique_ptr<CooccurrenceBatch>> vector_of_batches_;
+  std::vector<unsigned> num_of_documents_token_occurred_in_;  // index is token_id
+  std::vector<std::shared_ptr<CooccurrenceBatch>> vector_of_batches_;
   int open_files_counter_;
   int64_t total_num_of_pairs_;
   unsigned total_num_of_documents_;
@@ -133,6 +130,7 @@ class CooccurrenceStatisticsHolder {
   struct SecondTokenAndCooccurrence;
   void SavePairOfTokens(const int first_token_id, const int second_token_id,
                         const unsigned doc_id, const double weight = 1);
+  bool Empty();
 
  private:
   // Here's two-level structure storage_
@@ -162,11 +160,11 @@ class CooccurrenceBatch: private boost::noncopyable {
   friend class ResultingBufferOfCooccurrences;
  public:
   struct CoocBatchComparator;
-  void FormNewCell(const std::map<int, CooccurrenceStatisticsHolder::FirstToken>::iterator& cooc_stat_node);
+  void FormNewCell(const std::map<int, CooccurrenceStatisticsHolder::FirstToken>::const_iterator& cooc_stat_node);
   void WriteCell();
   bool ReadCellHeader();
   void ReadRecords();
-  bool ReadCell(); // Initiates reading of a cell from a file (e.g. call of ReadCellHeader() and ReadRecords())
+  bool ReadCell();  // Initiates reading of a cell from a file (e.g. call of ReadCellHeader() and ReadRecords())
 
  private:
   explicit CooccurrenceBatch(const std::string& path_to_batches);
@@ -179,8 +177,8 @@ class CooccurrenceBatch: private boost::noncopyable {
 };
 
 struct CooccurrenceBatch::CoocBatchComparator {
-  bool operator()(const std::unique_ptr<CooccurrenceBatch>& left,
-                  const std::unique_ptr<CooccurrenceBatch>& right) const {
+  bool operator()(const std::shared_ptr<CooccurrenceBatch>& left,
+                  const std::shared_ptr<CooccurrenceBatch>& right) const {
     return left->cell_.first_token_id > right->cell_.first_token_id;
   }
 };
@@ -191,12 +189,11 @@ class ResultingBufferOfCooccurrences {
   void CalculatePpmi();
 
  private:
-  ResultingBufferOfCooccurrences(std::vector<TokenInfo>& token_statistics_, Vocab& vocab,
-                                 const int64_t total_num_of_pairs,
-                                 const unsigned total_num_of_documents,
+  ResultingBufferOfCooccurrences(const Vocab& vocab,
+                                 const std::vector<unsigned>& num_of_documents_token_occurred_in_,
                                  const CooccurrenceCollectorConfig& config);
-  void CheckInputFile(std::ifstream& file, const std::string& filename);
-  void CheckOutputFile(std::ofstream& file, const std::string& filename);
+  void CheckInputFile(const std::ifstream& file, const std::string& filename);
+  void CheckOutputFile(const std::ofstream& file, const std::string& filename);
   void MergeWithExistingCell(const CooccurrenceBatch& batch);
   void CalculateTFStatistics();
   void WriteCoocFromCell(const std::string mode, const unsigned cooc_min);  // Output file formats are defined here
@@ -204,11 +201,10 @@ class ResultingBufferOfCooccurrences {
   void CalculateAndWritePpmi(const std::string mode, const long double n);
   double GetTokenFreq(const std::string& mode, const int token_id) const;
 
-  std::vector<TokenInfo>& token_statistics_;
-  Vocab& vocab_;  // Holds mapping tokens to their indices
+  const Vocab& vocab_;  // Holds mapping tokens to their indices
+  const std::vector<unsigned>& num_of_documents_token_occurred_in_;
+  std::vector<int64_t> num_of_pairs_token_occurred_in_;
   int open_files_in_buf_;
-  int64_t total_num_of_pairs_;
-  unsigned total_num_of_documents_;
   std::ifstream cooc_tf_dict_in_;
   std::ofstream cooc_tf_dict_out_;
   std::ifstream cooc_df_dict_in_;
