@@ -506,7 +506,7 @@ message CooccurrenceCollectorConfig {
   optional bool gather_cooc = 1;
   optional bool gather_cooc_tf = 2;
   optional bool gather_cooc_df = 3;
-  optional bool calc_symetric_cooc = 4;
+  optional bool use_symetric_cooc = 4;
   optional bool calculate_ppmi_tf = 5;
   optional bool calculate_ppmi_df = 6;
   optional string vw_file_path = 7;
@@ -522,7 +522,9 @@ message CooccurrenceCollectorConfig {
   optional int32 max_num_of_open_files = 17;
   optional int32 num_items_per_batch = 18 [default = 1000];
   optional int32 num_of_cpu = 19;
-  repeated string class_id = 20;
+  optional int64 total_num_of_pairs = 20;
+  optional int32 total_num_of_documents = 21;
+  repeated string class_id = 22;
 }
 
 // Represents an argument of 'initialize model' operation
