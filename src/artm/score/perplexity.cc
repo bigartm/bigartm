@@ -66,7 +66,7 @@ void Perplexity::AppendScore(
       }
     }
     if (class_weight_map.empty()) {
-      LOG(ERROR) << "None of requested classes were presented in model. Score calculation will be skipped";
+      LOG_FIRST_N(ERROR, 100) << "None of requested classes were presented in model. Score calculation will be skipped";
       return;
     }
   }
@@ -100,7 +100,7 @@ void Perplexity::AppendScore(
       if (dictionary_ptr) {
         use_document_unigram_model = false;
       } else {
-        LOG(ERROR) << "Perplexity was configured to use UnigramCollectionModel with dictionary " <<
+        LOG_FIRST_N(ERROR, 100) << "Perplexity was configured to use UnigramCollectionModel with dictionary " <<
            config_.dictionary_name() << ". This dictionary can't be found.";
         return;
       }
@@ -146,7 +146,7 @@ void Perplexity::AppendScore(
           failed = false;
         }
         if (failed) {
-          LOG_FIRST_N(WARNING, 1)
+          LOG_FIRST_N(WARNING, 100)
                     << "Error in perplexity dictionary for token " << token.keyword << ", class " << token.class_id
                     << " (and potentially for other tokens)"
                     << ". Verify that the token exists in the dictionary and it's value > 0. "
