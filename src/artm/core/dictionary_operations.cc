@@ -562,5 +562,18 @@ void DictionaryOperations::StoreIntoDictionaryData(const Dictionary& dict, Dicti
   }
 }
 
+void DictionaryOperations::WriteDictionarySummaryToLog(const Dictionary& dict) {
+  std::map<ClassId, int> entries_per_class;
+  for (int i = 0; i < dict.size(); i++) {
+    const DictionaryEntry* entry = dict.entry(i);
+    if (entry != nullptr) entries_per_class[entry->token().class_id]++;
+  }
+  std::stringstream ss; ss << "Dictionary name='" << dict.name() << "' contains entries: ";
+  for (auto const& x : entries_per_class)
+    ss << x.first << ":" << x.second << "; ";
+  LOG(INFO) << ss.str();
+
+}
+
 }  // namespace core
 }  // namespace artm
