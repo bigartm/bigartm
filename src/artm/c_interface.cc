@@ -125,6 +125,7 @@ static void EnableLogging(artm::ConfigureLoggingArgs* args) {
 
     logging_enabled = true;
     LOG(INFO) << "Logging enabled to " << log_dir.c_str();
+    LOG(INFO) << "BigARTM version: v" << ArtmGetVersion();
   }
 }
 
