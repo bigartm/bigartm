@@ -272,6 +272,7 @@ void MasterComponent::DisposeRegularizer(const std::string& name) {
 void MasterComponent::AddDictionary(std::shared_ptr<Dictionary> dictionary) {
   DisposeDictionary(dictionary->name());
   instance_->dictionaries()->set(dictionary->name(), dictionary);
+  DictionaryOperations::WriteDictionarySummaryToLog(*dictionary);
 }
 
 void MasterComponent::CreateDictionary(const DictionaryData& data) {
@@ -627,6 +628,7 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
   if (src_dictionary_ptr == nullptr) {
     LOG(ERROR) << "Dictionary::Filter(): filter was requested for non-exists dictionary '"
                << args.dictionary_name() << "', operation was aborted";
+    return;
   }
 
   AddDictionary(DictionaryOperations::Filter(args, *src_dictionary_ptr));
