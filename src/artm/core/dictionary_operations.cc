@@ -94,6 +94,10 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, const Dictio
   }
 
   std::string str = token_dict_data.SerializeAsString();
+  if (str.size() >= 2147483647ULL)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
+      args.dictionary_name() + " is too large to export"));
+
   int length = static_cast<int>(str.size());
   fout.write(reinterpret_cast<char *>(&length), sizeof(length));
   fout << str;
@@ -131,6 +135,11 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, const Dictio
 
       if ((current_cooc_length >= max_cooc_length) || ((token_id + 1) == token_size)) {
         std::string str = cooc_dict_data.SerializeAsString();
+        if (str.size() >= 2147483647ULL)
+          BOOST_THROW_EXCEPTION(InvalidOperation(
+            "Unable to serialize coocurence information in Dictionary " +
+            args.dictionary_name()));
+
         int length = static_cast<int>(str.size());
         fout.write(reinterpret_cast<char *>(&length), sizeof(length));
         fout << str;
