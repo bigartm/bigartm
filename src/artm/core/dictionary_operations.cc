@@ -581,7 +581,6 @@ void DictionaryOperations::WriteDictionarySummaryToLog(const Dictionary& dict) {
   for (auto const& x : entries_per_class)
     ss << x.first << ":" << x.second << "; ";
   LOG(INFO) << ss.str();
-
 }
 
 }  // namespace core
