@@ -773,6 +773,7 @@ void Processor::ThreadFunction() {
         const PhiMatrix& p_wt = *phi_matrix;
 
         if (batch.token_size() == 0) {
+          CuckooWatch cuckoo2("FillTokensInBatch", &cuckoo, kTimeLoggingThreshold);
           if (!fillTokensInBatch(p_wt, &batch)) {
             continue;
           }
@@ -809,10 +810,14 @@ void Processor::ThreadFunction() {
 
         std::shared_ptr<ThetaMatrix> cache;
         if (part->has_reuse_theta_cache_manager()) {
+          CuckooWatch cuckoo2("FindReuseThetaCacheEntry", &cuckoo, kTimeLoggingThreshold);
           cache = part->reuse_theta_cache_manager()->FindCacheEntry(batch);
         }
-        std::shared_ptr<LocalThetaMatrix<float>> theta_matrix =
-          InitializeTheta(p_wt.topic_size(), batch, args, cache.get());
+        std::shared_ptr<LocalThetaMatrix<float>> theta_matrix;
+        {
+          CuckooWatch cuckoo2("InitializeTheta", &cuckoo, kTimeLoggingThreshold);
+          theta_matrix = InitializeTheta(p_wt.topic_size(), batch, args, cache.get());
+        }
 
         if (p_wt.token_size() == 0) {
           LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
@@ -846,7 +851,10 @@ void Processor::ThreadFunction() {
         {
           RegularizeThetaAgentCollection theta_agents;
           RegularizePtdwAgentCollection ptdw_agents;
-          CreateRegularizerAgents(batch, args, instance_, &theta_agents, &ptdw_agents);
+          {
+            CuckooWatch cuckoo2("CreateRegularizerAgents", &cuckoo, kTimeLoggingThreshold);
+            CreateRegularizerAgents(batch, args, instance_, &theta_agents, &ptdw_agents);
+          }
 
           if (ptdw_agents.empty() && !part->has_ptdw_cache_manager()) {
             CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
@@ -863,10 +871,12 @@ void Processor::ThreadFunction() {
         }
 
         if (new_cache_entry_ptr != nullptr) {
+          CuckooWatch cuckoo2("UpdateCacheEntry", &cuckoo, kTimeLoggingThreshold);
           part->cache_manager()->UpdateCacheEntry(batch.id(), *new_cache_entry_ptr);
         }
 
         if (new_ptdw_cache_entry_ptr != nullptr) {
+          CuckooWatch cuckoo2("UpdatePtdwCacheEntry", &cuckoo, kTimeLoggingThreshold);
           part->ptdw_cache_manager()->UpdateCacheEntry(batch.id(), *new_ptdw_cache_entry_ptr);
         }
 
