@@ -381,6 +381,8 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
       ::artm::TopicModel external_topic_model;
       PhiMatrixOperations::RetrieveExternalTopicModel(n_wt, get_topic_model_args, &external_topic_model);
       std::string str = external_topic_model.SerializeAsString();
+      if (str.size() >= 2147483647ULL)
+        BOOST_THROW_EXCEPTION(InvalidOperation("TopicModel is too large to export"));
       fout << str.size();
       fout << str;
       get_topic_model_args.clear_class_id();
@@ -475,6 +477,8 @@ void MasterComponent::ExportScoreTracker(const ExportScoreTrackerArgs& args) {
   // We expect here that each ScoreData object has suitable size (< 2GB)
   for (auto& item : instance_->score_tracker()->GetDataUnsafe()) {
     auto str = item->SerializeAsString();
+    if (str.size() >= 2147483647ULL)
+      BOOST_THROW_EXCEPTION(InvalidOperation("ScoreTracker is too large to export"));
     fout << str.size();
     fout << str;
   }
