@@ -6,6 +6,7 @@
 
 #include "glog/logging.h"
 
+#include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 
 namespace pb = ::google::protobuf;
@@ -28,7 +29,7 @@ void ProtobufSerialization::ParseFromString(const std::string& string, google::p
 }
 
 void ProtobufSerialization::ParseFromArray(const char* buffer, int64_t length, google::protobuf::Message* message) {
-  if (length < 0 || length >= 2147483647) {
+  if (length < 0 || length >= kProtobufCodedStreamTotalBytesLimit) {
     BOOST_THROW_EXCEPTION(CorruptedMessageException("Protobuf message is too long"));
   }
   ParseFromString((length >= 0) ? std::string(buffer, length) : std::string(buffer), message);
