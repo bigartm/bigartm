@@ -1,6 +1,7 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
 #include <algorithm>
+#include <climits>
 #include <fstream>
 #include <functional>
 #include <string>
@@ -94,6 +95,11 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, const Dictio
   }
 
   std::string str = token_dict_data.SerializeAsString();
+  if (str.size() >= kProtobufCodedStreamTotalBytesLimit) {
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
+      args.dictionary_name() + " is too large to export"));
+  }
+
   int length = static_cast<int>(str.size());
   fout.write(reinterpret_cast<char *>(&length), sizeof(length));
   fout << str;
@@ -131,6 +137,12 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, const Dictio
 
       if ((current_cooc_length >= max_cooc_length) || ((token_id + 1) == token_size)) {
         std::string str = cooc_dict_data.SerializeAsString();
+        if (str.size() >= kProtobufCodedStreamTotalBytesLimit) {
+          BOOST_THROW_EXCEPTION(InvalidOperation(
+            "Unable to serialize coocurence information in Dictionary " +
+            args.dictionary_name()));
+        }
+
         int length = static_cast<int>(str.size());
         fout.write(reinterpret_cast<char *>(&length), sizeof(length));
         fout << str;
@@ -560,6 +572,21 @@ void DictionaryOperations::StoreIntoDictionaryData(const Dictionary& dict, Dicti
     data->add_token_tf(entries[i].token_tf());
     data->add_token_df(entries[i].token_df());
   }
+}
+
+void DictionaryOperations::WriteDictionarySummaryToLog(const Dictionary& dict) {
+  std::map<ClassId, int> entries_per_class;
+  for (int i = 0; i < dict.size(); i++) {
+    const DictionaryEntry* entry = dict.entry(i);
+    if (entry != nullptr) {
+      entries_per_class[entry->token().class_id]++;
+    }
+  }
+  std::stringstream ss; ss << "Dictionary name='" << dict.name() << "' contains entries: ";
+  for (auto const& x : entries_per_class) {
+    ss << x.first << ":" << x.second << "; ";
+  }
+  LOG(INFO) << ss.str();
 }
 
 }  // namespace core

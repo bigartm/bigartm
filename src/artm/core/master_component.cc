@@ -272,6 +272,7 @@ void MasterComponent::DisposeRegularizer(const std::string& name) {
 void MasterComponent::AddDictionary(std::shared_ptr<Dictionary> dictionary) {
   DisposeDictionary(dictionary->name());
   instance_->dictionaries()->set(dictionary->name(), dictionary);
+  DictionaryOperations::WriteDictionarySummaryToLog(*dictionary);
 }
 
 void MasterComponent::CreateDictionary(const DictionaryData& data) {
@@ -380,6 +381,9 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
       ::artm::TopicModel external_topic_model;
       PhiMatrixOperations::RetrieveExternalTopicModel(n_wt, get_topic_model_args, &external_topic_model);
       std::string str = external_topic_model.SerializeAsString();
+      if (str.size() >= kProtobufCodedStreamTotalBytesLimit) {
+        BOOST_THROW_EXCEPTION(InvalidOperation("TopicModel is too large to export"));
+      }
       fout << str.size();
       fout << str;
       get_topic_model_args.clear_class_id();
@@ -474,6 +478,9 @@ void MasterComponent::ExportScoreTracker(const ExportScoreTrackerArgs& args) {
   // We expect here that each ScoreData object has suitable size (< 2GB)
   for (auto& item : instance_->score_tracker()->GetDataUnsafe()) {
     auto str = item->SerializeAsString();
+    if (str.size() >= kProtobufCodedStreamTotalBytesLimit) {
+      BOOST_THROW_EXCEPTION(InvalidOperation("ScoreTracker is too large to export"));
+    }
     fout << str.size();
     fout << str;
   }
@@ -627,6 +634,7 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
   if (src_dictionary_ptr == nullptr) {
     LOG(ERROR) << "Dictionary::Filter(): filter was requested for non-exists dictionary '"
                << args.dictionary_name() << "', operation was aborted";
+    return;
   }
 
   AddDictionary(DictionaryOperations::Filter(args, *src_dictionary_ptr));
