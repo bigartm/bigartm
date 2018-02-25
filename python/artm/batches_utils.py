@@ -265,7 +265,8 @@ class BatchVectorizer(object):
                     batch_vocab[token] = len(batch.token)
                     batch.token.append(token)
 
-                item.token_id.append(batch_vocab[token])
+                item.transaction_token_id.append(batch_vocab[token])
+                item.transaction_start_index.append(len(item.transaction_start_index))
                 item.token_weight.append(float(value))
 
             if ((item_id + 1) % self._batch_size == 0 and item_id != 0) or ((item_id + 1) == n_wd.shape[1]):

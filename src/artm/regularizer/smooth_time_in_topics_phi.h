@@ -14,6 +14,7 @@
    The parameters of the regularizer:
    - topic_names (the names of topics to regularize, empty == all)
    - class_id (class id to regularize, required)
+   - transaction_type (transaction type to regularize, if empty -> == class_id)
 
    Note: regularizer ignores first and last tokens of given modality.
 */
@@ -38,6 +39,7 @@ class SmoothTimeInTopicsPhi : public RegularizerInterface {
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
   virtual google::protobuf::RepeatedPtrField<std::string> class_ids_to_regularize();
+  virtual google::protobuf::RepeatedPtrField<std::string> transaction_types_to_regularize();
 
   virtual bool Reconfigure(const RegularizerConfig& config);
 

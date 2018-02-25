@@ -54,7 +54,7 @@ TEST(Scores, Perplexity) {
   gs.set_score_name("perplexity");
   auto score = master_1.GetScoreAs< ::artm::PerplexityScore>(gs);
   // score calculation should be skipped if class ids sets of model and score have empty intersection
-  ASSERT_DOUBLE_EQ(score.class_id_info_size(), 0);
+  ASSERT_DOUBLE_EQ(score.transaction_type_info_size(), 0);
   ASSERT_DOUBLE_EQ(score.normalizer(), 0.0);
   ASSERT_DOUBLE_EQ(score.raw(), 0.0);
   ASSERT_DOUBLE_EQ(score.value(), 0.0);
@@ -72,7 +72,7 @@ TEST(Scores, Perplexity) {
   ASSERT_DOUBLE_EQ(score.raw(), 0.0);
   ASSERT_DOUBLE_EQ(score.normalizer(), 0.0);
   ASSERT_EQ(score.zero_words(), 0);
-  ASSERT_EQ(score.class_id_info_size(), 2);
+  ASSERT_EQ(score.transaction_type_info_size(), 2);
   float value_1 = score.value();
 
   gs.set_score_name("perplexity_3");
@@ -81,7 +81,7 @@ TEST(Scores, Perplexity) {
   ASSERT_DOUBLE_EQ(score.raw(), 0.0);
   ASSERT_DOUBLE_EQ(score.normalizer(), 0.0);
   ASSERT_EQ(score.zero_words(), 0);
-  ASSERT_EQ(score.class_id_info_size(), 2);
+  ASSERT_EQ(score.transaction_type_info_size(), 2);
   float value_2 = score.value();
 
   ASSERT_DOUBLE_EQ(value_1, value_2);
@@ -92,7 +92,7 @@ TEST(Scores, Perplexity) {
   ASSERT_DOUBLE_EQ(score.raw(), 0.0);
   ASSERT_DOUBLE_EQ(score.normalizer(), 0.0);
   ASSERT_EQ(score.zero_words(), 0);
-  ASSERT_EQ(score.class_id_info_size(), 1);
+  ASSERT_EQ(score.transaction_type_info_size(), 1);
 
   gs.set_score_name("perplexity_4");
   score = master_2.GetScoreAs< ::artm::PerplexityScore>(gs);
@@ -100,14 +100,14 @@ TEST(Scores, Perplexity) {
   ASSERT_DOUBLE_EQ(score.raw(), 0.0);
   ASSERT_DOUBLE_EQ(score.normalizer(), 0.0);
   ASSERT_EQ(score.zero_words(), 0);
-  ASSERT_EQ(score.class_id_info_size(), 1);
+  ASSERT_EQ(score.transaction_type_info_size(), 1);
 
   gs.set_score_name("perplexity");
   score = master_3.GetScoreAs< ::artm::PerplexityScore>(gs);
   ASSERT_GT(score.value(), 0.0);
   ASSERT_LT(score.raw(), 0.0);
   ASSERT_GT(score.normalizer(), 0.0);
-  ASSERT_EQ(score.class_id_info_size(), 0);
+  ASSERT_EQ(score.transaction_type_info_size(), 0);
 }
 
 // artm_tests.exe --gtest_filter=Scores.ScoreTrackerExportImport

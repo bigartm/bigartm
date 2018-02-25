@@ -13,6 +13,7 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/common.h"
 #include "artm/core/protobuf_helpers.h"
+#include "artm/core/phi_matrix_operations.h"
 
 #include "artm/core/helpers.h"
 
@@ -113,14 +114,15 @@ void RunBasicTest(bool serialize_as_json) {
     item->set_title(str.str());
     item->set_id(666 + iDoc);
     for (int iToken = 0; iToken < nTokens; ++iToken) {
-      item->add_token_id(iToken);
+      item->add_transaction_token_id(iToken);
+      item->add_transaction_start_index(item->transaction_start_index_size());
       item->add_token_weight(static_cast<float>(iDoc + iToken + 1));
     }
   }
 
   EXPECT_EQ(batch.item().size(), nDocs);
   for (int i = 0; i < batch.item().size(); i++) {
-    EXPECT_EQ(batch.item(i).token_id_size(), nTokens);
+    EXPECT_EQ(batch.item(i).transaction_token_id_size(), nTokens);
   }
 
   // Index doc-token matrix
@@ -290,6 +292,153 @@ TEST(CppInterface, BasicTestJson) {
   bool wasJson = ArtmProtobufMessageFormatIsJson();
   RunBasicTest(true);
   wasJson ? ArtmSetProtobufMessageFormatToJson() : ArtmSetProtobufMessageFormatToBinary();
+}
+
+// artm_tests.exe --gtest_filter=CppInterface.BasicTrasactionTest
+TEST(CppInterface, BasicTrasactionTest) {
+  std::string target_folder = artm::test::Helpers::getUniqueString();
+  try {
+    ::artm::MasterModelConfig master_config;
+    master_config.set_cache_theta(true);
+    master_config.set_disk_cache_path(".");
+    master_config.set_pwt_name("pwt");
+
+    int nTopics = 5;
+    for (int i = 0; i < nTopics; ++i) {
+      std::stringstream ss;
+      ss << "topic_" << i;
+      master_config.add_topic_name(ss.str());
+    }
+
+    // Create master component
+    artm::MasterModel master_component(master_config);
+    ::artm::test::Api api(master_component);
+
+    ::artm::CollectionParserConfig config;
+    config.set_format(::artm::CollectionParserConfig_CollectionFormat_VowpalWabbit);
+    config.set_target_folder(target_folder);
+    config.set_docword_file_path("../../../test_data/vw_transaction_data_extended.txt");
+    config.set_num_items_per_batch(2);
+
+    ::artm::ParseCollection(config);
+
+    // Test InitializeModel and model extraction
+    artm::GatherDictionaryArgs dict_args;
+    dict_args.add_batch_path(target_folder);
+    dict_args.set_dictionary_target_name("dict");
+    dict_args.set_data_path(target_folder);
+    master_component.GatherDictionary(dict_args);
+
+    ::artm::InitializeModelArgs init_model_args;
+    init_model_args.set_model_name("model");
+    init_model_args.set_dictionary_name(dict_args.dictionary_target_name());
+    init_model_args.mutable_topic_name()->CopyFrom(master_component.config().topic_name());
+    master_component.InitializeModel(init_model_args);
+
+    auto test_func = [](artm::MasterModel& master_component, const artm::InitializeModelArgs& init_model_args) {
+      auto func = [](const artm::TopicModel& model, int num_transactions) {
+        std::unordered_map<artm::core::NormalizerKey, float, artm::core::NormalizerKeyHasher> normalizer_keys;
+        for (int i = 0; i < model.token_size(); ++i) {
+          float value = model.token_weights(i).value(0);
+          normalizer_keys[artm::core::NormalizerKey(model.class_id(i),
+            artm::core::TransactionType(model.transaction_type(i)))] += value;
+        }
+
+        ASSERT_EQ(normalizer_keys.size(), num_transactions);
+        for (const auto& nk : normalizer_keys) {
+          ASSERT_FLOAT_EQ(nk.second, 1.0);
+        }
+      };
+
+      artm::GetTopicModelArgs args;
+      args.set_model_name(init_model_args.model_name());
+      auto model_1 = master_component.GetTopicModel(args);
+
+      ASSERT_EQ(model_1.transaction_type_size(), model_1.token_size());
+      func(model_1, 7);
+
+      args.set_model_name(init_model_args.model_name());
+      args.add_transaction_type("class_1" + artm::core::TransactionSeparator + "class_2");
+      auto model_2 = master_component.GetTopicModel(args);
+      func(model_2, 2);
+
+      args.set_model_name(init_model_args.model_name());
+      args.add_transaction_type("class_1" + artm::core::TransactionSeparator + "class_2");
+      args.add_class_id("class_1");
+      auto model_3 = master_component.GetTopicModel(args);
+      func(model_3, 1);
+    };
+
+    test_func(master_component, init_model_args);
+
+    artm::ExportModelArgs exp_args;
+    fs::path export_filename = (fs::path(target_folder) / fs::path(artm::test::Helpers::getUniqueString() + ".model"));
+    exp_args.set_file_name(export_filename.string());
+    exp_args.set_model_name(init_model_args.model_name());
+    master_component.ExportModel(exp_args);
+
+    artm::ImportModelArgs imp_args;
+    imp_args.set_file_name(exp_args.file_name());
+    imp_args.set_model_name(init_model_args.model_name());
+    master_component.ImportModel(imp_args);
+
+    test_func(master_component, init_model_args);
+
+    artm::TopicModel new_topic_model;
+    new_topic_model.set_name("model2_name");
+    new_topic_model.mutable_topic_name()->CopyFrom(master_component.config().topic_name());
+
+    new_topic_model.add_token("token_x");
+    new_topic_model.add_class_id("class_5");
+    new_topic_model.add_transaction_type("class_5");
+
+    new_topic_model.add_token("token_y");
+    new_topic_model.add_class_id("class_5");
+    new_topic_model.add_transaction_type("class_5");
+
+    auto weights = new_topic_model.add_token_weights();
+    auto weights2 = new_topic_model.add_token_weights();
+    for (int i = 0; i < nTopics; ++i) {
+      weights->add_value(static_cast<float>(i));
+      weights2->add_value(static_cast<float>(nTopics - i));
+    }
+    api.OverwriteModel(new_topic_model);
+
+    ::artm::NormalizeModelArgs normalize_args;
+    normalize_args.set_nwt_source_name(new_topic_model.name());
+    normalize_args.set_pwt_target_name(new_topic_model.name());
+    api.NormalizeModel(normalize_args);
+
+    {
+      artm::GetTopicModelArgs args;
+      args.set_model_name(new_topic_model.name());
+      new_topic_model.add_token("token_x");
+      new_topic_model.add_class_id("class_5");
+      new_topic_model.add_transaction_type("class_5");
+
+      new_topic_model.add_token("token_y");
+      new_topic_model.add_class_id("class_5");
+      new_topic_model.add_transaction_type("class_5");
+
+      auto new_topic_model2 = master_component.GetTopicModel(args);
+
+      ASSERT_EQ(new_topic_model2.token_size(), 2);
+      EXPECT_EQ(new_topic_model2.token(0), "token_x");
+      EXPECT_EQ(new_topic_model2.token(1), "token_y");
+      for (int i = 0; i < nTopics; ++i) {
+        EXPECT_FLOAT_EQ(
+          new_topic_model2.token_weights(0).value(i),
+          static_cast<float>(i) / static_cast<float>(nTopics));
+          EXPECT_FLOAT_EQ(
+            new_topic_model2.token_weights(1).value(i),
+            1.0f - static_cast<float>(i) / static_cast<float>(nTopics));
+      }
+    }
+  }
+  catch (...) {
+    try { boost::filesystem::remove_all(target_folder); }
+    catch (...) {}
+  }
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.ProcessBatchesApi
@@ -625,6 +774,11 @@ TEST(CppInterface, Dictionaries) {
   ASSERT_GT(dictionary.token_tf(0), 0);
   ASSERT_GT(dictionary.token_value(0), 0);
 
+
+  // gather dictionary should contain any class_id as
+  // transaction type if token_id field was used in batches
+  ASSERT_EQ(dictionary.transaction_type_size(), 1);
+
   // Filter
   artm::FilterDictionaryArgs filter_args;
   filter_args.set_dictionary_name("gathered_dictionary");
@@ -675,6 +829,93 @@ TEST(ProtobufMessages, Json) {
   ASSERT_EQ(::google::protobuf::util::JsonStringToMessage("{num_processors:12}", &config2),
             ::google::protobuf::util::Status::OK);
   ASSERT_EQ(config.num_processors(), config2.num_processors());
+}
+
+// artm_tests.exe --gtest_filter=CppInterface.TransactionDictionaries
+TEST(CppInterface, TransactionDictionaries) {
+  std::string target_folder = artm::test::Helpers::getUniqueString();
+
+  ::artm::CollectionParserConfig config;
+  config.set_format(::artm::CollectionParserConfig_CollectionFormat_VowpalWabbit);
+  config.set_target_folder(target_folder);
+  config.set_docword_file_path("../../../test_data/vw_transaction_data_extended.txt");
+  config.set_num_items_per_batch(2);
+
+  ::artm::ParseCollection(config);
+
+  artm::MasterModelConfig master_config;
+  artm::MasterModel master(master_config);
+
+  auto checker = [](const artm::DictionaryData& dict) {
+    ASSERT_EQ(dict.token_size(), 8);
+
+    ASSERT_EQ(dict.transaction_type_size(), 4);
+
+    for (int i = 0; i < dict.transaction_type_size(); ++i) {
+      auto vec = artm::core::TransactionType(dict.transaction_type(i)).AsVector();
+      artm::core::TransactionType tt(dict.transaction_type(i));
+      if (vec.size() == 1) {
+        std::string str = (dict.transaction_type(i) == "class_1") ? "class_1" : "class_3";
+        ASSERT_EQ(dict.transaction_type(i), str);
+        ASSERT_EQ(tt.AsString(), str);
+        ASSERT_EQ(vec[0], str);
+      } else if (vec.size() == 2) {
+        ASSERT_EQ(dict.transaction_type(i), "class_1" + artm::core::TransactionSeparator + "class_2");
+        ASSERT_EQ(tt.AsString(), "class_1" + artm::core::TransactionSeparator + "class_2");
+        ASSERT_EQ(vec[0], "class_1");
+        ASSERT_EQ(vec[1], "class_2");
+      } else if (vec.size() == 3) {
+        ASSERT_EQ(vec[0], "class_4");
+        ASSERT_EQ(vec[1], "class_2");
+        ASSERT_EQ(vec[2], "class_1");
+      } else {
+        ASSERT_TRUE(false);
+      }
+    }
+  };
+
+  // Gather
+  artm::GatherDictionaryArgs gather_args;
+  gather_args.set_data_path(target_folder);
+  gather_args.set_dictionary_target_name("gathered_dictionary");
+  master.GatherDictionary(gather_args);
+
+  ::artm::GetDictionaryArgs get_dict;
+  get_dict.set_dictionary_name("gathered_dictionary");
+  checker(master.GetDictionary(get_dict));
+
+  // Export & Import
+  artm::ExportDictionaryArgs export_args;
+  export_args.set_file_name(artm::test::Helpers::getUniqueString() + ".dict");
+  export_args.set_dictionary_name("gathered_dictionary");
+  master.ExportDictionary(export_args);
+
+  artm::ImportDictionaryArgs import_args;
+  import_args.set_file_name(export_args.file_name());
+  import_args.set_dictionary_name("imported_dictionary");
+  master.ImportDictionary(import_args);
+
+  get_dict.set_dictionary_name("imported_dictionary");
+  checker(master.GetDictionary(get_dict));
+
+  // Get and Create
+  artm::GetDictionaryArgs get_args;
+  get_args.set_dictionary_name("imported_dictionary");
+  auto data = master.GetDictionary(get_args);
+  checker(data);
+
+  data.set_name("created_dictionary");
+  master.CreateDictionary(data);
+
+  get_args.set_dictionary_name("created_dictionary");
+  data = master.GetDictionary(get_args);
+  checker(data);
+
+  try { boost::filesystem::remove_all(target_folder); }
+  catch (...) {}
+
+  try { boost::filesystem::remove(import_args.file_name()); }
+  catch (...) {}
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.ReconfigureTopics

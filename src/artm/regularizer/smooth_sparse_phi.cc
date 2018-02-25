@@ -41,27 +41,29 @@ bool SmoothSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     use_all_classes = true;
   }
 
+  bool use_all_tts = false;
+  if (config_.transaction_type_size() == 0) {
+    use_all_tts = true;
+  }
+
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
   if (config_.has_dictionary_name()) {
     dictionary_ptr = dictionary(config_.dictionary_name());
   }
-  bool has_dictionary = dictionary_ptr != nullptr;
 
   // proceed the regularization
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    float coefficient = 1.0f;
     const auto& token = p_wt.token(token_id);
-    if (has_dictionary) {
-      if (use_all_classes ||
-          core::is_member(token.class_id, config_.class_id())) {
-        auto entry_ptr = dictionary_ptr->entry(token);
-        // don't process tokens without value in the dictionary
-        coefficient = entry_ptr != nullptr ? entry_ptr->token_value() : 0.0f;
-      }
+    if ((!use_all_classes && !core::is_member(token.class_id, config_.class_id())) ||
+        (!use_all_tts && !token.transaction_type.ContainsIn(config_.transaction_type()))) {
+      continue;
     }
 
-    if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) {
-      continue;
+    float coefficient = 1.0f;
+    if (dictionary_ptr != nullptr) {
+      auto entry_ptr = dictionary_ptr->entry(token);
+      // don't process tokens without value in the dictionary
+      coefficient = entry_ptr != nullptr ? entry_ptr->token_value() : 0.0f;
     }
 
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
@@ -81,6 +83,10 @@ google::protobuf::RepeatedPtrField<std::string> SmoothSparsePhi::topics_to_regul
 
 google::protobuf::RepeatedPtrField<std::string> SmoothSparsePhi::class_ids_to_regularize() {
   return config_.class_id();
+}
+
+google::protobuf::RepeatedPtrField<std::string> SmoothSparsePhi::transaction_types_to_regularize() {
+  return config_.transaction_type();
 }
 
 bool SmoothSparsePhi::Reconfigure(const RegularizerConfig& config) {

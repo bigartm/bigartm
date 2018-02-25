@@ -75,7 +75,7 @@ class TemplateManager : boost::noncopyable {
   mutable boost::mutex lock_;
 
   int next_id_;
-  std::map<int, Type> map_;
+  std::unordered_map<int, Type> map_;
 };
 
 }  // namespace core
