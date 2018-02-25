@@ -251,7 +251,7 @@ static void CreateThetaCacheEntry(ThetaMatrix* new_cache_entry_ptr,
     for (int token_index = 0; token_index < p_wt.token_size(); token_index++) {
       const Token& token = p_wt.token(token_index);
       if ((predict_class_id && token.class_id != args.predict_class_id() ||
-          (predict_tt && token.transaction_type != TransactionType({ args.predict_transaction_type() })))) {
+          (predict_tt && token.transaction_type != TransactionType(args.predict_transaction_type())))) {
         continue;
       }
 

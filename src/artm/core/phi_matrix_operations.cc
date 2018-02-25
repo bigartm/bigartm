@@ -46,7 +46,7 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
       ClassId class_id = use_default_class ? DefaultClass : get_model_args.class_id(i);
       TransactionType transaction_type;
       if (use_class_id_as_transaction) {
-        transaction_type = TransactionType({ class_id });
+        transaction_type = TransactionType(class_id);
       } else {
         transaction_type = TransactionType(get_model_args.transaction_type(i));
       }
@@ -197,7 +197,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
     if (topic_model.transaction_type_size() > 0) {
       transaction_type = TransactionType(topic_model.transaction_type(token_index));
     } else {
-      transaction_type = TransactionType({ class_id });
+      transaction_type = TransactionType(class_id);
     }
 
     Token token(class_id, token_keyword, transaction_type);
