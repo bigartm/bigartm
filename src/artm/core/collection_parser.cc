@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <iostream>  // NOLINT
 #include <future>  // NOLINT
+#include <atomic>
 
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/predicate.hpp"
@@ -454,6 +455,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
 
   ::artm::core::CooccurrenceCollector cooc_collector(config);
   int64_t total_num_of_pairs = 0;
+  std::atomic_bool gather_transaction_cooc(false);
 
   // The function defined below works as follows:
   // 1. Acquire lock for reading from docword file
@@ -465,7 +467,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
   // Multiple copies of the function can work in parallel.
   auto func = [&docword, &global_line_no, &progress, &batch_name_generator, &read_access, &cooc_config_access,
                &token_map_access, &token_statistics_access, &parser_info, &token_map, &total_num_of_pairs,
-               &cooc_collector, config]() {
+               &cooc_collector, &gather_transaction_cooc, config]() {
     int64_t local_num_of_pairs = 0;  // statistics for future ppmi calculation
     while (true) {
       // The following variable remembers at which line the batch has started.
@@ -585,12 +587,16 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
               BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
             }
           }
-          
+
           transaction_types.emplace(TransactionType(class_ids));
           batch_collector.Record(class_ids, tokens, transaction_weight);
 
           if (config.gather_cooc()) {
-            const ClassId first_token_class_id = class_id;
+            if (transaction_types.size() > 1) {
+              gather_transaction_cooc = true;
+              return;
+            }
+            const ClassId first_token_class_id = class_ids[0];
 
             int first_token_id = -1;
             if (config.has_vocab_file_path()) {
@@ -711,6 +717,10 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
   }
   for (int i = 0; i < num_threads; i++) {
     tasks[i].get();
+  }
+
+  if (gather_transaction_cooc) {
+    BOOST_THROW_EXCEPTION(InvalidOperation("Parser can't gather co-occurrences on transaction data yet"));
   }
 
   cooc_collector.config_.set_total_num_of_pairs(total_num_of_pairs);
