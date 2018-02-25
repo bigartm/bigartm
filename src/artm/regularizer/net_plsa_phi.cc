@@ -5,6 +5,8 @@
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/phi_matrix.h"
 #include "artm/core/phi_matrix_operations.h"
+#include "artm/core/token.h"
+
 #include "artm/regularizer/net_plsa_phi.h"
 
 namespace artm {
@@ -29,6 +31,10 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     return false;
   }
   const auto& class_id = config_.class_id();
+  auto tt = ::artm::core::TransactionType(class_id);
+  if (config_.has_transaction_type()) {
+    tt = artm::core::TransactionType(config_.transaction_type());
+  }
 
   bool has_weights = config_.vertex_weight_size();
   if (has_weights && vertex_name_.size() != config_.vertex_weight_size()) {
@@ -38,9 +44,10 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
 
   auto normalizers = artm::core::PhiMatrixOperations::FindNormalizers(n_wt);
-  auto norm_iter = normalizers.find(class_id);
+  auto norm_iter = normalizers.find(artm::core::NormalizerKey(class_id, tt));
   if (norm_iter == normalizers.end()) {
     LOG(ERROR) << "NetPlsaPhiConfig.class_id " << class_id
+               << " with transaction type " << tt.AsString()
                << " does not exists in n_wt matrix. Cancel regularization.";
   }
   const auto& n_t = norm_iter->second;
@@ -51,7 +58,7 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
       continue;
     }
 
-    const int token_id = p_wt.token_index(::artm::core::Token(class_id, vertex_name_[vertex_id]));
+    const int token_id = p_wt.token_index(::artm::core::Token(class_id, vertex_name_[vertex_id], tt));
     if (token_id < 0) {
       continue;
     }
@@ -72,7 +79,7 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
           continue;
         }
 
-        const int index = p_wt.token_index(::artm::core::Token(class_id, vertex_name_[pair_id.first]));
+        const int index = p_wt.token_index(::artm::core::Token(class_id, vertex_name_[pair_id.first], tt));
         if (index < 0) {
           continue;
         }
@@ -97,6 +104,13 @@ google::protobuf::RepeatedPtrField<std::string> NetPlsaPhi::class_ids_to_regular
   google::protobuf::RepeatedPtrField<std::string> retval;
   std::string* ptr = retval.Add();
   *ptr = config_.class_id();
+  return retval;
+}
+
+google::protobuf::RepeatedPtrField<std::string> NetPlsaPhi::transaction_types_to_regularize() {
+  google::protobuf::RepeatedPtrField<std::string> retval;
+  std::string* ptr = retval.Add();
+  *ptr = config_.has_transaction_type() ? config_.transaction_type() : config_.class_id();
   return retval;
 }
 

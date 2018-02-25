@@ -1,6 +1,7 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
 #include <algorithm>
+#include <climits>
 #include <fstream>
 #include <functional>
 #include <string>
@@ -8,6 +9,7 @@
 #include <memory>
 #include <vector>
 #include <utility>
+#include <set>
 
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/predicate.hpp"
@@ -24,6 +26,17 @@ using ::artm::utility::ifstream_or_cin;
 
 namespace artm {
 namespace core {
+
+void DictionaryOperations::UpdateTransactionTypes(const DictionaryData& data,
+                                                  std::shared_ptr<Dictionary> dict) {
+  for (const auto& tt : data.transaction_type()) {
+    std::vector<std::string> vec = TransactionType::TransactionTypeStrAsVector(tt);
+    for (const ClassId& class_id : vec) {
+      dict->AddTransactionType(class_id, TransactionType(vec));
+    }
+  }
+}
+
 std::shared_ptr<Dictionary> DictionaryOperations::Create(const DictionaryData& data) {
   auto dictionary = std::make_shared<Dictionary>(Dictionary(data.name()));
 
@@ -39,6 +52,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Create(const DictionaryData& d
         has_token_tf ? data.token_tf(index) : 0.0f,
         has_token_df ? data.token_df(index) : 0.0f));
     }
+    UpdateTransactionTypes(data, dictionary);
   } else {
     LOG(ERROR) << "Can't create Dictionary using the cooc part of DictionaryData";
   }
@@ -93,7 +107,16 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, const Dictio
     token_dict_data.add_token_df(entry->token_df());
   }
 
+  for (const auto& tt : dict.GetAllTransactionTypes()) {
+    token_dict_data.add_transaction_type(tt.AsString());
+  }
+
   std::string str = token_dict_data.SerializeAsString();
+  if (str.size() >= kProtobufCodedStreamTotalBytesLimit) {
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
+      args.dictionary_name() + " is too large to export"));
+  }
+
   int length = static_cast<int>(str.size());
   fout.write(reinterpret_cast<char *>(&length), sizeof(length));
   fout << str;
@@ -131,6 +154,12 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, const Dictio
 
       if ((current_cooc_length >= max_cooc_length) || ((token_id + 1) == token_size)) {
         std::string str = cooc_dict_data.SerializeAsString();
+        if (str.size() >= kProtobufCodedStreamTotalBytesLimit) {
+          BOOST_THROW_EXCEPTION(InvalidOperation(
+            "Unable to serialize coocurence information in Dictionary " +
+            args.dictionary_name()));
+        }
+
         int length = static_cast<int>(str.size());
         fout.write(reinterpret_cast<char *>(&length), sizeof(length));
         fout << str;
@@ -198,10 +227,13 @@ std::shared_ptr<Dictionary> DictionaryOperations::Import(const ImportDictionaryA
     if (dict_data.token_size() > 0) {
       dictionary->SetNumItems(dict_data.num_items_in_collection());
       for (int token_id = 0; token_id < dict_data.token_size(); ++token_id) {
-        dictionary->AddEntry(DictionaryEntry(Token(dict_data.class_id(token_id), dict_data.token(token_id)),
+        dictionary->AddEntry(DictionaryEntry(
+          Token(dict_data.class_id(token_id), dict_data.token(token_id)),
           dict_data.token_value(token_id), dict_data.token_tf(token_id), dict_data.token_df(token_id)));
       }
     }
+
+    UpdateTransactionTypes(dict_data, dictionary);
 
     // part with cooc dictionary
     if (dict_data.cooc_value_size() > 0) {
@@ -255,6 +287,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 
   int total_items_count = 0;
   std::unordered_map<ClassId, float> sum_w_tf;
+  std::unordered_set<TransactionType, TransactionHasher> transaction_types;
   for (const std::string& batch_file : batches) {
     std::shared_ptr<Batch> batch_ptr = mem_batches.get(batch_file);
     try {
@@ -275,6 +308,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 
     const Batch& batch = *batch_ptr;
 
+    std::unordered_set<TransactionType, TransactionHasher> batch_transaction_types;
     std::vector<float> token_df(batch.token_size(), 0);
     std::vector<float> token_n_w(batch.token_size(), 0);
     for (int item_id = 0; item_id < batch.item_size(); ++item_id) {
@@ -283,25 +317,67 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
       // (assume that token might have multiple occurence in each item)
       std::vector<bool> local_token_df(batch.token_size(), false);
       const Item& item = batch.item(item_id);
-      for (int token_index = 0; token_index < item.token_weight_size(); ++token_index) {
-        const float token_weight = item.token_weight(token_index);
-        const int token_id = item.token_id(token_index);
-        token_n_w[token_id] += token_weight;
-        local_token_df[token_id] = true;
+      for (int pos_idx = 0; pos_idx < item.transaction_start_index_size(); ++pos_idx) {
+        const float token_weight = item.token_weight(pos_idx);
+
+        const int start_index = item.transaction_start_index(pos_idx);
+        const int end_index = (pos_idx + 1) < item.transaction_start_index_size() ?
+                               item.transaction_start_index(pos_idx + 1) :
+                               item.transaction_token_id_size();
+
+        std::string str;
+        for (int idx = start_index; idx < end_index; ++idx) {
+          const int token_id = item.transaction_token_id(idx);
+          auto& tmp = batch.class_id(token_id);
+          str += (idx == start_index) ? tmp : TransactionSeparator + tmp;
+          token_n_w[token_id] += token_weight;
+          local_token_df[token_id] = true;
+        }
+
+        if (!str.empty()) {
+          auto tt = TransactionType(str);
+          batch_transaction_types.insert(tt);
+          transaction_types.insert(tt);
+        } else {
+          LOG(WARNING) << "Item " << item_id << " in batch " << batch.id()
+                       << " has empty transaction_token_ids in position " << pos_idx
+                       << ", this token will be skipped";
+          continue;
+        }
       }
+
       for (int i = 0; i < batch.token_size(); ++i) {
         token_df[i] += local_token_df[i] ? 1.0f : 0.0f;
       }
     }
 
+    if (batch.transaction_type_size() > 0) {
+      // check that batch transaction type are consistent with types, gather from it's items
+      std::unordered_set<TransactionType, TransactionHasher> local_tts;
+      for (const auto& tt : batch.transaction_type()) {
+        local_tts.insert(TransactionType(tt));
+      }
+
+      if (local_tts != batch_transaction_types) {
+        BOOST_THROW_EXCEPTION(InvalidOperation(
+          "Dictionary::Gather() find batch with non-empty transaction_type field inconsistent with it's items."));
+      }
+    }
+
     for (int index = 0; index < batch.token_size(); ++index) {
       // unordered_map.operator[] creates element using default constructor if the key doesn't exist
-      ClassId token_class_id = batch.class_id(index);
+      const ClassId& token_class_id = batch.class_id(index);
       TokenValues& token_info = token_freq_map[Token(token_class_id, batch.token(index))];
       token_info.token_tf += token_n_w[index];
       token_info.token_df += token_df[index];
 
       sum_w_tf[token_class_id] += token_n_w[index];
+    }
+  }
+
+  for (const auto& tt : transaction_types) {
+    for (const ClassId& class_id : tt.AsVector()) {
+      dictionary->AddTransactionType(class_id, tt);
     }
   }
 
@@ -465,6 +541,11 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryArgs& args, const Dictionary& dict) {
   auto dictionary = std::make_shared<Dictionary>(Dictionary(args.dictionary_target_name()));
   dictionary->SetNumItems(dict.num_items());
+  for (const auto& tt : dict.GetAllTransactionTypes()) {
+    for (const ClassId& class_id : tt.AsVector()) {
+      dictionary->AddTransactionType(class_id, tt);
+    }
+  }
 
   auto& src_entries = dict.entries();
   auto& dictionary_token_index = dict.token_index();
@@ -578,6 +659,25 @@ void DictionaryOperations::StoreIntoDictionaryData(const Dictionary& dict, Dicti
     data->add_token_tf(entries[i].token_tf());
     data->add_token_df(entries[i].token_df());
   }
+
+  for (const auto& tt : dict.GetAllTransactionTypes()) {
+    data->add_transaction_type(tt.AsString());
+  }
+}
+
+void DictionaryOperations::WriteDictionarySummaryToLog(const Dictionary& dict) {
+  std::map<ClassId, int> entries_per_class;
+  for (int i = 0; i < dict.size(); i++) {
+    const DictionaryEntry* entry = dict.entry(i);
+    if (entry != nullptr) {
+      entries_per_class[entry->token().class_id]++;
+    }
+  }
+  std::stringstream ss; ss << "Dictionary name='" << dict.name() << "' contains entries: ";
+  for (auto const& x : entries_per_class) {
+    ss << x.first << ":" << x.second << "; ";
+  }
+  LOG(INFO) << ss.str();
 }
 
 }  // namespace core

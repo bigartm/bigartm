@@ -41,6 +41,11 @@ const int kIdleLoopFrequency = 1;  // 1 ms
 
 const int kBatchNameLength = 6;
 
+// Defined in 3rdparty/protobuf-3.0.0/src/google/protobuf/io/coded_stream.h
+const int64_t kProtobufCodedStreamTotalBytesLimit = 2147483647ULL;
+
+static const std::string TransactionSeparator = "^";
+
 template <typename T>
 std::string to_string(T value) {
   return boost::lexical_cast<std::string>(value);

@@ -4,6 +4,7 @@
 
 #include <atomic>
 
+#include "boost/functional/hash.hpp"
 #include "boost/thread.hpp"
 #include "boost/thread/mutex.hpp"
 #include "boost/utility.hpp"

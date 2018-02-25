@@ -97,7 +97,7 @@ class Scores(object):
 class BaseScore(object):
     _config_message = None
 
-    def __init__(self, name, class_id, topic_names, model_name, config):
+    def __init__(self, name, class_id, transaction_type, topic_names, model_name, config):
         if self._config_message is None:
             raise NotImplementedError()
         self._config = config if config is not None else self._config_message()
@@ -109,6 +109,16 @@ class BaseScore(object):
         elif config is not None:
             try:
                 self._class_id = config.class_id
+            except AttributeError:
+                pass
+
+        self._transaction_type = self._class_id
+        if transaction_type is not None:
+            self._config.transaction_type = transaction_type
+            self._transaction_type = transaction_type
+        elif config is not None:
+            try:
+                self._transaction_type = config.transaction_type
             except AttributeError:
                 pass
 
@@ -154,6 +164,10 @@ class BaseScore(object):
         return self._class_id
 
     @property
+    def transaction_type(self):
+        return self._transaction_type
+
+    @property
     def topic_names(self):
         return self._topic_names
 
@@ -177,6 +191,10 @@ class BaseScore(object):
     def class_id(self, class_id):
         _reconfigure_field(self, class_id, 'class_id')
 
+    @class_id.setter
+    def transaction_type(self, transaction_type):
+        _reconfigure_field(self, transaction_type, 'transaction_type')
+
     @topic_names.setter
     def topic_names(self, topic_names):
         _reconfigure_field(self, topic_names, 'topic_names')
@@ -197,10 +215,12 @@ class SparsityPhiScore(BaseScore):
     _config_message = messages.SparsityPhiScoreConfig
     _type = const.ScoreType_SparsityPhi
 
-    def __init__(self, name=None, class_id=None, topic_names=None, model_name=None, eps=None, config=None):
+    def __init__(self, name=None, class_id=None, transaction_type=None,
+                 topic_names=None, model_name=None, eps=None, config=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score
+        :param str transaction_type: transaction_type to score
         :param topic_names: list of names or single name of topic to regularize, will\
                             score all topics if empty or None
         :type topic_names: list of str or str or None
@@ -213,6 +233,7 @@ class SparsityPhiScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=class_id,
+                           transaction_type=transaction_type,
                            topic_names=topic_names,
                            model_name=model_name,
                            config=config)
@@ -250,6 +271,7 @@ class SparsityThetaScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
+                           transaction_type=None,
                            topic_names=topic_names,
                            model_name=None,
                            config=config)
@@ -270,6 +292,10 @@ class SparsityThetaScore(BaseScore):
         raise KeyError('No class_id parameter')
 
     @property
+    def transaction_type(self):
+        raise KeyError('No transaction_type parameter')
+
+    @property
     def model_name(self):
         raise KeyError('No model_name parameter')
 
@@ -281,6 +307,10 @@ class SparsityThetaScore(BaseScore):
     def class_id(self, class_id):
         raise KeyError('No class_id parameter')
 
+    @transaction_type.setter
+    def transaction_type(self, transaction_type):
+        raise KeyError('No transaction_type parameter')
+
     @model_name.setter
     def model_name(self, model_name):
         raise KeyError('No model_name parameter')
@@ -290,11 +320,16 @@ class PerplexityScore(BaseScore):
     _config_message = messages.PerplexityScoreConfig
     _type = const.ScoreType_Perplexity
 
-    def __init__(self, name=None, class_ids=None, dictionary=None, config=None):
+    def __init__(self, name=None, class_ids=None, transaction_types=None, dictionary=None, config=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
-        :param class_ids: class_id to score, means that tokens of all class_ids will be used
+        :param class_ids: class_ids to score, None means that tokens of all class_ids will be used
         :type class_ids: list of str
+        :param transaction_types: transaction_types to score, None means that tokensof all\
+                                  transaction_types will be used. In case of non-transaction models this\
+                                  parameter may be ignored, but if set, class_ids parameter\
+                                  should not be used at all!
+        :type transaction_types: list of str
         :param dictionary: BigARTM collection dictionary, is strongly recommended to\
                            be used for correct replacing of zero counters.
         :type dictionary: str or reference to Dictionary object
@@ -304,18 +339,27 @@ class PerplexityScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
+                           transaction_type=None,
                            topic_names=None,
                            model_name=None,
                            config=config)
 
-        self._class_ids = []
-        if class_ids is not None:
-            self._config.ClearField('class_id')
-            for class_id in class_ids:
-                self._config.class_id.append(class_id)
-                self._class_ids.append(class_id)
-        elif config is not None and len(config.class_id):
-            self._class_ids = [class_id for class_id in config.class_id]
+        self._transaction_types = []
+        if transaction_types is not None:
+            self._config.ClearField('transaction_type')
+            for transaction_type in transaction_types:
+                self._config.transaction_type.append(transaction_type)
+                self._transaction_types.append(transaction_type)
+        elif config is not None and len(config.transaction_type):
+            self._transaction_types = [tt for tt in config.transaction_type]
+
+        # try to get transaction types from class ids
+        if len(self._transaction_types) == 0:
+            if class_ids is not None:
+                self._config.ClearField('transaction_type')
+                for class_id in class_ids:
+                    self._config.transaction_type.append(class_id)
+                    self._transaction_types.append(class_id)
 
         self._dictionary_name = ''
         if dictionary is not None:
@@ -334,11 +378,19 @@ class PerplexityScore(BaseScore):
 
     @property
     def class_ids(self):
-        return self._class_ids
+        return self._transaction_types
+
+    @property
+    def transaction_types(self):
+        return self._transaction_types
 
     @property
     def class_id(self):
         raise KeyError('No class_id parameter')
+
+    @property
+    def transaction_type(self):
+        raise KeyError('No transaction_type parameter')
 
     @property
     def model_name(self):
@@ -361,11 +413,19 @@ class PerplexityScore(BaseScore):
 
     @class_ids.setter
     def class_ids(self, class_ids):
-        _reconfigure_field(self, class_ids, 'class_ids', 'class_id')
+        _reconfigure_field(self, transaction_types, 'transaction_types', 'transaction_type')
+
+    @transaction_types.setter
+    def transaction_types(self, transaction_types):
+        _reconfigure_field(self, transaction_types, 'transaction_types', 'transaction_type')
 
     @class_id.setter
     def class_id(self, class_id):
         raise KeyError('No class_id parameter')
+
+    @transaction_type.setter
+    def transaction_type(self, transaction_type):
+        raise KeyError('No transaction_type parameter')
 
     @model_name.setter
     def model_name(self, model_name):
@@ -389,6 +449,7 @@ class ItemsProcessedScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
+                           transaction_type=None,
                            topic_names=None,
                            model_name=None,
                            config=config)
@@ -402,6 +463,10 @@ class ItemsProcessedScore(BaseScore):
         raise KeyError('No class_id parameter')
 
     @property
+    def transaction_type(self):
+        raise KeyError('No transaction_type parameter')
+
+    @property
     def model_name(self):
         raise KeyError('No model_name parameter')
 
@@ -413,6 +478,10 @@ class ItemsProcessedScore(BaseScore):
     def class_id(self, class_id):
         raise KeyError('No class_id parameter')
 
+    @transaction_type.setter
+    def transaction_type(self, transaction_type):
+        raise KeyError('No transaction_type parameter')
+
     @model_name.setter
     def model_name(self, model_name):
         raise KeyError('No model_name parameter')
@@ -422,11 +491,12 @@ class TopTokensScore(BaseScore):
     _config_message = messages.TopTokensScoreConfig
     _type = const.ScoreType_TopTokens
 
-    def __init__(self, name=None, class_id=None, topic_names=None,
-                 num_tokens=None, dictionary=None, config=None):
+    def __init__(self, name=None, class_id=None, transaction_type=None,
+                 topic_names=None, num_tokens=None, dictionary=None, config=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score
+        :param str transaction_type: transaction_type to score
         :param topic_names: list of names or single name of topic to regularize, will\
                             score all topics if empty or None
         :type topic_names: list of str or str or None
@@ -440,6 +510,7 @@ class TopTokensScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=class_id,
+                           transaction_type=transaction_type,
                            topic_names=topic_names,
                            model_name=None,
                            config=config)
@@ -503,6 +574,7 @@ class ThetaSnippetScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
+                           transaction_type=None,
                            topic_names=None,
                            model_name=None,
                            config=config)
@@ -532,6 +604,10 @@ class ThetaSnippetScore(BaseScore):
         raise KeyError('No class_id parameter')
 
     @property
+    def transaction_type(self):
+        raise KeyError('No transaction_type parameter')
+
+    @property
     def model_name(self):
         raise KeyError('No model_name parameter')
 
@@ -551,6 +627,10 @@ class ThetaSnippetScore(BaseScore):
     def class_id(self, class_id):
         raise KeyError('No class_id parameter')
 
+    @transaction_type.setter
+    def transaction_type(self, transaction_type):
+        raise KeyError('No transaction_type parameter')
+
     @item_ids.setter
     def item_ids(self, item_ids):
         _reconfigure_field(self, item_ids, 'item_ids', 'item_id')
@@ -568,11 +648,12 @@ class TopicKernelScore(BaseScore):
     _config_message = messages.TopicKernelScoreConfig
     _type = const.ScoreType_TopicKernel
 
-    def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
+    def __init__(self, name=None, class_id=None, transaction_type=None, topic_names=None, eps=None,
                  dictionary=None, probability_mass_threshold=None, config=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score
+        :param str transaction_type: transaction_type to score
         :param topic_names: list of names or single name of topic to regularize, will\
                             score all topics if empty or None
         :type topic_names: list of str or str or None
@@ -588,6 +669,7 @@ class TopicKernelScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=class_id,
+                           transaction_type=transaction_type,
                            topic_names=topic_names,
                            model_name=None,
                            config=config)
@@ -653,11 +735,15 @@ class TopicMassPhiScore(BaseScore):
     _config_message = messages.TopicMassPhiScoreConfig
     _type = const.ScoreType_TopicMassPhi
 
-    def __init__(self, name=None, class_ids=None, topic_names=None, model_name=None, eps=None, config=None):
+    def __init__(self, name=None, class_ids=None, transaction_types=None,
+                 topic_names=None, model_name=None, eps=None, config=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param class_ids: class_id to score, means that tokens of all class_ids will be used
         :type class_ids: list of str
+        :param transaction_types: transaction types to score, None means that tokens of all\
+                                  transaction types will be used
+        :type transaction_types: list of str
         :param topic_names: list of names or single name of topic to regularize, will\
                             score all topics if empty or None
         :type topic_names: list of str or str or None
@@ -670,6 +756,7 @@ class TopicMassPhiScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
+                           transaction_type=None,
                            topic_names=topic_names,
                            model_name=model_name,
                            config=config)
@@ -690,6 +777,15 @@ class TopicMassPhiScore(BaseScore):
         elif config is not None and len(config.class_id):
             self._class_ids = [class_id for class_id in config.class_id]
 
+        self._transaction_types = []
+        if transaction_types is not None:
+            self._config.ClearField('transaction_type')
+            for transaction_type in transaction_types:
+                self._config.transaction_type.append(transaction_type)
+                self._transaction_types.append(transaction_type)
+        elif config is not None and len(config.transaction_type):
+            self._transaction_types = [tt for tt in config.transaction_type]
+
     @property
     def eps(self):
         return self._eps
@@ -702,6 +798,14 @@ class TopicMassPhiScore(BaseScore):
     def class_id(self):
         raise KeyError('No class_id parameter')
 
+    @property
+    def transaction_types(self):
+        return self._transaction_types
+
+    @property
+    def transaction_type(self):
+        raise KeyError('No transaction_type parameter')
+
     @eps.setter
     def eps(self, eps):
         _reconfigure_field(self, eps, 'eps')
@@ -713,6 +817,14 @@ class TopicMassPhiScore(BaseScore):
     @class_id.setter
     def class_id(self, class_id):
         raise KeyError('No class_id parameter')
+
+    @transaction_types.setter
+    def transaction_types(self, transaction_types):
+        _reconfigure_field(self, transaction_types, 'transaction_types', 'transaction_type')
+
+    @transaction_type.setter
+    def transaction_type(self, transaction_type):
+        raise KeyError('No transaction_type parameter')
 
 
 class ClassPrecisionScore(BaseScore):
@@ -728,6 +840,7 @@ class ClassPrecisionScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
+                           transaction_type=None,
                            topic_names=None,
                            model_name=None,
                            config=config)
@@ -741,6 +854,10 @@ class ClassPrecisionScore(BaseScore):
         raise KeyError('No class_id parameter')
 
     @property
+    def transaction_type(self):
+        raise KeyError('No transaction_type parameter')
+
+    @property
     def model_name(self):
         raise KeyError('No model_name parameter')
 
@@ -752,6 +869,10 @@ class ClassPrecisionScore(BaseScore):
     def class_id(self, class_id):
         raise KeyError('No class_id parameter')
 
+    @transaction_type.setter
+    def transaction_type(self, transaction_type):
+        raise KeyError('No transaction_type parameter')
+
     @model_name.setter
     def model_name(self, model_name):
         raise KeyError('No model_name parameter')
@@ -761,11 +882,12 @@ class BackgroundTokensRatioScore(BaseScore):
     _config_message = messages.BackgroundTokensRatioScoreConfig
     _type = const.ScoreType_BackgroundTokensRatio
 
-    def __init__(self, name=None, class_id=None, delta_threshold=None,
+    def __init__(self, name=None, class_id=None, transaction_type=None, delta_threshold=None,
                  save_tokens=None, direct_kl=None, config=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score
+        :param str transaction_type: transaction_type to score
         :param float delta_threshold: the threshold for KL-div between p(t|w) and p(t) to get\
                             token into background. Should be non-negative
         :param bool save_tokens: save background tokens or not, save if field not specified
@@ -776,6 +898,7 @@ class BackgroundTokensRatioScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=class_id,
+                           transaction_type=transaction_type,
                            topic_names=None,
                            model_name=None,
                            config=config)

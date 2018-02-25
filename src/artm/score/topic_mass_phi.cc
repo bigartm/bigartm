@@ -29,13 +29,20 @@ std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix&
     use_all_classes = true;
   }
 
+  bool use_all_tt = false;
+  if (config_.transaction_type_size() == 0) {
+    use_all_tt = true;
+  }
+
   std::vector<float> topic_mass;
   topic_mass.assign(topics_to_score_size, 0.0f);
   double denominator = 0.0;
   double numerator = 0.0;
 
   for (int token_index = 0; token_index < token_size; token_index++) {
-    if (!use_all_classes && !core::is_member(p_wt.token(token_index).class_id, config_.class_id())) {
+    const auto& token = p_wt.token(token_index);
+    if ((!use_all_classes && !core::is_member(token.class_id, config_.class_id())) ||
+        (!use_all_tt && !token.transaction_type.ContainsIn(config_.transaction_type()))) {
       continue;
     }
 

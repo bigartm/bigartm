@@ -35,59 +35,6 @@ void Perplexity::AppendScore(
     Score* score) {
   const int topic_size = p_wt.topic_size();
 
-  // fields of proto messages for all classes
-  std::unordered_map<::artm::core::ClassId, float> class_weight_map;
-  std::unordered_map<::artm::core::ClassId, double> normalizer_map;
-  std::unordered_map<::artm::core::ClassId, double> raw_map;
-  std::unordered_map<::artm::core::ClassId, ::google::protobuf::int64> zero_words_map;
-
-  double normalizer = 0.0;
-  double raw = 0.0;
-  ::google::protobuf::int64 zero_words = 0;
-
-  // choose class_ids policy
-  if (config_.class_id_size() == 0) {
-    for (int i = 0; (i < args.class_id_size()) && (i < args.class_weight_size()); ++i) {
-      class_weight_map.insert(std::make_pair(args.class_id(i), args.class_weight(i)));
-      normalizer_map.insert(std::make_pair(args.class_id(i), 0.0));
-      raw_map.insert(std::make_pair(args.class_id(i), 0.0));
-      zero_words_map.insert(std::make_pair(args.class_id(i), 0));
-    }
-  } else {
-    for (const auto& class_id : config_.class_id()) {
-      for (int i = 0; (i < args.class_id_size()) && (i < args.class_weight_size()); ++i) {
-        if (class_id == args.class_id(i)) {
-          class_weight_map.insert(std::make_pair(args.class_id(i), args.class_weight(i)));
-          normalizer_map.insert(std::make_pair(args.class_id(i), 0.0));
-          raw_map.insert(std::make_pair(args.class_id(i), 0.0));
-          zero_words_map.insert(std::make_pair(args.class_id(i), 0));
-          break;
-        }
-      }
-    }
-    if (class_weight_map.empty()) {
-      LOG(ERROR) << "None of requested classes were presented in model. Score calculation will be skipped";
-      return;
-    }
-  }
-  const bool use_class_ids = !class_weight_map.empty();
-
-  // count perplexity normalizer n_d
-  for (int token_index = 0; token_index < item.token_weight_size(); ++token_index) {
-    if (use_class_ids) {
-      ::artm::core::ClassId class_id = token_dict[item.token_id(token_index)].class_id;
-      auto class_weight_iter = class_weight_map.find(class_id);
-      if (class_weight_iter == class_weight_map.end()) {
-        // we should not take tokens without class id weight into consideration
-        continue;
-      }
-
-      normalizer_map[class_id] += item.token_weight(token_index);
-    } else {
-      normalizer += item.token_weight(token_index);
-    }
-  }
-
   // check dictionary existence for replacing zero pwt sums
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
   if (config_.has_dictionary_name()) {
@@ -100,77 +47,175 @@ void Perplexity::AppendScore(
       if (dictionary_ptr) {
         use_document_unigram_model = false;
       } else {
-        LOG(ERROR) << "Perplexity was configured to use UnigramCollectionModel with dictionary " <<
-           config_.dictionary_name() << ". This dictionary can't be found.";
+        LOG_FIRST_N(ERROR, 100) << "Perplexity was configured to use UnigramCollectionModel with dictionary "
+                                << config_.dictionary_name() << ". This dictionary can't be found.";
         return;
       }
     }
   }
 
-  // count raw values
-  std::vector<float> helper_vector(topic_size, 0.0f);
-  for (int token_index = 0; token_index < item.token_weight_size(); ++token_index) {
-    double sum = 0.0;
-    const auto& token = token_dict[item.token_id(token_index)];
+  // fields of proto messages for all classes
+  std::unordered_map<::artm::core::TransactionType, float, artm::core::TransactionHasher> transaction_weight_map;
+  std::unordered_map<::artm::core::TransactionType, double, artm::core::TransactionHasher> normalizer_map;
+  std::unordered_map<::artm::core::TransactionType, double, artm::core::TransactionHasher> raw_map;
+  std::unordered_map<::artm::core::TransactionType,
+    ::google::protobuf::int64, artm::core::TransactionHasher> zero_words_map;
 
-    float class_weight = 1.0f;
-    if (use_class_ids) {
-      auto class_weight_iter = class_weight_map.find(token.class_id);
-      if (class_weight_iter == class_weight_map.end()) {
+  double normalizer = 0.0;
+  double raw = 0.0;
+  ::google::protobuf::int64 zero_words = 0;
+
+  if (config_.transaction_type_size() == 0) {
+    for (int i = 0; (i < args.transaction_type_size()) && (i < args.transaction_weight_size()); ++i) {
+      const auto& tmp = ::artm::core::TransactionType(args.transaction_type(i));
+      transaction_weight_map.insert(std::make_pair(tmp, args.transaction_weight(i)));
+      normalizer_map.insert(std::make_pair(tmp, 0.0));
+      raw_map.insert(std::make_pair(tmp, 0.0));
+      zero_words_map.insert(std::make_pair(tmp, 0));
+    }
+  } else {
+    for (const auto& tt : config_.transaction_type()) {
+      for (int i = 0; (i < args.transaction_type_size()) && (i < args.transaction_weight_size()); ++i) {
+        const auto& tmp = ::artm::core::TransactionType(args.transaction_type(i));
+        if (::artm::core::TransactionType(tt) == tmp) {
+          transaction_weight_map.insert(std::make_pair(tmp, args.transaction_weight(i)));
+          normalizer_map.insert(std::make_pair(tmp, 0.0));
+          raw_map.insert(std::make_pair(tmp, 0.0));
+          zero_words_map.insert(std::make_pair(tmp, 0));
+          break;
+        }
+      }
+    }
+    if (transaction_weight_map.empty()) {
+      LOG_FIRST_N(ERROR, 100) << "None of requested transaction types were presented in model."
+                              << " Score calculation will be skipped";
+      return;
+    }
+  }
+
+  const bool use_tt = !transaction_weight_map.empty();
+
+  // count perplexity normalizer n_d
+  for (int token_index = 0; token_index < item.transaction_start_index_size(); ++token_index) {
+    if (use_tt) {
+      const int start_index = item.transaction_start_index(token_index);
+      const int end_index = (token_index + 1) < item.transaction_start_index_size() ?
+                            item.transaction_start_index(token_index + 1) :
+                            item.transaction_token_id_size();
+      std::string str;
+      for (int token_id = start_index; token_id < end_index; ++token_id) {
+        const auto& tmp = token_dict[item.transaction_token_id(token_id)].class_id;
+        str += (token_id == start_index) ? tmp : artm::core::TransactionSeparator + tmp;
+      }
+
+      artm::core::TransactionType tt(str);
+      auto iter = transaction_weight_map.find(tt);
+      if (iter == transaction_weight_map.end()) {
+        // we should not take tokens without transaction type weight into consideration
         continue;
       }
-      class_weight = class_weight_iter->second;
+      normalizer_map[tt] += item.token_weight(token_index);
+    } else {
+      normalizer += item.token_weight(token_index);
+    }
+  }
+
+  // count raw values
+  std::vector<float> helper_vector(topic_size, 0.0f);
+  for (int token_index = 0; token_index < item.transaction_start_index_size(); ++token_index) {
+    double sum = 0.0;
+    const int start_index = item.transaction_start_index(token_index);
+    const int end_index = (token_index + 1) < item.transaction_start_index_size() ?
+                          item.transaction_start_index(token_index + 1) :
+                          item.transaction_token_id_size();
+    std::string str;
+    for (int token_id = start_index; token_id < end_index; ++token_id) {
+      auto& tmp = token_dict[item.transaction_token_id(token_id)].class_id;
+      str += (token_id == start_index) ? tmp : artm::core::TransactionSeparator + tmp;
+    }
+    artm::core::TransactionType tt(str);
+
+    float tt_weight = 1.0f;
+    if (use_tt) {
+      auto iter = transaction_weight_map.find(tt);
+      if (iter == transaction_weight_map.end()) {
+        continue;
+      }
+      tt_weight = iter->second;
     }
 
-    float token_weight = class_weight * item.token_weight(token_index);
+    float token_weight = tt_weight * item.token_weight(token_index);
     if (token_weight == 0.0f) {
       continue;
     }
 
+    std::vector<float> phi_values(topic_size, 1.0f);
+    for (int token_id = start_index; token_id < end_index; ++token_id) {
+      const auto& temp_token = token_dict[item.transaction_token_id(token_id)];
+      const auto token = artm::core::Token(temp_token.class_id, temp_token.keyword, tt);
 
-    int p_wt_token_index = p_wt.token_index(token);
-    if (p_wt_token_index != ::artm::core::PhiMatrix::kUndefIndex) {
-      p_wt.get(p_wt_token_index, &helper_vector);
-      for (int topic_index = 0; topic_index < topic_size; topic_index++) {
-        sum += theta[topic_index] * helper_vector[topic_index];
+      int p_wt_token_index = p_wt.token_index(token);
+      if (p_wt_token_index != ::artm::core::PhiMatrix::kUndefIndex) {
+        p_wt.get(p_wt_token_index, &helper_vector);
+        for (int topic_index = 0; topic_index < topic_size; topic_index++) {
+          phi_values[topic_index] *= helper_vector[topic_index];
+        }
       }
     }
+
+    for (int topic_index = 0; topic_index < topic_size; topic_index++) {
+      sum += theta[topic_index] * phi_values[topic_index];
+    }
+
     if (sum == 0.0f) {
       if (use_document_unigram_model) {
-        sum = token_weight / (use_class_ids ? normalizer_map[token.class_id] : normalizer);
+        sum = token_weight / (use_tt ? normalizer_map[tt] : normalizer);
       } else {
-        auto entry_ptr = dictionary_ptr->entry(token);
+        sum = 1.0;
         bool failed = true;
-        if (entry_ptr != nullptr && entry_ptr->token_value()) {
-          sum = entry_ptr->token_value();
-          failed = false;
+        const artm::core::Token* err_token;
+        for (int token_id = start_index; token_id < end_index; ++token_id) {
+          const auto& temp_token = token_dict[item.transaction_token_id(token_id)];
+          const auto token = artm::core::Token(temp_token.class_id, temp_token.keyword, tt);
+
+          auto entry_ptr = dictionary_ptr->entry(token);
+          if (entry_ptr != nullptr && entry_ptr->token_value()) {
+            sum *= entry_ptr->token_value();
+          } else {
+            err_token = &token;
+            break;
+          }
+          if (token_id == end_index - 1) {
+            failed = false;
+          }
         }
+
         if (failed) {
-          LOG_FIRST_N(WARNING, 1)
-                    << "Error in perplexity dictionary for token " << token.keyword << ", class " << token.class_id
-                    << " (and potentially for other tokens)"
-                    << ". Verify that the token exists in the dictionary and it's value > 0. "
-                    << "Document unigram model will be used for this token "
-                    << "(and for all other tokens under the same conditions).";
-          sum = token_weight / (use_class_ids ? normalizer_map[token.class_id] : normalizer);
+          LOG_FIRST_N(WARNING, 100)
+            << "Error in perplexity dictionary for token " << err_token->keyword << ", class " << err_token->class_id
+            << " (and potentially for other tokens)"
+            << ". Verify that the token exists in the dictionary and it's value > 0. "
+            << "Document unigram model will be used for this token "
+            << "(and for all other tokens under the same conditions).";
+          sum = token_weight / (use_tt ? normalizer_map[tt] : normalizer);
         }
       }
       // the presence of class_id in the maps here and below is guaranteed
-      ++(use_class_ids ? zero_words_map[token.class_id] : zero_words);
+      ++(use_tt ? zero_words_map[tt] : zero_words);
     }
-    (use_class_ids ? raw_map[token.class_id] : raw) += token_weight * log(sum);
+    (use_tt ? raw_map[tt] : raw) += token_weight * log(sum);
   }
 
   // prepare results
   PerplexityScore perplexity_score;
-  if (use_class_ids) {
+  if (use_tt) {
     for (auto iter = normalizer_map.begin(); iter != normalizer_map.end(); ++iter) {
-      auto class_id_info = perplexity_score.add_class_id_info();
+      auto tt_info = perplexity_score.add_transaction_type_info();
+      tt_info->set_transaction_type(iter->first.AsString());
 
-      class_id_info->set_class_id(iter->first);
-      class_id_info->set_normalizer(iter->second);
-      class_id_info->set_raw(raw_map[iter->first]);
-      class_id_info->set_zero_words(zero_words_map[iter->first]);
+      tt_info->set_normalizer(iter->second);
+      tt_info->set_raw(raw_map[iter->first]);
+      tt_info->set_zero_words(zero_words_map[iter->first]);
     }
   } else {
     perplexity_score.set_normalizer(normalizer);
@@ -198,25 +243,31 @@ void Perplexity::AppendScore(const Score& score, Score* target) {
     BOOST_THROW_EXCEPTION(::artm::core::InternalError(error_message));
   }
 
-  bool empty_target = !perplexity_target->class_id_info_size() && !perplexity_target->normalizer();
-  bool score_has_class_ids = perplexity_score->class_id_info_size();
-  bool target_has_class_ids = empty_target ? score_has_class_ids : perplexity_target->class_id_info_size();
-  if (target_has_class_ids != score_has_class_ids) {
+  bool empty_target = !perplexity_target->transaction_type_info_size() && !perplexity_target->normalizer();
+  bool score_has_transactions = perplexity_score->transaction_type_info_size();
+  bool target_has_transactions =
+    empty_target ? score_has_transactions : perplexity_target->transaction_type_info_size();
+  if (target_has_transactions != score_has_transactions) {
     std::stringstream ss;
-    ss <<"Inconsistent new content of perplexity score. Old content uses class ids: " << target_has_class_ids;
+    ss <<"Inconsistent new content of perplexity score. Old content uses transaction types: "
+       << target_has_transactions;
     BOOST_THROW_EXCEPTION(::artm::core::InternalError(ss.str()));
   }
 
   double pre_value = 0.0;
-  if (target_has_class_ids) {
-    for (size_t i = 0; i < perplexity_score->class_id_info_size(); ++i) {
-      auto src = perplexity_score->class_id_info(i);
+  if (target_has_transactions) {
+    for (size_t i = 0; i < perplexity_score->transaction_type_info_size(); ++i) {
+      auto src = perplexity_score->transaction_type_info(i);
 
       bool was_added = false;
-      for (size_t j = 0; j < perplexity_target->class_id_info_size(); ++j) {
-        if (perplexity_score->class_id_info(i).class_id() == perplexity_target->class_id_info(j).class_id()) {
-          // update existing class_id info
-          auto dst = perplexity_target->mutable_class_id_info(j);
+      for (size_t j = 0; j < perplexity_target->transaction_type_info_size(); ++j) {
+        auto tt1 = ::artm::core::TransactionType(
+          perplexity_score->transaction_type_info(i).transaction_type());
+        auto tt2 = ::artm::core::TransactionType(
+          perplexity_target->transaction_type_info(j).transaction_type());
+        if (tt1 == tt2) {
+          // update existing transaction_type info
+          auto dst = perplexity_target->mutable_transaction_type_info(j);
           dst->set_normalizer(dst->normalizer() + src.normalizer());
           dst->set_raw(dst->raw() + src.raw());
           dst->set_zero_words(dst->zero_words() + src.zero_words());
@@ -227,20 +278,19 @@ void Perplexity::AppendScore(const Score& score, Score* target) {
       }
 
       if (!was_added) {
-        // add new class_id info
-        auto dst = perplexity_target->add_class_id_info();
-        dst->set_class_id(src.class_id());
+        // add new transaction_type info
+        auto dst = perplexity_target->add_transaction_type_info();
+        dst->set_transaction_type(src.transaction_type());
         dst->set_normalizer(src.normalizer());
         dst->set_raw(src.raw());
         dst->set_zero_words(src.zero_words());
       }
     }
 
-    for (size_t j = 0; j < perplexity_target->class_id_info_size(); ++j) {
-      auto score = perplexity_target->class_id_info(j);
+    for (size_t j = 0; j < perplexity_target->transaction_type_info_size(); ++j) {
+      auto score = perplexity_target->transaction_type_info(j);
       pre_value += score.raw() / score.normalizer();
-
-      VLOG(1) << "class_id=" << score.class_id()
+      VLOG(1) << "transaction_type=" << score.transaction_type()
               << ", normalizer=" << score.normalizer()
               << ", raw=" << score.raw()
               << ", zero_words=" << score.zero_words();
@@ -255,7 +305,7 @@ void Perplexity::AppendScore(const Score& score, Score* target) {
 
     pre_value = dst->raw() / dst->normalizer();
 
-    VLOG(1) << "use all class_ids"
+    VLOG(1) << "use all transaction_types"
             << ", normalizer=" << dst->normalizer()
             << ", raw=" << dst->raw()
             << ", zero_words=" << dst->zero_words();

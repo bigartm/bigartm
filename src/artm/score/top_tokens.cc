@@ -47,10 +47,15 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
     class_id = config_.class_id();
   }
 
+  auto tt = ::artm::core::TransactionType(class_id);
+  if (config_.has_transaction_type()) {
+    tt = artm::core::TransactionType(config_.transaction_type());
+  }
+
   std::vector<artm::core::Token> tokens;
   for (int token_index = 0; token_index < token_size; token_index++) {
     auto token = p_wt.token(token_index);
-    if (token.class_id == class_id) {
+    if (token.class_id == class_id && token.transaction_type == tt) {
       tokens.push_back(token);
     }
   }
@@ -67,7 +72,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
 
     for (int token_index = 0; token_index < token_size; token_index++) {
       const auto& token = p_wt.token(token_index);
-      if (token.class_id != class_id) {
+      if (token.class_id != class_id || token.transaction_type != tt) {
         continue;
       }
 
