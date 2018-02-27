@@ -148,7 +148,8 @@ def _score_data_func(score_data_type):
 def _prepare_config(topic_names=None, class_ids=None, transaction_types=None,
                     scores=None, regularizers=None, num_processors=None,
                     pwt_name=None, nwt_name=None, num_document_passes=None,
-                    reuse_theta=None, cache_theta=None, args=None):
+                    reuse_theta=None, cache_theta=None,
+                    parent_model_id=None, parent_model_weight=None, args=None):
         master_config = messages.MasterModelConfig()
 
         if args is not None:
@@ -200,6 +201,13 @@ def _prepare_config(topic_names=None, class_ids=None, transaction_types=None,
         if cache_theta is not None:
             master_config.cache_theta = cache_theta
 
+        if parent_model_id is not None:
+            master_config.parent_master_model_id = parent_model_id
+            master_config.opt_for_avx = False
+
+        if parent_model_weight is not None:
+            master_config.parent_master_model_weight = parent_model_weight
+
         if pwt_name is not None:
             master_config.pwt_name = pwt_name
 
@@ -216,7 +224,8 @@ class MasterComponent(object):
     def __init__(self, library=None, topic_names=None, class_ids=None, transaction_types=None,
                  scores=None, regularizers=None, num_processors=None, pwt_name=None,
                  nwt_name=None, num_document_passes=None, reuse_theta=None,
-                 cache_theta=False, config=None, master_id=None):
+                 cache_theta=False, parent_model_id=None, parent_model_weight=None,
+                 config=None, master_id=None):
         """
 
         :param library: an instance of LibArtm
@@ -235,6 +244,9 @@ class MasterComponent(object):
         :param in num_document_passes: num passes through each document
         :param bool reuse_theta: reuse Theta from previous iteration or not
         :param bool cache_theta: save or not the Theta matrix
+        :param int parent_model_id: master_id of parent model (previous level of hierarchy)
+        :param float parent_model_weight: weight of parent model (plays role in fit_offline;
+                                          defines how much to respect parent model as compared to batches)
         """
         self._lib = library
 
@@ -249,6 +261,8 @@ class MasterComponent(object):
                                         num_document_passes=num_document_passes,
                                         reuse_theta=reuse_theta,
                                         cache_theta=cache_theta,
+                                        parent_model_id=parent_model_id,
+                                        parent_model_weight=parent_model_weight,
                                         args=config)
 
         self._config = master_config
@@ -261,7 +275,8 @@ class MasterComponent(object):
 
     def reconfigure(self, topic_names=None, class_ids=None, transaction_types=None,
                     scores=None, regularizers=None, num_processors=None, pwt_name=None,
-                    nwt_name=None, num_document_passes=None, reuse_theta=None, cache_theta=None):
+                    nwt_name=None, num_document_passes=None, reuse_theta=None, cache_theta=None,
+                    parent_model_id=None, parent_model_weight=None):
         master_config = _prepare_config(topic_names=topic_names,
                                         class_ids=class_ids,
                                         transaction_types=transaction_types,
@@ -273,6 +288,8 @@ class MasterComponent(object):
                                         num_document_passes=num_document_passes,
                                         reuse_theta=reuse_theta,
                                         cache_theta=cache_theta,
+                                        parent_model_id=parent_model_id,
+                                        parent_model_weight=parent_model_weight,
                                         args=self._config)
 
         self._config = master_config
