@@ -336,7 +336,7 @@ void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
 
   for (int i = 0; i < args.batch_size(); ++i) {
     std::shared_ptr<Batch> batch = std::make_shared<Batch>(args.batch(i));
-    if ((batch->description() == "__parent_phi_matrix_batch__") && (batch->item_size() == 0)) {
+    if ((batch->description() == ::artm::core::kParentPhiMatrixBatch) && (batch->item_size() == 0)) {
       LOG(INFO) << "Retrieving batch (id=" << batch->id()
                 << ") from parent master model (id = " << config->parent_master_model_id() << ")";
       auto parent_master = MasterComponentManager::singleton().Get(config->parent_master_model_id());
@@ -1529,7 +1529,7 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
     // Import pseudo-batch from parent master model
     ImportBatchesArgs import_batches_args;
     Batch* batch = import_batches_args.add_batch();
-    batch->set_description("__parent_phi_matrix_batch__");
+    batch->set_description(::artm::core::kParentPhiMatrixBatch);
     batch->set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
     pseudo_batch_id = batch->id();
     ImportBatches(import_batches_args);
