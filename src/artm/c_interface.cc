@@ -267,6 +267,8 @@ int64_t ArtmCreateMasterModel(int64_t length, const char* master_model_config) {
     artm::MasterModelConfig config;
     ParseFromArray(master_model_config, length, &config);
     ::artm::core::FixAndValidateMessage(&config, /* throw_error =*/ true);
+    std::string description = ::artm::core::DescribeMessage(config);
+    LOG_IF(INFO, !description.empty()) << "Pass " << description << " to ArtmCreateMasterModel";
     auto& mcm = MasterComponentManager::singleton();
     int retval = mcm.Store(std::make_shared< ::artm::core::MasterComponent>(config));
     LOG(INFO) << "Creating MasterModel (id=" << retval << ")...";
