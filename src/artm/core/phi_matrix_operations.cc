@@ -450,5 +450,34 @@ void PhiMatrixOperations::AssignValue(float value, PhiMatrix* phi_matrix) {
   }
 }
 
+void PhiMatrixOperations::ConvertTopicModelToPseudoBatch(::artm::TopicModel* topic_model, ::artm::Batch* batch) {
+  if (topic_model->topic_indices_size() == 0) {
+    BOOST_THROW_EXCEPTION(InternalError("topic_model->topic_indices_size() == 0, matrix is not in a sparse format"));
+  }
+
+  batch->mutable_token()->Swap(topic_model->mutable_token());
+  batch->mutable_class_id()->Swap(topic_model->mutable_class_id());
+  for (int topic_index = 0; topic_index < topic_model->topic_name_size(); topic_index++) {
+    batch->add_item()->set_title(topic_model->topic_name(topic_index));
+  }
+
+  for (int token_index = 0; token_index < topic_model->token_weights_size(); token_index++) {
+    const artm::IntArray& topic_indices = topic_model->topic_indices(token_index);
+    const artm::FloatArray& token_weights = topic_model->token_weights(token_index);
+    if (token_weights.value_size() == 0) {
+      continue;
+    }
+
+    for (int value_index = 0; value_index < topic_indices.value_size(); ++value_index) {
+      const float token_weight = token_weights.value(value_index);
+      const int topic_index = topic_indices.value(value_index);
+      const int item_index = topic_index;  // each pseudo-item corresponds to a topic
+      Item* item = batch->mutable_item(item_index);
+      item->add_token_id(token_index);
+      item->add_token_weight(token_weight);
+    }
+  }
+}
+
 }  // namespace core
 }  // namespace artm

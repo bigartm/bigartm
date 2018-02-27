@@ -737,6 +737,8 @@ message MasterModelConfig {
   optional string disk_cache_path = 13;
   optional bool cache_theta = 15 [default = false];
   optional string ptd_name = 16 [default = ""];
+  optional int32 parent_master_model_id = 17;
+  optional float parent_master_model_weight = 18 [default = 1.0];
 }
 
 message FitOfflineMasterModelArgs {
