@@ -43,6 +43,10 @@ class PhiMatrixOperations {
   // The order of the tokens and topics must also match.
   static bool HasEqualShape(const PhiMatrix& first, const PhiMatrix& second);
   static void AssignValue(float value, PhiMatrix* phi_matrix);
+
+  // Convert ::artm::TopicModel to ::artm:Batch (pseudo-batch in hierarchical topic models)
+  // Input object 'topic_model' could be modified by this operation.
+  static void ConvertTopicModelToPseudoBatch(::artm::TopicModel* topic_model, ::artm::Batch* batch);
 };
 
 }  // namespace core
