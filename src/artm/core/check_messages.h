@@ -1124,10 +1124,14 @@ inline std::string DescribeMessage(const ::artm::MasterModelConfig& message) {
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
   ss << ", cache_theta=" << (message.cache_theta() ? "yes" : "no");
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
-  ss << ", disk_cache_path" << message.disk_cache_path();
+  ss << ", disk_cache_path=" << message.disk_cache_path();
   for (int i = 0; i < message.transaction_type_size(); ++i) {
     ss << ", transaction_type=(" << message.transaction_type(i)
       << ":" << message.transaction_weight(i) << ")";
+  }
+  if (message.has_parent_master_model_id()) {
+    ss << ", parent_master_model_id=" << message.parent_master_model_id();
+    ss << ", parent_master_model_weight=" << message.parent_master_model_weight();
   }
 
   return ss.str();
