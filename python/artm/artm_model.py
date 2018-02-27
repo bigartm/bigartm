@@ -169,7 +169,7 @@ class ARTM(object):
             export/import this matrix with ARTM.master.export_model('ptd', filename) and\
             ARTM.master.import_model('ptd', file_name). In this case you are also able to work\
             with theta matrix when using 'dump_artm_model' method and 'load_artm_model' function.
-          * Setting parent_model parameter or, alternatively, calling ARTM.set_parent_model(),
+          * Setting parent_model parameter or, alternatively, calling ARTM.set_parent_model(),\
             cause this ARTM instance to behave as if it is a child level in hierarchical topic model.\
             This changes few things.\
             First, fit_offline() method will respect parent's model topics, as specified by\
@@ -181,7 +181,9 @@ class ARTM(object):
             Fourth, you have to specify seed parameter (otherwise first topics in your child level will be initialized\
             the same way as in parent's model).\
             If you previously used hARTM class, this functionality is fully equivalent.\
-            hARTM class is now deprecated.
+            hARTM class is now deprecated. Note that dump_artm_model and load_artm_model is only partly supported.\
+            After load_artm_model() you need to set parent model manually via set_parent_model(),\
+            and also to specify value for ARTM.parent_model_weight property.
         """
         self._num_processors = None
         self._cache_theta = False
