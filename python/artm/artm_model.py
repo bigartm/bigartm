@@ -28,6 +28,7 @@ from .regularizers import *
 from .scores import Scores
 from .scores import *
 from . import score_tracker
+from .batches_utils import BatchVectorizer
 
 SCORE_TRACKER = {
     const.ScoreType_SparsityPhi: score_tracker.SparsityPhiScoreTracker,
@@ -105,7 +106,8 @@ class ARTM(object):
     def __init__(self, num_topics=None, topic_names=None, num_processors=None, class_ids=None,
                  transaction_types=None, scores=None, regularizers=None, num_document_passes=10,
                  reuse_theta=False, dictionary=None, cache_theta=False, theta_columns_naming='id',
-                 seed=-1, show_progress_bars=False, theta_name=None):
+                 seed=-1, show_progress_bars=False, theta_name=None,
+                 parent_model=None, parent_model_weight=None):
         """
         :param int num_topics: the number of topics in model, will be overwrited if\
                                  topic_names is set
@@ -136,6 +138,8 @@ class ARTM(object):
                                    fit_online and transform operations.
         :type seed: unsigned int or -1
         :param theta_name: string, name of ptd (theta) matrix
+        :param ARTM parent_model: An instance of ARTM class to use as parent level of hierarchy
+        :param float parent_model_weight: weight of parent model (by default 1.0)
 
         :Important public fields:
           * regularizers: contains dict of regularizers, included into model
@@ -165,9 +169,24 @@ class ARTM(object):
             export/import this matrix with ARTM.master.export_model('ptd', filename) and\
             ARTM.master.import_model('ptd', file_name). In this case you are also able to work\
             with theta matrix when using 'dump_artm_model' method and 'load_artm_model' function.
+          * Setting parent_model parameter or, alternatively, calling ARTM.set_parent_model(),
+            cause this ARTM instance to behave as if it is a child level in hierarchical topic model.\
+            This changes few things.\
+            First, fit_offline() method will respect parent's model topics, as specified by\
+            parent_model_weight paremeter. Larger values of parent_model_weight result in your\
+            child model being more consistent with parent hierarchy. If you put parent_model_weight\
+            as 0 your child level will be effectively independent from its parent.\
+            Second, you may call ARTM.get_parent_psi() to retrieve a transition matrix, e.i. p(subtopic|topic).\
+            Third, you no longer can use ARTM.fit_online(), which will throw an exception.\
+            Fourth, you have to specify seed parameter (otherwise first topics in your child level will be initialized\
+            the same way as in parent's model).\
+            If you previously used hARTM class, this functionality is fully equivalent.\
+            hARTM class is now deprecated.
         """
         self._num_processors = None
         self._cache_theta = False
+        self._parent_model_weight = None
+        self._parent_model_id = None
         self._num_document_passes = num_document_passes
         self._reuse_theta = True
         self._theta_columns_naming = 'id'
@@ -193,6 +212,12 @@ class ARTM(object):
 
         if isinstance(cache_theta, bool):
             self._cache_theta = cache_theta
+
+        if isinstance(parent_model, ARTM):
+            self._parent_model_id = parent_model.master.master_id
+
+        if isinstance(parent_model_weight, (int, float)):
+            self._parent_model_weight = parent_model_weight
 
         if isinstance(reuse_theta, bool):
             self._reuse_theta = reuse_theta
@@ -223,6 +248,8 @@ class ARTM(object):
                                           num_document_passes=self._num_document_passes,
                                           reuse_theta=self._reuse_theta,
                                           cache_theta=self._cache_theta,
+                                          parent_model_id=self._parent_model_id,
+                                          parent_model_weight=self._parent_model_weight,
                                           config=master_config)
 
         self._regularizers = Regularizers(self._master)
@@ -301,6 +328,10 @@ class ARTM(object):
     @property
     def num_document_passes(self):
         return self._num_document_passes
+
+    @property
+    def parent_model_weight(self):
+        return self._parent_model_weight
 
     @property
     def theta_columns_naming(self):
@@ -420,6 +451,14 @@ class ARTM(object):
         else:
             self.master.reconfigure(cache_theta=cache_theta)
             self._cache_theta = cache_theta
+
+    @parent_model_weight.setter
+    def parent_model_weight(self, parent_model_weight):
+        if not isinstance(parent_model_weight, (int, float)):
+            raise IOError('parent_model_weight should be float')
+        else:
+            self.master.reconfigure(parent_model_weight=parent_model_weight)
+            self._parent_model_weight = parent_model_weight
 
     @reuse_theta.setter
     def reuse_theta(self, reuse_theta):
@@ -1168,6 +1207,31 @@ class ARTM(object):
 
         with open(os.path.join(data_path, PARAMETERS_FILENAME_BIN), 'wb') as fout:
             pickle.dump(params, fout)
+
+
+    def set_parent_model(self, parent_model):
+        """
+        :Description: sets parent model. For more details, see comment in ARTM.__init__.
+
+        :param ARTM parent_model: An instance of ARTM class to use as parent level of hierarchy
+        """
+
+        if not isinstance(parent_model, ARTM):
+            raise IOError('parent_model must be of type ARTM')
+
+        self._parent_model_id = parent_model.master.master_id
+        self.master.reconfigure(parent_model_id=self._parent_model_id)
+
+    def get_parent_psi(self):
+        """
+        :returns: p(subtopic|topic) matrix
+        """
+        if self._parent_model_id == None:
+            raise IOError('get_parent_psi() require parent model to be set')
+
+        batch = messages.Batch(id = str(uuid.uuid4()), description = "__parent_phi_matrix_batch__")
+        batch_vectorizer = BatchVectorizer(batches=[batch], process_in_memory_model=self)
+        return self.transform(batch_vectorizer=batch_vectorizer)
 
 
 def version():
