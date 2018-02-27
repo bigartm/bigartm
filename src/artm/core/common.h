@@ -46,6 +46,8 @@ const int64_t kProtobufCodedStreamTotalBytesLimit = 2147483647ULL;
 
 static const std::string TransactionSeparator = "^";
 
+const std::string kParentPhiMatrixBatch = "__parent_phi_matrix_batch__";
+
 template <typename T>
 std::string to_string(T value) {
   return boost::lexical_cast<std::string>(value);
