@@ -775,6 +775,8 @@ message MasterModelConfig {
   optional string ptd_name = 16 [default = ""];
   repeated string transaction_type = 17;
   repeated float transaction_weight = 18;
+  optional int32 parent_master_model_id = 19;
+  optional float parent_master_model_weight = 20 [default = 1.0];
 }
 
 message FitOfflineMasterModelArgs {
