@@ -1167,8 +1167,7 @@ class ARTM(object):
         with open(os.path.join(data_path, PARAMETERS_FILENAME_BIN), 'wb') as fout:
             pickle.dump(params, fout)
 
-
-    def set_parent_model(self, parent_model):
+    def set_parent_model(self, parent_model, parent_model_weight=None):
         """
         :Description: sets parent model. For more details, see comment in ARTM.__init__.
 
@@ -1181,14 +1180,17 @@ class ARTM(object):
         self._parent_model_id = parent_model.master.master_id
         self.master.reconfigure(parent_model_id=self._parent_model_id)
 
+        if parent_model_weight is not None:
+            self.parent_model_weight = parent_model_weight
+
     def get_parent_psi(self):
         """
         :returns: p(subtopic|topic) matrix
         """
-        if self._parent_model_id == None:
+        if self._parent_model_id is None:
             raise IOError('get_parent_psi() require parent model to be set')
 
-        batch = messages.Batch(id = str(uuid.uuid4()), description = "__parent_phi_matrix_batch__")
+        batch = messages.Batch(id=str(uuid.uuid4()), description="__parent_phi_matrix_batch__")
         batch_vectorizer = BatchVectorizer(batches=[batch], process_in_memory_model=self)
         return self.transform(batch_vectorizer=batch_vectorizer)
 
