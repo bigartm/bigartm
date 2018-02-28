@@ -834,6 +834,7 @@ inline std::string DescribeMessage(const ::artm::InitializeModelArgs& message) {
     ss << ", dictionary_name=" << message.dictionary_name();
   }
   ss << ", topic_name_size=" << message.topic_name_size();
+  ss << ", seed=" << message.seed();
   return ss.str();
 }
 
