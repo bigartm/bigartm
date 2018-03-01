@@ -677,6 +677,8 @@ class ARTM(object):
             _model_name = self.model_pwt
         elif model_name == 'n_wt':
             _model_name = self.model_nwt
+        else:
+            raise RuntimeError('model_name should be either "p_wt" or "n_wt"')
 
         self.master.export_model(_model_name, filename)
 
@@ -702,6 +704,8 @@ class ARTM(object):
             _model_name = self.model_pwt
         elif model_name == 'n_wt':
             _model_name = self.model_nwt
+        else:
+            raise RuntimeError('model_name should be either "p_wt" or "n_wt"')
 
         self.master.import_model(_model_name, filename)
         self._initialized = True
