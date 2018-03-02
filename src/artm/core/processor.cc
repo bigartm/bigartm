@@ -32,6 +32,9 @@
 #include "artm/core/phi_matrix_operations.h"
 #include "artm/core/instance.h"
 
+#include "artm/core/processor_helpers.h"
+#include "artm/core/processor_transaction_helpers.h"
+
 #include "artm/utility/blas.h"
 
 namespace util = artm::utility;
@@ -1098,12 +1101,6 @@ void Processor::ThreadFunction() {
 
           if (ptdw_agents.empty() && !part->has_ptdw_cache_manager()) {
             if (args.opt_for_avx()) {
-              // This version is about 40% faster than the second alternative below.
-              // Both versions return 100% equal results.
-              // Speedup is due to several factors:
-              // 1. explicit loops instead of blas->saxpy and blas->sdot
-              //    makes compiler generate AVX instructions (vectorized 128-bit float-point operations)
-              // 2. better memory usage (reduced bandwith to DRAM and more sequential accesss)
               std::shared_ptr<BatchTransactionInfo> batch_info;
               {
                 CuckooWatch cuckoo2("GetBatchTransactionsInfo", &cuckoo, kTimeLoggingThreshold);
