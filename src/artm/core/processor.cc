@@ -21,301 +21,20 @@
 #include "artm/regularizer_interface.h"
 #include "artm/score_calculator_interface.h"
 
-#include "artm/core/protobuf_helpers.h"
 #include "artm/core/call_on_destruction.h"
 #include "artm/core/cuckoo_watch.h"
-#include "artm/core/helpers.h"
 #include "artm/core/batch_manager.h"
 #include "artm/core/cache_manager.h"
 #include "artm/core/score_manager.h"
-#include "artm/core/phi_matrix.h"
-#include "artm/core/phi_matrix_operations.h"
-#include "artm/core/instance.h"
 
 #include "artm/core/processor_helpers.h"
 #include "artm/core/processor_transaction_helpers.h"
 
-#include "artm/utility/blas.h"
 
-namespace util = artm::utility;
 namespace fs = boost::filesystem;
-using ::util::CsrMatrix;
-using ::util::LocalThetaMatrix;
-using ::util::LocalPhiMatrix;
-
-const float kProcessorEps = 1e-16f;
 
 namespace artm {
 namespace core {
-
-namespace {
-struct IntVectorHasher {
-  size_t operator()(const std::vector<int>& elems) const {
-    size_t hash = 0;
-    for (const int e : elems) {
-      boost::hash_combine<std::string>(hash, std::to_string(e));
-    }
-    return hash;
-  }
-};
-
-struct TokenVectorHasher {
-  size_t operator()(const std::vector<Token>& elems) const {
-    size_t hash = 0;
-    for (const auto& e : elems) {
-      boost::hash_combine<size_t>(hash, e.hash());
-    }
-    return hash;
-  }
-};
-
-typedef std::unordered_map<ClassId, std::unordered_set<TransactionType, TransactionHasher>> ClassIdToTt;
-typedef std::unordered_map<std::vector<Token>, int, TokenVectorHasher> TransactionToIndex;
-
-struct BatchTransactionInfo {
-  ClassIdToTt class_id_to_tt;
-  std::unordered_map<std::vector<int>, int, IntVectorHasher> transaction_ids_to_index;
-  TransactionToIndex transaction_to_index;
-  std::vector<std::vector<Token>> transactions;
-  std::unordered_map<Token, int, TokenHasher> token_to_index;
-
-  BatchTransactionInfo(const ClassIdToTt& _class_id_to_tt,
-                       const std::unordered_map<std::vector<int>, int, IntVectorHasher>& _transaction_ids_to_index,
-                       const TransactionToIndex& _transaction_to_index,
-                       const std::vector<std::vector<Token>>& _transactions,
-                       const std::unordered_map<Token, int, TokenHasher>& _token_to_index)
-      : class_id_to_tt(_class_id_to_tt)
-      , transaction_ids_to_index(_transaction_ids_to_index)
-      , transaction_to_index(_transaction_to_index)
-      , transactions(_transactions)
-      , token_to_index(_token_to_index){ }
-};
-
-std::shared_ptr<BatchTransactionInfo> GetBatchTransactionsInfo(const Batch& batch) {
-  ClassIdToTt class_id_to_tt;
-  std::unordered_map<std::vector<int>, int, IntVectorHasher> transaction_ids_to_index;
-  TransactionToIndex transaction_to_index;
-  std::vector<std::vector<Token>> transactions;
-  std::unordered_map<Token, int, TokenHasher> token_to_index;
-
-  for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-    const Item& item = batch.item(item_index);
-
-    for (int token_index = 0; token_index < item.transaction_start_index_size(); ++token_index) {
-      const int start_index = item.transaction_start_index(token_index);
-      const int end_index = (token_index + 1) < item.transaction_start_index_size() ?
-                            item.transaction_start_index(token_index + 1) :
-                            item.transaction_token_id_size();
-      std::vector<int> vec;
-      for (int i = start_index; i < end_index; ++i) {
-        vec.push_back(item.transaction_token_id(i));
-      }
-      auto iter = transaction_ids_to_index.find(vec);
-      if (iter == transaction_ids_to_index.end()) {
-        transaction_ids_to_index.insert(std::make_pair(vec, transaction_ids_to_index.size()));
-
-        std::string str;
-        for (int token_id = start_index; token_id < end_index; ++token_id) {
-          auto& tmp = batch.class_id(item.transaction_token_id(token_id));
-          str += (token_id == start_index) ? tmp : TransactionSeparator + tmp;
-        }
-
-        TransactionType tt(str);
-        for (const ClassId& class_id : tt.AsVector()) {
-          class_id_to_tt[class_id].emplace(tt);
-        }
-
-        std::vector<Token> transaction;
-        for (int idx = start_index; idx < end_index; ++idx) {
-          const int token_id = item.transaction_token_id(idx);
-          auto token = Token(batch.class_id(token_id), batch.token(token_id), tt);
-          transaction.push_back(token);
-          token_to_index.insert(std::make_pair(token, token_to_index.size()));
-        }
-        transactions.push_back(transaction);
-        transaction_to_index.insert(std::make_pair(transaction, transaction_to_index.size()));
-      }
-    }
-  }
-
-  if (transaction_to_index.size() != transactions.size()) {
-    LOG(ERROR) << "Fatal error: transaction_to_index.size() [ " << transaction_to_index.size()
-      << " ] != transactions.size() [ " << transactions.size();
-  }
-
-  if (transaction_ids_to_index.size() != transactions.size()) {
-    LOG(ERROR) << "Fatal error: transaction_ids_to_index.size() [ " << transaction_ids_to_index.size()
-               << " ] != transactions.size() [ " << transactions.size();
-  }
-
-  return std::make_shared<BatchTransactionInfo>(
-    BatchTransactionInfo(class_id_to_tt, transaction_ids_to_index,
-                         transaction_to_index, transactions, token_to_index));
-}
-}  // namespace
-
-class RegularizeThetaAgentCollection : public RegularizeThetaAgent {
- private:
-  std::vector<std::shared_ptr<RegularizeThetaAgent>> agents_;
-
- public:
-  void AddAgent(std::shared_ptr<RegularizeThetaAgent> agent) {
-    if (agent != nullptr) {
-      agents_.push_back(agent);
-    }
-  }
-
-  bool empty() const { return agents_.empty(); }
-
-  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const {
-    for (auto& agent : agents_) {
-      agent->Apply(item_index, inner_iter, topics_size, n_td, r_td);
-    }
-  }
-
-  virtual void Apply(int inner_iter, const LocalThetaMatrix<float>& n_td, LocalThetaMatrix<float>* r_td) const {
-    for (auto& agent : agents_) {
-      agent->Apply(inner_iter, n_td, r_td);
-    }
-  }
-};
-
-class RegularizePtdwAgentCollection : public RegularizePtdwAgent {
- private:
-  std::vector<std::shared_ptr<RegularizePtdwAgent>> agents_;
-
- public:
-  void AddAgent(std::shared_ptr<RegularizePtdwAgent> agent) {
-    if (agent != nullptr) {
-      agents_.push_back(agent);
-    }
-  }
-
-  bool empty() const { return agents_.empty(); }
-
-  virtual void Apply(int item_index, int inner_iter, LocalPhiMatrix<float>* ptdw) const {
-    for (auto& agent : agents_) {
-      agent->Apply(item_index, inner_iter, ptdw);
-    }
-  }
-};
-
-class NormalizeThetaAgent : public RegularizeThetaAgent {
- public:
-  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const {
-    float sum = 0.0f;
-    for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
-      float val = n_td[topic_index] + r_td[topic_index];
-      if (val > 0) {
-        sum += val;
-      }
-    }
-
-    float sum_inv = sum > 0.0f ? (1.0f / sum) : 0.0f;
-    for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
-      float val = sum_inv * (n_td[topic_index] + r_td[topic_index]);
-      if (val < 1e-16f) {
-        val = 0.0f;
-      }
-
-      // Hack-hack, write normalized values back to n_td
-      const_cast<float*>(n_td)[topic_index] = val;
-    }
-  }
-};
-
-static void CreateThetaCacheEntry(ThetaMatrix* new_cache_entry_ptr,
-                                  LocalThetaMatrix<float>* theta_matrix,
-                                  const Batch& batch,
-                                  const PhiMatrix& p_wt,
-                                  const ProcessBatchesArgs& args) {
-  if (new_cache_entry_ptr == nullptr) {
-    return;
-  }
-
-  const int topic_size = p_wt.topic_size();
-  for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-    const Item& item = batch.item(item_index);
-    new_cache_entry_ptr->add_item_id(item.id());
-    new_cache_entry_ptr->add_item_title(item.has_title() ? item.title() : std::string());
-    new_cache_entry_ptr->add_item_weights();
-  }
-
-  if (!args.has_predict_transaction_type() && !args.has_predict_class_id()) {
-    for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-      for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-        new_cache_entry_ptr->mutable_item_weights(item_index)->add_value((*theta_matrix)(topic_index, item_index));
-      }
-    }
-  } else {
-    const bool predict_tt = args.has_predict_transaction_type();
-    const bool predict_class_id = args.has_predict_class_id();
-    new_cache_entry_ptr->clear_topic_name();
-    for (int token_index = 0; token_index < p_wt.token_size(); token_index++) {
-      const Token& token = p_wt.token(token_index);
-      if ((predict_class_id && token.class_id != args.predict_class_id() ||
-          (predict_tt && token.transaction_type != TransactionType(args.predict_transaction_type())))) {
-        continue;
-      }
-
-      new_cache_entry_ptr->add_topic_name(token.keyword);
-      for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-        float weight = 0.0;
-        for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-          weight += (*theta_matrix)(topic_index, item_index) * p_wt.get(token_index, topic_index);
-        }
-        new_cache_entry_ptr->mutable_item_weights(item_index)->add_value(weight);
-      }
-    }
-  }
-}
-
-static void CreatePtdwCacheEntry(ThetaMatrix* new_cache_entry_ptr,
-                                 LocalPhiMatrix<float>* ptdw_matrix,
-                                 const Batch& batch,
-                                 int item_index,
-                                 int topic_size) {
-  if (new_cache_entry_ptr == nullptr) {
-    return;
-  }
-
-  const Item& item = batch.item(item_index);
-  for (int token_index = 0; token_index < ptdw_matrix->num_tokens(); ++token_index) {
-    new_cache_entry_ptr->add_item_id(item.id());
-    new_cache_entry_ptr->add_item_title(item.has_title() ? item.title() : std::string());
-    auto non_zero_topic_values = new_cache_entry_ptr->add_item_weights();
-    auto non_zero_topic_indices = new_cache_entry_ptr->add_topic_indices();
-
-    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-      float value = ptdw_matrix->operator()(token_index, topic_index);
-      if (std::fabs(value) > kProcessorEps) {
-        // store not-null values p(t|d,w) for given d and w
-        non_zero_topic_values->add_value(value);
-        // store indices of these not-null values
-        non_zero_topic_indices->add_value(topic_index);
-      }
-    }
-  }
-}
-
-class NwtWriteAdapter {
- public:
-  virtual void Store(int batch_token_id, int pwt_token_id, const std::vector<float>& nwt_vector) = 0;
-  virtual ~NwtWriteAdapter() { }
-};
-
-class PhiMatrixWriter : public NwtWriteAdapter {
- public:
-  explicit PhiMatrixWriter(PhiMatrix* n_wt) : n_wt_(n_wt) { }
-
-  virtual void Store(int batch_token_id, int pwt_token_id, const std::vector<float>& nwt_vector) {
-    assert(nwt_vector.size() == n_wt_->topic_size());
-    n_wt_->increase(pwt_token_id, nwt_vector);
-  }
-
- private:
-  PhiMatrix* n_wt_;
-};
 
 Processor::Processor(Instance* instance)
     : instance_(instance),
@@ -334,148 +53,11 @@ Processor::~Processor() {
   }
 }
 
-static std::shared_ptr<LocalThetaMatrix<float>>
-InitializeTheta(int topic_size, const Batch& batch, const ProcessBatchesArgs& args, const ThetaMatrix* cache) {
-  auto Theta = std::make_shared<LocalThetaMatrix<float>>(topic_size, batch.item_size());
 
-  Theta->InitializeZeros();
 
-  for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-    int index_of_item = -1;
-    if ((cache != nullptr) && args.reuse_theta()) {
-      index_of_item = repeated_field_index_of(cache->item_title(),
-        batch.item(item_index).title());
-    }
 
-    if ((index_of_item != -1) && args.reuse_theta()) {
-      const FloatArray& old_thetas = cache->item_weights(index_of_item);
-      for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-        (*Theta)(topic_index, item_index) = old_thetas.value(topic_index);
-      }
-    } else {
-      if (args.use_random_theta()) {
-        size_t seed = 0;
-        boost::hash_combine(seed, std::hash<std::string>()(batch.id()));
-        boost::hash_combine(seed, std::hash<int>()(item_index));
-        std::vector<float> theta_values = Helpers::GenerateRandomVector(topic_size, seed);
-        for (int iTopic = 0; iTopic < topic_size; ++iTopic) {
-          (*Theta)(iTopic, item_index) = theta_values[iTopic];
-        }
-      } else {
-        const float default_theta = 1.0f / topic_size;
-        for (int iTopic = 0; iTopic < topic_size; ++iTopic) {
-          (*Theta)(iTopic, item_index) = default_theta;
-        }
-      }
-    }
-  }
 
-  return Theta;
-}
 
-static std::shared_ptr<LocalPhiMatrix<float>>
-InitializePhi(const Batch& batch,
-              const ::artm::core::PhiMatrix& p_wt) {
-  bool phi_is_empty = true;
-  int topic_size = p_wt.topic_size();
-  auto phi_matrix = std::make_shared<LocalPhiMatrix<float>>(batch.token_size(), topic_size);
-  phi_matrix->InitializeZeros();
-  for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
-    Token token = Token(batch.class_id(token_index), batch.token(token_index));
-
-    int p_wt_token_index = p_wt.token_index(token);
-    if (p_wt_token_index != ::artm::core::PhiMatrix::kUndefIndex) {
-      phi_is_empty = false;
-      for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-        float value = p_wt.get(p_wt_token_index, topic_index);
-        if (value < kProcessorEps) {
-          // Reset small values to 0.0 to avoid performance hit.
-          // http://en.wikipedia.org/wiki/Denormal_number#Performance_issues
-          // http://stackoverflow.com/questions/13964606/inconsistent-multiplication-performance-with-floats
-          value = 0.0f;
-        }
-        (*phi_matrix)(token_index, topic_index) = value;
-      }
-    }
-  }
-
-  if (phi_is_empty) {
-    return nullptr;
-  }
-
-  return phi_matrix;
-}
-
-static void
-CreateRegularizerAgents(const Batch& batch, const ProcessBatchesArgs& args, Instance* instance,
-                        RegularizeThetaAgentCollection* theta_agents, RegularizePtdwAgentCollection* ptdw_agents) {
-  for (int reg_index = 0; reg_index < args.regularizer_name_size(); ++reg_index) {
-    auto& reg_name = args.regularizer_name(reg_index);
-    float tau = args.regularizer_tau(reg_index);
-    auto regularizer = instance->regularizers()->get(reg_name);
-    if (regularizer == nullptr) {
-      LOG(ERROR) << "Theta Regularizer with name <" << reg_name << "> does not exist.";
-      continue;
-    }
-
-    if (theta_agents != nullptr) {
-      theta_agents->AddAgent(regularizer->CreateRegularizeThetaAgent(batch, args, tau));
-    }
-
-    if (ptdw_agents != nullptr) {
-      ptdw_agents->AddAgent(regularizer->CreateRegularizePtdwAgent(batch, args, tau));
-    }
-  }
-
-  if (theta_agents != nullptr) {
-    theta_agents->AddAgent(std::make_shared<NormalizeThetaAgent>());
-  }
-}
-
-static std::shared_ptr<CsrMatrix<float>>
-InitializeSparseNdw(const Batch& batch, const ProcessBatchesArgs& args) {
-  std::vector<float> n_dw_val;
-  std::vector<int> n_dw_row_ptr;
-  std::vector<int> n_dw_col_ind;
-
-  bool use_weights = false;
-  std::unordered_map<TransactionType, float, TransactionHasher> tt_to_weight;
-  if (args.transaction_type_size() != 0) {
-    use_weights = true;
-    for (int i = 0; i < args.transaction_type_size(); ++i) {
-      tt_to_weight.insert(std::make_pair(TransactionType(args.transaction_type(i)),
-                                         args.transaction_weight(i)));
-    }
-  }
-
-  // For sparse case
-  for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-    n_dw_row_ptr.push_back(static_cast<int>(n_dw_val.size()));
-    const Item& item = batch.item(item_index);
-
-    for (int token_index = 0; token_index < item.transaction_start_index_size(); ++token_index) {
-      const int start_index = item.transaction_start_index(token_index);
-      const int end_index = (token_index + 1) < item.transaction_start_index_size() ?
-        item.transaction_start_index(token_index + 1) :
-        item.transaction_token_id_size();
-
-      for (int idx = start_index; idx < end_index; ++idx) {
-        const int token_id = item.transaction_token_id(idx);
-        float tt_weight = 1.0f;
-        if (use_weights) {
-          ClassId class_id = batch.class_id(token_id);
-          auto iter = tt_to_weight.find(TransactionType(class_id));
-          tt_weight = (iter == tt_to_weight.end()) ? 0.0f : iter->second;
-        }
-        const float token_weight = item.token_weight(token_index);
-        n_dw_val.push_back(tt_weight * token_weight);
-        n_dw_col_ind.push_back(token_id);
-      }
-    }
-  }
-  n_dw_row_ptr.push_back(static_cast<int>(n_dw_val.size()));
-  return std::make_shared<CsrMatrix<float>>(batch.token_size(), &n_dw_val, &n_dw_row_ptr, &n_dw_col_ind);
-}
 
 static void
 InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, float batch_weight,
@@ -494,7 +76,7 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
   for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
     token_id[token_index] = p_wt.token_index(Token(batch.class_id(token_index), batch.token(token_index)));
   }
-  std::shared_ptr<LocalPhiMatrix<float>> phi_matrix_ptr = InitializePhi(batch, p_wt);
+  std::shared_ptr<LocalPhiMatrix<float>> phi_matrix_ptr = ProcessorHelpers::InitializePhi(batch, p_wt);
   if (phi_matrix_ptr == nullptr) {
     return;
   }
@@ -521,7 +103,7 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
     theta_agents.Apply(inner_iter, *theta_matrix, &helper_td);
   }
 
-  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, args);
+  ProcessorHelpers::CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, args);
 
   if (nwt_writer == nullptr) {
     return;
@@ -560,6 +142,10 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
     nwt_writer->Store(w, token_id[w], values);
   }
 }
+
+
+
+
 
 static std::shared_ptr<CsrMatrix<float>> InitializeSparseNdx(
     const Batch& batch, const ProcessBatchesArgs& args,
@@ -631,6 +217,11 @@ static std::shared_ptr<CsrMatrix<float>> InitializeSparseNdx(
   return std::make_shared<CsrMatrix<float>>(
     transaction_to_index.size(), &n_dw_val, &n_dw_row_ptr, &n_dw_col_ind);
 }
+
+
+
+
+
 
 static void
 InferThetaAndUpdateNwtSparseNew(const ProcessBatchesArgs& args, const Batch& batch, float batch_weight,
@@ -729,7 +320,7 @@ InferThetaAndUpdateNwtSparseNew(const ProcessBatchesArgs& args, const Batch& bat
     }
   }
 
-  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, args);
+  ProcessorHelpers::CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, args);
 
   if (nwt_writer == nullptr) {
     return;
@@ -786,6 +377,10 @@ InferThetaAndUpdateNwtSparseNew(const ProcessBatchesArgs& args, const Batch& bat
     }
   }
 }
+
+
+
+
 
 static void
 InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, float batch_weight,
@@ -894,40 +489,16 @@ InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, 
         }
       }
     }
-    CreatePtdwCacheEntry(new_ptdw_cache_entry_ptr, &local_ptdw, batch, d, num_topics);
+    ProcessorHelpers::CreatePtdwCacheEntry(new_ptdw_cache_entry_ptr, &local_ptdw, batch, d, num_topics);
   }
-  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, args);
+  ProcessorHelpers::CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, args);
 }
 
-static std::shared_ptr<Score>
-CalcScores(ScoreCalculatorInterface* score_calc, const Batch& batch,
-           const PhiMatrix& p_wt, const ProcessBatchesArgs& args, const LocalThetaMatrix<float>& theta_matrix) {
-  if (!score_calc->is_cumulative()) {
-    return nullptr;
-  }
 
-  std::vector<Token> batch_token_dict;
-  for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
-    batch_token_dict.push_back(Token(batch.class_id(token_index), batch.token(token_index)));
-  }
 
-  std::shared_ptr<Score> score = score_calc->CreateScore();
-  for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-    const Item& item = batch.item(item_index);
 
-    std::vector<float> theta_vec;
-    assert(theta_matrix.num_topics() == p_wt.topic_size());
-    for (int topic_index = 0; topic_index < theta_matrix.num_topics(); ++topic_index) {
-      theta_vec.push_back(theta_matrix(topic_index, item_index));
-    }
 
-    score_calc->AppendScore(item, batch_token_dict, p_wt, args, theta_vec, score.get());
-  }
 
-  score_calc->AppendScore(batch, p_wt, args, score.get());
-
-  return score;
-}
 
 void Processor::ThreadFunction() {
   try {
@@ -1048,7 +619,7 @@ void Processor::ThreadFunction() {
         std::shared_ptr<LocalThetaMatrix<float>> theta_matrix;
         {
           CuckooWatch cuckoo2("InitializeTheta", &cuckoo, kTimeLoggingThreshold);
-          theta_matrix = InitializeTheta(p_wt.topic_size(), batch, args, cache.get());
+          theta_matrix = ProcessorHelpers::InitializeTheta(p_wt.topic_size(), batch, args, cache.get());
         }
 
         if (p_wt.token_size() == 0) {
@@ -1085,7 +656,7 @@ void Processor::ThreadFunction() {
           RegularizePtdwAgentCollection ptdw_agents;
           {
             CuckooWatch cuckoo2("CreateRegularizerAgents", &cuckoo, kTimeLoggingThreshold);
-            CreateRegularizerAgents(batch, args, instance_, &theta_agents, &ptdw_agents);
+            ProcessorHelpers::CreateRegularizerAgents(batch, args, instance_, &theta_agents, &ptdw_agents);
           }
 
           bool use_real_transactions = false;
@@ -1104,7 +675,7 @@ void Processor::ThreadFunction() {
               std::shared_ptr<BatchTransactionInfo> batch_info;
               {
                 CuckooWatch cuckoo2("GetBatchTransactionsInfo", &cuckoo, kTimeLoggingThreshold);
-                batch_info = GetBatchTransactionsInfo(batch);
+                batch_info = ProcessorTransactionHelpers::GetBatchTransactionsInfo(batch);
               }
 
               std::shared_ptr<CsrMatrix<float>> sparse_ndx;
@@ -1125,7 +696,7 @@ void Processor::ThreadFunction() {
               std::shared_ptr<CsrMatrix<float>> sparse_ndw;
               {
                 CuckooWatch cuckoo2("InitializeSparseNdw", &cuckoo, kTimeLoggingThreshold);
-                sparse_ndw = InitializeSparseNdw(batch, args);
+                sparse_ndw = ProcessorHelpers::InitializeSparseNdw(batch, args);
               }
 
               CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
@@ -1141,7 +712,7 @@ void Processor::ThreadFunction() {
               std::shared_ptr<CsrMatrix<float>> sparse_ndw;
               {
                 CuckooWatch cuckoo2("InitializeSparseNdw", &cuckoo, kTimeLoggingThreshold);
-                sparse_ndw = InitializeSparseNdw(batch, args);
+                sparse_ndw = ProcessorHelpers::InitializeSparseNdw(batch, args);
               }
 
               CuckooWatch cuckoo2("InferPtdwAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
@@ -1182,7 +753,7 @@ void Processor::ThreadFunction() {
 
           CuckooWatch cuckoo2("CalculateScore(" + score_name + ")", &cuckoo, kTimeLoggingThreshold);
 
-          auto score_value = CalcScores(score_calc.get(), batch, p_wt, args, *theta_matrix);
+          auto score_value = ProcessorHelpers::CalcScores(score_calc.get(), batch, p_wt, args, *theta_matrix);
           if (score_value != nullptr) {
             instance_->score_manager()->Append(score_name, score_value->SerializeAsString());
             if (part->score_manager() != nullptr) {
