@@ -257,5 +257,204 @@ std::shared_ptr<Score> ProcessorHelpers::CalcScores(ScoreCalculatorInterface* sc
   return score;
 }
 
+void ProcessorHelpers::InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args,
+                                                   const Batch& batch,
+                                                   float batch_weight,
+                                                   const CsrMatrix<float>& sparse_ndw,
+                                                   const ::artm::core::PhiMatrix& p_wt,
+                                                   const RegularizeThetaAgentCollection& theta_agents,
+                                                   const RegularizePtdwAgentCollection& ptdw_agents,
+                                                   LocalThetaMatrix<float>* theta_matrix,
+                                                   NwtWriteAdapter* nwt_writer, util::Blas* blas,
+                                                   ThetaMatrix* new_cache_entry_ptr,
+                                                   ThetaMatrix* new_ptdw_cache_entry_ptr) {
+  LocalThetaMatrix<float> n_td(theta_matrix->num_topics(), theta_matrix->num_items());
+  LocalThetaMatrix<float> r_td(theta_matrix->num_topics(), 1);
+
+  const int num_topics = p_wt.topic_size();
+  const int docs_count = theta_matrix->num_items();
+
+  std::vector<int> token_id(batch.token_size(), -1);
+  for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
+    token_id[token_index] = p_wt.token_index(Token(batch.class_id(token_index), batch.token(token_index)));
+  }
+
+  for (int d = 0; d < docs_count; ++d) {
+    float* ntd_ptr = &n_td(0, d);
+    float* theta_ptr = &(*theta_matrix)(0, d);  // NOLINT
+
+    const int begin_index = sparse_ndw.row_ptr()[d];
+    const int end_index = sparse_ndw.row_ptr()[d + 1];
+    const int local_token_size = end_index - begin_index;
+    LocalPhiMatrix<float> local_phi(local_token_size, num_topics);
+    LocalPhiMatrix<float> local_ptdw(local_token_size, num_topics);
+    local_phi.InitializeZeros();
+    bool item_has_tokens = false;
+    for (int i = begin_index; i < end_index; ++i) {
+      int w = sparse_ndw.col_ind()[i];
+      if (token_id[w] == ::artm::core::PhiMatrix::kUndefIndex) {
+        continue;
+      }
+      item_has_tokens = true;
+      float* local_phi_ptr = &local_phi(i - begin_index, 0);
+      for (int k = 0; k < num_topics; ++k) {
+        local_phi_ptr[k] = p_wt.get(token_id[w], k);
+      }
+    }
+
+    if (!item_has_tokens) {
+      continue;  // continue to the next item
+    }
+
+    for (int inner_iter = 0; inner_iter <= args.num_document_passes(); ++inner_iter) {
+      const bool last_iteration = (inner_iter == args.num_document_passes());
+      for (int i = begin_index; i < end_index; ++i) {
+        const float* phi_ptr = &local_phi(i - begin_index, 0);
+        float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
+
+        float p_dw_val = 0.0f;
+        for (int k = 0; k < num_topics; ++k) {
+          float p_tdw_val = phi_ptr[k] * theta_ptr[k];
+          ptdw_ptr[k] = p_tdw_val;
+          p_dw_val += p_tdw_val;
+        }
+
+        if (p_dw_val == 0) {
+          continue;
+        }
+        const float Z = 1.0f / p_dw_val;
+        for (int k = 0; k < num_topics; ++k) {
+          ptdw_ptr[k] *= Z;
+        }
+      }
+
+      ptdw_agents.Apply(d, inner_iter, &local_ptdw);
+
+      if (!last_iteration) {  // update theta matrix (except for the last iteration)
+        for (int k = 0; k < num_topics; ++k) {
+          ntd_ptr[k] = 0.0f;
+        }
+        for (int i = begin_index; i < end_index; ++i) {
+          const float n_dw = sparse_ndw.val()[i];
+          const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
+          for (int k = 0; k < num_topics; ++k) {
+            ntd_ptr[k] += n_dw * ptdw_ptr[k];
+          }
+        }
+
+        for (int k = 0; k < num_topics; ++k) {
+          theta_ptr[k] = ntd_ptr[k];
+        }
+
+        r_td.InitializeZeros();
+        theta_agents.Apply(d, inner_iter, num_topics, theta_ptr, r_td.get_data());
+      } else {  // update n_wt matrix (on the last iteration)
+        if (nwt_writer != nullptr) {
+          std::vector<float> values(num_topics, 0.0f);
+          for (int i = begin_index; i < end_index; ++i) {
+            const float n_dw = batch_weight * sparse_ndw.val()[i];
+            const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
+
+            for (int k = 0; k < num_topics; ++k) {
+              values[k] = ptdw_ptr[k] * n_dw;
+            }
+
+            int w = sparse_ndw.col_ind()[i];
+            nwt_writer->Store(w, token_id[w], values);
+          }
+        }
+      }
+    }
+    CreatePtdwCacheEntry(new_ptdw_cache_entry_ptr, &local_ptdw, batch, d, num_topics);
+  }
+  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, args);
+}
+
+void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args,
+                                                    const Batch& batch,
+                                                    float batch_weight,
+                                                    const CsrMatrix<float>& sparse_ndw,
+                                                    const ::artm::core::PhiMatrix& p_wt,
+                                                    const RegularizeThetaAgentCollection& theta_agents,
+                                                    LocalThetaMatrix<float>* theta_matrix,
+                                                    NwtWriteAdapter* nwt_writer,
+                                                    util::Blas* blas,
+                                                    ThetaMatrix* new_cache_entry_ptr) {
+  LocalThetaMatrix<float> n_td(theta_matrix->num_topics(), theta_matrix->num_items());
+  const int num_topics = p_wt.topic_size();
+  const int docs_count = theta_matrix->num_items();
+  const int tokens_count = batch.token_size();
+
+  std::vector<int> token_id(batch.token_size(), -1);
+  for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
+    token_id[token_index] = p_wt.token_index(Token(batch.class_id(token_index), batch.token(token_index)));
+  }
+  std::shared_ptr<LocalPhiMatrix<float>> phi_matrix_ptr = ProcessorHelpers::InitializePhi(batch, p_wt);
+  if (phi_matrix_ptr == nullptr) {
+    return;
+  }
+  const LocalPhiMatrix<float>& phi_matrix = *phi_matrix_ptr;
+  for (int inner_iter = 0; inner_iter < args.num_document_passes(); ++inner_iter) {
+    // helper_td will represent either n_td or r_td, depending on the context - see code below
+    LocalThetaMatrix<float> helper_td(theta_matrix->num_topics(), theta_matrix->num_items());
+    helper_td.InitializeZeros();
+
+    for (int d = 0; d < docs_count; ++d) {
+      for (int i = sparse_ndw.row_ptr()[d]; i < sparse_ndw.row_ptr()[d + 1]; ++i) {
+        int w = sparse_ndw.col_ind()[i];
+        float p_dw_val = blas->sdot(num_topics, &phi_matrix(w, 0), 1, &(*theta_matrix)(0, d), 1);  // NOLINT
+        if (p_dw_val == 0) {
+          continue;
+        }
+        blas->saxpy(num_topics, sparse_ndw.val()[i] / p_dw_val, &phi_matrix(w, 0), 1, &helper_td(0, d), 1);
+      }
+    }
+
+    AssignDenseMatrixByProduct(*theta_matrix, helper_td, theta_matrix);
+
+    helper_td.InitializeZeros();  // from now this represents r_td
+    theta_agents.Apply(inner_iter, *theta_matrix, &helper_td);
+  }
+
+  ProcessorHelpers::CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, args);
+
+  if (nwt_writer == nullptr) {
+    return;
+  }
+
+  CsrMatrix<float> sparse_nwd(sparse_ndw);
+  sparse_nwd.Transpose(blas);
+
+  std::vector<float> p_wt_local(num_topics, 0.0f);
+  std::vector<float> n_wt_local(num_topics, 0.0f);
+  for (int w = 0; w < tokens_count; ++w) {
+    if (token_id[w] == PhiMatrix::kUndefIndex) {
+      continue;
+    }
+    p_wt.get(token_id[w], &p_wt_local);
+
+    for (int i = sparse_nwd.row_ptr()[w]; i < sparse_nwd.row_ptr()[w + 1]; ++i) {
+      int d = sparse_nwd.col_ind()[i];
+      float p_wd_val = blas->sdot(num_topics, &p_wt_local[0], 1, &(*theta_matrix)(0, d), 1);  // NOLINT
+      if (p_wd_val == 0) {
+        continue;
+      }
+      blas->saxpy(num_topics, sparse_nwd.val()[i] / p_wd_val,
+        &(*theta_matrix)(0, d), 1, &n_wt_local[0], 1);  // NOLINT
+    }
+
+    std::vector<float> values(num_topics, 0.0f);
+    for (int topic_index = 0; topic_index < num_topics; ++topic_index) {
+      values[topic_index] = p_wt_local[topic_index] * n_wt_local[topic_index];
+      n_wt_local[topic_index] = 0.0f;
+    }
+
+    for (float& value : values) {
+      value *= batch_weight;
+    }
+    nwt_writer->Store(w, token_id[w], values);
+  }
+}
+
 }  // namespace core
 }  // namespace artm

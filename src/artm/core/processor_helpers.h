@@ -13,6 +13,10 @@
 #include "artm/core/instance.h"
 #include "artm/core/helpers.h"
 #include "artm/core/protobuf_helpers.h"
+#include "artm/core/score_manager.h"
+
+#include "artm/regularizer_interface.h"
+#include "artm/score_calculator_interface.h"
 
 #include "artm/utility/blas.h"
 
@@ -151,6 +155,29 @@ class ProcessorHelpers : boost::noncopyable {
                                            const PhiMatrix& p_wt,
                                            const ProcessBatchesArgs& args,
                                            const LocalThetaMatrix<float>& theta_matrix);
+
+  static void InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args,
+                                          const Batch& batch,
+                                          float batch_weight,
+                                          const CsrMatrix<float>& sparse_ndw,
+                                          const ::artm::core::PhiMatrix& p_wt,
+                                          const RegularizeThetaAgentCollection& theta_agents,
+                                          const RegularizePtdwAgentCollection& ptdw_agents,
+                                          LocalThetaMatrix<float>* theta_matrix,
+                                          NwtWriteAdapter* nwt_writer, util::Blas* blas,
+                                          ThetaMatrix* new_cache_entry_ptr = nullptr,
+                                          ThetaMatrix* new_ptdw_cache_entry_ptr = nullptr);
+
+  static void InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args,
+                                           const Batch& batch,
+                                           float batch_weight,
+                                           const CsrMatrix<float>& sparse_ndw,
+                                           const ::artm::core::PhiMatrix& p_wt,
+                                           const RegularizeThetaAgentCollection& theta_agents,
+                                           LocalThetaMatrix<float>* theta_matrix,
+                                           NwtWriteAdapter* nwt_writer,
+                                           util::Blas* blas,
+                                           ThetaMatrix* new_cache_entry_ptr = nullptr);
 
   ProcessorHelpers() = delete;
 };
