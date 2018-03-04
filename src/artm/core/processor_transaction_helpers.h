@@ -4,10 +4,9 @@
 
 #include <memory>
 #include <vector>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
-
-#include "boost/utility.hpp"
 
 #include "artm/core/phi_matrix.h"
 #include "artm/core/phi_matrix_operations.h"
@@ -66,26 +65,27 @@ struct BatchTransactionInfo {
       , token_to_index(_token_to_index){ }
 };
 
-class ProcessorTransactionHelpers : boost::noncopyable {
+class ProcessorTransactionHelpers {
  public:
   static std::shared_ptr<BatchTransactionInfo> GetBatchTransactionsInfo(const Batch& batch);
 
   static std::shared_ptr<CsrMatrix<float>> InitializeSparseNdx(const Batch& batch,
-    const ProcessBatchesArgs& args, const ClassIdToTt& class_id_to_tt,
-    const std::unordered_map<std::vector<int>, int, IntVectorHasher>& transaction_to_index);
+      const ProcessBatchesArgs& args, const ClassIdToTt& class_id_to_tt,
+      const std::unordered_map<std::vector<int>, int, IntVectorHasher>& transaction_to_index);
 
-  static void InferThetaAndUpdateNwtSparseNew(const ProcessBatchesArgs& args,
-                                              const Batch& batch,
-                                              float batch_weight,
-                                              const CsrMatrix<float>& sparse_ndx,
-                                              const TransactionToIndex& transaction_to_index,
-                                              const std::unordered_map<Token, int, TokenHasher>& token_to_local_index,
-                                              const std::vector<std::vector<Token>>& transactions,
-                                              const ::artm::core::PhiMatrix& p_wt,
-                                              const RegularizeThetaAgentCollection& theta_agents,
-                                              LocalThetaMatrix<float>* theta_matrix,
-                                              NwtWriteAdapter* nwt_writer, util::Blas* blas,
-                                              ThetaMatrix* new_cache_entry_ptr = nullptr);
+  static void TransactionInferThetaAndUpdateNwtSparse(
+                                     const ProcessBatchesArgs& args,
+                                     const Batch& batch,
+                                     float batch_weight,
+                                     const CsrMatrix<float>& sparse_ndx,
+                                     const TransactionToIndex& transaction_to_index,
+                                     const std::unordered_map<Token, int, TokenHasher>& token_to_local_index,
+                                     const std::vector<std::vector<Token>>& transactions,
+                                     const ::artm::core::PhiMatrix& p_wt,
+                                     const RegularizeThetaAgentCollection& theta_agents,
+                                     LocalThetaMatrix<float>* theta_matrix,
+                                     NwtWriteAdapter* nwt_writer, util::Blas* blas,
+                                     ThetaMatrix* new_cache_entry_ptr);
 
   ProcessorTransactionHelpers() = delete;
 };

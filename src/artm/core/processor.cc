@@ -159,6 +159,12 @@ void Processor::ThreadFunction() {
         }
         VLOG(0) << "Processor: start processing batch " << batch.id() << " into model " << model_description.str();
 
+        std::shared_ptr<CsrMatrix<float>> sparse_ndw;
+        {
+          CuckooWatch cuckoo2("InitializeSparseNdw", &cuckoo, kTimeLoggingThreshold);
+          sparse_ndw = ProcessorHelpers::InitializeSparseNdw(batch, args);
+        }
+
         std::shared_ptr<ThetaMatrix> cache;
         if (part->has_reuse_theta_cache_manager()) {
           CuckooWatch cuckoo2("FindReuseThetaCacheEntry", &cuckoo, kTimeLoggingThreshold);
@@ -218,8 +224,8 @@ void Processor::ThreadFunction() {
             }
           }
 
-          if (ptdw_agents.empty() && !part->has_ptdw_cache_manager()) {
-            if (args.opt_for_avx()) {
+          if (use_real_transactions) {
+            if (ptdw_agents.empty() && !part->has_ptdw_cache_manager()) {
               std::shared_ptr<BatchTransactionInfo> batch_info;
               {
                 CuckooWatch cuckoo2("GetBatchTransactionsInfo", &cuckoo, kTimeLoggingThreshold);
@@ -230,48 +236,33 @@ void Processor::ThreadFunction() {
               {
                 CuckooWatch cuckoo2("InitializeSparseNdx", &cuckoo, kTimeLoggingThreshold);
                 sparse_ndx = ProcessorTransactionHelpers::InitializeSparseNdx(batch, args,
-                                                 batch_info->class_id_to_tt,
-                                                 batch_info->transaction_ids_to_index);
+                  batch_info->class_id_to_tt,
+                  batch_info->transaction_ids_to_index);
               }
 
               CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparseNew", &cuckoo, kTimeLoggingThreshold);
-              ProcessorTransactionHelpers::InferThetaAndUpdateNwtSparseNew(
+              ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
                                               args, batch, part->batch_weight(), *sparse_ndx,
                                               batch_info->transaction_to_index, batch_info->token_to_index,
                                               batch_info->transactions, p_wt, theta_agents,
                                               theta_matrix.get(), nwt_writer.get(),
                                               blas, new_cache_entry_ptr.get());
-            } else if (!use_real_transactions) {
-              std::shared_ptr<CsrMatrix<float>> sparse_ndw;
-              {
-                CuckooWatch cuckoo2("InitializeSparseNdw", &cuckoo, kTimeLoggingThreshold);
-                sparse_ndw = ProcessorHelpers::InitializeSparseNdw(batch, args);
-              }
-
-              CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
-              ProcessorHelpers::InferThetaAndUpdateNwtSparse(args, batch, part->batch_weight(), *sparse_ndw,
-                                           p_wt, theta_agents, theta_matrix.get(), nwt_writer.get(),
-                                           blas, new_cache_entry_ptr.get());
             } else {
               LOG(ERROR) << "Current version of BigARTM doesn't support"
-                         << " usage of opt_for_avx option with complex transactions";
+                << " ptdw matrix operations with with complex transactions";
             }
           } else {
-            if (!use_real_transactions) {
-              std::shared_ptr<CsrMatrix<float>> sparse_ndw;
-              {
-                CuckooWatch cuckoo2("InitializeSparseNdw", &cuckoo, kTimeLoggingThreshold);
-                sparse_ndw = ProcessorHelpers::InitializeSparseNdw(batch, args);
-              }
-
+            if (ptdw_agents.empty() && !part->has_ptdw_cache_manager()) {
+              CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
+              ProcessorHelpers::InferThetaAndUpdateNwtSparse(args, batch, part->batch_weight(), *sparse_ndw, p_wt,
+                                                             theta_agents, theta_matrix.get(), nwt_writer.get(),
+                                                             blas, new_cache_entry_ptr.get());
+            } else {
               CuckooWatch cuckoo2("InferPtdwAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
               ProcessorHelpers::InferPtdwAndUpdateNwtSparse(args, batch, part->batch_weight(), *sparse_ndw,
-                                          p_wt, theta_agents, ptdw_agents, theta_matrix.get(), nwt_writer.get(),
-                                          blas, new_cache_entry_ptr.get(),
-                                          new_ptdw_cache_entry_ptr.get());
-            } else {
-              LOG(ERROR) << "Current version of BigARTM doesn't support"
-                         << " ptdw matrix operations with with complex transactions";
+                                                            p_wt, theta_agents, ptdw_agents, theta_matrix.get(),
+                                                            nwt_writer.get(), blas, new_cache_entry_ptr.get(),
+                                                            new_ptdw_cache_entry_ptr.get());
             }
           }
         }

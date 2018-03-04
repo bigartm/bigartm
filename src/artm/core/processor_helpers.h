@@ -5,8 +5,7 @@
 #include <unordered_map>
 #include <memory>
 #include <vector>
-
-#include "boost/utility.hpp"
+#include <string>
 
 #include "artm/core/phi_matrix.h"
 #include "artm/core/phi_matrix_operations.h"
@@ -119,7 +118,7 @@ class PhiMatrixWriter : public NwtWriteAdapter {
   PhiMatrix* n_wt_;
 };
 
-class ProcessorHelpers : boost::noncopyable {
+class ProcessorHelpers {
  public:
   static void CreateThetaCacheEntry(ThetaMatrix* new_cache_entry_ptr,
                                     LocalThetaMatrix<float>* theta_matrix,

@@ -137,7 +137,7 @@ std::shared_ptr<CsrMatrix<float>> ProcessorTransactionHelpers::InitializeSparseN
     transaction_to_index.size(), &n_dw_val, &n_dw_row_ptr, &n_dw_col_ind);
 }
 
-void ProcessorTransactionHelpers::InferThetaAndUpdateNwtSparseNew(
+void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
                                      const ProcessBatchesArgs& args,
                                      const Batch& batch,
                                      float batch_weight,
@@ -150,6 +150,11 @@ void ProcessorTransactionHelpers::InferThetaAndUpdateNwtSparseNew(
                                      LocalThetaMatrix<float>* theta_matrix,
                                      NwtWriteAdapter* nwt_writer, util::Blas* blas,
                                      ThetaMatrix* new_cache_entry_ptr) {
+  if (!args.opt_for_avx()) {
+    LOG(WARNING) << "Current version of BigARTM doesn't support 'opt_for_avx' == false"
+      << " with complex transactions, option 'opt_for_avx' will be ignored";
+  }
+
   LocalThetaMatrix<float> n_td(theta_matrix->num_topics(), theta_matrix->num_items());
   const int num_topics = p_wt.topic_size();
   const int docs_count = theta_matrix->num_items();

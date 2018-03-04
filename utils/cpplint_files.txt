@@ -14,7 +14,7 @@ src/artm/core/master_component.cc
 src/artm/core/phi_matrix_operations.cc
 src/artm/core/processor.cc
 src/artm/core/processor_helpers.cc
-src/artm/core/processor_trnsaction_helpers.cc
+src/artm/core/processor_transaction_helpers.cc
 src/artm/core/processor_input.cc
 src/artm/core/protobuf_serialization.cc
 src/artm/core/score_manager.cc
