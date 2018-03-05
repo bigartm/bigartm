@@ -13,6 +13,8 @@ src/artm/core/instance.cc
 src/artm/core/master_component.cc
 src/artm/core/phi_matrix_operations.cc
 src/artm/core/processor.cc
+src/artm/core/processor_helpers.cc
+src/artm/core/processor_transaction_helpers.cc
 src/artm/core/processor_input.cc
 src/artm/core/protobuf_serialization.cc
 src/artm/core/score_manager.cc
@@ -84,6 +86,8 @@ src/artm/core/master_component.h
 src/artm/core/phi_matrix.h
 src/artm/core/phi_matrix_operations.h
 src/artm/core/processor.h
+src/artm/core/processor_helpers.h
+src/artm/core/processor_transaction_helpers.h
 src/artm/core/processor_input.h
 src/artm/core/protobuf_helpers.h
 src/artm/core/protobuf_serialization.h
