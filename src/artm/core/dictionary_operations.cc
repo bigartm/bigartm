@@ -590,11 +590,9 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
   }
 
   // Handle max_dictionary_size
-  if (args.has_max_dictionary_size() &&
-          ((int64_t) args.max_dictionary_size() < (int64_t) df_values.size())) {
+  if (args.has_max_dictionary_size() && args.max_dictionary_size() < static_cast<int>(df_values.size())) {
     std::sort(df_values.begin(), df_values.end(), std::greater<float>());
     float min_df_due_to_size = df_values[args.max_dictionary_size()];
-
 
     for (int entry_index = 0; entry_index < (int64_t) src_entries.size();
             entry_index++) {

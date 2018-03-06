@@ -112,33 +112,7 @@ CooccurrenceCollector::CooccurrenceCollector(const CollectionParserConfig& colle
   }
 }
 
-/*CooccurrenceCollector::CooccurrenceCollector(const unsigned window_width,
-    const unsigned cooc_min_tf, const unsigned cooc_min_df,
-    const std::string& path_to_vocab, const std::string& path_to_vw,
-    const std::string& cooc_tf_file_path,
-    const std::string& cooc_df_file_path,
-    const std::string& ppmi_tf_file_path,
-    const std::string& ppmi_df_file_path, const int num_of_cpu,
-    const unsigned doc_per_cooc_batch) :
-        window_width_(window_width), cooc_min_tf_(cooc_min_tf), cooc_min_df_(cooc_min_df),
-        path_to_vw_(path_to_vw),
-        cooc_tf_file_path_(cooc_tf_file_path),
-        cooc_df_file_path_(cooc_df_file_path),
-        ppmi_tf_file_path_(ppmi_tf_file_path),
-        ppmi_df_file_path_(ppmi_df_file_path),
-        calc_symetric_cooc_(true), gather_cooc_(true), vocab_(path_to_vocab),
-        open_files_counter_(0), max_num_of_open_files_(500), total_num_of_pairs_(0),
-        total_num_of_documents_(0), doc_per_cooc_batch_(doc_per_cooc_batch) {
-  // Calculation of token co-occurrence starts with this class.
-  // Scheme of gathering of token co-occurrences statistics is the folowing:
-  // 1. Get unique tokens from vocab file
-  // 2. Read Vowpal Wabbit file by portions, calculate co-occurrences of
-  // tokens from vocab for every portion and save it (in form of cooccurrence batch) on external storage
-  // 3. Read from external storage all the cooccurrence batches piece by
-  // piece and create resulting file with all co-occurrences
-  // 4. Use co-occurrence counters to calculate positive pmi of token pairs
-
-  // Initialize path to batches
+void CooccurrenceCollector::CreateAndSetTargetFolder() {
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
   fs::path dir(boost::lexical_cast<std::string>(uuid));
   if (fs::exists(dir)) {
@@ -149,29 +123,8 @@ CooccurrenceCollector::CooccurrenceCollector(const CollectionParserConfig& colle
   if (!fs::create_directory(dir)) {
     BOOST_THROW_EXCEPTION(InvalidOperation("Failed to create directory"));
   }
-  token_statistics_.resize(vocab_.token_map_.size());
-  path_to_batches_ = dir.string();
-  // If cooc path weren't spessified they need to be created in batch dir
-  if (!ppmi_tf_file_path_.empty() && cooc_tf_file_path_.empty()) {
-    cooc_tf_file_path_ = CreateFileInBatchDir();
-  }
-  if (!ppmi_df_file_path_.empty() && cooc_df_file_path_.empty()) {
-    cooc_df_file_path_ = CreateFileInBatchDir();
-  }
-  calculate_cooc_tf_ = cooc_tf_file_path_.size() != 0;
-  calculate_cooc_df_ = cooc_df_file_path_.size() != 0;
-  calculate_ppmi_tf_ = ppmi_tf_file_path_.size() != 0;
-  calculate_ppmi_df_ = ppmi_df_file_path_.size() != 0;
-  if (num_of_cpu <= 0) {
-    num_of_cpu_ = std::thread::hardware_concurrency();
-    if (num_of_cpu_ == 0) {
-      num_of_cpu_ = 1;
-    }
-  } else {
-    num_of_cpu_ = num_of_cpu;
-  }
-  std::cout << "Co-occurrence gathering...\n";
-}*/
+  config_.set_target_folder(dir.string());
+}
 
 std::string CooccurrenceCollector::CreateFileInBatchDir() const {
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
@@ -333,7 +286,7 @@ std::vector<std::string> CooccurrenceCollector::ReadPortionOfDocuments(
     return portion;
   }
   std::string str;
-  while ((int32_t) portion.size() < config_.num_items_per_batch()) {
+  while (static_cast<int>(portion.size()) < config_.num_items_per_batch()) {
     getline(*vowpal_wabbit_doc_ptr, str);
     if (vowpal_wabbit_doc_ptr->eof()) {
       break;
@@ -404,8 +357,8 @@ void CooccurrenceCollector::ReadAndMergeCooccurrenceBatches() {
   // this data can be read back from output file.
 
   // std::cout << "Step 2: merging batches" << std::endl;
-  const unsigned min_num_of_batches = 32;
-  while (vector_of_batches_.size() > min_num_of_batches) {
+  const unsigned min_num_of_batches_to_be_merged_in_parallel = 32;
+  while (vector_of_batches_.size() > min_num_of_batches_to_be_merged_in_parallel) {
     FirstStageOfMerging();  // size is decreasing here
   }
   ResultingBufferOfCooccurrences res(vocab_, num_of_documents_token_occurred_in_, config_);
@@ -555,10 +508,10 @@ void CooccurrenceCollector::KWayMerge(ResultingBufferOfCooccurrences* res, const
           res->CalculateTFStatistics();
         }
         if (config_.gather_cooc_tf()) {
-          res->WriteCoocFromCell("tf", config_.cooc_min_tf());
+          res->WriteCoocFromCell(TokenCoocFrequency, config_.cooc_min_tf());
         }
         if (config_.gather_cooc_df()) {
-          res->WriteCoocFromCell("df", config_.cooc_min_df());
+          res->WriteCoocFromCell(DocumentCoocFrequency, config_.cooc_min_df());
         }
         // It's importants to set size = 0 after popping, because this value will be checked later
         res->cell_.records.resize(0);
@@ -597,10 +550,10 @@ void CooccurrenceCollector::KWayMerge(ResultingBufferOfCooccurrences* res, const
         res->CalculateTFStatistics();
       }
       if (config_.gather_cooc_tf()) {
-        res->WriteCoocFromCell("tf", config_.cooc_min_tf());
+        res->WriteCoocFromCell(TokenCoocFrequency, config_.cooc_min_tf());
       }
       if (config_.gather_cooc_df()) {
-        res->WriteCoocFromCell("df", config_.cooc_min_df());
+        res->WriteCoocFromCell(DocumentCoocFrequency, config_.cooc_min_df());
       }
     }
   }
@@ -675,8 +628,7 @@ std::string Vocab::MakeKey(const std::string& token_str, const std::string& moda
 }
 
 int Vocab::FindTokenId(const std::string& token_str, const std::string& modality) const {
-  const std::string key = token_str + '|' + modality;
-  auto token_ref = token_map_.find(key);
+  auto token_ref = token_map_.find(MakeKey(token_str, modality));
   if (token_ref == token_map_.end()) {
     return TOKEN_NOT_FOUND;
   }
@@ -891,12 +843,14 @@ void ResultingBufferOfCooccurrences::MergeWithExistingCell(const CooccurrenceBat
       th_iter->cooc_df = fi_iter->cooc_df + se_iter->cooc_df;
       ++fi_iter;
       ++se_iter;
-      ++th_iter;
     } else if (fi_iter->second_token_id < se_iter->second_token_id) {
-      *th_iter++ = *fi_iter++;
+      *th_iter = *fi_iter;
+      ++fi_iter;
     } else {
-      *th_iter++ = *se_iter++;
+      *th_iter = *se_iter;
+      ++se_iter;
     }
+    ++th_iter;
   }
   cell_.records.resize(th_iter - cell_.records.begin());
   std::copy(fi_iter, old_vector.end(), std::back_inserter(cell_.records));
@@ -942,7 +896,7 @@ void ResultingBufferOfCooccurrences::WriteCoocFromCell(const std::string mode, c
   }
   if (!no_cooc_found) {
     output_buf << '\n';
-    if (mode == "tf") {
+    if (mode == TokenCoocFrequency) {
       cooc_tf_dict_out_ << output_buf.str();
     } else {
       cooc_df_dict_out_ << output_buf.str();
@@ -953,10 +907,10 @@ void ResultingBufferOfCooccurrences::WriteCoocFromCell(const std::string mode, c
 void ResultingBufferOfCooccurrences::CalculatePpmi() {  // Wrapper around CalculateAndWritePpmi
   // std::cout << "Step 3: start calculation ppmi" << std::endl;
   if (config_.calculate_ppmi_tf()) {
-    CalculateAndWritePpmi("tf", config_.total_num_of_pairs());
+    CalculateAndWritePpmi(TokenCoocFrequency, config_.total_num_of_pairs());
   }
   if (config_.calculate_ppmi_df()) {
-    CalculateAndWritePpmi("df", config_.total_num_of_documents());
+    CalculateAndWritePpmi(DocumentCoocFrequency, config_.total_num_of_documents());
   }
   // std::cout << "Ppmi's have been calculated" << std::endl;
 }
@@ -967,7 +921,7 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mod
   // Note: before writing in file all the information is stored in ram
   std::stringstream output_buf;
   std::string str;
-  while (getline(mode == "tf" ? cooc_tf_dict_in_ : cooc_df_dict_in_, str)) {
+  while (getline(mode == TokenCoocFrequency ? cooc_tf_dict_in_ : cooc_df_dict_in_, str)) {
     boost::algorithm::trim(str);
     std::string first_token_modality = DefaultClass;  // Here's how modality is indicated in output file
     bool new_first_token = true;
@@ -1020,7 +974,7 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mod
       output_buf << '\n';
     }
   }
-  if (mode == "tf") {
+  if (mode == TokenCoocFrequency) {
     ppmi_tf_dict_ << output_buf.str();
   } else {
     ppmi_df_dict_ << output_buf.str();
@@ -1028,7 +982,7 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mod
 }
 
 double ResultingBufferOfCooccurrences::GetTokenFreq(const std::string& mode, const int token_id) const {
-  if (mode == "tf") {
+  if (mode == TokenCoocFrequency) {
     return num_of_pairs_token_occurred_in_[token_id];
   } else {
     return num_of_documents_token_occurred_in_[token_id];
@@ -1039,11 +993,7 @@ class FileWrapper {  // ToDo (MichaelSolotky): finish it (and replace fsrteams w
  public:
   FileWrapper(const std::string& filename, const std::string mode) :
               file_ptr_(fopen(filename.c_str(), mode.c_str())) { }
-  std::vector<char> ReadLine() {
-    std::vector<char> buf(256);
-    fscanf(file_ptr_, "%s", &buf[0]);
-    return buf;
-  }
+
  private:
   FILE* file_ptr_;
 };

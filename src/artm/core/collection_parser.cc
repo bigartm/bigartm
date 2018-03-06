@@ -512,11 +512,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
       // For every token from vocab keep the information about the last document this token occured in
       // std::unordered_map<int> num_of_last_document_token_occured;  // ToDo: think how to add elements here
       // ToDo (MichaelSolotky): consider the case if there is no vocab
-      std::vector<int> num_of_last_document_token_occured(cooc_collector.vocab_.token_map_.size());
-      // ToDo (MichaelSolotky): remove this crutch
-      for (unsigned i = 0; i < num_of_last_document_token_occured.size(); ++i) {
-        num_of_last_document_token_occured[i] = -1;
-      }
+      std::vector<int> num_of_last_document_token_occured(cooc_collector.vocab_.token_map_.size(), -1);
 
       for (int str_index = 0; str_index < (int64_t) all_strs_for_batch.size(); ++str_index) {
         std::string str = all_strs_for_batch[str_index];
@@ -561,7 +557,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
           std::string temp = split_index != std::string::npos ? elem.substr(0, split_index) : elem;
           boost::split(tokens, temp, boost::is_any_of(TransactionSeparator));
 
-            if (class_ids.size() != tokens.size()) {
+          if (class_ids.size() != tokens.size()) {
             std::stringstream ss;
             ss << "Error in " << config.docword_file_path() << ":" << line_no
                << ", transaction type size is " << class_ids.size() << " and transaction size is "
@@ -592,7 +588,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
           batch_collector.Record(class_ids, tokens, transaction_weight);
 
           if (config.gather_cooc()) {
-            if (transaction_types.size() > 1) {
+            if (class_ids.size() > 1) {
               gather_transaction_cooc = true;
               return;
             }

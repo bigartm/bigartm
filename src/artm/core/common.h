@@ -46,6 +46,9 @@ const int64_t kProtobufCodedStreamTotalBytesLimit = 2147483647ULL;
 
 static const std::string TransactionSeparator = "^";
 
+const std::string TokenCoocFrequency = "tf";
+const std::string DocumentCoocFrequency = "df";
+
 template <typename T>
 std::string to_string(T value) {
   return boost::lexical_cast<std::string>(value);

@@ -19,18 +19,16 @@
 
 #include "artm/core/collection_parser.h"
 
-#define FIRST_TOKEN_ID 0
-#define FIRST_TOKEN_INFO 0
-#define SECOND_TOKEN_ID 0
-#define SECOND_TOKEN_INFO 1
-#define COOCCURRENCE_INFO 1
-#define MAP_INFO 1
-#define BATCH 0
-#define OUTPUT_FILE 1
-#define TOKEN_NOT_FOUND -1
+#include "common.h"
 
 namespace artm {
 namespace core {
+
+enum {
+  TOKEN_NOT_FOUND = -1,
+  BATCH = 0,
+  OUTPUT_FILE = 1
+};
 
 struct CoocInfo {
   int second_token_id;
@@ -44,8 +42,9 @@ struct CoocInfo {
 struct Cell {
   explicit Cell(int first_token_id = -1, unsigned num_of_records = 0) :
        first_token_id(first_token_id), num_of_records(num_of_records) { }
+
   int64_t GetCoocFromCell(const std::string& mode, const unsigned record_pos) const {
-    if (mode == "tf") {
+    if (mode == TokenCoocFrequency) {
       return records[record_pos].cooc_tf;
     } else {
       return records[record_pos].cooc_df;
@@ -98,6 +97,7 @@ class CooccurrenceCollector {
   void ReadAndMergeCooccurrenceBatches();
 
  private:
+  void CreateAndSetTargetFolder();
   std::string CreateFileInBatchDir() const;
   void UploadOnDisk(const CooccurrenceStatisticsHolder& cooc_stat_holder);
   void FirstStageOfMerging();

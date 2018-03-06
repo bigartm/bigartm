@@ -1421,12 +1421,12 @@ int execute(const artm_options& options, int argc, char* argv[]) {
       filter_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
       bool fraction;
       float value;
-      if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction))  {
+      if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction)) {
         if (fraction) {
           filter_dictionary_args.set_min_df_rate(value);
         } else {
           filter_dictionary_args.set_min_df(value);
-	      }
+        }
       } else {
         if (!options.dictionary_min_df.empty()) {
           std::cerr << "Error in parameter 'dictionary_min_df', the option will be ignored (" << options.dictionary_min_df << ")\n";
