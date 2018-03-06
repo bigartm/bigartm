@@ -580,13 +580,6 @@ void CooccurrenceCollector::CloseBatchInputFile(std::shared_ptr<CooccurrenceBatc
   }
 }
 
-/*CooccurrenceCollector::~CooccurrenceCollector() {
-  if (gather_cooc_) {
-    fs::remove_all(config_.target_folder());
-    std::cout << "Co-occurrences are gathered.\n";
-  }
-}*/
-
 // ********************************** Methods of class Vocab *****************************************
 
 Vocab::Vocab() { }
