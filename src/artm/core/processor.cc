@@ -229,22 +229,21 @@ void Processor::ThreadFunction() {
               std::shared_ptr<BatchTransactionInfo> batch_info;
               {
                 CuckooWatch cuckoo2("GetBatchTransactionsInfo", &cuckoo, kTimeLoggingThreshold);
-                batch_info = ProcessorTransactionHelpers::GetBatchTransactionsInfo(batch);
+                batch_info = ProcessorTransactionHelpers::GetBatchTransactionsInfo(batch, p_wt);
               }
 
               std::shared_ptr<CsrMatrix<float>> sparse_ndx;
               {
                 CuckooWatch cuckoo2("InitializeSparseNdx", &cuckoo, kTimeLoggingThreshold);
-                sparse_ndx = ProcessorTransactionHelpers::InitializeSparseNdx(batch, args,
-                  batch_info->class_id_to_tt,
-                  batch_info->transaction_ids_to_index);
+                sparse_ndx = ProcessorTransactionHelpers::InitializeSparseNdx(
+                  batch, args, batch_info->token_ids_to_info);
               }
 
               CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparseNew", &cuckoo, kTimeLoggingThreshold);
               ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
-                                              args, batch, part->batch_weight(), *sparse_ndx,
-                                              batch_info->transaction_to_index, batch_info->token_to_index,
-                                              batch_info->transactions, p_wt, theta_agents,
+                                              args, batch, part->batch_weight(),
+                                              *sparse_ndx, batch_info->transaction_id_to_info,
+                                              batch_info->token_size, p_wt, theta_agents,
                                               theta_matrix.get(), nwt_writer.get(),
                                               blas, new_cache_entry_ptr.get());
             } else {

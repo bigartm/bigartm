@@ -33,54 +33,50 @@ struct IntVectorHasher {
   }
 };
 
-struct TokenVectorHasher {
-  size_t operator()(const std::vector<Token>& elems) const {
-    size_t hash = 0;
-    for (const auto& e : elems) {
-      boost::hash_combine<size_t>(hash, e.hash());
-    }
-    return hash;
-  }
+struct TransactionInfo {
+  int transaction_index;
+  std::vector<int> local_pwt_token_index;
+  std::vector<int> global_pwt_token_index;
+
+  TransactionInfo(int _transaction_index,
+                  const std::vector<int>& _local_pwt_token_index,
+                  const std::vector<int>& _global_pwt_token_index)
+      : transaction_index(_transaction_index)
+      , local_pwt_token_index(_local_pwt_token_index)
+      , global_pwt_token_index(_global_pwt_token_index) { }
 };
 
-typedef std::unordered_map<ClassId, std::unordered_set<TransactionType, TransactionHasher>> ClassIdToTt;
-typedef std::unordered_map<std::vector<Token>, int, TokenVectorHasher> TransactionToIndex;
+typedef std::unordered_map<std::vector<int>, std::shared_ptr<TransactionInfo>, IntVectorHasher> TokenIdsToInfo;
+typedef std::unordered_map<int, std::shared_ptr<TransactionInfo>> TransactionIdToInfo;
 
 struct BatchTransactionInfo {
-  ClassIdToTt class_id_to_tt;
-  std::unordered_map<std::vector<int>, int, IntVectorHasher> transaction_ids_to_index;
-  TransactionToIndex transaction_to_index;
-  std::vector<std::vector<Token>> transactions;
-  std::unordered_map<Token, int, TokenHasher> token_to_index;
+  TokenIdsToInfo token_ids_to_info;
+  TransactionIdToInfo transaction_id_to_info;
+  int token_size;
 
-  BatchTransactionInfo(const ClassIdToTt& _class_id_to_tt,
-                       const std::unordered_map<std::vector<int>, int, IntVectorHasher>& _transaction_ids_to_index,
-                       const TransactionToIndex& _transaction_to_index,
-                       const std::vector<std::vector<Token>>& _transactions,
-                       const std::unordered_map<Token, int, TokenHasher>& _token_to_index)
-      : class_id_to_tt(_class_id_to_tt)
-      , transaction_ids_to_index(_transaction_ids_to_index)
-      , transaction_to_index(_transaction_to_index)
-      , transactions(_transactions)
-      , token_to_index(_token_to_index){ }
+  BatchTransactionInfo(const TokenIdsToInfo& _token_ids_to_info,
+                       const TransactionIdToInfo& _transaction_id_to_info,
+                       int _token_size)
+      : token_ids_to_info(_token_ids_to_info)
+      , transaction_id_to_info(_transaction_id_to_info)
+      , token_size(_token_size) { }
 };
 
 class ProcessorTransactionHelpers {
  public:
-  static std::shared_ptr<BatchTransactionInfo> GetBatchTransactionsInfo(const Batch& batch);
+  static std::shared_ptr<BatchTransactionInfo> GetBatchTransactionsInfo(
+      const Batch& batch, const ::artm::core::PhiMatrix& p_wt);
 
-  static std::shared_ptr<CsrMatrix<float>> InitializeSparseNdx(const Batch& batch,
-      const ProcessBatchesArgs& args, const ClassIdToTt& class_id_to_tt,
-      const std::unordered_map<std::vector<int>, int, IntVectorHasher>& transaction_to_index);
+  static std::shared_ptr<CsrMatrix<float>> InitializeSparseNdx(
+    const Batch& batch, const ProcessBatchesArgs& args, const TokenIdsToInfo& transaction_info);
 
   static void TransactionInferThetaAndUpdateNwtSparse(
                                      const ProcessBatchesArgs& args,
                                      const Batch& batch,
                                      float batch_weight,
                                      const CsrMatrix<float>& sparse_ndx,
-                                     const TransactionToIndex& transaction_to_index,
-                                     const std::unordered_map<Token, int, TokenHasher>& token_to_local_index,
-                                     const std::vector<std::vector<Token>>& transactions,
+                                     const TransactionIdToInfo& transaction_id_to_info,
+                                     int token_size,
                                      const ::artm::core::PhiMatrix& p_wt,
                                      const RegularizeThetaAgentCollection& theta_agents,
                                      LocalThetaMatrix<float>* theta_matrix,
