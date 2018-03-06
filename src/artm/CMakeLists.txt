@@ -122,6 +122,10 @@ set(SRC_LIST
 	core/master_component.h
 	core/processor.cc
 	core/processor.h
+	core/processor_helpers.cc
+	core/processor_helpers.h
+	core/processor_transaction_helpers.cc
+	core/processor_transaction_helpers.h
 	core/processor_input.cc
 	core/processor_input.h
 	core/protobuf_helpers.h
