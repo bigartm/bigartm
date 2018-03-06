@@ -231,7 +231,7 @@ class hARTM(object):
     # ========== METHODS ==========
     def _get_seed(self, level_idx):
         np.random.seed(self._seed)
-        return np.random.randint(10000, size=level_idx + 1)[-1]
+        return int(np.random.randint(10000, size=level_idx + 1)[-1])
 
     def add_level(self, num_topics=None, topic_names=None, parent_level_weight=1):
         """

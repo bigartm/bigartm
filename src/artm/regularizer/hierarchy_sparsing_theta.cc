@@ -79,7 +79,7 @@ HierarchySparsingTheta::CreateRegularizeThetaAgent(const Batch& batch,
   const int topic_size = args.topic_name_size();
   const int item_size = batch.item_size();
 
-  if (batch.description() != "__parent_phi_matrix_batch__") {
+  if (batch.description() != ::artm::core::kParentPhiMatrixBatch) {
     agent->regularization_on = false;
     return retval;
   }
