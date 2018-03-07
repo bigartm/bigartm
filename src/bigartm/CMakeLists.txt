@@ -4,7 +4,6 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/../)
 
 set(SRC_LIST
 	srcmain.cc
-	cooccurrence_dictionary.cc
 )
 
 set(Boost_USE_MULTITHREADED ON)
