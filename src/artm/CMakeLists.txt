@@ -102,6 +102,8 @@ set(SRC_LIST
 	core/check_messages.h
 	core/collection_parser.cc
 	core/collection_parser.h
+	core/cooccurrence_collector.cc
+	core/cooccurrence_collector.h
 	core/common.h
 	core/cuckoo_watch.cc
 	core/cuckoo_watch.h
