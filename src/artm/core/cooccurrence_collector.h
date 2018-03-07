@@ -19,7 +19,7 @@
 
 #include "artm/core/collection_parser.h"
 
-#include "common.h"
+#include "artm/core/common.h"
 
 namespace artm {
 namespace core {
