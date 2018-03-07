@@ -39,6 +39,7 @@ struct CoocInfo {
 // Data in Cooccurrence batches are stored in cells
 // Every cell refers to its first token id and holds info about tokens that co-occur with it
 // You need firstly to read cell header then records
+
 struct Cell {
   explicit Cell(int first_token_id = -1, unsigned num_of_records = 0) :
        first_token_id(first_token_id), num_of_records(num_of_records) { }
