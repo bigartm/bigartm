@@ -4,6 +4,8 @@ src/artm/c_interface.cc
 src/artm/core/batch_manager.cc
 src/artm/core/cache_manager.cc
 src/artm/core/collection_parser.cc
+src/artm/core/cooccurrence_collector.cc
+src/artm/core/cooccurrence_collector.h
 src/artm/core/dictionary.cc
 src/artm/core/dictionary_operations.cc
 src/artm/core/cuckoo_watch.cc
