@@ -23,16 +23,6 @@ using ::util::LocalPhiMatrix;
 namespace artm {
 namespace core {
 
-struct IntVectorHasher {
-  size_t operator()(const std::vector<int>& elems) const {
-    size_t hash = 0;
-    for (const int e : elems) {
-      boost::hash_combine<std::string>(hash, std::to_string(e));
-    }
-    return hash;
-  }
-};
-
 struct TransactionInfo {
   int transaction_index;
   std::vector<int> local_pwt_token_index;
@@ -46,37 +36,29 @@ struct TransactionInfo {
       , global_pwt_token_index(_global_pwt_token_index) { }
 };
 
-typedef std::unordered_map<std::vector<int>, std::shared_ptr<TransactionInfo>, IntVectorHasher> TokenIdsToInfo;
 typedef std::unordered_map<int, std::shared_ptr<TransactionInfo>> TransactionIdToInfo;
 
 struct BatchTransactionInfo {
-  TokenIdsToInfo token_ids_to_info;
+  std::shared_ptr<CsrMatrix<float>> n_dx;
   TransactionIdToInfo transaction_id_to_info;
   int token_size;
 
-  BatchTransactionInfo(const TokenIdsToInfo& _token_ids_to_info,
+  BatchTransactionInfo(std::shared_ptr<CsrMatrix<float>> _n_dx,
                        const TransactionIdToInfo& _transaction_id_to_info,
                        int _token_size)
-      : token_ids_to_info(_token_ids_to_info)
-      , transaction_id_to_info(_transaction_id_to_info)
-      , token_size(_token_size) { }
+      : n_dx(_n_dx), transaction_id_to_info(_transaction_id_to_info), token_size(_token_size) { }
 };
 
 class ProcessorTransactionHelpers {
  public:
-  static std::shared_ptr<BatchTransactionInfo> GetBatchTransactionsInfo(
-      const Batch& batch, const ::artm::core::PhiMatrix& p_wt);
-
-  static std::shared_ptr<CsrMatrix<float>> InitializeSparseNdx(
-    const Batch& batch, const ProcessBatchesArgs& args, const TokenIdsToInfo& transaction_info);
+  static std::shared_ptr<BatchTransactionInfo> PrepareBatchInfo(
+    const Batch& batch, const ProcessBatchesArgs& args, const ::artm::core::PhiMatrix& p_wt);
 
   static void TransactionInferThetaAndUpdateNwtSparse(
                                      const ProcessBatchesArgs& args,
                                      const Batch& batch,
                                      float batch_weight,
-                                     const CsrMatrix<float>& sparse_ndx,
-                                     const TransactionIdToInfo& transaction_id_to_info,
-                                     int token_size,
+                                     std::shared_ptr<BatchTransactionInfo> batch_info,
                                      const ::artm::core::PhiMatrix& p_wt,
                                      const RegularizeThetaAgentCollection& theta_agents,
                                      LocalThetaMatrix<float>* theta_matrix,
