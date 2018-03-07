@@ -14,6 +14,7 @@
 
 #include "artm/core/common.h"
 #include "artm/core/token.h"
+#include "artm/core/cooccurrence_collector.h"
 
 namespace artm {
 namespace core {
