@@ -53,7 +53,7 @@ def test_func():
         for num_processors in num_processors_list:
             # Create master component and scores
             scores = {'PerplexityScore': messages.PerplexityScoreConfig()}
-            master = mc.MasterComponent(lib, scores=scores)
+            master = mc.MasterComponent(lib, scores=scores, num_processors=num_processors)
 
             # Create collection dictionary and import it
             master.gather_dictionary(dictionary_target_name=dictionary_name,
