@@ -776,9 +776,16 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
           "ProcessBatchesArgs.pwt_source_name == ProcessBatchesArgs.nwt_target_name"));
     }
 
-    auto nwt_target(std::make_shared<DensePhiMatrix>(args.nwt_target_name(), p_wt.topic_name()));
-    nwt_target->Reshape(p_wt);
-    instance_->SetPhiMatrix(args.nwt_target_name(), nwt_target);
+    // If nwt_target_name already exists, assign all its elements to zero.
+    // Otherwise, create new n_wt matrix of the same shape as p_wt matrix.
+    auto current_nwt_target = instance_->GetPhiMatrix(args.nwt_target_name());
+    if (current_nwt_target != nullptr) {
+      PhiMatrixOperations::AssignValue(0.0f, const_cast< ::artm::core::PhiMatrix*>(current_nwt_target.get()));
+    } else {
+      auto nwt_target(std::make_shared<DensePhiMatrix>(args.nwt_target_name(), p_wt.topic_name()));
+      nwt_target->Reshape(p_wt);
+      instance_->SetPhiMatrix(args.nwt_target_name(), nwt_target);
+    }
   }
 
   if (async && args.theta_matrix_type() != ThetaMatrixType_None) {
