@@ -1482,6 +1482,15 @@ void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
       "This error happens because MasterModelConfig.parent_master_model_id is specified."));
   }
 
+  auto pwt_matrix = instance_->GetPhiMatrix(config->pwt_name());
+  auto nwt_matrix = instance_->GetPhiMatrix(config->nwt_name());
+  if (pwt_matrix != nullptr && nwt_matrix != nullptr) {
+    if (!PhiMatrixOperations::HasEqualShape(*pwt_matrix, *nwt_matrix)) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "FitOnline does not support reshape of n_wt matrix. Use FitOffline instead."));
+    }
+  }
+
   ArtmExecutor artm_executor(*config, this);
   OnlineBatchesIterator iter(args.batch_filename(), args.batch_weight(), args.update_after(),
                              args.apply_weight(), args.decay_weight());
