@@ -188,18 +188,16 @@ static void CreatePtdwCacheEntry(ThetaMatrix* new_cache_entry_ptr,
 
 class NwtWriteAdapter {
  public:
-  virtual void Store(int nwt_token_id, const std::vector<float>& nwt_vector) = 0;
-  virtual ~NwtWriteAdapter() { }
-};
+  explicit NwtWriteAdapter(PhiMatrix* n_wt) : n_wt_(n_wt) { }
 
-class PhiMatrixWriter : public NwtWriteAdapter {
- public:
-  explicit PhiMatrixWriter(PhiMatrix* n_wt) : n_wt_(n_wt) { }
-
-  virtual void Store(int nwt_token_id, const std::vector<float>& nwt_vector) {
+  void Store(int nwt_token_id, const std::vector<float>& nwt_vector) {
     assert(nwt_vector.size() == n_wt_->topic_size());
     assert((nwt_token_id >= 0) && (nwt_token_id < n_wt_->token_size()));
     n_wt_->increase(nwt_token_id, nwt_vector);
+  }
+
+  PhiMatrix* n_wt() {
+    return n_wt_;
   }
 
  private:
@@ -361,6 +359,14 @@ InitializeSparseNdw(const Batch& batch, const ProcessBatchesArgs& args) {
 }
 
 static void
+FindBatchTokenIds(const Batch& batch, const PhiMatrix& phi_matrix, std::vector<int>* token_id) {
+  token_id->resize(batch.token_size(), -1);
+  for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
+    token_id->at(token_index) = phi_matrix.token_index(Token(batch.class_id(token_index), batch.token(token_index)));
+  }
+}
+
+static void
 InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, float batch_weight,
                              const CsrMatrix<float>& sparse_ndw,
                              const ::artm::core::PhiMatrix& p_wt,
@@ -373,10 +379,8 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
   const int docs_count = theta_matrix->num_items();
   const int tokens_count = batch.token_size();
 
-  std::vector<int> token_id(batch.token_size(), -1);
-  for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
-    token_id[token_index] = p_wt.token_index(Token(batch.class_id(token_index), batch.token(token_index)));
-  }
+  std::vector<int> token_id;
+  FindBatchTokenIds(batch, p_wt, &token_id);
 
   if (args.opt_for_avx()) {
   // This version is about 40% faster than the second alternative below.
@@ -487,16 +491,24 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
     return;
   }
 
+  std::vector<int> token_nwt_id;
+  FindBatchTokenIds(batch, *nwt_writer->n_wt(), &token_nwt_id);
+
   CsrMatrix<float> sparse_nwd(sparse_ndw);
   sparse_nwd.Transpose(blas);
 
   std::vector<float> p_wt_local(num_topics, 0.0f);
   std::vector<float> n_wt_local(num_topics, 0.0f);
   for (int w = 0; w < tokens_count; ++w) {
-    if (token_id[w] == -1) {
+    if (token_nwt_id[w] == -1) {
       continue;
     }
-    p_wt.get(token_id[w], &p_wt_local);
+
+    if (token_id[w] != -1) {
+      p_wt.get(token_id[w], &p_wt_local);
+    } else {
+      p_wt_local.assign(num_topics, 1.0f);
+    }
 
     for (int i = sparse_nwd.row_ptr()[w]; i < sparse_nwd.row_ptr()[w + 1]; ++i) {
       int d = sparse_nwd.col_ind()[i];
@@ -517,7 +529,7 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
     for (float& value : values) {
       value *= batch_weight;
     }
-    nwt_writer->Store(token_id[w], values);
+    nwt_writer->Store(token_nwt_id[w], values);
   }
 }
 
@@ -537,9 +549,10 @@ InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, 
   const int num_topics = p_wt.topic_size();
   const int docs_count = theta_matrix->num_items();
 
-  std::vector<int> token_id(batch.token_size(), -1);
-  for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
-    token_id[token_index] = p_wt.token_index(Token(batch.class_id(token_index), batch.token(token_index)));
+  std::vector<int> token_id, token_nwt_id;
+  FindBatchTokenIds(batch, p_wt, &token_id);
+  if (nwt_writer != nullptr) {
+    FindBatchTokenIds(batch, *nwt_writer->n_wt(), &token_nwt_id);
   }
 
   for (int d = 0; d < docs_count; ++d) {
@@ -598,6 +611,11 @@ InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, 
           ntd_ptr[k] = 0.0f;
         }
         for (int i = begin_index; i < end_index; ++i) {
+          int w = sparse_ndw.col_ind()[i];
+          if (token_id[w] == -1) {
+            continue;
+          }
+
           const float n_dw = sparse_ndw.val()[i];
           const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
           for (int k = 0; k < num_topics; ++k) {
@@ -616,18 +634,18 @@ InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, 
           std::vector<float> values(num_topics, 0.0f);
           for (int i = begin_index; i < end_index; ++i) {
             int w = sparse_ndw.col_ind()[i];
-            if (token_id[w] == -1) {
+            if (token_nwt_id[w] == -1) {
               continue;
             }
 
             const float n_dw = batch_weight * sparse_ndw.val()[i];
-            const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
+            const float* ptdw_ptr = (token_id[w] != -1) ? &local_ptdw(i - begin_index, 0) : theta_ptr;
 
             for (int k = 0; k < num_topics; ++k) {
               values[k] = ptdw_ptr[k] * n_dw;
             }
 
-            nwt_writer->Store(token_id[w], values);
+            nwt_writer->Store(token_nwt_id[w], values);
           }
         }
       }
@@ -791,12 +809,6 @@ void Processor::ThreadFunction() {
             LOG(ERROR) << "Model " << part->nwt_target_name() << " does not exist.";
             continue;
           }
-
-          if (!PhiMatrixOperations::HasEqualShape(*nwt_target, p_wt)) {
-            LOG(ERROR) << "Models " << part->nwt_target_name() << " and "
-                       << model_name << " have inconsistent shapes.";
-            continue;
-          }
         }
 
         std::stringstream model_description;
@@ -832,7 +844,7 @@ void Processor::ThreadFunction() {
 
         std::shared_ptr<NwtWriteAdapter> nwt_writer;
         if (nwt_target != nullptr) {
-          nwt_writer = std::make_shared<PhiMatrixWriter>(const_cast<PhiMatrix*>(nwt_target.get()));
+          nwt_writer = std::make_shared<NwtWriteAdapter>(const_cast<PhiMatrix*>(nwt_target.get()));
         }
 
         std::shared_ptr<ThetaMatrix> new_cache_entry_ptr(nullptr);
