@@ -13,6 +13,11 @@ namespace regularizer {
 bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                const ::artm::core::PhiMatrix& n_wt,
                                ::artm::core::PhiMatrix* result) {
+  if (!::artm::core::PhiMatrixOperations::HasEqualShape(p_wt, n_wt)) {
+    LOG(ERROR) << "NetPlsaPhi does not support changes in p_wt and n_wt matrix. Cancel it's launch.";
+    return false;
+  }
+
   // read the parameters from config and control their correctness
   const int topic_size = p_wt.topic_size();
 
