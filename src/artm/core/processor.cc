@@ -188,7 +188,7 @@ static void CreatePtdwCacheEntry(ThetaMatrix* new_cache_entry_ptr,
 
 class NwtWriteAdapter {
  public:
-  virtual void Store(int batch_token_id, int pwt_token_id, const std::vector<float>& nwt_vector) = 0;
+  virtual void Store(int nwt_token_id, const std::vector<float>& nwt_vector) = 0;
   virtual ~NwtWriteAdapter() { }
 };
 
@@ -196,9 +196,10 @@ class PhiMatrixWriter : public NwtWriteAdapter {
  public:
   explicit PhiMatrixWriter(PhiMatrix* n_wt) : n_wt_(n_wt) { }
 
-  virtual void Store(int batch_token_id, int pwt_token_id, const std::vector<float>& nwt_vector) {
+  virtual void Store(int nwt_token_id, const std::vector<float>& nwt_vector) {
     assert(nwt_vector.size() == n_wt_->topic_size());
-    n_wt_->increase(pwt_token_id, nwt_vector);
+    assert((nwt_token_id >= 0) && (nwt_token_id < n_wt_->token_size()));
+    n_wt_->increase(nwt_token_id, nwt_vector);
   }
 
  private:
@@ -516,7 +517,7 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
     for (float& value : values) {
       value *= batch_weight;
     }
-    nwt_writer->Store(w, token_id[w], values);
+    nwt_writer->Store(token_id[w], values);
   }
 }
 
@@ -614,6 +615,11 @@ InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, 
         if (nwt_writer != nullptr) {
           std::vector<float> values(num_topics, 0.0f);
           for (int i = begin_index; i < end_index; ++i) {
+            int w = sparse_ndw.col_ind()[i];
+            if (token_id[w] == -1) {
+              continue;
+            }
+
             const float n_dw = batch_weight * sparse_ndw.val()[i];
             const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
 
@@ -621,8 +627,7 @@ InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, 
               values[k] = ptdw_ptr[k] * n_dw;
             }
 
-            int w = sparse_ndw.col_ind()[i];
-            nwt_writer->Store(w, token_id[w], values);
+            nwt_writer->Store(token_id[w], values);
           }
         }
       }
