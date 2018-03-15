@@ -6,8 +6,10 @@ from __future__ import print_function
 
 import argparse
 import os
+import re
+from collections import Counter
 
-from sklearn.feature_extraction.text import CountVectorizer
+from six import iteritems
 
 
 def main(args):
@@ -19,22 +21,17 @@ def main(args):
   with open(args.fname, 'r')as file:
     rawdata = file.read().replace('\n', '')
 
-  # instantiate the parser and feed it some HTML
-  vectorizer = CountVectorizer()
-
-  x = vectorizer.fit_transform([rawdata])
-
-  vocabulary = vectorizer.get_feature_names()
-  count_vector = x.toarray()
+  bagofwords = Counter(re.findall(r'\w+', rawdata.lower()))
+  vocabulary = sorted(bagofwords.keys())
 
   # Initialize Bag-of-words data
   bow = [
     str(1),  # D - Number of documents
-    str(len(vocabulary)),  # W - Number of words in vocabulary
-    str(count_vector.sum()),  # NNZ - Number of words in documents
+    str(len(bagofwords)),  # W - Number of words in vocabulary
+    str(sum(bagofwords.values())),  # NNZ - Number of words in documents
     ]
 
-  for word, count in zip(vocabulary, count_vector.squeeze()):
+  for word, count in iteritems(bagofwords):
     bow.append('{} {} {}'.format(1, 1 + vocabulary.index(word), count))
 
   # Save docfile and vocabulary
