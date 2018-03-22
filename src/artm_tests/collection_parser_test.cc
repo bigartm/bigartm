@@ -22,8 +22,8 @@ TEST(CollectionParser, UciBagOfWords) {
   config.set_format(::artm::CollectionParserConfig_CollectionFormat_BagOfWordsUci);
   config.set_target_folder(target_folder);
   config.set_num_items_per_batch(1);
-  config.set_vocab_file_path("../../../test_data/vocab.parser_test.txt");
-  config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
+  config.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() / "vocab.parser_test.txt").string());
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "docword.parser_test.txt").string());
 
   ::artm::ParseCollection(config);
 
@@ -87,7 +87,8 @@ TEST(CollectionParser, UciBagOfWords) {
   };
 
   dictionary_checker(config.vocab_file_path(), "default_dictionary");
-  dictionary_checker("../../../test_data/vocab.parser_test_no_newline.txt", "no_newline_dictionary");
+  dictionary_checker((::artm::test::Helpers::getTestDataDir() / "vocab.parser_test_no_newline.txt").string(),
+                     "no_newline_dictionary");
 
   try { fs::remove_all(target_folder); }
   catch (...) { }
@@ -97,16 +98,16 @@ TEST(CollectionParser, ErrorHandling) {
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_CollectionFormat_BagOfWordsUci);
 
-  config.set_vocab_file_path("../../../test_data/vocab.parser_test_non_unique.txt");
-  config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
+  config.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() / "vocab.parser_test_non_unique.txt").string());
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "docword.parser_test.txt").string());
   ASSERT_THROW(::artm::ParseCollection(config), artm::InvalidOperationException);
 
-  config.set_vocab_file_path("../../../test_data/vocab.parser_test_empty_line.txt");
-  config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
+  config.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() / "vocab.parser_test_empty_line.txt").string());
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "docword.parser_test.txt").string());
   ASSERT_THROW(::artm::ParseCollection(config), artm::InvalidOperationException);
 
   config.set_vocab_file_path("no_such_file.txt");
-  config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "docword.parser_test.txt").string());
   ASSERT_THROW(::artm::ParseCollection(config), artm::DiskReadException);
 }
 
@@ -117,8 +118,8 @@ TEST(CollectionParser, MatrixMarket) {
   config.set_format(::artm::CollectionParserConfig_CollectionFormat_MatrixMarket);
   config.set_target_folder(target_folder);
   config.set_num_items_per_batch(10000);
-  config.set_vocab_file_path("../../../test_data/deerwestere.txt");
-  config.set_docword_file_path("../../../test_data/deerwestere.mm");
+  config.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() / "deerwestere.txt").string());
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "deerwestere.mm").string());
 
   ::artm::ParseCollection(config);
 
@@ -148,8 +149,8 @@ TEST(CollectionParser, Multiclass) {
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_CollectionFormat_BagOfWordsUci);
   config.set_target_folder(target_folder);
-  config.set_vocab_file_path("../../../test_data/vocab.parser_test_multiclass.txt");
-  config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
+  config.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() / "vocab.parser_test_multiclass.txt").string());
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "docword.parser_test.txt").string());
 
   ::artm::ParseCollection(config);
 
@@ -176,7 +177,7 @@ TEST(CollectionParser, Multiclass) {
   artm::GatherDictionaryArgs gather_args;
   gather_args.set_data_path(target_folder);
   gather_args.set_dictionary_target_name(dictionary_name);
-  gather_args.set_vocab_file_path("../../../test_data/vocab.parser_test_multiclass.txt");
+  gather_args.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() / "vocab.parser_test_multiclass.txt").string());
 
   ::artm::MasterModelConfig master_config;
   artm::MasterModel master(master_config);
@@ -223,7 +224,7 @@ TEST(CollectionParser, VowpalWabbit) {
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_CollectionFormat_VowpalWabbit);
   config.set_target_folder(target_folder);
-  config.set_docword_file_path("../../../test_data/vw_data.txt");
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "vw_data.txt").string());
   config.set_num_items_per_batch(1);
 
   ::artm::ParseCollection(config);
@@ -264,7 +265,7 @@ TEST(CollectionParser, TransactionVowpalWabbit) {
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_CollectionFormat_VowpalWabbit);
   config.set_target_folder(target_folder);
-  config.set_docword_file_path("../../../test_data/vw_transaction_data.txt");
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "vw_transaction_data.txt").string());
   config.set_num_items_per_batch(2);
 
   ::artm::ParseCollection(config);
