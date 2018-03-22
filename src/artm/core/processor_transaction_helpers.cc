@@ -259,7 +259,7 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
       for (int topic_index = 0; topic_index < num_topics; ++topic_index) {
         values[topic_index] = p_xt_local[topic_index] * helper_vector[topic_index] * batch_weight;
       }
-      nwt_writer->Store(-1, global_index, values);
+      nwt_writer->Store(global_index, values);
     }
   }
 }

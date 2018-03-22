@@ -7,6 +7,7 @@
 
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/phi_matrix.h"
+#include "artm/core/phi_matrix_operations.h"
 #include "artm/regularizer/smooth_time_in_topics_phi.h"
 
 namespace artm {
@@ -15,6 +16,10 @@ namespace regularizer {
 bool SmoothTimeInTopicsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                           const ::artm::core::PhiMatrix& n_wt,
                                           ::artm::core::PhiMatrix* result) {
+  if (!::artm::core::PhiMatrixOperations::HasEqualShape(p_wt, n_wt)) {
+    LOG(ERROR) << "SmoothTimeInTopicsPhi does not support changes in p_wt and n_wt matrix. Cancel it's launch.";
+    return false;
+  }
   // read the parameters from config and control their correctness
   const int topic_size = p_wt.topic_size();
   const int token_size = p_wt.token_size();

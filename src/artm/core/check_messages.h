@@ -194,8 +194,8 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
   }
 
   const bool has_tokens = (message.token_size() > 0);
-  if (!has_tokens && (message.class_id_size() > 0)) {
-    ss << "Empty Batch.token require that Batch.class_id must also be empty, batch.id = " << message.id();
+  if (!has_tokens) {
+    ss << "Empty Batch.token is no longer supported, batch.id = " << message.id();
     return ss.str();
   }
 
