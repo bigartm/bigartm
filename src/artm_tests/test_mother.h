@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "boost/filesystem/path.hpp"
 #include "boost/lexical_cast.hpp"
 #include "boost/uuid/uuid.hpp"
 #include "boost/uuid/uuid_generators.hpp"
@@ -33,6 +34,7 @@ class Helpers {
   static void ConfigurePerplexityScore(std::string score_name,
                                        artm::MasterModelConfig* master_config,
                                        std::vector<std::string> class_ids = { });
+  static boost::filesystem::path getTestDataDir();
 };
 
 class TestMother {
