@@ -18,7 +18,6 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                     const ::artm::core::PhiMatrix& n_wt,
                                     ::artm::core::PhiMatrix* result) {
   // read the parameters from config and control their correctness
-  const int token_size = p_wt.token_size();
   const bool use_topic_pairs = (topic_pairs_.size() > 0);
 
   std::unordered_map<std::string, int> topics_to_regularize;
@@ -54,51 +53,58 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
 
   // proceed the regularization
-  for (int token_id = 0; token_id < token_size; ++token_id) {
-    const auto& token = p_wt.token(token_id);
-    if ((use_all_classes || core::is_member(token.class_id, config_.class_id())) &&
-        (use_all_tts || token.transaction_type.ContainsIn(config_.class_id()))) {
-      // count sum of weights
-      float weights_sum = 0.0f;
+  for (int token_pwt_id = 0; token_pwt_id < p_wt.token_size(); ++token_pwt_id) {
+    const auto& token = p_wt.token(token_pwt_id);
+    if ((!use_all_classes && !core::is_member(token.class_id, config_.class_id())) ||
+        (!use_all_tts && !token.transaction_type.ContainsIn(config_.transaction_type()))) {
+      continue;
+    }
 
-      // simple case (without topic_pairs)
-      if (!use_topic_pairs) {
-        // create general normalizer
-        for (const auto& pair : topics_to_regularize) {
-          weights_sum += p_wt.get(token_id, pair.second);
+    int token_nwt_id = n_wt.token_index(token);
+    if (token_nwt_id == -1) {
+      continue;
+    }
+
+    // count sum of weights
+    float weights_sum = 0.0f;
+
+    // simple case (without topic_pairs)
+    if (!use_topic_pairs) {
+      // create general normalizer
+      for (const auto& pair : topics_to_regularize) {
+        weights_sum += p_wt.get(token_pwt_id, pair.second);
+      }
+
+      // process every topic from topic_names
+      for (const auto& pair : topics_to_regularize) {
+        float weight = p_wt.get(token_pwt_id, pair.second);
+        float value = static_cast<float>(-weight * (weights_sum - weight));
+        result->set(token_nwt_id, pair.second, value);
+      }
+    } else {  // complex case
+      for (const auto& pair : topic_pairs_) {
+        weights_sum = 0.0f;
+
+        // check given topic exists in model
+        auto first_iter = all_topics.find(pair.first);
+        if (first_iter == all_topics.end()) {
+          continue;
         }
 
-        // process every topic from topic_names
-        for (const auto& pair : topics_to_regularize) {
-          float weight = p_wt.get(token_id, pair.second);
-          float value = static_cast<float>(-weight * (weights_sum - weight));
-          result->set(token_id, pair.second, value);
-        }
-      } else {  // complex case
-        for (const auto& pair : topic_pairs_) {
-          weights_sum = 0.0f;
-
-          // check given topic exists in model
-          auto first_iter = all_topics.find(pair.first);
-          if (first_iter == all_topics.end()) {
+        // create custom normilizer for this topic
+        for (const auto& topic_and_value : pair.second) {
+          auto second_iter = all_topics.find(topic_and_value.first);
+          if (second_iter == all_topics.end()) {
             continue;
           }
 
-          // create custom normilizer for this topic
-          for (const auto& topic_and_value : pair.second) {
-            auto second_iter = all_topics.find(topic_and_value.first);
-            if (second_iter == all_topics.end()) {
-              continue;
-            }
-
-            weights_sum += p_wt.get(token_id, second_iter->second) * topic_and_value.second;
-          }
-
-          // process this topic value
-          float weight = p_wt.get(token_id, first_iter->second);
-          float value = static_cast<float>(-weight * (weights_sum - weight));
-          result->set(token_id, first_iter->second, value);
+          weights_sum += p_wt.get(token_pwt_id, second_iter->second) * topic_and_value.second;
         }
+
+        // process this topic value
+        float weight = p_wt.get(token_pwt_id, first_iter->second);
+        float value = static_cast<float>(-weight * (weights_sum - weight));
+        result->set(token_nwt_id, first_iter->second, value);
       }
     }
   }

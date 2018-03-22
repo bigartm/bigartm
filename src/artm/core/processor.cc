@@ -24,7 +24,7 @@
 
 #include "artm/core/processor_helpers.h"
 #include "artm/core/processor_transaction_helpers.h"
-
+  
 
 namespace fs = boost::filesystem;
 
@@ -143,12 +143,6 @@ void Processor::ThreadFunction() {
             LOG(ERROR) << "Model " << part->nwt_target_name() << " does not exist.";
             continue;
           }
-
-          if (!PhiMatrixOperations::HasEqualShape(*nwt_target, p_wt)) {
-            LOG(ERROR) << "Models " << part->nwt_target_name() << " and "
-                       << model_name << " have inconsistent shapes.";
-            continue;
-          }
         }
 
         std::stringstream model_description;
@@ -184,7 +178,7 @@ void Processor::ThreadFunction() {
 
         std::shared_ptr<NwtWriteAdapter> nwt_writer;
         if (nwt_target != nullptr) {
-          nwt_writer = std::make_shared<PhiMatrixWriter>(const_cast<PhiMatrix*>(nwt_target.get()));
+          nwt_writer = std::make_shared<NwtWriteAdapter>(const_cast<PhiMatrix*>(nwt_target.get()));
         }
 
         std::shared_ptr<ThetaMatrix> new_cache_entry_ptr(nullptr);

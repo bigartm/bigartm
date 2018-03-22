@@ -20,7 +20,7 @@ from .spec import ARTM_API
 
 class LibArtm(object):
     def __init__(self, lib_name=None, logging_config=None):
-        self.cdll = self._load_cdll(lib_name)
+        self.cdll, self.lib_name = self._load_cdll(lib_name)
 
         # adding specified functions
         for spec in ARTM_API:
@@ -75,7 +75,7 @@ class LibArtm(object):
             ).format(**locals())
             raise OSError(exception_message)
 
-        return cdll
+        return (cdll, ln)
 
     def version(self):
         self.cdll.ArtmGetVersion.restype = ctypes.c_char_p

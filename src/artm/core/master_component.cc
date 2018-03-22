@@ -800,9 +800,16 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
           "ProcessBatchesArgs.pwt_source_name == ProcessBatchesArgs.nwt_target_name"));
     }
 
-    auto nwt_target(std::make_shared<DensePhiMatrix>(args.nwt_target_name(), p_wt.topic_name()));
-    nwt_target->Reshape(p_wt);
-    instance_->SetPhiMatrix(args.nwt_target_name(), nwt_target);
+    // If nwt_target_name already exists, assign all its elements to zero.
+    // Otherwise, create new n_wt matrix of the same shape as p_wt matrix.
+    auto current_nwt_target = instance_->GetPhiMatrix(args.nwt_target_name());
+    if (current_nwt_target != nullptr) {
+      PhiMatrixOperations::AssignValue(0.0f, const_cast< ::artm::core::PhiMatrix*>(current_nwt_target.get()));
+    } else {
+      auto nwt_target(std::make_shared<DensePhiMatrix>(args.nwt_target_name(), p_wt.topic_name()));
+      nwt_target->Reshape(p_wt);
+      instance_->SetPhiMatrix(args.nwt_target_name(), nwt_target);
+    }
   }
 
   if (async && args.theta_matrix_type() != ThetaMatrixType_None) {
@@ -1510,6 +1517,15 @@ void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
     BOOST_THROW_EXCEPTION(InvalidOperation(
       "Can not use FitOnline for hARTM, use FitOffline instead. "
       "This error happens because MasterModelConfig.parent_master_model_id is specified."));
+  }
+
+  auto pwt_matrix = instance_->GetPhiMatrix(config->pwt_name());
+  auto nwt_matrix = instance_->GetPhiMatrix(config->nwt_name());
+  if (pwt_matrix != nullptr && nwt_matrix != nullptr) {
+    if (!PhiMatrixOperations::HasEqualShape(*pwt_matrix, *nwt_matrix)) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "FitOnline does not support reshape of n_wt matrix. Use FitOffline instead."));
+    }
   }
 
   ArtmExecutor artm_executor(*config, this);

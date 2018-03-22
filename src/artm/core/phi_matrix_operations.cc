@@ -261,7 +261,9 @@ void PhiMatrixOperations::InvokePhiRegularizers(
       float tau = reg_iterator->tau();
       bool relative_reg = reg_iterator->has_gamma();
 
-      if (p_wt.token_size() != n_wt.token_size() || p_wt.topic_size() != n_wt.topic_size() ||
+      // p_wt.token_size() != n_wt.token_size() --- this is possible
+      // if user chooses to change the number of topics in the model between calls to fit_offline.
+      if (p_wt.topic_size() != n_wt.topic_size() ||
           local_r_wt.token_size() != n_wt.token_size() || local_r_wt.topic_size() != n_wt.topic_size()) {
         LOG(ERROR) << "Inconsistent matrix size: Pwt( "
           << p_wt.token_size() << ", " << p_wt.topic_size() << ") vs Nwt("

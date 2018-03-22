@@ -8,6 +8,7 @@
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/phi_matrix.h"
 #include "artm/regularizer/biterms_phi.h"
+#include "artm/core/phi_matrix_operations.h"
 
 namespace artm {
 namespace regularizer {
@@ -17,6 +18,11 @@ BitermsPhi::BitermsPhi(const BitermsPhiConfig& config) : config_(config) { }
 bool BitermsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                const ::artm::core::PhiMatrix& n_wt,
                                ::artm::core::PhiMatrix* result) {
+  if (!::artm::core::PhiMatrixOperations::HasEqualShape(p_wt, n_wt)) {
+    LOG(ERROR) << "BitermsPhi does not support changes in p_wt and n_wt matrix. Cancel it's launch.";
+    return false;
+  }
+
   // prepare parameters
   const int topic_size = n_wt.topic_size();
   const int token_size = n_wt.token_size();
