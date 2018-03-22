@@ -177,7 +177,8 @@ TEST(CollectionParser, Multiclass) {
   artm::GatherDictionaryArgs gather_args;
   gather_args.set_data_path(target_folder);
   gather_args.set_dictionary_target_name(dictionary_name);
-  gather_args.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() / "vocab.parser_test_multiclass.txt").string());
+  gather_args.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() /
+                                   "vocab.parser_test_multiclass.txt").string());
 
   ::artm::MasterModelConfig master_config;
   artm::MasterModel master(master_config);
