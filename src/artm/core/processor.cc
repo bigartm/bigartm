@@ -24,7 +24,6 @@
 
 #include "artm/core/processor_helpers.h"
 #include "artm/core/processor_transaction_helpers.h"
-  
 
 namespace fs = boost::filesystem;
 

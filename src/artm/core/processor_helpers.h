@@ -100,7 +100,7 @@ class NormalizeThetaAgent : public RegularizeThetaAgent {
 };
 
 class NwtWriteAdapter {
-public:
+ public:
   explicit NwtWriteAdapter(PhiMatrix* n_wt) : n_wt_(n_wt) { }
 
   void Store(int nwt_token_id, const std::vector<float>& nwt_vector) {
@@ -113,7 +113,7 @@ public:
     return n_wt_;
   }
 
-private:
+ private:
   PhiMatrix* n_wt_;
 };
 
