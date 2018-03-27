@@ -277,11 +277,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
         continue;
       }
 
-      // count n and r_i for relative regularization, if necessary
-      // prepare next structure with parameters:
-      // pair of pairs, first pair --- n and n_t, second one --- r_i and r_it
-      std::unordered_map<core::ClassId, std::pair<std::pair<double, std::vector<float> >,
-        std::pair<double, std::vector<float> > > > parameters;
+      std::unordered_map<ClassId, std::vector<float>> relative_coefficients;
       std::vector<bool> topics_to_regularize;
 
       if (relative_reg) {
@@ -311,17 +307,17 @@ void PhiMatrixOperations::InvokePhiRegularizers(
           topics_to_regularize.assign(topic_size, true);
         }
 
+        std::vector<float> r_it = std::vector<float>(topic_size, 0.0f);
+        std::vector<float> coefficients = std::vector<float>(topic_size, 0.0f);
         for (const auto& class_id : class_ids) {
           auto iter = n_t_all.find(NormalizerKey(class_id, TransactionType(class_id)));
           if (iter != n_t_all.end()) {
             double n = 0.0;
             double r_i = 0.0;
-            std::vector<float> r_it;
             std::vector<float> n_t = iter->second;
 
             for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
               if (!topics_to_regularize[topic_id]) {
-                r_it.push_back(-1.0f);
                 continue;
               }
               n += n_t[topic_id];
@@ -335,19 +331,21 @@ void PhiMatrixOperations::InvokePhiRegularizers(
                 r_it_current += fabs(local_r_wt.get(token_id, topic_id));
               }
 
-              r_it.push_back(r_it_current);
+              r_it[topic_id] = r_it_current;
               r_i += r_it_current;
             }
 
-            auto pair_n = std::pair<double, std::vector<float> >(n, n_t);
-            auto pair_r = std::pair<double, std::vector<float> >(r_i, r_it);
-            auto pair_data = std::pair<std::pair<double, std::vector<float> >,
-              std::pair<double, std::vector<float> > >(pair_n, pair_r);
+            for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+                if (!topics_to_regularize[topic_id]) {
+                  continue;
+                }
 
-            auto pair_last = std::pair<core::ClassId,
-              std::pair<std::pair<double, std::vector<float> >,
-              std::pair<double, std::vector<float> > > >(iter->first.class_id(), pair_data);
-            parameters.insert(pair_last);
+                float gamma = reg_iterator->gamma();
+                coefficients[topic_id] = gamma * (n_t[topic_id] / r_it[topic_id]) +
+                                         (1 - gamma) * static_cast<float>(n / r_i);
+            }
+
+            relative_coefficients.insert(std::make_pair(iter->first.class_id(), coefficients));
           } else {
             LOG(WARNING) << "No class_id " << class_id << " in model";
           }
@@ -356,29 +354,20 @@ void PhiMatrixOperations::InvokePhiRegularizers(
 
       for (int token_id = 0; token_id < token_size; ++token_id) {
         const auto& class_id = n_wt.token(token_id).class_id;
-        auto iter = parameters.find(class_id);
-        if (relative_reg) {
-          if (iter == parameters.end()) {
-            LOG(WARNING) << "No relative coefficients parameters for class_id " << class_id;
+        auto iter = relative_coefficients.find(class_id);
+
+        if (relative_reg && iter == relative_coefficients.end()) {
+          LOG(WARNING) << "No relative coefficients were provided for class_id " << class_id;
+          continue;
+        }
+
+        for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+          if (relative_reg && !topics_to_regularize[topic_id]) {
             continue;
           }
-        }
-        // ToDo (MelLain): move this loop outside the outer one
-        for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-          float coefficient = 1.0f;
-          if (relative_reg) {
-            if (!topics_to_regularize[topic_id]) {
-              continue;
-            }
 
-            float gamma = reg_iterator->gamma();
-            float n_t = iter->second.first.second[topic_id];
-            double n = iter->second.first.first;
-            float r_it = iter->second.second.second[topic_id];
-            double r_i = iter->second.second.first;
-            coefficient = gamma * (n_t / r_it) + (1 - gamma) * static_cast<float>(n / r_i);
-          }
           // update global r_wt using coefficient and tau
+          float coefficient = relative_reg ? iter->second[topic_id] : 1.0f;
           float increment = coefficient * tau * local_r_wt.get(token_id, topic_id);
           r_wt->increase(token_id, topic_id, increment);
         }

@@ -302,3 +302,74 @@ TEST(Regularizers, NetPlsa) {
     ASSERT_NEAR(real_values[i], expected_values[i], 1.0e-3);
   }
 }
+
+// artm_tests.exe --gtest_filter=Regularizers.RelativeRegularization
+TEST(Regularizers, RelativeRegularization) {
+  int nTopics = 500;
+  int nTokens = 500;
+  int nDocs = 100;
+
+  // generate batch
+  std::shared_ptr<::artm::Batch> batch(new ::artm::Batch());
+  batch->set_id(artm::test::Helpers::getUniqueString());
+
+  for (int i = 0; i < nTokens; i++) {
+    std::stringstream str;
+    str << "token" << i;
+    batch->add_token(str.str());
+  }
+
+  for (int i = 0; i < nDocs; ++i) {
+    artm::Item* item = batch->add_item();
+    std::stringstream str;
+    str << "item_" << i;
+    item->set_title(str.str());
+    for (int iToken = 0; iToken < nTokens; ++iToken) {
+      item->add_transaction_token_id(iToken);
+      item->add_transaction_start_index(item->transaction_start_index_size());
+      item->add_token_weight(1.0);
+    }
+  }
+
+  // part 1
+  // create master
+  ::artm::MasterModelConfig master_config = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
+  master_config.set_cache_theta(true);
+
+  // create regularizer
+  ::artm::RegularizerConfig* regularizer_config = master_config.add_regularizer_config();
+
+  regularizer_config->set_name("SparsePhi");
+  regularizer_config->set_type(::artm::RegularizerType_SmoothSparsePhi);
+  regularizer_config->set_tau(-0.5);
+  regularizer_config->set_gamma(0.5);
+
+  regularizer_config->set_config(::artm::DecorrelatorPhiConfig().SerializeAsString());
+
+  // create sparsity score
+  ::artm::ScoreConfig* score_config = master_config.add_score_config();
+
+  score_config->set_name("SparsityPhi");
+  score_config->set_type(::artm::ScoreType_SparsityPhi);
+  score_config->set_config(::artm::SparsityPhiScore().SerializeAsString());
+
+  artm::MasterModel master(master_config);
+  ::artm::test::Api api(master);
+
+  std::vector<double> true_score = { 0.249724, 0.390548, 0.48292, 0.549428, 0.60086,
+                                     0.641332, 0.673568, 0.70006, 0.722924, 0.741688,
+                                     0.758396, 0.773184, 0.78594, 0.797584, 0.808048,
+                                     0.816872, 0.82518, 0.832504, 0.839472, 0.845976 };
+
+  auto offline_args = api.Initialize({ batch });
+  for (int i = 0; i < 20; ++i) {
+    master.FitOfflineModel(offline_args);
+
+    ::artm::GetScoreArrayArgs args;
+    args.set_score_name("SparsityPhi");
+
+    auto sparsity_scores = master.GetScoreArrayAs< ::artm::SparsityPhiScore>(args);
+    ASSERT_EQ(sparsity_scores.size(), (i + 1));
+    ASSERT_APPROX_EQ(sparsity_scores.back().value(), true_score[i]);
+  }
+}
