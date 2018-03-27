@@ -8,28 +8,29 @@ else (MSVC)
   add_definitions("-w")
 endif (MSVC)
 
+# Disable tests and install rules for glog
+# Enabled install rules will cause configuration failure
 set(BUILD_TESTING "OFF" CACHE "" INTERNAL)
+set(CMAKE_SKIP_INSTALL_RULES TRUE)
 
 add_subdirectory(gflags EXCLUDE_FROM_ALL)
 
-# Do not call find_package for gflags and fill all relevant info manually
-# We cannot make glog link to gflags __target__, because cmake would try to
-# pull it into glog's export set and will get confused and fail
-# Instead we manually specify location and include path for gflags, this way
-# cmake does not create inter-target dependency and export set does not fail
+# Do not call find_package for gflags and pretend it exists
 set(WITH_GFLAGS "OFF" CACHE "" INTERNAL)
 set(HAVE_LIB_GFLAGS "ON")
 set(gflags_NAMESPACE "gflags")
 set(gflags_FOUND "ON")
-get_target_property(gflags_INCLUDE_DIR gflags INTERFACE_INCLUDE_DIRECTORIES)
-get_target_property(gflags_LIBRARIES gflags INTERFACE_LINK_LIBRARIES)
-set(gflags_LIBRARIES $<TARGET_FILE:gflags> ${gflags_LIBRARIES})
+
+# Make glog link to gflags target directly, cmake will handle the rest
+set(gflags_LIBRARIES gflags)
 
 add_subdirectory(glog EXCLUDE_FROM_ALL)
 
 # We need to ask CMake to compile gflags before compiling glog, so that
 # ${gflags_LIBRARIES} actually exists
 add_dependencies(glog gflags)
+
+set(CMAKE_SKIP_INSTALL_RULES FALSE)
 
 set(CMAKE_INSTALL_INCLUDEDIR include/artm)
 add_subdirectory(protobuf-3.0.0/cmake EXCLUDE_FROM_ALL)
