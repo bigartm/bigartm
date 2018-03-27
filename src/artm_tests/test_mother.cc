@@ -2,6 +2,7 @@
 
 #include "artm_tests/test_mother.h"
 
+#include <cstdlib>
 #include <vector>
 
 #include "gtest/gtest.h"
@@ -11,6 +12,8 @@
 
 namespace artm {
 namespace test {
+
+namespace fs = boost::filesystem;
 
 artm::Batch Helpers::GenerateBatch(int nTokens, int nDocs, std::string class1, std::string class2) {
   artm::Batch batch;
@@ -210,6 +213,14 @@ void Helpers::CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm:
     }
   }
   *ok = true;
+}
+
+fs::path Helpers::getTestDataDir() {
+  auto dir = std::getenv("BIGARTM_UNITTEST_DATA");
+  // Construct path object only once.
+  // Since C++11 local static variable initialization is thread-safe.
+  static const fs::path testDataDir = dir != nullptr ? fs::path(dir) : fs::path("../../../test_data");
+  return testDataDir;
 }
 
 void TestMother::GenerateBatches(int batches_size, int nTokens, const std::string& target_folder) {

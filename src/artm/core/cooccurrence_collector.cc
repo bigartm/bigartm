@@ -321,7 +321,6 @@ CooccurrenceBatch* CooccurrenceCollector::CreateNewCooccurrenceBatch() const {
 
 void CooccurrenceCollector::OpenBatchOutputFile(std::shared_ptr<CooccurrenceBatch> batch) {
   if (!batch->out_batch_.is_open()) {
-    std::cout << config_.max_num_of_open_files() << '\n';
     assert(open_files_counter_ < config_.max_num_of_open_files());
     ++open_files_counter_;
     batch->out_batch_.open(batch->filename_, std::ios::out);

@@ -838,7 +838,8 @@ TEST(CppInterface, TransactionDictionaries) {
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_CollectionFormat_VowpalWabbit);
   config.set_target_folder(target_folder);
-  config.set_docword_file_path("../../../test_data/vw_transaction_data_extended.txt");
+  config.set_docword_file_path((::artm::test::Helpers ::getTestDataDir() /
+                                "vw_transaction_data_extended.txt").string());
   config.set_num_items_per_batch(2);
 
   ::artm::ParseCollection(config);
