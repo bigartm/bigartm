@@ -321,7 +321,8 @@ CooccurrenceBatch* CooccurrenceCollector::CreateNewCooccurrenceBatch() const {
 
 void CooccurrenceCollector::OpenBatchOutputFile(std::shared_ptr<CooccurrenceBatch> batch) {
   if (!batch->out_batch_.is_open()) {
-    assert(open_files_counter_ < max_num_of_open_files_);
+    std::cout << config_.max_num_of_open_files() << '\n';
+    assert(open_files_counter_ < config_.max_num_of_open_files());
     ++open_files_counter_;
     batch->out_batch_.open(batch->filename_, std::ios::out);
   }
@@ -560,7 +561,7 @@ void CooccurrenceCollector::KWayMerge(ResultingBufferOfCooccurrences* res, const
 }
 
 void CooccurrenceCollector::OpenBatchInputFile(std::shared_ptr<CooccurrenceBatch> batch) {
-  assert(open_files_counter_ < max_num_of_open_files_);
+  assert(open_files_counter_ < config_.max_num_of_open_files());
   if (!batch->in_batch_.is_open()) {
     ++open_files_counter_;
     batch->in_batch_.open(batch->filename_, std::ios::in);
