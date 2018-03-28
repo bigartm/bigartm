@@ -709,8 +709,12 @@ class ARTM(object):
         self._topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name]
 
         transaction_types = {}
-        for transaction_type in topics_and_tokens_info.transaction_type:
-            transaction_types[transaction_type] = 1.0
+        if hasattr(topics_and_tokens_info, 'transaction_type'):
+            for transaction_type in topics_and_tokens_info.transaction_type:
+                transaction_types[transaction_type] = 1.0
+        else:
+            for class_id in topics_and_tokens_info.class_id:
+                transaction_types[class_id] = 1.0
         self._transaction_type = transaction_type
 
         # Remove all info about previous iterations
@@ -1297,9 +1301,10 @@ def load_artm_model(data_path):
         raise RuntimeError('File was generated with newer version of library ({}). '.format(params['version']) +
                            'Current library version is {}'.format(version()))
 
+    tt = params['transaction_types'] if 'transaction_types' in params else params['class_ids']
     model = ARTM(topic_names=params['topic_names'],
                  num_processors=params['num_processors'],
-                 transaction_types=params['transaction_types'],
+                 transaction_types=tt,
                  num_document_passes=params['num_document_passes'],
                  reuse_theta=params['reuse_theta'],
                  cache_theta=params['cache_theta'],
