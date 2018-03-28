@@ -347,8 +347,17 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
                  topic_names=None, dictionary=None, kl_function_info=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
-        :param float tau: the coefficient of regularization for this regularizer
-        :param float gamma: the coefficient of relative regularization for this regularizer
+        :param float tau: the coefficient of regularization for this regularizer.\
+                          When gamma is not specified, the value of tau is interpreted as an absolute\
+                          regularization coefficient; otherwise (when gamma is specified), tau\
+                          is interpreted as relative regularization coefficient.
+        :param float gamma: coefficient of topics individualization, float, from 0 to 1.\
+                            When gamma is specified, parameter tau is interpreted as\
+                            relative regularization coefficient. Absolute regularization coefficient\
+                            is calculated by multiplying relative coefficient by\
+                            a topic-dependent scaling factor. The value of gamma indicate coefficient of topics\
+                            individualization. 0 = all topics share an equal scaling factor.\
+                            1 = all topics have an individual scaling factor, irrespective of other topics.
         :param class_ids: list of class_ids or single class_id to regularize, will\
                           regularize all classes if empty or None
         :type class_ids: list of str or str or None
@@ -536,8 +545,10 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
                  topic_names=None, topic_pairs=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
-        :param float tau: the coefficient of regularization for this regularizer
-        :param float gamma: the coefficient of relative regularization for this regularizer
+        :param float tau: the coefficient of regularization for this regularizer\
+                          See SmoothSparsePhiRegularizer documentation for further details.
+        :param float gamma: coefficient of topics individualization.\
+                            See SmoothSparsePhiRegularizer documentation for further details.
         :param class_ids: list of class_ids or single class_id to regularize, will\
                           regularize all classes if empty or None
         :type class_ids: list of str or str or None
@@ -599,8 +610,10 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
                  topic_names=None, dictionary=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
-        :param float tau: the coefficient of regularization for this regularizer
-        :param float gamma: the coefficient of relative regularization for this regularizer
+        :param float tau: the coefficient of regularization for this regularizer\
+                          See SmoothSparsePhiRegularizer documentation for further details.
+        :param float gamma: coefficient of topics individualization.\
+                            See SmoothSparsePhiRegularizer documentation for further details.
         :param class_ids: list of class_ids or single class_id to regularize, will\
                           regularize all classes if empty or None
         :type class_ids: list of str or str or None
@@ -635,8 +648,10 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
                  num_max_elements=None, probability_threshold=None, sparse_by_columns=True, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
-        :param float tau: the coefficient of regularization for this regularizer
-        :param float gamma: the coefficient of relative regularization for this regularizer
+        :param float tau: the coefficient of regularization for this regularizer\
+                          See SmoothSparsePhiRegularizer documentation for further details.
+        :param float gamma: coefficient of topics individualization.\
+                            See SmoothSparsePhiRegularizer documentation for further details.
         :param str class_id: class_id to regularize
         :param str transaction_type: transaction type to regularize
         :param topic_names: list of names or single name of topic to regularize,\
@@ -779,8 +794,10 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
                  topic_names=None, dictionary=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
-        :param float tau: the coefficient of regularization for this regularizer
-        :param float gamma: the coefficient of relative regularization for this regularizer
+        :param float tau: the coefficient of regularization for this regularizer\
+                          See SmoothSparsePhiRegularizer documentation for further details.
+        :param float gamma: coefficient of topics individualization.\
+                            See SmoothSparsePhiRegularizer documentation for further details.
         :param class_ids: list of class_ids or single class_id to regularize, will\
                           regularize all classes if empty or None\
                           dictionary should contain pairwise tokens co-occurrence info
@@ -860,8 +877,10 @@ class BitermsPhiRegularizer(BaseRegularizerPhi):
                  topic_names=None, dictionary=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
-        :param float tau: the coefficient of regularization for this regularizer
-        :param float gamma: the coefficient of relative regularization for this regularizer
+        :param float tau: the coefficient of regularization for this regularizer\
+                          See SmoothSparsePhiRegularizer documentation for further details.
+        :param float gamma: coefficient of topics individualization.\
+                            See SmoothSparsePhiRegularizer documentation for further details.
         :param class_ids: list of class_ids or single class_id to regularize, will\
                           regularize all classes if empty or None
         :type class_ids: list of str or str or None
@@ -986,8 +1005,10 @@ class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
                  topic_names=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
-        :param float tau: the coefficient of regularization for this regularizer
-        :param float gamma: the coefficient of relative regularization for this regularizer
+        :param float tau: the coefficient of regularization for this regularizer\
+                          See SmoothSparsePhiRegularizer documentation for further details.
+        :param float gamma: coefficient of topics individualization.\
+                            See SmoothSparsePhiRegularizer documentation for further details.
         :param str class_id: class_id to regularize
         :param str transaction_type: class_id to transaction_type
         :param topic_names: list of names or single name of topic to regularize,\
@@ -1090,8 +1111,10 @@ class NetPlsaPhiRegularizer(BaseRegularizerPhi):
                  vertex_weights=None, edge_weights=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
-        :param float tau: the coefficient of regularization for this regularizer
-        :param float gamma: the coefficient of relative regularization for this regularizer
+        :param float tau: the coefficient of regularization for this regularizer\
+                          See SmoothSparsePhiRegularizer documentation for further details.
+        :param float gamma: coefficient of topics individualization.\
+                            See SmoothSparsePhiRegularizer documentation for further details.
         :param str class_id: name of class_id of special tokens-vertices
         :param str transaction_type: class_id to transaction_type
         :param topic_names: list of names or single name of topic to regularize,\
