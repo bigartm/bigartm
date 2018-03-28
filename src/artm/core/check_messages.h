@@ -564,6 +564,12 @@ inline void FixMessage(::artm::RegularizerConfig* message) {
       BOOST_THROW_EXCEPTION(InternalError("Given RegularizerType is not supported for json serialization"));
     }
   }
+
+  if (message->has_gamma() && (message->gamma() < 0) || (message->gamma() > 1)) {
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      "Regularization parameter 'gamma' must be between 0 and 1. "
+      "Refer to documentation for more details. "));
+  }
 }
 
 template<>
