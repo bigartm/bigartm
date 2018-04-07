@@ -114,7 +114,8 @@ void Perplexity::AppendScore(
         // we should not take tokens without transaction type weight into consideration
         continue;
       }
-      normalizer_map[tt] += item.token_weight(token_index);
+      float tt_weight = iter->second;
+      normalizer_map[tt] += tt_weight * item.token_weight(token_index);
     } else {
       normalizer += item.token_weight(token_index);
     }
