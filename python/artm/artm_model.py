@@ -705,17 +705,9 @@ class ARTM(object):
 
         self.master.import_model(_model_name, filename)
         self._initialized = True
-        topics_and_tokens_info = self.master.get_phi_info(self.model_pwt)
-        self._topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name]
 
-        transaction_types = {}
-        if hasattr(topics_and_tokens_info, 'transaction_type'):
-            for transaction_type in topics_and_tokens_info.transaction_type:
-                transaction_types[transaction_type] = 1.0
-        else:
-            for class_id in topics_and_tokens_info.class_id:
-                transaction_types[class_id] = 1.0
-        self._transaction_type = transaction_type
+        config = self._lib.ArtmRequestMasterModelConfig(self.master.master_id)
+        self._topic_names = list(config.topic_name)
 
         # Remove all info about previous iterations
         self._score_tracker = {}
@@ -1078,9 +1070,8 @@ class ARTM(object):
                                      topic_names=self._topic_names,
                                      seed=self._seed)
 
-        topics_and_tokens_info = self.master.get_phi_info(self.model_pwt)
-
-        self._topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name]
+        config = self._lib.ArtmRequestMasterModelConfig(self.master.master_id)
+        self._topic_names = list(config.topic_name)
         self._initialized = True
 
         # Remove all info about previous iterations
