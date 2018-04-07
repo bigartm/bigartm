@@ -274,7 +274,7 @@ void testReshapeTokens(bool with_ptdw, bool opt_for_avx) {
   }
   auto fit_offline_args = api.Initialize(batches, nullptr, nullptr, &small_dict);
 
-  float expected[] = { 17.0148f, 15.3353f, 14.6942f, 14.3854f };
+  float expected[] = { 14.3481f, 11.7418f, 10.8133f, 10.3792f };
   for (int pass = 0; pass < 4; pass++) {
     master_model.FitOfflineModel(fit_offline_args);
     artm::PerplexityScore perplexity_score = master_model.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
