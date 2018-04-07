@@ -622,6 +622,7 @@ message ProcessBatchesArgs {
   repeated Batch batch = 18;
   optional bool use_random_theta = 19 [default = false];
   repeated string topic_name = 20;
+  optional bool reset_nwt = 21 [default = true];
 }
 
 message ProcessBatchesResult {
@@ -746,6 +747,7 @@ message FitOfflineMasterModelArgs {
   repeated float batch_weight = 2;
   optional int32 num_collection_passes = 3 [default = 1];
   optional string batch_folder = 4;
+  optional bool reset_nwt = 5 [default = true];
 }
 
 message FitOnlineMasterModelArgs {
