@@ -235,4 +235,9 @@ ARTM_API = [
         'ArtmImportScoreTracker',
         [('master_id', int), ('args', messages.ImportScoreTrackerArgs)],
     ),
+    CallSpec(
+        'ArtmRequestMasterModelConfig',
+        [('master_id', int)],
+        request=messages.MasterModelConfig,
+    ),
 ]
