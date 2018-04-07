@@ -804,7 +804,9 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     // Otherwise, create new n_wt matrix of the same shape as p_wt matrix.
     auto current_nwt_target = instance_->GetPhiMatrix(args.nwt_target_name());
     if (current_nwt_target != nullptr) {
-      PhiMatrixOperations::AssignValue(0.0f, const_cast< ::artm::core::PhiMatrix*>(current_nwt_target.get()));
+      if (process_batches_args.reset_nwt()) {
+        PhiMatrixOperations::AssignValue(0.0f, const_cast<::artm::core::PhiMatrix*>(current_nwt_target.get()));
+      }
     } else {
       auto nwt_target(std::make_shared<DensePhiMatrix>(args.nwt_target_name(), p_wt.topic_name()));
       nwt_target->Reshape(p_wt);
@@ -1410,6 +1412,10 @@ class ArtmExecutor {
     iter->reset();
   }
 
+  ProcessBatchesArgs* mutable_process_batches_args() {
+    return &process_batches_args_;
+  }
+
  private:
   const MasterModelConfig& master_model_config_;
   const std::string& pwt_name_;
@@ -1603,6 +1609,7 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
 
   ArtmExecutor artm_executor(*config, this);
   OfflineBatchesIterator iter(args.batch_filename(), args.batch_weight());
+  artm_executor.mutable_process_batches_args()->set_reset_nwt(args.reset_nwt());
   artm_executor.ExecuteOfflineAlgorithm(args.num_collection_passes(), &iter);
 
   ValidateProcessedItems("FitOffline", this);
