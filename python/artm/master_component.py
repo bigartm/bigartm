@@ -809,7 +809,8 @@ class MasterComponent(object):
         return info
 
     def fit_offline(self, batch_filenames=None, batch_weights=None,
-                    num_collection_passes=None, batches_folder=None):
+                    num_collection_passes=None, batches_folder=None,
+                    reset_nwt=True):
         """
         :param batch_filenames: name of batches to process
         :type batch_filenames: list of str
@@ -817,8 +818,10 @@ class MasterComponent(object):
         :type batch_weights: list of float
         :param int num_collection_passes: number of outer iterations
         :param str batches_folder: folder containing batches to process
+        :param bool reset_nwt: a flag indicating whether to reset n_wt matrix to 0.
         """
         args = messages.FitOfflineMasterModelArgs()
+        args.reset_nwt = reset_nwt
         if batch_filenames is not None:
             args.ClearField('batch_filename')
             for filename in batch_filenames:

@@ -909,6 +909,7 @@ inline std::string DescribeMessage(const ::artm::ProcessBatchesArgs& message) {
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
   ss << ", predict_class_id=" << (message.predict_class_id());
+  ss << ", reset_nwt=" << (message.reset_nwt() ? "yes" : "no");
   return ss.str();
 }
 
@@ -984,6 +985,7 @@ inline std::string DescribeMessage(const ::artm::FitOfflineMasterModelArgs& mess
   ss << ", batch_filename_size=" << message.batch_filename_size();
   ss << ", batch_weight_size=" << message.batch_weight_size();
   ss << ", num_collection_passes=" << message.num_collection_passes();
+  ss << ", reset_nwt=" << (message.reset_nwt() ? "yes" : "no");
   return ss.str();
 }
 

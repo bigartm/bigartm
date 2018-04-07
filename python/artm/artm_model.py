@@ -528,12 +528,13 @@ class ARTM(object):
                 return async_result.get()
 
     # ========== METHODS ==========
-    def fit_offline(self, batch_vectorizer=None, num_collection_passes=1):
+    def fit_offline(self, batch_vectorizer=None, num_collection_passes=1, reset_nwt=True):
         """
         :Description: proceeds the learning of topic model in offline mode
 
         :param object_referenece batch_vectorizer: an instance of BatchVectorizer class
         :param int num_collection_passes: number of iterations over whole given collection
+        :param bool reset_nwt: a flag indicating whether to reset n_wt matrix to 0.
         """
         if batch_vectorizer is None:
             raise IOError('No batches were given for processing')
@@ -557,7 +558,7 @@ class ARTM(object):
                 self._wait_for_batches_processed(
                     self._pool.apply_async(func=self.master.fit_offline,
                                            args=(batch_vectorizer.batches_ids,
-                                                 batch_vectorizer.weights, 1, None)),
+                                                 batch_vectorizer.weights, 1, None, reset_nwt)),
                     batch_vectorizer.num_batches)
 
                 for name in self.scores.data.keys():
