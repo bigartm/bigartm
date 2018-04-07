@@ -694,6 +694,7 @@ message ProcessBatchesArgs {
   repeated string transaction_type = 21;
   repeated float transaction_weight = 22;
   optional string predict_transaction_type = 23;
+  optional bool reset_nwt = 24 [default = true];
 }
 
 message ProcessBatchesResult {
@@ -820,6 +821,7 @@ message FitOfflineMasterModelArgs {
   repeated float batch_weight = 2;
   optional int32 num_collection_passes = 3 [default = 1];
   optional string batch_folder = 4;
+  optional bool reset_nwt = 5 [default = true];
 }
 
 message FitOnlineMasterModelArgs {

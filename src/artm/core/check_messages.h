@@ -1075,6 +1075,7 @@ inline std::string DescribeMessage(const ::artm::ProcessBatchesArgs& message) {
     ss << ", transaction_type=(" << message.transaction_type(i)
        << ":" << message.transaction_weight(i) << ")";
   }
+  ss << ", reset_nwt=" << (message.reset_nwt() ? "yes" : "no");
   return ss.str();
 }
 
@@ -1151,6 +1152,7 @@ inline std::string DescribeMessage(const ::artm::FitOfflineMasterModelArgs& mess
   ss << ", batch_filename_size=" << message.batch_filename_size();
   ss << ", batch_weight_size=" << message.batch_weight_size();
   ss << ", num_collection_passes=" << message.num_collection_passes();
+  ss << ", reset_nwt=" << (message.reset_nwt() ? "yes" : "no");
   return ss.str();
 }
 
