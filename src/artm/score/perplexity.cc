@@ -155,11 +155,14 @@ void Perplexity::AppendScore(
       const auto token = artm::core::Token(temp_token.class_id, temp_token.keyword, tt);
 
       int p_wt_token_index = p_wt.token_index(token);
-      if (p_wt_token_index != ::artm::core::PhiMatrix::kUndefIndex) {
-        p_wt.get(p_wt_token_index, &helper_vector);
-        for (int topic_index = 0; topic_index < topic_size; topic_index++) {
-          phi_values[topic_index] *= helper_vector[topic_index];
-        }
+      if (p_wt_token_index == ::artm::core::PhiMatrix::kUndefIndex) {
+        // ignore tokens that doe not belong to the model
+        continue;
+      }
+
+      p_wt.get(p_wt_token_index, &helper_vector);
+      for (int topic_index = 0; topic_index < topic_size; topic_index++) {
+        phi_values[topic_index] *= helper_vector[topic_index];
       }
     }
 
