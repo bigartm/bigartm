@@ -88,7 +88,7 @@ void Perplexity::AppendScore(
         continue;
       }
 
-      normalizer_map[token.class_id] += item.token_weight(token_index);
+      normalizer_map[token.class_id] += class_weight_iter->second * item.token_weight(token_index);
     } else {
       normalizer += item.token_weight(token_index);
     }
