@@ -74,15 +74,21 @@ void Perplexity::AppendScore(
 
   // count perplexity normalizer n_d
   for (int token_index = 0; token_index < item.token_weight_size(); ++token_index) {
+    const auto& token = token_dict[item.token_id(token_index)];
+    int p_wt_token_index = p_wt.token_index(token);
+    if (p_wt_token_index == ::artm::core::PhiMatrix::kUndefIndex) {
+      // ignore tokens that doe not belong to the model
+      continue;
+    }
+
     if (use_class_ids) {
-      ::artm::core::ClassId class_id = token_dict[item.token_id(token_index)].class_id;
-      auto class_weight_iter = class_weight_map.find(class_id);
+      auto class_weight_iter = class_weight_map.find(token.class_id);
       if (class_weight_iter == class_weight_map.end()) {
         // we should not take tokens without class id weight into consideration
         continue;
       }
 
-      normalizer_map[class_id] += item.token_weight(token_index);
+      normalizer_map[token.class_id] += item.token_weight(token_index);
     } else {
       normalizer += item.token_weight(token_index);
     }
@@ -127,14 +133,17 @@ void Perplexity::AppendScore(
       continue;
     }
 
-
     int p_wt_token_index = p_wt.token_index(token);
-    if (p_wt_token_index != ::artm::core::PhiMatrix::kUndefIndex) {
-      p_wt.get(p_wt_token_index, &helper_vector);
-      for (int topic_index = 0; topic_index < topic_size; topic_index++) {
-        sum += theta[topic_index] * helper_vector[topic_index];
-      }
+    if (p_wt_token_index == ::artm::core::PhiMatrix::kUndefIndex) {
+      // ignore tokens that doe not belong to the model
+      continue;
     }
+
+    p_wt.get(p_wt_token_index, &helper_vector);
+    for (int topic_index = 0; topic_index < topic_size; topic_index++) {
+      sum += theta[topic_index] * helper_vector[topic_index];
+    }
+
     if (sum == 0.0f) {
       if (use_document_unigram_model) {
         sum = token_weight / (use_class_ids ? normalizer_map[token.class_id] : normalizer);
