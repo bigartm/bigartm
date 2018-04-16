@@ -277,6 +277,7 @@ generate_export_header(artm
 install(TARGETS artm EXPORT artm
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
     INCLUDES DESTINATION include/artm
     )
 install(FILES
