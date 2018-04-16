@@ -35,3 +35,9 @@ set(CMAKE_SKIP_INSTALL_RULES FALSE)
 set(CMAKE_INSTALL_INCLUDEDIR include/artm)
 add_subdirectory(protobuf-3.0.0/cmake EXCLUDE_FROM_ALL)
 set(PROTOBUF_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/protobuf-3.0.0/cmake CACHE "" INTERNAL)
+
+# This is a hack. We build libprotobuf (a STATIC library) with __dllexport
+# so that when we later link it into SHARED library artm.dll all protobuf
+# symbols would get exported and cause no linking errors when using the
+# library
+target_compile_definitions(libprotobuf PRIVATE PROTOBUF_USE_DLLS LIBPROTOBUF_EXPORTS)
