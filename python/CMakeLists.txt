@@ -21,7 +21,7 @@ if (BUILD_INTERNAL_PYTHON_API)
 
   option(INSTALL_PYTHON_PACKAGE "Install python package as well during make install stage" OFF)
 
-  if (MSVC)
+  if (WIN32)
     FILE(GLOB PYTHON_ARTM artm/*.py)
     install(FILES ${PYTHON_ARTM} DESTINATION python/artm)
     FILE(GLOB PYTHON_ARTM artm/wrapper/*.py)
@@ -35,6 +35,6 @@ if (BUILD_INTERNAL_PYTHON_API)
       install(CODE "execute_process(COMMAND ${PYTHON} setup.py install
                                     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})")
     endif (INSTALL_PYTHON_PACKAGE)
-  endif (MSVC)
+  endif (WIN32)
 endif (BUILD_INTERNAL_PYTHON_API)
 
