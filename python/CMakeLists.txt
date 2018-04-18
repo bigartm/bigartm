@@ -26,6 +26,8 @@ if (BUILD_INTERNAL_PYTHON_API)
     install(FILES ${PYTHON_ARTM} DESTINATION python/artm)
     FILE(GLOB PYTHON_ARTM artm/wrapper/*.py)
     install(FILES ${PYTHON_ARTM} DESTINATION python/artm/wrapper)
+    # This file is generated, therefore needs to be specified without *
+    install(FILES artm/wrapper/messages_pb2.py DESTINATION python/artm/wrapper)
     FILE(GLOB PYTHON_EXAMPLES tests/wrapper/*.py)
     install(FILES ${PYTHON_EXAMPLES} DESTINATION python/tests/wrapper)
     install(FILES setup.py DESTINATION python)
