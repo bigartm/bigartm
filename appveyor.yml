@@ -74,10 +74,6 @@ after_build:
   - cmd: call C:\projects\bigartm\utils\create_windows_package.bat
 
 test_script:
-  - cmd: cd C:\projects\bigartm\build\bin\Release
-  - cmd: artm_tests.exe
-  - cmd: cd C:\projects\bigartm\python\tests
-  - cmd: py.test
   - ps: |
         cd C:\projects\bigartm\build
         & msbuild .\RUN_TESTS.vcxproj
