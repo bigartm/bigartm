@@ -8,6 +8,8 @@ configuration:
 platform:
     - x64
 
+clone_folder: C:\projects\bigartm
+
 environment:
     global:
         BIGARTM_UNITTEST_DATA: C:\projects\bigartm\test_data
