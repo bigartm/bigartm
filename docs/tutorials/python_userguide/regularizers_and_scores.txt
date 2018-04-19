@@ -72,6 +72,34 @@ As we can see, all the scores didn't change. But we forgot about the top-tokens.
       for topic_name in model.topic_names:
       	   print saved_top_tokens[topic_name]
 
+.. note::
+
+   Here are several important facts about scores implementation:
+
+   * Each ARTM model has its three separate caches: one for cumulative scores, another for scores history (aka ``score_tracker``) and a third one for caching theta matrix.
+
+   * The cache for scores only store cumulative scores (e.g. only scores that depend on theta matrix). Examples are: perplexity or ThetaMatrixSparsity.
+
+   * ``score_tracker`` contains the history for all scores (including non-cumulative scores). Note, that it cannot be used when ``fit_online`` method is called with ``async`` parameter set to True.
+
+   * Scores can be retrieved from the cache by ``ARTM.get_score()``. This method can be also used to calculate a non-cumulative score for the current version of the Phi matrix.
+
+   * Score cache is reset at the beginning of ``fit_offline``, ``fit_online`` and ``transform`` methods. As a result, ``get_score`` will always return the score calculated during the last call to ``fit_offline``, ``fit_online`` or ``transform``. For ``fit_online`` the score produced by ``get_score`` will be accumulated across all batches passed to ``fit_online``.
+
+   * Score tracker is updated by ``fit_offline`` (adds one extra point) and ``fit_online`` (adds multiple points - as many as there were synchronizations). ``transform`` never adds points to ``score_tracker``.
+
+   * Score tracker is never reset automatically. To reset the cache manually call ``ARTM.master.clear_score_array_cache``.
+
+   * Theta matrix cache is updated by ``fit_offline``, ``fit_online`` and ``transform`` methods. The cache contains one entry per batch. If batch with the same ``batch.id`` already exist in the cache the entry will be overwritten by a new theta matrix (for that batch).
+
+   * Theta matrix cache is reset at the beginning of ``transform`` method when ``transform`` is called with ``theta_matrix_type=Cache``. This is the only case when theta cache is reset - all other ``transform`` calls, as well as calls to ``fit_offline`` / ``fit_online`` do not reset theta matrix cache.
+
+   * User may reset theta matrix cache by calling ``ARTM.remove_theta()``.
+
+   * User may also reset score cache by calling ``ARTM.master.clear_score_cache``.
+
+The code for computation of held-out perplexity can be found in :doc:`phi_theta_extraction`.
+
 Probably the topics are not very good. For the aim of increasing the quality of the topics you can use the regularizers. The code for dealing with the regularizers is very similar with the one for scores. Let's add three regularizers into our model: sparsing of :math:`\Phi` matrix, sparsing of :math:`\Theta` matrix and topics decorrelation. The last one is need to make topics more different.
 
 .. code-block:: python
