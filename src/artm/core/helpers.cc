@@ -244,5 +244,13 @@ void Helpers::SaveMessage(const std::string& full_filename,
   fout.close();
 }
 
+bool isZero(double value, double tol) {
+  return std::abs(value) < tol;
+}
+
+bool isZero(float value, float tol) {
+  return std::abs(value) < tol;
+}
+
 }  // namespace core
 }  // namespace artm

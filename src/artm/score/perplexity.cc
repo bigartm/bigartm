@@ -9,6 +9,7 @@
 #include <sstream>
 
 #include "artm/core/exceptions.h"
+#include "artm/core/helpers.h"
 #include "artm/core/protobuf_helpers.h"
 
 #include "artm/score/perplexity.h"
@@ -145,7 +146,7 @@ void Perplexity::AppendScore(
     }
 
     float token_weight = tt_weight * item.token_weight(token_index);
-    if (token_weight == 0.0f) {
+    if (core::isZero(token_weight)) {
       continue;
     }
 
@@ -167,7 +168,7 @@ void Perplexity::AppendScore(
       sum += theta[topic_index] * phi_values[topic_index];
     }
 
-    if (sum == 0.0f) {
+    if (core::isZero(sum)) {
       if (use_document_unigram_model) {
         sum = token_weight / (use_tt ? normalizer_map[tt] : normalizer);
       } else {

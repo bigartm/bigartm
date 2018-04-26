@@ -205,7 +205,7 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("wordID", token_id, ss.str()));
     }
 
-    if (token_weight == 0.0f) {
+    if (isZero(token_weight)) {
       token_weight_zero++;
       continue;
     }
