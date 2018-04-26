@@ -1,12 +1,15 @@
 // Copyright 2018, Additive Regularization of Topic Models.
 
 #include <stdlib.h>
+
+#include <cstring>
+#include <ctime>
+#include <cmath>
+
 #include <algorithm>
 #include <chrono>
-#include <ctime>
 #include <fstream>
 #include <future>
-#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <set>
@@ -1338,7 +1341,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     }
 
     master_config.add_class_id(class_id.first);
-    master_config.add_class_weight(class_id.second == 0.0f ? 1.0f : class_id.second);
+    master_config.add_class_weight(std::abs(class_id.second) < 1e-16 ? 1.0f : class_id.second);
   }
 
   master_config.set_opt_for_avx(!options.b_disable_avx_opt);
