@@ -58,8 +58,6 @@ class Helpers {
                           const ::google::protobuf::Message& message);
 };
 
-bool isZero(double value, double tol = 1e-37);
-
 bool isZero(float value, float tol = 1e-16f);
 
 }  // namespace core
