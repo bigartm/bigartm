@@ -89,7 +89,7 @@ class NormalizeThetaAgent : public RegularizeThetaAgent {
     float sum_inv = sum > 0.0f ? (1.0f / sum) : 0.0f;
     for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
       float val = sum_inv * (n_td[topic_index] + r_td[topic_index]);
-      if (val < 1e-16f) {
+      if (val < kProcessorEps) {
         val = 0.0f;
       }
 

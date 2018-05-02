@@ -71,7 +71,7 @@ void ProcessorHelpers::CreatePtdwCacheEntry(ThetaMatrix* new_cache_entry_ptr,
 
     for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
       float value = ptdw_matrix->operator()(token_index, topic_index);
-      if (std::fabs(value) > kProcessorEps) {
+      if (!isZero(value, kProcessorEps)) {
         // store not-null values p(t|d,w) for given d and w
         non_zero_topic_values->add_value(value);
         // store indices of these not-null values

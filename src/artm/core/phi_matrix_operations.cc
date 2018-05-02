@@ -429,7 +429,7 @@ static void FindPwtImpl(const PhiMatrix& n_wt, const PhiMatrix* r_wt, PhiMatrix*
       float nwt_value = n_wt.get(token_id, topic_index);
       float rwt_value = (r_wt == nullptr) ? 0.0f : r_wt->get(token_id, topic_index);
       float value = std::max<float>(nwt_value + rwt_value, 0.0f) / nt[topic_index];
-      if (value < 1e-16) {
+      if (isZero(value)) {
         // Reset small values to 0.0 to avoid performance hit.
         // http://en.wikipedia.org/wiki/Denormal_number#Performance_issues
         // http://stackoverflow.com/questions/13964606/inconsistent-multiplication-performance-with-floats
