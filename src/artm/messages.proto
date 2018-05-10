@@ -204,8 +204,10 @@ message HierarchySparsingThetaConfig {
 // Represents a configuration of a Topic Segmentation regularizer
 message TopicSegmentationPtdwConfig {
   repeated string background_topic_names = 1;
-  optional int32 window = 3 [default = 10];
-  optional float threshold = 4 [default = 0.5];
+  optional int32 window = 3 [default = 1];
+  optional double threshold = 4 [default = 0.5];
+  optional bool merge_into_segments = 5 [default = false];
+  optional float merge_threshold = 6 [default = 0.5];
 }
 
 // Represents a configuration of a SmoothTimeInTopics Phi regularizer
