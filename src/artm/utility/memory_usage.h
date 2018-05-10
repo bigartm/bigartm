@@ -1,7 +1,6 @@
-// Copyright 2016, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_UTILITY_MEMORY_USAGE_H_
-#define SRC_ARTM_UTILITY_MEMORY_USAGE_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -31,5 +30,3 @@ inline int64_t getMemoryUsage(const std::unordered_map<K, V, H>& obj) {
 
 }  // namespace utility
 }  // namespace artm
-
-#endif  // SRC_ARTM_UTILITY_MEMORY_USAGE_H_

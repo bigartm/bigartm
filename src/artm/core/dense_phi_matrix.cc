@@ -1,4 +1,4 @@
-// Copyright 2015, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #include "artm/core/dense_phi_matrix.h"
 
@@ -16,8 +16,9 @@ namespace core {
 
 int TokenCollection::AddToken(const Token& token) {
   int token_id = this->token_id(token);
-  if (token_id != -1)
+  if (token_id != -1) {
     return token_id;
+  }
 
   token_id = token_size();
   token_to_token_id_.insert(
@@ -57,7 +58,9 @@ int64_t TokenCollection::ByteSize() const {
   int64_t retval = 0;
   retval += artm::utility::getMemoryUsage(token_id_to_token_);
   retval += artm::utility::getMemoryUsage(token_to_token_id_);
-  for (auto& token : token_id_to_token_) retval += 2 * (token.keyword.size() + token.class_id.size());
+  for (const auto& token : token_id_to_token_) {
+    retval += 2 * (token.keyword.size() + token.class_id.size());
+  }
   return retval;
 }
 
@@ -81,9 +84,14 @@ void SpinLock::Unlock() {
 
 PhiMatrixFrame::PhiMatrixFrame(const ModelName& model_name,
                                const google::protobuf::RepeatedPtrField<std::string>& topic_name)
-    : model_name_(model_name), topic_name_(), token_collection_(), spin_locks_() {
-  if (topic_name.size() == 0)
+    : model_name_(model_name)
+    , topic_name_()
+    , token_collection_()
+    , spin_locks_() {
+  if (topic_name.size() == 0) {
     BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("Can not create model " + model_name + " with 0 topics"));
+  }
+
   for (auto iter = topic_name.begin(); iter != topic_name.end(); ++iter) {
     topic_name_.push_back(*iter);
   }
@@ -95,8 +103,9 @@ PhiMatrixFrame::PhiMatrixFrame(const PhiMatrixFrame& rhs)
       token_collection_(rhs.token_collection_),
       spin_locks_() {
   spin_locks_.reserve(rhs.spin_locks_.size());
-  for (unsigned i = 0; i < rhs.spin_locks_.size(); ++i)
+  for (unsigned i = 0; i < rhs.spin_locks_.size(); ++i) {
     spin_locks_.push_back(std::make_shared<SpinLock>());
+  }
 }
 
 const Token& PhiMatrixFrame::token(int index) const {
@@ -139,8 +148,9 @@ void PhiMatrixFrame::Clear() {
 
 int PhiMatrixFrame::AddToken(const Token& token) {
   int token_id = token_collection_.token_id(token);
-  if (token_id != -1)
+  if (token_id != -1) {
     return token_id;
+  }
 
   spin_locks_.push_back(std::make_shared<SpinLock>());
   return token_collection_.AddToken(token);
@@ -161,16 +171,27 @@ int64_t PhiMatrixFrame::ByteSize() const {
 // PackedValues methods
 // =======================================================
 
-PackedValues::PackedValues() : values_(), bitmask_(), ptr_() {}
+PackedValues::PackedValues()
+    : values_()
+    , bitmask_()
+    , ptr_() { }
 
-PackedValues::PackedValues(int size) : values_(), bitmask_(), ptr_() {
+PackedValues::PackedValues(int size)
+    : values_()
+    , bitmask_()
+    , ptr_() {
   bitmask_.resize(size, false);
 }
 
 PackedValues::PackedValues(const PackedValues& rhs)
-    : values_(rhs.values_), bitmask_(rhs.bitmask_), ptr_(rhs.ptr_) {}
+    : values_(rhs.values_)
+    , bitmask_(rhs.bitmask_)
+    , ptr_(rhs.ptr_) { }
 
-PackedValues::PackedValues(const float* values, int size) : values_(), bitmask_(), ptr_() {
+PackedValues::PackedValues(const float* values, int size)
+    : values_()
+    , bitmask_()
+    , ptr_() {
   values_.resize(size); memcpy(&values_[0], values, sizeof(float) * size);
   pack();
 }
@@ -181,8 +202,9 @@ bool PackedValues::is_packed() const {
 
 float PackedValues::get(int index) const {
   if (is_packed()) {
-    if (!bitmask_[index])
+    if (!bitmask_[index]) {
       return 0.0f;
+    }
     const auto sparse_ptr = std::lower_bound(ptr_.begin(), ptr_.end(), index);
     const int sparse_index = sparse_ptr - ptr_.begin();
     return values_[sparse_index];
@@ -194,8 +216,9 @@ float PackedValues::get(int index) const {
 void PackedValues::get(std::vector<float>* buffer) const {
   if (is_packed()) {
     buffer->assign(buffer->size(), 0.0f);
-    for (int i = 0; i < ptr_.size(); i++)
+    for (int i = 0; i < (int64_t) ptr_.size(); i++) {
       buffer->at(ptr_[i]) = values_[i];
+    }
   } else {
     buffer->assign(values_.begin(), values_.end());
   }
@@ -205,12 +228,14 @@ float* PackedValues::unpack() {
   if (is_packed()) {
     const int full_size = bitmask_.size();
     const int sparse_size = values_.size();
-    if (values_.size() != ptr_.size())
+    if (values_.size() != ptr_.size()) {
       assert(values_.size() == ptr_.size());
+    }
 
     std::vector<float> values(full_size, 0.0f);
-    for (int i = 0; i < sparse_size; ++i)
+    for (int i = 0; i < sparse_size; ++i) {
       values[ptr_[i]] = values_[i];
+    }
 
     values_.swap(values);
 
@@ -222,26 +247,31 @@ float* PackedValues::unpack() {
 }
 
 void PackedValues::pack() {
-  if (is_packed())
+  if (is_packed()) {
     return;
+  }
 
   int num_zeros = 0;
-  for (auto value : values_)
-    if (value == 0)
+  for (auto value : values_) {
+    if (value == 0) {
       num_zeros++;
+    }
+  }
 
   // pack iff at 60% of elements (or more) are zeros
-  if (num_zeros < (3 * values_.size() / 5))
+  if (num_zeros < (int64_t) (3 * values_.size() / 5)) {
     return;
+  }
 
   bitmask_.resize(values_.size(), false);
   ptr_.resize(values_.size() - num_zeros);
   std::vector<float> values(values_.size() - num_zeros, 0.0f);
 
   int sparse_index = 0;
-  for (int i = 0; i < values_.size(); ++i) {
-    if (values_[i] == 0)
+  for (int i = 0; i < (int64_t) values_.size(); ++i) {
+    if (values_[i] == 0) {
       continue;
+    }
 
     ptr_[sparse_index] = i;
     values[sparse_index] = values_[i];
@@ -264,14 +294,13 @@ int64_t PackedValues::ByteSize() const {
          ::artm::utility::getMemoryUsage(ptr_);
 }
 
-
 // =======================================================
 // DensePhiMatrix methods
 // =======================================================
 
 DensePhiMatrix::DensePhiMatrix(const ModelName& model_name,
                                const google::protobuf::RepeatedPtrField<std::string>& topic_name)
-    : PhiMatrixFrame(model_name, topic_name), values_() {}
+    : PhiMatrixFrame(model_name, topic_name), values_() { }
 
 DensePhiMatrix::DensePhiMatrix(const DensePhiMatrix& rhs) : PhiMatrixFrame(rhs), values_() {
   for (int token_index = 0; token_index < rhs.token_size(); ++token_index) {
@@ -301,14 +330,16 @@ void DensePhiMatrix::get(int token_id, std::vector<float>* buffer) const {
 
 void DensePhiMatrix::set(int token_id, int topic_id, float value) {
   values_[token_id].unpack()[topic_id] = value;
-  if ((topic_id + 1) == topic_size())
+  if ((topic_id + 1) == topic_size()) {
     values_[token_id].pack();
+  }
 }
 
 void DensePhiMatrix::increase(int token_id, int topic_id, float increment) {
   values_[token_id].unpack()[topic_id] += increment;
-  if ((topic_id + 1) == topic_size())
+  if ((topic_id + 1) == topic_size()) {
     values_[token_id].pack();
+  }
 }
 
 void DensePhiMatrix::increase(int token_id, const std::vector<float>& increment) {
@@ -317,8 +348,9 @@ void DensePhiMatrix::increase(int token_id, const std::vector<float>& increment)
 
   this->Lock(token_id);
   float* values = values_[token_id].unpack();
-  for (int topic_index = 0; topic_index < topic_size; ++topic_index)
+  for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
     values[topic_index] += increment[topic_index];
+  }
   values_[token_id].pack();
   this->Unlock(token_id);
 }
@@ -330,14 +362,17 @@ void DensePhiMatrix::Clear() {
 
 int64_t DensePhiMatrix::ByteSize() const {
   int64_t retval = PhiMatrixFrame::ByteSize();
-  for (auto& value : values_) retval += value.ByteSize();
+  for (const auto& value : values_) {
+    retval += value.ByteSize();
+  }
   return retval;
 }
 
 int DensePhiMatrix::AddToken(const Token& token) {
   int token_id = token_index(token);
-  if (token_id != -1)
+  if (token_id != -1) {
     return token_id;
+  }
 
   values_.push_back(PackedValues(topic_size()));
   int retval = PhiMatrixFrame::AddToken(token);
@@ -346,8 +381,9 @@ int DensePhiMatrix::AddToken(const Token& token) {
 }
 
 void DensePhiMatrix::Reset() {
-  for (PackedValues& value : values_)
+  for (PackedValues& value : values_) {
     value.reset(topic_size());
+  }
 }
 
 void DensePhiMatrix::Reshape(const PhiMatrix& phi_matrix) {
@@ -367,7 +403,7 @@ AttachedPhiMatrix::AttachedPhiMatrix(int address_length, float* address, PhiMatr
   int topic_size = source->topic_size();
   int token_size = source->token_size();
 
-  if (topic_size * token_size * sizeof(float) != address_length) {
+  if ((int64_t) topic_size * token_size * sizeof(float) != address_length) {
     std::stringstream ss;
     ss << "Pointer " << address_length << " (" << address_length << "bytes) is incompatible with model "
        << source->model_name() << " (|T|=" << topic_size << ", |W|=" << token_size << ")";
@@ -401,8 +437,9 @@ void AttachedPhiMatrix::increase(int token_id, const std::vector<float>& increme
   float* values = values_[token_id];
 
   this->Lock(token_id);
-  for (int topic_index = 0; topic_index < topic_size; ++topic_index)
+  for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
     values[topic_index] += increment[topic_index];
+  }
   this->Unlock(token_id);
 }
 

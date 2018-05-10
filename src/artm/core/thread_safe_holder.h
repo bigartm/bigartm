@@ -1,7 +1,6 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_THREAD_SAFE_HOLDER_H_
-#define SRC_ARTM_CORE_THREAD_SAFE_HOLDER_H_
+#pragma once
 
 #include <queue>
 #include <map>
@@ -28,12 +27,12 @@ template<typename T>
 class ThreadSafeHolder : boost::noncopyable {
  public:
   ThreadSafeHolder()
-      : lock_(), object_(std::make_shared<T>()) {}
+      : lock_(), object_(std::make_shared<T>()) { }
 
   explicit ThreadSafeHolder(const std::shared_ptr<T>& object)
-      : lock_(), object_(object) {}
+      : lock_(), object_(object) { }
 
-  ~ThreadSafeHolder() {}
+  ~ThreadSafeHolder() { }
 
   std::shared_ptr<T> get() const {
     boost::lock_guard<boost::mutex> guard(lock_);
@@ -42,7 +41,9 @@ class ThreadSafeHolder : boost::noncopyable {
 
   std::shared_ptr<T> get_copy() const {
     boost::lock_guard<boost::mutex> guard(lock_);
-    if (object_ == nullptr) return std::make_shared<T>();
+    if (object_ == nullptr) {
+      return std::make_shared<T>();
+    }
     return std::make_shared<T>(*object_);
   }
 
@@ -60,7 +61,7 @@ template<typename K, typename T>
 class ThreadSafeCollectionHolder : boost::noncopyable {
  public:
   ThreadSafeCollectionHolder()
-      : lock_(), object_(std::map<K, std::shared_ptr<T>>()) {}
+      : lock_(), object_(std::map<K, std::shared_ptr<T>>()) { }
 
   static ThreadSafeCollectionHolder<K, T>& singleton() {
     // Mayers singleton is thread safe in C++11
@@ -69,7 +70,7 @@ class ThreadSafeCollectionHolder : boost::noncopyable {
     return holder;
   }
 
-  ~ThreadSafeCollectionHolder() {}
+  ~ThreadSafeCollectionHolder() { }
 
   std::shared_ptr<T> get(const K& key) const {
     boost::lock_guard<boost::mutex> guard(lock_);
@@ -144,12 +145,13 @@ class ThreadSafeCollectionHolder : boost::noncopyable {
 template<typename T>
 class ThreadSafeQueue : boost::noncopyable {
  public:
-  ThreadSafeQueue() : lock_(), queue_(), reserved_(0) {}
+  ThreadSafeQueue() : lock_(), queue_(), reserved_(0) { }
 
   bool try_pop(T* elem) {
     boost::lock_guard<boost::mutex> guard(lock_);
-    if (queue_.empty())
+    if (queue_.empty()) {
       return false;
+    }
 
     T tmp_elem = queue_.front();
     queue_.pop();
@@ -169,8 +171,9 @@ class ThreadSafeQueue : boost::noncopyable {
 
   void release() {
     boost::lock_guard<boost::mutex> guard(lock_);
-    if (reserved_ > 0)
+    if (reserved_ > 0) {
       reserved_--;
+    }
   }
 
   size_t size() const {
@@ -191,5 +194,3 @@ class ThreadSafeQueue : boost::noncopyable {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_THREAD_SAFE_HOLDER_H_

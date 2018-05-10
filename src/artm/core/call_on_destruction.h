@@ -1,7 +1,6 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_CALL_ON_DESTRUCTION_H_
-#define SRC_ARTM_CORE_CALL_ON_DESTRUCTION_H_
+#pragma once
 
 #include <functional>
 
@@ -18,7 +17,7 @@ namespace core {
 // An object that accepts a lambda expression end executes it in destructor
 class call_on_destruction {
  public:
-  explicit call_on_destruction(std::function<void()> f) : f_(f) {}
+  explicit call_on_destruction(std::function<void()> f) : f_(f) { }
   ~call_on_destruction() { f_(); }
 
  private:
@@ -28,5 +27,3 @@ class call_on_destruction {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_CALL_ON_DESTRUCTION_H_

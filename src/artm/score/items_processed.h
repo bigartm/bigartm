@@ -1,4 +1,4 @@
-/* Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2017, Additive Regularization of Topic Models.
 
    Author: Marina Suvorova (m.dudarenko@gmail.com)
    
@@ -8,8 +8,7 @@
    This score has no input parameters.
 */
 
-#ifndef SRC_ARTM_SCORE_ITEMS_PROCESSED_H_
-#define SRC_ARTM_SCORE_ITEMS_PROCESSED_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -45,5 +44,3 @@ class ItemsProcessed : public ScoreCalculatorInterface {
 
 }  // namespace score
 }  // namespace artm
-
-#endif  // SRC_ARTM_SCORE_ITEMS_PROCESSED_H_

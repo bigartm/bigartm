@@ -1,3 +1,5 @@
+# Copyright 2017, Additive Regularization of Topic Models.
+
 import os
 import csv
 import uuid
@@ -5,11 +7,15 @@ import glob
 import shutil
 import tempfile
 import numpy
+import datetime
+import json
+import pickle
 
 from pandas import DataFrame
-from six import iteritems
+from six import iteritems, string_types
 from six.moves import range, zip
-from multiprocessing.pool import ThreadPool
+from multiprocessing.pool import ThreadPool, ApplyResult
+from copy import deepcopy
 import tqdm
 
 from . import wrapper
@@ -18,8 +24,11 @@ from .wrapper import messages_pb2 as messages
 from . import master_component as mc
 
 from .regularizers import Regularizers
-from .scores import Scores, TopicMassPhiScore  # temp
+from .regularizers import *
+from .scores import Scores
+from .scores import *
 from . import score_tracker
+from .batches_utils import BatchVectorizer
 
 SCORE_TRACKER = {
     const.ScoreType_SparsityPhi: score_tracker.SparsityPhiScoreTracker,
@@ -33,6 +42,13 @@ SCORE_TRACKER = {
     const.ScoreType_ClassPrecision: score_tracker.ClassPrecisionScoreTracker,
     const.ScoreType_BackgroundTokensRatio: score_tracker.BackgroundTokensRatioScoreTracker,
 }
+
+SCORE_TRACKER_FILENAME = 'score_tracker.bin'
+PWT_FILENAME = 'p_wt.bin'
+NWT_FILENAME = 'n_wt.bin'
+PTD_FILENAME = 'p_td.bin'
+PARAMETERS_FILENAME_JSON = 'parameters.json'
+PARAMETERS_FILENAME_BIN = 'parameters.bin'
 
 
 def _run_from_ipython():
@@ -55,16 +71,15 @@ def _topic_selection_regularizer_func(self, regularizers):
         if no_score:
             self._internal_topic_mass_score_name = 'ITMScore_{}'.format(str(uuid.uuid4()))
             self.scores.add(TopicMassPhiScore(name=self._internal_topic_mass_score_name,
-                                              class_id='@default_class',
-                                              model_name=self.model_nwt))  # ugly hack!
+                                              model_name=self.model_nwt))
 
         if not self._synchronizations_processed or no_score:
-            phi = self.get_phi(class_ids=['@default_class'])  # ugly hack!
+            phi = self.get_phi()
             n_t = list(phi.sum(axis=0))
         else:
+            last_topic_mass = self.score_tracker[self._internal_topic_mass_score_name].last_topic_mass
             for i, n in enumerate(self.topic_names):
-                n_t[i] = self.score_tracker[
-                    self._internal_topic_mass_score_name].last_topic_mass[n]
+                n_t[i] = last_topic_mass[n]
 
         n = sum(n_t)
         for name in topic_selection_regularizer_name:
@@ -76,10 +91,23 @@ def _topic_selection_regularizer_func(self, regularizers):
             self.regularizers[name].config = config
 
 
+class ArtmThreadPool(object):
+    def __init__(self, async=True):
+        self._pool = ThreadPool(processes=1) if async else None
+
+    def apply_async(self, func, args):
+        return self._pool.apply_async(func, args) if self._pool else func(*args)
+
+    def __deepcopy__(self, memo):
+        return self
+
+
 class ARTM(object):
     def __init__(self, num_topics=None, topic_names=None, num_processors=None, class_ids=None,
-                 scores=None, regularizers=None, num_document_passes=10, reuse_theta=False,
-                 dictionary=None, cache_theta=False, theta_columns_naming='id', seed=-1):
+                 transaction_types=None, scores=None, regularizers=None, num_document_passes=10,
+                 reuse_theta=False, dictionary=None, cache_theta=False, theta_columns_naming='id',
+                 seed=-1, show_progress_bars=False, theta_name=None,
+                 parent_model=None, parent_model_weight=None):
         """
         :param int num_topics: the number of topics in model, will be overwrited if\
                                  topic_names is set
@@ -89,7 +117,12 @@ class ARTM(object):
         :type topic_names: list of str
         :param dict class_ids: list of class_ids and their weights to be used in model,\
                                  key --- class_id, value --- weight, if not specified then\
-                                 all class_ids will be used
+                                 all class_ids will be used.\
+                                 Use either class_ids or transaction_types parameter
+        :param dict transaction_types: list of transaction_types and their weights to be used in model,\
+                                 key --- transaction_type, value --- weight, if not specified then\
+                                 all transaction_types will be used.\
+                                 Use either class_ids or transaction_types parameter
         :param bool cache_theta: save or not the Theta matrix in model. Necessary if\
                                  ARTM.get_theta() usage expects
         :param list scores: list of scores (objects of artm.*Score classes)
@@ -101,7 +134,12 @@ class ARTM(object):
         :param str theta_columns_naming: either 'id' or 'title', determines how to name columns\
                                  (documents) in theta dataframe
         :param seed: seed for random initialization, -1 means no seed
+        :param show_progress_bars: a boolean flag indicating whether to show progress bar in fit_offline,\
+                                   fit_online and transform operations.
         :type seed: unsigned int or -1
+        :param theta_name: string, name of ptd (theta) matrix
+        :param ARTM parent_model: An instance of ARTM class to use as parent level of hierarchy
+        :param float parent_model_weight: weight of parent model (by default 1.0)
 
         :Important public fields:
           * regularizers: contains dict of regularizers, included into model
@@ -111,20 +149,52 @@ class ARTM(object):
                values of score on each synchronization (e.g. collection pass) in list
 
         :Note:
-          * Here and anywhere in BigARTM empty topic_names or class_ids means that\
-            model (or regularizer, or score) should use all topics or class_ids.
+          * Here and anywhere in BigARTM empty topic_names, class_ids or transaction_types means that\
+            model (or regularizer, or score) should use all topics, class_ids or transaction_types.\
+            Don't confused with topic_name, class_id and transaction_type fields!
           * If some fields of regularizers or scores are not defined by\
             user --- internal lib defaults would be used.
           * If field 'topic_names' is None, it will be generated by BigARTM and will\
             be available using ARTM.topic_names().
+          * Most arguments of ARTM constructor have corresponding setter and getter\
+            of the same name that allows to change them at later time, after ARTM object\
+            has been created.
+          * Setting theta_name to a non-empty string activates an experimental mode\
+            where cached theta matrix is internally stored as a phi matrix with tokens\
+            corresponding to item title, so user should guarantee that all ites has unique titles.\
+            With theta_name argument you specify the name of this matrix\
+            (for example 'ptd' or 'theta', or whatever name you like).\
+            Later you can retrieve this matix with ARTM.get_phi(model_name=ARTM.theta_name),\
+            change its values with ARTM.master.attach_model(model=ARTM.theta_name),\
+            export/import this matrix with ARTM.master.export_model('ptd', filename) and\
+            ARTM.master.import_model('ptd', file_name). In this case you are also able to work\
+            with theta matrix when using 'dump_artm_model' method and 'load_artm_model' function.
+          * Setting parent_model parameter or, alternatively, calling ARTM.set_parent_model(),\
+            cause this ARTM instance to behave as if it is a child level in hierarchical topic model.\
+            This changes few things.\
+            First, fit_offline() method will respect parent's model topics, as specified by\
+            parent_model_weight paremeter. Larger values of parent_model_weight result in your\
+            child model being more consistent with parent hierarchy. If you put parent_model_weight\
+            as 0 your child level will be effectively independent from its parent.\
+            Second, you may call ARTM.get_parent_psi() to retrieve a transition matrix, e.i. p(subtopic|topic).\
+            Third, you no longer can use ARTM.fit_online(), which will throw an exception.\
+            Fourth, you have to specify seed parameter (otherwise first topics in your child level will be initialized\
+            the same way as in parent's model).\
+            If you previously used hARTM class, this functionality is fully equivalent.\
+            hARTM class is now deprecated. Note that dump_artm_model and load_artm_model is only partly supported.\
+            After load_artm_model() you need to set parent model manually via set_parent_model(),\
+            and also to specify value for ARTM.parent_model_weight property.
         """
         self._num_processors = None
         self._cache_theta = False
+        self._parent_model_weight = None
+        self._parent_model_id = None
         self._num_document_passes = num_document_passes
         self._reuse_theta = True
         self._theta_columns_naming = 'id'
         self._seed = -1
-        self._pool = ThreadPool(processes=1)
+        self._show_progress_bars = show_progress_bars
+        self._pool = ArtmThreadPool(async=show_progress_bars)
 
         if topic_names is not None:
             self._topic_names = topic_names
@@ -133,16 +203,23 @@ class ARTM(object):
         else:
             raise ValueError('Either num_topics or topic_names parameter should be set')
 
-        if class_ids is None:
-            self._class_ids = {}
-        elif len(class_ids) > 0:
-            self._class_ids = class_ids
+        self._transaction_types = {}
+        if transaction_types is not None and isinstance(transaction_types, dict) and len(transaction_types) > 0:
+            self._transaction_types = transaction_types
+        elif class_ids is not None and isinstance(class_ids, dict) and len(class_ids) > 0:
+            self._transaction_types = class_ids
 
         if isinstance(num_processors, int) and num_processors > 0:
             self._num_processors = num_processors
 
         if isinstance(cache_theta, bool):
             self._cache_theta = cache_theta
+
+        if isinstance(parent_model, ARTM):
+            self._parent_model_id = parent_model.master.master_id
+
+        if isinstance(parent_model_weight, (int, float)):
+            self._parent_model_weight = parent_model_weight
 
         if isinstance(reuse_theta, bool):
             self._reuse_theta = reuse_theta
@@ -158,17 +235,24 @@ class ARTM(object):
 
         self._model_pwt = 'pwt'
         self._model_nwt = 'nwt'
+        self._theta_name = theta_name
 
         self._lib = wrapper.LibArtm()
+        master_config = messages.MasterModelConfig()
+        if theta_name:
+            master_config.ptd_name = theta_name
         self._master = mc.MasterComponent(self._lib,
                                           num_processors=self._num_processors,
                                           topic_names=self._topic_names,
-                                          class_ids=self._class_ids,
+                                          transaction_types=self._transaction_types,
                                           pwt_name=self._model_pwt,
                                           nwt_name=self._model_nwt,
                                           num_document_passes=self._num_document_passes,
                                           reuse_theta=self._reuse_theta,
-                                          cache_theta=self._cache_theta)
+                                          cache_theta=self._cache_theta,
+                                          parent_model_id=self._parent_model_id,
+                                          parent_model_weight=self._parent_model_weight,
+                                          config=master_config)
 
         self._regularizers = Regularizers(self._master)
         self._scores = Scores(self._master, self._model_pwt, self._model_nwt)
@@ -216,6 +300,20 @@ class ARTM(object):
     def __del__(self):
         self.dispose()
 
+    def clone(self):
+        """
+        :Description: returns a deep copy of the artm.ARTM object
+
+        :Note:
+          * This method is equivalent to copy.deepcopy() of your artm.ARTM object.
+            Both methods perform deep copy of the object,
+            including a complete copy of its internal C++ state
+            (e.g. a copy of all phi and theta matrices, scores and regularizers,
+            as well as ScoreTracker information with history of the scores).
+          * Attached phi matrices are copied as dense phi matrices.
+        """
+        return deepcopy(self)
+
     # ========== PROPERTIES ==========
     @property
     def num_processors(self):
@@ -232,6 +330,10 @@ class ARTM(object):
     @property
     def num_document_passes(self):
         return self._num_document_passes
+
+    @property
+    def parent_model_weight(self):
+        return self._parent_model_weight
 
     @property
     def theta_columns_naming(self):
@@ -265,7 +367,11 @@ class ARTM(object):
 
     @property
     def class_ids(self):
-        return self._class_ids
+        return self._transaction_types
+
+    @property
+    def transaction_types(self):
+        return self._transaction_types
 
     @property
     def regularizers(self):
@@ -292,6 +398,10 @@ class ARTM(object):
         return self._model_nwt
 
     @property
+    def theta_name(self):
+        return self._theta_name
+
+    @property
     def num_phi_updates(self):
         return self._synchronizations_processed
 
@@ -302,6 +412,10 @@ class ARTM(object):
     @property
     def seed(self):
         return self._seed
+
+    @property
+    def show_progress_bars(self):
+        return self._show_progress_bars
 
     @property
     def phi_(self):
@@ -339,6 +453,14 @@ class ARTM(object):
         else:
             self.master.reconfigure(cache_theta=cache_theta)
             self._cache_theta = cache_theta
+
+    @parent_model_weight.setter
+    def parent_model_weight(self, parent_model_weight):
+        if not isinstance(parent_model_weight, (int, float)):
+            raise IOError('parent_model_weight should be float')
+        else:
+            self.master.reconfigure(parent_model_weight=parent_model_weight)
+            self._parent_model_weight = parent_model_weight
 
     @reuse_theta.setter
     def reuse_theta(self, reuse_theta):
@@ -383,8 +505,16 @@ class ARTM(object):
         if len(class_ids) < 0:
             raise IOError('Number of (class_id, class_weight) pairs should be non-negative')
         else:
-            self.master.reconfigure(class_ids=class_ids)
-            self._class_ids = class_ids
+            self.master.reconfigure(transaction_types=class_ids)
+            self._transaction_types = class_ids
+
+    @transaction_types.setter
+    def transaction_types(self, transaction_types):
+        if len(transaction_types) < 0:
+            raise IOError('Number of (transaction_type, class_weight) pairs should be non-negative')
+        else:
+            self.master.reconfigure(transaction_types=transaction_types)
+            self._transaction_types = transaction_types
 
     @seed.setter
     def seed(self, seed):
@@ -395,11 +525,15 @@ class ARTM(object):
 
     # ========== PRIVATE METHODS ==========
     def _wait_for_batches_processed(self, async_result, num_batches):
+        if not(isinstance(async_result, ApplyResult)):
+            return async_result
+
         import warnings
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=DeprecationWarning)
             progress = tqdm.tqdm_notebook if _run_from_ipython() else tqdm.tqdm
-            with progress(total=num_batches, desc='Batch', leave=False) as batch_tqdm:
+            with progress(total=num_batches, desc='Batch', leave=False,
+                          disable=not self._show_progress_bars) as batch_tqdm:
                 previous_num_batches = 0
                 while not async_result.ready():
                     async_result.wait(1)
@@ -410,12 +544,13 @@ class ARTM(object):
                 return async_result.get()
 
     # ========== METHODS ==========
-    def fit_offline(self, batch_vectorizer=None, num_collection_passes=1):
+    def fit_offline(self, batch_vectorizer=None, num_collection_passes=1, reset_nwt=True):
         """
         :Description: proceeds the learning of topic model in offline mode
 
         :param object_referenece batch_vectorizer: an instance of BatchVectorizer class
         :param int num_collection_passes: number of iterations over whole given collection
+        :param bool reset_nwt: a flag indicating whether to reset n_wt matrix to 0.
         """
         if batch_vectorizer is None:
             raise IOError('No batches were given for processing')
@@ -423,7 +558,6 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('The model was not initialized. Use initialize() method')
 
-        batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         # outer cycle is needed because of TopicSelectionThetaRegularizer
         # and current ScoreTracker implementation
 
@@ -431,15 +565,17 @@ class ARTM(object):
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=DeprecationWarning)
             progress = tqdm.tnrange if _run_from_ipython() else tqdm.trange
-            for _ in progress(num_collection_passes, desc='Pass'):
+            for _ in progress(num_collection_passes, desc='Pass',
+                              disable=not self._show_progress_bars):
                 # temp code for easy using of TopicSelectionThetaRegularizer from Python
                 _topic_selection_regularizer_func(self, self._regularizers)
 
                 self._synchronizations_processed += 1
                 self._wait_for_batches_processed(
                     self._pool.apply_async(func=self.master.fit_offline,
-                                           args=(batches_list, batch_vectorizer.weights, 1, None)),
-                    len(batches_list))
+                                           args=(batch_vectorizer.batches_ids,
+                                                 batch_vectorizer.weights, 1, None, reset_nwt)),
+                    batch_vectorizer.num_batches)
 
                 for name in self.scores.data.keys():
                     if name not in self.score_tracker:
@@ -484,8 +620,6 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('The model was not initialized. Use initialize() method')
 
-        batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
-
         update_after_final, apply_weight_final, decay_weight_final = [], [], []
         if (update_after is None) or (apply_weight is None) or (decay_weight is None):
             update_after_final = range(update_every, batch_vectorizer.num_batches + 1, update_every)
@@ -509,10 +643,10 @@ class ARTM(object):
 
         self._wait_for_batches_processed(
             self._pool.apply_async(func=self.master.fit_online,
-                                   args=(batches_list, batch_vectorizer.weights,
+                                   args=(batch_vectorizer.batches_ids, batch_vectorizer.weights,
                                          update_after_final, apply_weight_final,
                                          decay_weight_final, async)),
-            len(batches_list))
+            batch_vectorizer.num_batches)
 
         for name in self.scores.data.keys():
             if name not in self.score_tracker:
@@ -551,8 +685,8 @@ class ARTM(object):
         :param str model_name: the name of matrix to be saved, 'p_wt' or 'n_wt'
 
         :Note:
-          * Loaded model will overwrite ARTM.topic_names and class_ids fields.
-          * All class_ids weights will be set to 1.0, you need to specify them by\
+          * Loaded model will overwrite ARTM.topic_names, class_ids and transaction_types fields.
+          * All transaction_types (class_ids) weights will be set to 1.0, you need to specify them by\
             hand if it's necessary.
           * The method call will empty ARTM.score_tracker.
           * All regularizers and scores will be forgotten.
@@ -568,13 +702,9 @@ class ARTM(object):
 
         self.master.import_model(_model_name, filename)
         self._initialized = True
-        topics_and_tokens_info = self.master.get_phi_info(self.model_pwt)
-        self._topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name]
 
-        class_ids = {}
-        for class_id in topics_and_tokens_info.class_id:
-            class_ids[class_id] = 1.0
-        self._class_ids = class_ids
+        config = self._lib.ArtmRequestMasterModelConfig(self.master.master_id)
+        self._topic_names = list(config.topic_name)
 
         # Remove all info about previous iterations
         self._score_tracker = {}
@@ -582,15 +712,64 @@ class ARTM(object):
         self._num_online_processed_batches = 0
         self._phi_cached = None
 
-    def get_phi(self, topic_names=None, class_ids=None, model_name=None):
+    def get_phi_dense(self, topic_names=None, class_ids=None, transaction_types=None, model_name=None):
+        """
+        :Description: get phi matrix in dense format
+
+        :param topic_names: list with topics or single topic to extract, None value means all topics
+        :type topic_names: list of str or str or None
+        :param class_ids: list with class_ids or single class_id to extract, None means all class ids
+        :type class_ids: list of str or str or None
+        :param transaction_types: list with transaction_types or single transaction_type to extract,\
+                                  None means all transaction types
+        :type transaction_types: list of str or str or None
+        :param str model_name: self.model_pwt by default, self.model_nwt is also\
+                      reasonable to extract unnormalized counters
+
+        :return:
+          * a 3-tuple of (data, rows, columns), where
+          * data --- numpy.ndarray with Phi data (i.e., p(w|t) values)
+          * rows --- the tokens of topic model;
+          * columns --- the names of topics in topic model;
+        """
+        if not self._initialized:
+            raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
+
+        valid_model_name = self.model_pwt if model_name is None else model_name
+
+        info = self.master.get_phi_info(valid_model_name)
+
+        if isinstance(topic_names, string_types):
+            topic_names = [topic_names]
+        if isinstance(class_ids, string_types):
+            class_ids = [class_ids]
+        if isinstance(transaction_types, string_types):
+            transaction_types = [transaction_types]
+
+        _, nd_array = self.master.get_phi_matrix(model=valid_model_name,
+                                                 topic_names=topic_names,
+                                                 class_ids=class_ids,
+                                                 transaction_types=transaction_types)
+
+        tokens = [token for token, class_id, tt in zip(info.token, info.class_id, info.transaction_type)
+                  if (class_ids is None or class_id in class_ids) and
+                     (transaction_types is None or tt in transaction_types)]
+        topic_names = [topic_name for topic_name in info.topic_name
+                       if topic_names is None or topic_name in topic_names]
+        return nd_array, tokens, topic_names
+
+    def get_phi(self, topic_names=None, class_ids=None, transaction_types=None, model_name=None):
         """
         :Description: get custom Phi matrix of model. The extraction of the\
                       whole Phi matrix expects ARTM.phi_ call.
 
-        :param topic_names: list with topics to extract, None value means all topics
-        :type topic_names: list of str
-        :param class_ids: list with class ids to extract, None means all class ids
-        :type class_ids: list of str
+        :param topic_names: list with topics or single topic to extract, None value means all topics
+        :type topic_names: list of str or str or None
+        :param class_ids: list with class_ids or single class_id to extract, None means all class ids
+        :type class_ids: list of str or str or None
+        :param transaction_types: list with transaction_types or single transaction_type to extract,\
+                                  None means all transaction types
+        :type transaction_types: list of str or str or None
         :param str model_name: self.model_pwt by default, self.model_nwt is also\
                       reasonable to extract unnormalized counters
 
@@ -600,21 +779,10 @@ class ARTM(object):
           * rows --- the tokens of topic model;
           * data --- content of Phi matrix.
         """
-        if not self._initialized:
-            raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
-
-        valid_model_name = self.model_pwt if model_name is None else model_name
-
-        topics_and_tokens_info = self.master.get_phi_info(valid_model_name)
-
-        _, nd_array = self.master.get_phi_matrix(model=valid_model_name,
-                                                 topic_names=topic_names,
-                                                 class_ids=class_ids)
-
-        tokens = [token for token, class_id in zip(topics_and_tokens_info.token, topics_and_tokens_info.class_id)
-                  if class_ids is None or class_id in class_ids]
-        topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name
-                       if topic_names is None or topic_name in topic_names]
+        (nd_array, tokens, topic_names) = self.get_phi_dense(topic_names=topic_names,
+                                                             class_ids=class_ids,
+                                                             transaction_types=transaction_types,
+                                                             model_name=model_name)
         phi_data_frame = DataFrame(data=nd_array,
                                    columns=topic_names,
                                    index=tokens)
@@ -625,10 +793,13 @@ class ARTM(object):
         """
         :Description: get phi matrix in sparse format
 
-        :param topic_names: list with topics to extract, None value means all topics
-        :type topic_names: list of str
-        :param class_ids: list with class ids to extract, None means all class ids
-        :type class_ids: list of str
+        :param topic_names: list with topics or single topic to extract, None value means all topics
+        :type topic_names: list of str or str or None
+        :param class_ids: list with class_ids or single class_id to extract, None means all class ids
+        :type class_ids: list of str or str or None
+        :param transaction_types: list with transaction_types or single transaction_type to extract,\
+                                  None means all transaction types
+        :type transaction_types: list of str or str or None
         :param str model_name: self.model_pwt by default, self.model_nwt is also\
                       reasonable to extract unnormalized counters
         :param float eps: threshold to consider values as zero
@@ -651,11 +822,20 @@ class ARTM(object):
         if eps is not None:
             args.eps = eps
         if topic_names is not None:
+            if isinstance(topic_names, string_types):
+                topic_names = [topic_names]
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
         if class_ids is not None:
+            if isinstance(class_ids, string_types):
+                class_ids = [class_ids]
             for class_id in class_ids:
                 args.class_id.append(class_id)
+        if transaction_types is not None:
+            if isinstance(transaction_types, string_types):
+                transaction_types = [transaction_types]
+            for transaction_type in transaction_types:
+                args.transaction_type.append(transaction_type)
 
         topic_model = self._lib.ArtmRequestTopicModelExternal(self.master.master_id, args)
 
@@ -673,16 +853,16 @@ class ARTM(object):
         # Columns correspond to topics; get topic names from topic_model.topic_name
         data = sparse.csr_matrix((data, (row_ind, col_ind)),
                                  shape=(len(topic_model.token), len(topic_model.topic_name)))
-        rows = list(topic_model.topic_name)
-        columns = list(topic_model.token)
+        columns = list(topic_model.topic_name)
+        rows = list(topic_model.token)
         return data, rows, columns
 
     def get_theta(self, topic_names=None):
         """
         :Description: get Theta matrix for training set of documents (or cached after transform)
 
-        :param topic_names: list with topics to extract, None means all topics
-        :type topic_names: list of str
+        :param topic_names: list with topics or single topic to extract, None means all topics
+        :type topic_names: list of str or str or None
 
         :return:
           * pandas.DataFrame: (data, columns, rows), where:
@@ -704,6 +884,8 @@ class ARTM(object):
             column_names = [item_id for item_id in theta_info.item_id]
 
         all_topic_names = [topic_name for topic_name in theta_info.topic_name]
+        if isinstance(topic_names, string_types):
+            topic_names = [topic_names]
         use_topic_names = topic_names if topic_names is not None else all_topic_names
         _, nd_array = self.master.get_theta_matrix(topic_names=use_topic_names)
 
@@ -716,8 +898,8 @@ class ARTM(object):
         """
         :Description: get Theta matrix in sparse format
 
-        :param topic_names: list with topics to extract, None means all topics
-        :type topic_names: list of str
+        :param topic_names: list with topics or single topic to extract, None means all topics
+        :type topic_names: list of str or str or None
         :param float eps: threshold to consider values as zero
 
         :return:
@@ -738,6 +920,8 @@ class ARTM(object):
         if eps is not None:
             args.eps = eps
         if topic_names is not None:
+            if isinstance(topic_names, string_types):
+                topic_names = [topic_names]
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
         theta = self._lib.ArtmRequestThetaMatrixExternal(self.master.master_id, args)
@@ -775,7 +959,7 @@ class ARTM(object):
         return self.master.get_score(score_name)
 
     def transform(self, batch_vectorizer=None, theta_matrix_type='dense_theta',
-                  predict_class_id=None):
+                  predict_class_id=None, predict_transaction_type=None):
         """
         :Description: find Theta matrix for new documents
 
@@ -786,6 +970,9 @@ class ARTM(object):
                 When this option is enabled the resulting columns of theta matrix will\
                 correspond to unique labels of a target modality. The values will represent\
                 p(c|d), which give the probability of class label c for document d.
+        :param str predict_transaction_type: should be used in case of transaction model to\
+                                             specify the transaction of predict_class_id,\
+                                             should be used only with predict_class_id parameter.
 
         :return:
           * pandas.DataFrame: (data, columns, rows), where:
@@ -821,12 +1008,11 @@ class ARTM(object):
         elif theta_matrix_type == 'cache':
             theta_matrix_type_real = const.ThetaMatrixType_Cache
 
-        batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
-
         theta_info, numpy_ndarray = self._wait_for_batches_processed(
             self._pool.apply_async(func=self.master.transform,
-                                   args=(None, batches_list, theta_matrix_type_real, predict_class_id)),
-            len(batches_list))
+                                   args=(None, batch_vectorizer.batches_ids, theta_matrix_type_real,
+                                         predict_class_id, predict_transaction_type)),
+            batch_vectorizer.num_batches)
 
         if theta_matrix_type is not None and theta_matrix_type != 'cache':
             document_ids = []
@@ -881,9 +1067,8 @@ class ARTM(object):
                                      topic_names=self._topic_names,
                                      seed=self._seed)
 
-        topics_and_tokens_info = self.master.get_phi_info(self.model_pwt)
-
-        self._topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name]
+        config = self._lib.ArtmRequestMasterModelConfig(self.master.master_id)
+        self._topic_names = list(config.topic_name)
         self._initialized = True
 
         # Remove all info about previous iterations
@@ -896,7 +1081,7 @@ class ARTM(object):
         """
         :Description: update topic names of the model.
 
-        Adds, removes, and reorders columns of phi matrices
+        Adds, removes, or reorders columns of phi matrices
         according to the new set of topic names.
         New topics are initialized with zeros.
         """
@@ -906,12 +1091,260 @@ class ARTM(object):
             self.master.reconfigure_topic_name(topic_names=topic_names)
             self._topic_names = topic_names
 
+    def reshape_tokens(self, dictionary):
+        """
+        :Description: update tokens of the model.
+
+        Adds, removes, or reorders the tokens of the model
+        according to a new dictionary.
+        This operation changes n_wt matrix, but has no immediate effect on the p_wt matrix.
+        You are expected to call ARTM.fit_offline() method
+        to re-calculate p_wt matrix for the new set of tokens.
+        """
+        if not dictionary:
+            raise IOError('Dictionary must not be None')
+        dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
+        self.master.initialize_model(model_name=self.model_nwt, dictionary_name=dictionary_name)
+
+    def reshape(self, topic_names=None, dictionary=None):
+        """
+        :Description: change the shape of the model,
+        e.i. add/remove topics, or add/remove tokens.
+
+        :param topic_names: names of topics in model
+        :type topic_names: list of str
+        :param dictionary: dictionary that define new set of tokens
+        :type dictionary: str or reference to Dictionary object
+
+        Only one of the arguments (topic_names or dictionary) can be specified at a time.
+        For further description see methods
+        ARTM.reshape_topics() and ARTM.reshape_tokens().
+        """
+        if topic_names and dictionary:
+            raise IOError('Only one of the arguments should be specified (topic_names or dictionary)')
+
+        if topic_names:
+            self.reshape_topics(topic_names)
+            return
+
+        if dictionary:
+            self.reshape_tokens(dictionary)
+            return
+
     def __repr__(self):
         num_tokens = next((x.num_tokens for x in self.info.model if x.name == self._model_pwt), None)
-        class_ids = ', class_ids={0}'.format(list(self.class_ids.keys())) if self.class_ids else ''
+        transaction_types = ', transaction_types={0}'.format(
+            list(self.transaction_types.keys())) if self.transaction_types else ''
         return 'artm.ARTM(num_topics={0}, num_tokens={1}{2})'.format(
-            self.num_topics, num_tokens, class_ids)
+            self.num_topics, num_tokens, transaction_types)
+
+    def dump_artm_model(self, data_path):
+        """
+        :Description: dump all necessary model files into given folder.
+
+        :param str data_path: full path to folder (should unexist)
+        """
+        if os.path.exists(data_path):
+            raise IOError('Folder {} already exists'.format(data_path))
+
+        os.mkdir(data_path)
+        # save core score tracker
+        self._master.export_score_tracker(os.path.join(data_path, SCORE_TRACKER_FILENAME))
+        # save phi and n_wt matrices
+        self._master.export_model(self.model_pwt, os.path.join(data_path, PWT_FILENAME))
+        self._master.export_model(self.model_nwt, os.path.join(data_path, NWT_FILENAME))
+        # save theta if has theta_name
+        if self.theta_name is not None:
+            self._master.export_model(self.theta_name, os.path.join(data_path, PTD_FILENAME))
+
+        # save parameters in human-readable format
+        params = {}
+        params['version'] = self.library_version
+        params['creation_time'] = str(datetime.datetime.now())
+        params['num_processors'] = self._num_processors
+        params['cache_theta'] = self._cache_theta
+        params['num_document_passes'] = self._num_document_passes
+        params['reuse_theta'] = self._reuse_theta
+        params['theta_columns_naming'] = self._theta_columns_naming
+        params['seed'] = self._seed
+        params['show_progress_bars'] = self._show_progress_bars
+        params['topic_names'] = self._topic_names
+        params['transaction_types'] = self._transaction_types
+        params['model_pwt'] = self._model_pwt
+        params['model_nwt'] = self._model_nwt
+        params['theta_name'] = self._theta_name
+        params['synchronizations_processed'] = self._synchronizations_processed
+        params['num_online_processed_batches'] = self._num_online_processed_batches
+        params['initialized'] = self._initialized
+
+        regularizers = {}
+        for name, regularizer in iteritems(self._regularizers.data):
+            tau = None
+            gamma = None
+            try:
+                tau = regularizer.tau
+                gamma = regularizer.gamma
+            except KeyError:
+                pass
+            regularizers[name] = [str(regularizer.config), tau, gamma]
+        params['regularizers'] = regularizers
+
+        scores = {}
+        for name, score in iteritems(self._scores.data):
+            model_name = None
+            try:
+                model_name = score.model_name
+            except KeyError:
+                pass
+            scores[name] = [str(score.config), model_name]
+
+        params['scores'] = scores
+
+        with open(os.path.join(data_path, PARAMETERS_FILENAME_JSON), 'w') as fout:
+            json.dump(params, fout)
+
+        # save parameters in binary format
+        regularizers = {}
+        for name, regularizer in iteritems(self._regularizers._data):
+            regularizers[name] = [regularizer._config_message.__name__,
+                                  regularizer.config.SerializeToString()]
+
+            tau = None
+            gamma = None
+            try:
+                tau = regularizer.tau
+                gamma = regularizer.gamma
+            except KeyError:
+                pass
+
+            if tau is not None:
+                regularizers[name].append(tau)
+                if gamma is not None:
+                    regularizers[name].append(gamma)
+
+        params['regularizers'] = regularizers
+
+        scores = {}
+        for name, score in iteritems(self._scores._data):
+            scores[name] = [score._config_message.__name__,
+                            score.config.SerializeToString()]
+
+            model_name = None
+            try:
+                model_name = score.model_name
+            except KeyError:
+                pass
+            if model_name is not None:
+                scores[name].append(model_name)
+
+        params['scores'] = scores
+
+        with open(os.path.join(data_path, PARAMETERS_FILENAME_BIN), 'wb') as fout:
+            pickle.dump(params, fout)
+
+    def set_parent_model(self, parent_model, parent_model_weight=None):
+        """
+        :Description: sets parent model. For more details, see comment in ARTM.__init__.
+
+        :param ARTM parent_model: An instance of ARTM class to use as parent level of hierarchy
+        """
+
+        if not isinstance(parent_model, ARTM):
+            raise IOError('parent_model must be of type ARTM')
+
+        self._parent_model_id = parent_model.master.master_id
+        self.master.reconfigure(parent_model_id=self._parent_model_id)
+
+        if parent_model_weight is not None:
+            self.parent_model_weight = parent_model_weight
+
+    def get_parent_psi(self):
+        """
+        :returns: p(subtopic|topic) matrix
+        """
+        if self._parent_model_id is None:
+            raise IOError('get_parent_psi() require parent model to be set')
+
+        batch = messages.Batch(id=str(uuid.uuid4()), description="__parent_phi_matrix_batch__")
+        batch_vectorizer = BatchVectorizer(batches=[batch], process_in_memory_model=self)
+        return self.transform(batch_vectorizer=batch_vectorizer)
 
 
 def version():
     return ARTM(num_topics=1).library_version
+
+
+def load_artm_model(data_path):
+    """
+    :Description: load all necessary files for model creation from given folder.
+
+    :param str data_path: full path to folder (should exist)
+    :return: artm.ARTM object, created using given dumped data
+    """
+    # load parameters
+    with open(os.path.join(data_path, PARAMETERS_FILENAME_BIN), 'rb') as fin:
+        params = pickle.load(fin)
+
+    if params['version'] > version():
+        raise RuntimeError('File was generated with newer version of library ({}). '.format(params['version']) +
+                           'Current library version is {}'.format(version()))
+
+    tt = params['transaction_types'] if 'transaction_types' in params else params['class_ids']
+    model = ARTM(topic_names=params['topic_names'],
+                 num_processors=params['num_processors'],
+                 transaction_types=tt,
+                 num_document_passes=params['num_document_passes'],
+                 reuse_theta=params['reuse_theta'],
+                 cache_theta=params['cache_theta'],
+                 theta_columns_naming=params['theta_columns_naming'],
+                 seed=params['seed'],
+                 show_progress_bars=params['show_progress_bars'],
+                 theta_name=params['theta_name'])
+
+    model._model_pwt = params['model_pwt']
+    model._model_nwt = params['model_nwt']
+    model._synchronizations_processed = params['synchronizations_processed']
+    model._num_online_processed_batches = params['num_online_processed_batches']
+    model._initialized = params['initialized']
+
+    for name, type_config in iteritems(params['regularizers']):
+        config = None
+        func = None
+        for reg_info in mc.REGULARIZERS:
+            if reg_info[0].__name__ == type_config[0]:
+                config = reg_info[0]()
+                func = reg_info[2]
+        config.ParseFromString(type_config[1])
+
+        if len(type_config) == 3:
+            model.regularizers.add(func(name=name, config=config, tau=type_config[2]))
+        elif len(type_config) == 4:
+            model.regularizers.add(func(name=name, config=config, tau=type_config[2], gamma=type_config[3]))
+        else:
+            model.regularizers.add(func(name=name, config=config))
+
+    # load scores and configure python score_tracker
+    for name, type_config in iteritems(params['scores']):
+        config = None
+        func = None
+        for score_info in mc.SCORES:
+            if score_info[1].__name__ == type_config[0]:
+                config = score_info[1]()
+                func = score_info[3]
+        config.ParseFromString(type_config[1])
+        if len(type_config) == 3:
+            model.scores.add(func(name=name, config=config, model_name=type_config[2]))
+        else:
+            model.scores.add(func(name=name, config=config))
+        model.score_tracker[name] = SCORE_TRACKER[model.scores[name].type](model.scores[name])
+
+    # load core score tracker
+    model._master.import_score_tracker(os.path.join(data_path, SCORE_TRACKER_FILENAME))
+    # load phi and n_wt matrices
+    model._master.import_model(model.model_pwt, os.path.join(data_path, PWT_FILENAME))
+    model._master.import_model(model.model_nwt, os.path.join(data_path, NWT_FILENAME))
+    # load theta if has theta_name
+    if model.theta_name is not None:
+        model._master.import_model(model.theta_name, os.path.join(data_path, PTD_FILENAME))
+
+    return model

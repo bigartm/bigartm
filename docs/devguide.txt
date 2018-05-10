@@ -10,7 +10,7 @@ BigARTM Developer's Guide
 
 These pages describe the development process of BigARTM library.
 If your intent to use BigARTM as a typical user, please proceed to
-:doc:`/tutorials/windows_basic` or :doc:`/tutorials/linux_basic`,
+:doc:`/installation/windows` or :doc:`/installation/linux`,
 depending on your operating system.
 If you intent is to contribute to the development BigARTM, please proceed to the links below.
 
@@ -24,9 +24,7 @@ If you intent is to contribute to the development BigARTM, please proceed to the
    devguide/proto_windows.txt
    devguide/ipython_windows.txt
    devguide/dev_build_linux.txt
+   devguide/create_regularizer.txt
    devguide/code_style.txt
-
-Wiki pages:
-
-* `Create New Regularizer <https://github.com/bigartm/bigartm/wiki/Creating-new-regularizers>`_
-* `Q & A <https://github.com/bigartm/bigartm/wiki/Q&A>`_
+   devguide/release.txt
+   devguide/messages.txt

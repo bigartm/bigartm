@@ -4,6 +4,8 @@ src/artm/c_interface.cc
 src/artm/core/batch_manager.cc
 src/artm/core/cache_manager.cc
 src/artm/core/collection_parser.cc
+src/artm/core/cooccurrence_collector.cc
+src/artm/core/cooccurrence_collector.h
 src/artm/core/dictionary.cc
 src/artm/core/dictionary_operations.cc
 src/artm/core/cuckoo_watch.cc
@@ -13,11 +15,14 @@ src/artm/core/instance.cc
 src/artm/core/master_component.cc
 src/artm/core/phi_matrix_operations.cc
 src/artm/core/processor.cc
+src/artm/core/processor_helpers.cc
+src/artm/core/processor_transaction_helpers.cc
 src/artm/core/processor_input.cc
 src/artm/core/protobuf_serialization.cc
 src/artm/core/score_manager.cc
 src/artm/core/token.cc
 src/artm/core/transform_function.cc
+src/artm/core/transaction_type.cc
 src/artm/regularizer/decorrelator_phi.cc
 src/artm/regularizer/hierarchy_sparsing_theta.cc
 src/artm/regularizer/multilanguage_phi.cc
@@ -30,6 +35,8 @@ src/artm/regularizer/smooth_ptdw.cc
 src/artm/regularizer/topic_selection_theta.cc
 src/artm/regularizer/biterms_phi.cc
 src/artm/regularizer/topic_segmentation_ptdw.cc
+src/artm/regularizer/smooth_time_in_topics_phi.cc
+src/artm/regularizer/net_plsa_phi.cc
 src/artm/score/class_precision.cc
 src/artm/score/peak_memory.cc
 src/artm/score/perplexity.cc
@@ -50,12 +57,16 @@ src/artm_tests/collection_parser_test.cc
 src/artm_tests/cpp_interface_test.cc
 src/artm_tests/template_manager_test.cc
 src/artm_tests/regularizers_test.cc
+src/artm_tests/scores_test.cc
 src/artm_tests/repeatable_result_test.cc
 src/artm_tests/master_model_test.cc
 src/artm_tests/multiple_classes_test.cc
 src/artm_tests/supcry_test.cc
 src/artm_tests/test_mother.cc
 src/artm_tests/thread_safe_holder_test.cc
+src/artm_tests/topic_seg_test.cc
+src/artm_tests/batch_manager_test.cc
+src/artm_tests/transactions_test.cc
 src/artm/regularizer_interface.h
 src/artm/score_calculator_interface.h
 src/artm/cpp_interface.h
@@ -77,6 +88,8 @@ src/artm/core/master_component.h
 src/artm/core/phi_matrix.h
 src/artm/core/phi_matrix_operations.h
 src/artm/core/processor.h
+src/artm/core/processor_helpers.h
+src/artm/core/processor_transaction_helpers.h
 src/artm/core/processor_input.h
 src/artm/core/protobuf_helpers.h
 src/artm/core/protobuf_serialization.h
@@ -85,6 +98,7 @@ src/artm/core/template_manager.h
 src/artm/core/thread_safe_holder.h
 src/artm/core/token.h
 src/artm/core/transform_function.h
+src/artm/core/transaction_type.h
 src/artm_tests/api.h
 src/artm_tests/test_mother.h
 src/artm/regularizer/decorrelator_phi.h
@@ -99,6 +113,8 @@ src/artm/regularizer/smooth_ptdw.h
 src/artm/regularizer/topic_selection_theta.h
 src/artm/regularizer/biterms_phi.h
 src/artm/regularizer/topic_segmentation_ptdw.h
+src/artm/regularizer/smooth_time_in_topics_phi.h
+src/artm/regularizer/net_plsa_phi.h
 src/artm/score/class_precision.h
 src/artm/score/peak_memory.h
 src/artm/score/perplexity.h

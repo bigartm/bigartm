@@ -1,4 +1,4 @@
-/* Copyright 2016, Additive Regularization of Topic Models.
+/* Copyright 2017, Additive Regularization of Topic Models.
 
    Author: Murat Apishev (great-mel@yandex.ru)
 
@@ -16,12 +16,12 @@
    The parameters of the regularizer:
    - topic_names (the names of topics to regularize, empty == all)
    - class_ids (class ids to regularize, empty == all)
+   - transaction_types (transaction types to regularize, empty == all)
    - dictionary_name (strongly required parameter)
 
 */
 
-#ifndef SRC_ARTM_REGULARIZER_BITERMS_PHI_H_
-#define SRC_ARTM_REGULARIZER_BITERMS_PHI_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -42,6 +42,7 @@ class BitermsPhi : public RegularizerInterface {
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
   virtual google::protobuf::RepeatedPtrField<std::string> class_ids_to_regularize();
+  virtual google::protobuf::RepeatedPtrField<std::string> transaction_types_to_regularize();
 
   virtual bool Reconfigure(const RegularizerConfig& config);
 
@@ -51,5 +52,3 @@ class BitermsPhi : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_BITERMS_PHI_H_

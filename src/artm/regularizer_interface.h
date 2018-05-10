@@ -1,9 +1,6 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-// Author: Murat Apishev (great-mel@yandex.ru)
-
-#ifndef SRC_ARTM_REGULARIZER_INTERFACE_H_
-#define SRC_ARTM_REGULARIZER_INTERFACE_H_
+#pragma once
 
 #include <vector>
 #include <map>
@@ -29,10 +26,10 @@ typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionary
 
 class RegularizeThetaAgent {
  public:
-  virtual ~RegularizeThetaAgent() {}
+  virtual ~RegularizeThetaAgent() { }
 
   // Define how theta regularizer applies to an individual item.
-  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const {}
+  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const { }
 
   // The following method allows to calculate regularization for all elements of the theta matrix.
   // This seems convenient, however we do not recommended to overwrite this method.
@@ -47,7 +44,7 @@ class RegularizeThetaAgent {
 
 class RegularizePtdwAgent {
  public:
-  virtual ~RegularizePtdwAgent() {}
+  virtual ~RegularizePtdwAgent() { }
   virtual void Apply(int item_index, int inner_iter, ::artm::utility::LocalPhiMatrix<float>* ptdw) const = 0;
 };
 
@@ -63,19 +60,23 @@ class RegularizePtdwAgent {
 // to avoid looking at strings (topic_name) during processing of each individual item.
 class RegularizerInterface {
  public:
-  RegularizerInterface() {}
+  RegularizerInterface() { }
   virtual ~RegularizerInterface() { }
 
   virtual std::shared_ptr<RegularizeThetaAgent>
-  CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau) {
+  CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, float tau) {
     return nullptr;
   }
 
   virtual std::shared_ptr<RegularizePtdwAgent>
-  CreateRegularizePtdwAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau) {
+  CreateRegularizePtdwAgent(const Batch& batch, const ProcessBatchesArgs& args, float tau) {
     return nullptr;
   }
 
+  // This is important to keep in mind when implementing new regularizers:
+  //    n_wt and result are guarantied to have the same shape (e.i. topics and tokens)
+  //    n_wt and p_wt are guarantied to share topics
+  //    p_wt may have another set of tokens than n_wt (!).
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,
                              ::artm::core::PhiMatrix* result) { return false; }
@@ -88,6 +89,10 @@ class RegularizerInterface {
     return google::protobuf::RepeatedPtrField<std::string>();
   }
 
+  virtual google::protobuf::RepeatedPtrField<std::string> transaction_types_to_regularize() {
+    return google::protobuf::RepeatedPtrField<std::string>();
+  }
+
   // Attempt to reconfigure an existing regularizer.
   // Returns true if succeeded, and false if the caller must recreate the regularizer from scratch
   // via constructor.
@@ -97,5 +102,3 @@ class RegularizerInterface {
 };
 
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_INTERFACE_H_

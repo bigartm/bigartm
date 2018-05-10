@@ -1,7 +1,6 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_HELPERS_H_
-#define SRC_ARTM_CORE_HELPERS_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -59,7 +58,7 @@ class Helpers {
                           const ::google::protobuf::Message& message);
 };
 
+bool isZero(float value, float tol = 1e-16f);
+
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_HELPERS_H_

@@ -1,7 +1,6 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_MASTER_COMPONENT_H_
-#define SRC_ARTM_CORE_MASTER_COMPONENT_H_
+#pragma once
 
 #include <functional>
 #include <memory>
@@ -76,6 +75,8 @@ class MasterComponent : boost::noncopyable {
   void ClearThetaCache(const ClearThetaCacheArgs& args);
   void ClearScoreCache(const ClearScoreCacheArgs& args);
   void ClearScoreArrayCache(const ClearScoreArrayCacheArgs& args);
+  void ExportScoreTracker(const ExportScoreTrackerArgs& args);
+  void ImportScoreTracker(const ImportScoreTrackerArgs& args);
 
   // DISPOSE functionality
   void DisposeModel(const std::string& name);
@@ -120,5 +121,3 @@ class MasterComponent : boost::noncopyable {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_MASTER_COMPONENT_H_

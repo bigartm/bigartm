@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 /*****************************************************************
 // All exceptions in artm::core should be inherited from std::runtime_error,
@@ -44,8 +44,8 @@ namespace core {
 
 #define DEFINE_EXCEPTION_TYPE(Type, BaseType)          \
 class Type : public BaseType { public:  /*NOLINT*/     \
-  explicit Type(std::string what) : BaseType(what) {}  \
-  explicit Type(const char* what) : BaseType(what) {}  \
+  explicit Type(std::string what) : BaseType(what) { }  \
+  explicit Type(const char* what) : BaseType(what) { }  \
 };
 
 DEFINE_EXCEPTION_TYPE(InternalError, std::runtime_error);
@@ -54,11 +54,11 @@ class ArgumentOutOfRangeException : public std::runtime_error {
   template<class T>
   explicit ArgumentOutOfRangeException(std::string argument, T actual)
       : std::runtime_error(argument + " == " +
-        boost::lexical_cast<std::string>(actual) + ", out of range.") {}
+        boost::lexical_cast<std::string>(actual) + ", out of range.") { }
   template<class T>
   explicit ArgumentOutOfRangeException(std::string argument, T actual, std::string message)
       : std::runtime_error(argument + " == " +
-        boost::lexical_cast<std::string>(actual) + ", out of range. " + message) {}
+        boost::lexical_cast<std::string>(actual) + ", out of range. " + message) { }
 };
 DEFINE_EXCEPTION_TYPE(InvalidMasterIdException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(CorruptedMessageException, std::runtime_error);

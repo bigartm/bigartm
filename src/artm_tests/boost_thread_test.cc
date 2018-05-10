@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #include <iostream>
 

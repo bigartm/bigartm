@@ -1,5 +1,5 @@
 ============================
-BigARTM command line utility
+BigARTM Command Line Utility
 ============================
 
 This document provides an overview of ``bigartm``
@@ -14,9 +14,22 @@ Then you can use ``bigartm`` as described by ``bigartm --help``.
 You may also get more information about builtin regularizers by typing ``bigartm --help --regularizer``.
 
 
+.. note::
+
+   In order to gather co-ooccurrence dictionary you need to have 2 files: collection in Vowpal Wabbit format and file of tokens in UCI vocab format. If you want to use co-occurrence dictionary in coherence computation you'll need to form file with ppmi values and use that as co-occurrence dictionary (it matches the format of co-ooccurrence dictionary).
+   Here is a combination of comand line keys that allows you to build co-occurrence dictionaries:
+
+   .. code-block:: bash
+   
+      bigartm -c vw -v vocab --cooc-window 10 --cooc-min-tf 200 --write-cooc-tf cooc_tf_ --cooc-min-df 200 --write-cooc-df cooc_df_ --write-ppmi-tf ppmi_tf_ --write-ppmi-df ppmi_df_
+
+   Numbers and names of files can be changed, it's just an example.
+   To know the description of each key, see below in table of all available keys.
+
+
 .. code-block:: bash
 
-    BigARTM v0.8.2 - library for advanced topic modeling (http://bigartm.org):
+    BigARTM v0.9.0 - library for advanced topic modeling (http://bigartm.org):
 
     Input data:
       -c [ --read-vw-corpus ] arg           Raw corpus in Vowpal Wabbit format
@@ -27,6 +40,15 @@ You may also get more information about builtin regularizers by typing ``bigartm
       --use-batches arg                     folder with batches to use
 
     Dictionary:
+      --cooc-min-tf arg (=0)                minimal value of cooccurrences of a 
+                                            pair of tokens that are saved in 
+                                            dictionary of cooccurrences
+      --cooc-min-df arg (=0)                minimal value of documents in which a
+                                            specific pair of tokens occurred 
+                                            together closely
+      --cooc-window arg (=5)                number of tokens around specific token,
+                                            which are used in calculation of 
+                                            cooccurrences
       --dictionary-min-df arg               filter out tokens present in less than 
                                             N documents / less than P% of documents
       --dictionary-max-df arg               filter out tokens present in less than 
@@ -66,6 +88,17 @@ You may also get more information about builtin regularizers by typing ``bigartm
                                             online algorithm
 
     Output:
+      --write-cooc-tf arg                   save dictionary of co-occurrences with 
+                                            frequencies of co-occurrences of every 
+                                            specific pair of tokens in whole 
+                                            collection
+      --write-cooc-df arg                   save dictionary of co-occurrences with 
+                                            number of documents in which every 
+                                            specific pair occured together
+      --write-ppmi-tf arg                   save values of positive pmi of pairs of
+                                            tokens from cooc_tf dictionary
+      --write-ppmi-df arg                   save values of positive pmi of pairs of
+                                            tokens from cooc_df dictionary
       --save-model arg                      save the model to binary file after 
                                             processing
       --save-batches arg                    batch folder

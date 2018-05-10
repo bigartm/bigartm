@@ -1,3 +1,5 @@
+# Copyright 2017, Additive Regularization of Topic Models.
+
 import shutil
 import glob
 import tempfile
@@ -157,10 +159,14 @@ def test_func():
         model.num_document_passes = num_document_passes
         model.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
 
-        for i in range(num_collection_passes):
-            assert abs(model.score_tracker['SparsityPhiScore'].value[i] - sparsity_phi_rel_value[i]) < sp_zero_eps
+        model_clone = model.clone()
+        assert model_clone is not None
 
-        for i in range(num_collection_passes):
-            assert abs(model.score_tracker['PerplexityScore'].value[i] - perplexity_rel_value[i]) < perp_zero_eps
+        for m in [model, model_clone]:
+            for i in range(num_collection_passes):
+                assert abs(m.score_tracker['SparsityPhiScore'].value[i] - sparsity_phi_rel_value[i]) < sp_zero_eps
+
+            for i in range(num_collection_passes):
+                assert abs(m.score_tracker['PerplexityScore'].value[i] - perplexity_rel_value[i]) < perp_zero_eps
     finally:
         shutil.rmtree(batches_folder)

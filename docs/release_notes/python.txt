@@ -5,8 +5,26 @@ This page describes recent changes in BigARTM's Python API.
 Note that the API might be affected by changes in the underlying protobuf messages.
 For this reason we recommend to review :doc:`messages`.
 
-For further reference about Python API refer to :doc:`/python_interface/artm_model`,
+For further reference about Python API refer to :doc:`/api_references/python_interface/artm_model`,
 `Q & A <https://github.com/bigartm/bigartm/wiki/Q&A>`_ or `tutorials <https://github.com/bigartm/bigartm-book/blob/master/README.md>`_.
+
+v0.9.0
+------
+* Remove flag ``process_in_memory`` from ``artm.BatchVectorizer``, and rename ``model`` parameter into ``process_in_memory_model``. Passing this parameter with ``data_format='batches'`` will trigger in-memory processing of batches specified in ``batches`` parameter.
+* ``artm.BatchVectorizer`` now can receive sparse matrices (subclasses of ``scipy.sparse.spmatrix``) for in-memory batch processing.
+* Enable custom decorrelation by specifying separate decorrelation coefficients for every pair of topics into ``artm.DecorrelatorPhiRegularizer`` via optional parameter ``topic_pairs``.
+* Add new regularizers: ``artm.SmoothTimeInTopicsPhiRegularizer`` and ``artm.NetPlsaRegularizer``.
+* Add support for entire model saving and loading via ``dump_artm_model`` and ``load_artm_model`` methods of ``artm.ARTM``.
+
+
+v0.8.3
+------
+
+* Enable copying of ARTM, LDA, hARTM and ARTM_Level objects with ``clone()`` method and ``copy.deepcopy(obj)``.
+* Experimental support for import/export/editing of theta matrices; for more details see python reference of ``ARTM.__init__(ptd_name='ptd')``.
+* ``ARTM.get_phi_dense()`` method to extract phi matrix without pandas.DataFrame, see `#758 <https://github.com/bigartm/bigartm/issues/758>`_.
+* Bug fix in ``ARTM.get_phi_sparse()`` to return tokens as rows, and topic names as columns (previously it was the opposite way)
+
 
 v0.8.2
 ------

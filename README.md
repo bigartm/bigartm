@@ -7,6 +7,7 @@ The state-of-the-art platform for topic modeling.
 [![Build Status](https://secure.travis-ci.org/bigartm/bigartm.png)](https://travis-ci.org/bigartm/bigartm)
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/i18k840shuhr2jtk/branch/master?svg=true)](https://ci.appveyor.com/project/bigartm/bigartm)
 [![GitHub license](https://img.shields.io/badge/license-New%20BSD-blue.svg)](https://raw.github.com/bigartm/bigartm/master/LICENSE.txt)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.288960.svg)](https://doi.org/10.5281/zenodo.288960)
 
   - [Full Documentation](http://docs.bigartm.org/)
   - [User Mailing List](https://groups.google.com/forum/#!forum/bigartm-users)
@@ -16,7 +17,7 @@ The state-of-the-art platform for topic modeling.
 
 # What is BigARTM?
 
-BigARTM is a tool for [topic modeling](https://www.cs.princeton.edu/~blei/papers/Blei2012.pdf) based on a novel technique called Additive Regularization of Topic Models. This technique effectively builds multi-objective models by adding the weighted sums of regularizers to the optimization criterion. BigARTM is known to combine well very different objectives, including sparsing, smoothing, topics decorrelation and many others. Such combination of regularizers significantly improves several quality measures at once almost without any loss of the perplexity.
+BigARTM is a powerful tool for [topic modeling](https://en.wikipedia.org/wiki/Topic_model) based on a novel technique called Additive Regularization of Topic Models. This technique effectively builds multi-objective models by adding the weighted sums of regularizers to the optimization criterion. BigARTM is known to combine well very different objectives, including sparsing, smoothing, topics decorrelation and many others. Such combination of regularizers significantly improves several quality measures at once almost without any loss of the perplexity.
 
 ### References
 
@@ -28,7 +29,7 @@ BigARTM is a tool for [topic modeling](https://www.cs.princeton.edu/~blei/papers
 
 ### Related Software Packages
 
-- [David Blei's List](https://www.cs.princeton.edu/~blei/topicmodeling.html) of Open Source topic modeling software
+- [David Blei's List](http://www.cs.columbia.edu/~blei/topicmodeling_software.html) of Open Source topic modeling software
 - [MALLET](http://mallet.cs.umass.edu/topics.php): Java-based toolkit for language processing with topic modeling package
 - [Gensim](https://radimrehurek.com/gensim/): Python topic modeling library
 - [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit) has an implementation of [Online-LDA algorithm](https://github.com/JohnLangford/vowpal_wabbit/wiki/Latent-Dirichlet-Allocation)
@@ -83,33 +84,51 @@ bigartm.exe -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictio
 
 ### Interactive Python interface
 
-Check out the documentation for the ARTM Python interface 
-[in English](http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/ARTM_tutorial_EN.ipynb) and
-[in Russian](http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/ARTM_tutorial_RU.ipynb) 
+BigARTM supports full-featured and clear Python API (see [Installation](http://docs.bigartm.org/en/latest/installation/index.html) to configure Python API for your OS).
 
-Refer to [tutorials](http://docs.bigartm.org/en/latest/tutorials/index.html) for details on how to install and start using Python interface.
+Example:
 
 ```python
-# A stub
-import bigartm
+import artm
 
-model = bigartm.ARTM(num_topics=15)
-batch_vectorizer = bigartm.BatchVectorizer(data_format='bow_uci',
-                                           collection_name='kos',
-                                           target_folder='kos')
-model.fit_offline(batches, passes=5)
-print model.phi_
+# Prepare data
+# Case 1: data in CountVectorizer format
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.datasets import fetch_20newsgroups
+from numpy import array
+
+cv = CountVectorizer(max_features=1000, stop_words='english')
+n_wd = array(cv.fit_transform(fetch_20newsgroups().data).todense()).T
+vocabulary = cv.get_feature_names()
+
+bv = artm.BatchVectorizer(data_format='bow_n_wd',
+                          n_wd=n_wd,
+                          vocabulary=vocabulary)
+
+# Case 2: data in UCI format (https://archive.ics.uci.edu/ml/datasets/Bag+of+Words)
+bv = artm.BatchVectorizer(data_format='bow_uci',
+                          collection_name='kos',
+                          target_folder='kos_batches')
+
+# Learn simple LDA model (or you can use advanced artm.ARTM)
+model = artm.LDA(num_topics=15, dictionary=bv.dictionary)
+model.fit_offline(bv, num_collection_passes=20)
+
+# Print results
+model.get_top_tokens()
 ```
+
+Refer to [tutorials](http://docs.bigartm.org/en/latest/tutorials/python_tutorial.html) for details on how to start using BigARTM from Python, [user's guide](http://docs.bigartm.org/en/latest/tutorials/python_userguide/index.html) can provide information about more advanced features and cases.
 
 ### Low-level API
 
-  - [C++ Interface](http://docs.bigartm.org/en/latest/ref/cpp_interface.html)
-  - [Plain C Interface](http://docs.bigartm.org/en/latest/ref/c_interface.html)
+  - [C++ Interface](http://docs.bigartm.org/en/latest/api_references/cpp_interface.html)
+  - [Plain C Interface](http://docs.bigartm.org/en/latest/api_references/c_interface.html)
 
 
 ## Contributing
 
-Refer to the [Developer's Guide](http://docs.bigartm.org/en/latest/devguide.html).
+Refer to the [Developer's Guide](http://docs.bigartm.org/en/latest/devguide.html) and follows [Code Style](https://github.com/bigartm/bigartm/wiki/Code-style).
 
 To report a bug use [issue tracker](https://github.com/bigartm/bigartm/issues). To ask a question use [our mailing list](https://groups.google.com/forum/#!forum/bigartm-users). Feel free to make [pull request](https://github.com/bigartm/bigartm/pulls).
 

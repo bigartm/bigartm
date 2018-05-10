@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #include "gtest/gtest.h"
 
@@ -23,17 +23,28 @@ TEST(Blas, Basic) {
 
   EXPECT_EQ(blas_builtin->sdot(12, C, 1, CT, 1), 75188);
   blas_builtin->saxpy(6, 1.0, A, 1, A2, 1);
-  for (int i = 0; i < 6; ++i) EXPECT_EQ(A2[i], A[i]);
+  for (int i = 0; i < 6; ++i) {
+    EXPECT_EQ(A2[i], A[i]);
+  }
+
   blas_builtin->saxpy(6, -1.0, A, 1, A2, 1);
   blas_builtin->sgemm(Blas::RowMajor, Blas::NoTrans, Blas::NoTrans,
       3, 4, 2, 1.0, A, 2, B, 4, 0, C1, 4);
-  for (int i = 0; i < 12; ++i) EXPECT_EQ(C1[i], C[i]);
+  for (int i = 0; i < 12; ++i) {
+    EXPECT_EQ(C1[i], C[i]);
+  }
+
   blas_builtin->sgemm(Blas::ColMajor, Blas::NoTrans, Blas::NoTrans,
       3, 4, 2, 1.0, AT, 3, BT, 2, 0, C1, 3);
-  for (int i = 0; i < 12; ++i) EXPECT_EQ(C1[i], CT[i]);
+  for (int i = 0; i < 12; ++i) {
+    EXPECT_EQ(C1[i], CT[i]);
+  }
+
   blas_builtin->sgemm(Blas::RowMajor, Blas::Trans, Blas::NoTrans,
       3, 4, 2, 1.0, AT, 3, B, 4, 0, C1, 4);
-  for (int i = 0; i < 12; ++i) EXPECT_EQ(C1[i], C[i]);
+  for (int i = 0; i < 12; ++i) {
+    EXPECT_EQ(C1[i], C[i]);
+  }
 }
 
 TEST(Blas, scsr2csc) {
@@ -47,13 +58,25 @@ TEST(Blas, scsr2csc) {
   Blas& blas = *Blas::builtin();
   ASSERT_TRUE(blas.is_loaded());
   blas.scsr2csc(m, n, nnz, csr_val, csr_row_ptr, csr_col_ind, csc_val, csc_row_ind, csc_col_ptr);
-  for (int i = 0; i < nnz; ++i) EXPECT_EQ(csc_val[i], csc_val_exp[i]);
-  for (int i = 0; i < nnz; ++i) EXPECT_EQ(csc_row_ind[i], csc_row_ind_exp[i]);
-  for (int i = 0; i < (n + 1); ++i) EXPECT_EQ(csc_col_ptr[i], csc_col_ptr_exp[i]);
+  for (int i = 0; i < nnz; ++i) {
+    EXPECT_EQ(csc_val[i], csc_val_exp[i]);
+  }
+  for (int i = 0; i < nnz; ++i) {
+    EXPECT_EQ(csc_row_ind[i], csc_row_ind_exp[i]);
+  }
+  for (int i = 0; i < (n + 1); ++i) {
+    EXPECT_EQ(csc_col_ptr[i], csc_col_ptr_exp[i]);
+  }
 
   // convert back
   blas.scsr2csc(n, m, nnz, csc_val, csc_col_ptr, csc_row_ind, csr_val2, csr_col_ind2, csr_row_ptr2);
-  for (int i = 0; i < nnz; ++i) EXPECT_EQ(csr_val2[i], csr_val[i]);
-  for (int i = 0; i < nnz; ++i) EXPECT_EQ(csr_col_ind2[i], csr_col_ind[i]);
-  for (int i = 0; i < (m + 1); ++i) EXPECT_EQ(csr_row_ptr2[i], csr_row_ptr[i]);
+  for (int i = 0; i < nnz; ++i) {
+    EXPECT_EQ(csr_val2[i], csr_val[i]);
+  }
+  for (int i = 0; i < nnz; ++i) {
+    EXPECT_EQ(csr_col_ind2[i], csr_col_ind[i]);
+  }
+  for (int i = 0; i < (m + 1); ++i) {
+    EXPECT_EQ(csr_row_ptr2[i], csr_row_ptr[i]);
+  }
 }

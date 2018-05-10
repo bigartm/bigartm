@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #include "boost/thread.hpp"
 #include "gtest/gtest.h"
@@ -34,8 +34,9 @@ std::string runOfflineTest() {
   auto batches = ::artm::test::TestMother::GenerateBatches(batches_size, nTokens);
   auto offline_args = api.Initialize(batches);
 
-  for (int iter = 0; iter < 3; ++iter)
+  for (int iter = 0; iter < 3; ++iter) {
     master_component.FitOfflineModel(offline_args);
+  }
 
   ::artm::TopicModel topic_model = master_component.GetTopicModel();
   std::stringstream ss;
@@ -56,8 +57,9 @@ std::string runOfflineTest() {
 TEST(RepeatableResult, Offline) {
   std::string first_result = runOfflineTest();
   std::string second_result = runOfflineTest();
-  if (first_result != second_result)
+  if (first_result != second_result) {
     std::cout << first_result << "\n" << second_result;
+  }
   ASSERT_EQ(first_result, second_result);
 }
 
@@ -77,7 +79,6 @@ TEST(RepeatableResult, RandomGenerator) {
 
 // artm_tests.exe --gtest_filter=RepeatableResult.TokenHasher
 TEST(RepeatableResult, TokenHasher) {
-  auto token_hasher = artm::core::TokenHasher();
   ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("class_id_1", ""))[0], 0.245338);
   ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("1_class_id", ""))[0], 0.319662);
   ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("", "token_1"))[0], 0.341962);
@@ -109,8 +110,9 @@ void OverwriteTopicModel_internal(::artm::MatrixLayout matrix_layout) {
   ::artm::ImportBatchesArgs import_args;
   auto offline_args = api.Initialize(batches, &import_args);
 
-  for (int iter = 0; iter < 3; ++iter)
+  for (int iter = 0; iter < 3; ++iter) {
     master_component.FitOfflineModel(offline_args);
+  }
 
   ::artm::MasterModel master2(master_config);
   master2.ImportBatches(import_args);
@@ -126,7 +128,7 @@ void OverwriteTopicModel_internal(::artm::MatrixLayout matrix_layout) {
   api2.OverwriteModel(master_component.GetTopicModel(get_topic_model_args));
 
   std::string file_name = ::artm::test::Helpers::getUniqueString();
-  artm::core::call_on_destruction c([&]() { try { boost::filesystem::remove(file_name); } catch (...) {} });  // NOLINT
+  artm::core::call_on_destruction c([&]() { try { boost::filesystem::remove(file_name); } catch (...) { } });  // NOLINT
   ::artm::ExportModelArgs export_args;
   export_args.set_model_name(master_config.pwt_name());
   export_args.set_file_name(file_name);

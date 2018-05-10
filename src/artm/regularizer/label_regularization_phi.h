@@ -1,4 +1,4 @@
-/* Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2017, Additive Regularization of Topic Models.
 
    Author: Murat Apishev (great-mel@yandex.ru)
 
@@ -16,12 +16,12 @@
    The parameters of the regularizer:
    - topic_names (the names of topics to regularize, empty == all)
    - class_ids (class ids to regularize, empty == all)
+   - transaction_types (transaction types to regularize, empty == all)
    - dictionary_name
 
 */
 
-#ifndef SRC_ARTM_REGULARIZER_LABEL_REGULARIZATION_PHI_H_
-#define SRC_ARTM_REGULARIZER_LABEL_REGULARIZATION_PHI_H_
+#pragma once
 
 #include <string>
 
@@ -32,8 +32,7 @@ namespace regularizer {
 
 class LabelRegularizationPhi : public RegularizerInterface {
  public:
-  explicit LabelRegularizationPhi(const LabelRegularizationPhiConfig& config)
-    : config_(config) {}
+  explicit LabelRegularizationPhi(const LabelRegularizationPhiConfig& config) : config_(config) { }
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,
@@ -41,6 +40,7 @@ class LabelRegularizationPhi : public RegularizerInterface {
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
   virtual google::protobuf::RepeatedPtrField<std::string> class_ids_to_regularize();
+  virtual google::protobuf::RepeatedPtrField<std::string> transaction_types_to_regularize();
 
   virtual bool Reconfigure(const RegularizerConfig& config);
 
@@ -50,5 +50,3 @@ class LabelRegularizationPhi : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_LABEL_REGULARIZATION_PHI_H_

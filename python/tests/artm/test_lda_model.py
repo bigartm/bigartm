@@ -1,3 +1,5 @@
+# Copyright 2017, Additive Regularization of Topic Models.
+
 import shutil
 import glob
 import tempfile
@@ -79,6 +81,8 @@ def test_func():
         assert theta.shape == (num_topics, num_docs)
 
         assert model_lda.library_version.count('.') == 2  # major.minor.patch
+
+        assert model_lda.clone() is not None
 
         model_lda = artm.LDA(num_topics=num_topics, alpha=alpha, beta=([0.1] * num_topics), dictionary=dictionary, cache_theta=True)
         assert model_lda._internal_model.regularizers.size() == num_topics + 1

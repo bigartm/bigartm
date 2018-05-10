@@ -1,0 +1,10 @@
+ARTM model
+==========
+
+This page describes ARTM class.
+
+.. automodule:: artm
+
+.. autoclass:: ARTM
+   :members:
+   :special-members: __init__

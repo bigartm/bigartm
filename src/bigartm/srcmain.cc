@@ -1,10 +1,15 @@
+// Copyright 2018, Additive Regularization of Topic Models.
+
 #include <stdlib.h>
+
+#include <cstring>
+#include <ctime>
+#include <cmath>
+
 #include <algorithm>
 #include <chrono>
-#include <ctime>
 #include <fstream>
 #include <future>
-#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <set>
@@ -26,13 +31,12 @@ namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 
 #include "artm/cpp_interface.h"
-#include "artm/core/common.h"
-#include "glog/logging.h"
+
 using namespace artm;
 
 class CuckooWatch {
  public:
-  explicit CuckooWatch() : start_(std::chrono::system_clock::now()) {}
+  explicit CuckooWatch() : start_(std::chrono::system_clock::now()) { }
 
   long long elapsed_ms() const {
     auto delta = (std::chrono::system_clock::now() - start_);
@@ -47,8 +51,9 @@ class CuckooWatch {
 static std::string formatByteSize(long long bytes) {
   std::stringstream ss;
   int unit = 1024 * 1024;  // MB;
-  if (bytes < unit)
+  if (bytes < unit) {
     return "<1 MB";
+  }
   ss << bytes / unit << " MB";
   return ss.str();
 }
@@ -73,20 +78,25 @@ class CsvEscape {
   char delimiter_;
 
  public:
-  explicit CsvEscape(char delimiter) : delimiter_(delimiter) {}
+  explicit CsvEscape(char delimiter) : delimiter_(delimiter) { }
 
   std::string apply(const std::string& in) {
-    if (delimiter_ == '\0')
+    if (delimiter_ == '\0') {
       return in;
+    }
 
-    if (in.find(delimiter_) == std::string::npos)
+    if (in.find(delimiter_) == std::string::npos) {
       return in;
+    }
 
     std::stringstream ss;
     ss << "\"";
     for (unsigned i = 0; i < in.size(); ++i) {
-      if (in[i] == '"') ss << "\"\"";
-      else ss << in[i];
+      if (in[i] == '"') {
+        ss << "\"\"";
+      } else {
+        ss << in[i];
+      }
     }
     ss << "\"";
 
@@ -111,9 +121,10 @@ class ProgressScope {
   std::string newline_;
 };
 
-bool parseNumberOrPercent(std::string str, double* value, bool* fraction ) {
-  if (str.empty())
+bool parseNumberOrPercent(std::string str, float* value, bool* fraction ) {
+  if (str.empty()) {
     return false;
+  }
 
   bool percent = false;
   if (str[str.size() - 1] == '%') {
@@ -124,9 +135,8 @@ bool parseNumberOrPercent(std::string str, double* value, bool* fraction ) {
   *value = 0;
   *fraction = true;
   try {
-    *value = boost::lexical_cast<double>(str);
-  }
-  catch (...) {
+    *value = boost::lexical_cast<float>(str);
+  } catch (...) {
     return false;
   }
 
@@ -146,15 +156,16 @@ template<typename T>
 std::vector<std::pair<std::string, T>> parseKeyValuePairs(const std::string& input) {
   std::vector<std::pair<std::string, T>> retval;
 
-  if (input.empty())
+  if (input.empty()) {
     return retval;
+  }
 
   try {
     // Handle the case when "input" simply has an instance of typename T
     T single_value = boost::lexical_cast<T>(input);
     retval.push_back(std::make_pair(std::string(), single_value));
     return retval;
-  } catch (...) {}
+  } catch (...) { }
 
   // Handle the case when "input" is a set of "group:value" pairs, separated by ; or ,
   std::vector<std::string> strs;
@@ -163,8 +174,9 @@ std::vector<std::pair<std::string, T>> parseKeyValuePairs(const std::string& inp
     std::string elem = strs[elem_index];
     T elem_size = 0;
     size_t split_index = elem.find(':');
-    if (split_index == 0 || (split_index == elem.size() - 1))
+    if (split_index == 0 || (split_index == elem.size() - 1)) {
       split_index = std::string::npos;
+    }
 
     if (split_index != std::string::npos) {
       try {
@@ -192,8 +204,9 @@ std::vector<std::pair<std::string, std::vector<std::string>>> parseTopicGroups(c
       group_list.push_back(group);
     }
     else {
-      for (int i = 0; i < group_size; ++i)
+      for (int i = 0; i < group_size; ++i) {
         group_list.push_back(group + "_" + boost::lexical_cast<std::string>(i));
+      }
     }
     result.push_back(std::make_pair(group, group_list));
   }
@@ -205,9 +218,11 @@ std::vector<std::pair<std::string, std::vector<std::string>>> parseTopicGroups(c
 std::vector<std::string> parseTopics(const std::string& topics) {
   std::vector<std::string> result;
   std::vector<std::pair<std::string, std::vector<std::string>>> pairs = parseTopicGroups(topics);
-  for (auto& pair : pairs)
-    for (auto& topic_name : pair.second)
+  for (const auto& pair : pairs) {
+    for (const auto& topic_name : pair.second) {
       result.push_back(topic_name);
+    }
+  }
 
   return result;
 }
@@ -219,20 +234,23 @@ std::vector<std::string> parseTopics(const std::string& topics, const std::strin
   auto all_topics_set = std::set<std::string>(all_topics.begin(), all_topics.end());
   std::vector<std::pair<std::string, std::vector<std::string>>> pairs = parseTopicGroups(topic_groups);
   std::vector<std::string> topic_names = parseTopics(topics);
-  for (auto& topic_name : topic_names) {
+  for (const auto& topic_name : topic_names) {
     bool found = false;
-    for (auto& pair : pairs) {
+    for (const auto& pair : pairs) {
       if (pair.first == topic_name) {
-        for (auto& group_topic : pair.second)
+        for (const auto& group_topic : pair.second) {
           result.push_back(group_topic);
+	}
         found = true;
         break;
       }
     }
 
-    if (!found)
-      if (all_topics_set.find(topic_name) != all_topics_set.end())
+    if (!found) {
+      if (all_topics_set.find(topic_name) != all_topics_set.end()) {
         result.push_back(topic_name);
+      }
+    }
   }
 
   return result;
@@ -253,6 +271,10 @@ struct artm_options {
   std::string dictionary_min_df;
   std::string dictionary_max_df;
   int dictionary_size;
+  int cooc_window;
+  int doc_per_cooc_batch;
+  int cooc_min_df;
+  int cooc_min_tf;
 
   // Model
   std::string load_model;
@@ -282,6 +304,10 @@ struct artm_options {
   std::string write_model_readable;
   std::string write_dictionary_readable;
   std::string write_predictions;
+  std::string write_cooc_tf;
+  std::string write_cooc_df;
+  std::string write_ppmi_tf;
+  std::string write_ppmi_df;
   std::string write_class_predictions;
   std::string write_scores;
   std::string write_vw_corpus;
@@ -347,13 +373,15 @@ struct artm_options {
 };
 
 void fixOptions(artm_options* options) {
-  if (boost::to_lower_copy(options->csv_separator) == "tab")
+  if (boost::to_lower_copy(options->csv_separator) == "tab") {
     options->csv_separator = "\t";
+  }
 }
 
 bool verifyWritableFile(const std::string& file, bool force) {
-  if (file.empty())
+  if (file.empty()) {
     return true;
+  }
 
   bool exists = boost::filesystem::exists(file);
   bool is_directory = exists && boost::filesystem::is_directory(file);
@@ -419,7 +447,7 @@ void fixScoreLevel(artm_options* options) {
   std::vector<std::pair<std::string, float>> class_ids_map = parseKeyValuePairs<float>(options->use_modality);
   std::vector<std::string> class_ids;
 
-  for (auto& class_id : class_ids_map) {
+  for (const auto& class_id : class_ids_map) {
     if (!class_id.first.empty()) {
       std::stringstream ss;
       ss << " @" << class_id.first;
@@ -429,21 +457,26 @@ void fixScoreLevel(artm_options* options) {
     }
   }
 
-  if (class_ids.empty())
+  if (class_ids.empty()) {
     class_ids.push_back(std::string());
+  }
 
   if (options->score_level >= 1) {
     options->score.push_back("Perplexity");
-    for (auto& class_id : class_ids)
+    for (const auto& class_id : class_ids) {
       options->score.push_back(std::string("SparsityPhi") + class_id);
+    }
+
     options->score.push_back("SparsityTheta");
-    if (!options->predict_class.empty())
+    if (!options->predict_class.empty()) {
       options->score.push_back("ClassPrecision");
+    }
   }
 
   if (options->score_level >= 2) {
-    for (auto& class_id : class_ids)
+    for (const auto& class_id : class_ids) {
       options->final_score.push_back(std::string("TopTokens") + class_id);
+    }
     options->final_score.push_back("ThetaSnippet");
   }
 
@@ -453,8 +486,9 @@ void fixScoreLevel(artm_options* options) {
 }
 
 std::string addToDictionaryMap(std::map<std::string, std::string>* dictionary_map, std::string dictionary_path) {
-  if (dictionary_path.empty())
+  if (dictionary_path.empty()) {
     return std::string();
+  }
 
   auto mapped_name = dictionary_map->find(dictionary_path);
   if (mapped_name == dictionary_map->end()) {
@@ -472,8 +506,9 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
                           MasterModelConfig* master_config) {
   std::vector<std::string> strs;
   boost::split(strs, regularizer, boost::is_any_of("\t "));
-  if (strs.size() < 2)
+  if (strs.size() < 2) {
     throw std::invalid_argument(std::string("Invalid regularizer: " + regularizer));
+  }
   float tau;
   try {
     tau = boost::lexical_cast<float>(strs[0]);
@@ -486,17 +521,24 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
   std::string dictionary_path;
   for (unsigned i = 2; i < strs.size(); ++i) {
     std::string elem = strs[i];
-    if (elem.empty())
+    if (elem.empty()) {
       continue;
+    }
     if (elem[0] == '#') {
       topic_names = parseTopics(elem.substr(1, elem.size() - 1), topics);
-      if (topic_names.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+      if (topic_names.empty()) {
+        throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+      }
     }  else if (elem[0] == '@') {
       class_ids = parseKeyValuePairs<float>(elem.substr(1, elem.size() - 1));
-      if (class_ids.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+      if (class_ids.empty()) {
+        throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+      }
     } else if (elem[0] == '!') {
       dictionary_path = elem.substr(1, elem.size() - 1);
-      if (dictionary_path.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+      if (dictionary_path.empty()) {
+        throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+      }
     } else {
       throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
     }
@@ -506,14 +548,18 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
 
   RegularizerConfig* config = master_config->add_regularizer_config();
 
-  // SmoothPhi, SparsePhi, SmoothTheta, SparseTheta, Decorrelation, TopicSelection, LabelRegularization, ImproveCoherence, Biterms
+  // SmoothPhi, SparsePhi, SmoothTheta, SparseTheta, Decorrelation,
+  // TopicSelection, LabelRegularization, ImproveCoherence, Biterms
   std::string regularizer_type = boost::to_lower_copy(strs[1]);
   if (regularizer_type == "smooththeta" || regularizer_type == "sparsetheta") {
     ::artm::SmoothSparseThetaConfig specific_config;
-    for (auto& topic_name : topic_names)
+    for (const auto& topic_name : topic_names) {
       specific_config.add_topic_name(topic_name);
+    }
 
-    if (regularizer_type == "sparsetheta") tau = -tau;
+    if (regularizer_type == "sparsetheta") {
+      tau = -tau;
+    }
 
     config->set_name(regularizer);
     config->set_type(::artm::RegularizerType_SmoothSparseTheta);
@@ -522,14 +568,21 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
   }
   else if (regularizer_type == "smoothphi" || regularizer_type == "sparsephi") {
     ::artm::SmoothSparsePhiConfig specific_config;
-    for (auto& topic_name : topic_names)
+    for (const auto& topic_name : topic_names) {
       specific_config.add_topic_name(topic_name);
-    for (auto& class_id : class_ids)
-      specific_config.add_class_id(class_id.first);
-    if (!dictionary_name.empty())
-      specific_config.set_dictionary_name(dictionary_name);
+    }
 
-    if (regularizer_type == "sparsephi") tau = -tau;
+    for (const auto& class_id : class_ids) {
+      specific_config.add_class_id(class_id.first);
+    }
+
+    if (!dictionary_name.empty()) {
+      specific_config.set_dictionary_name(dictionary_name);
+    }
+
+    if (regularizer_type == "sparsephi") {
+      tau = -tau;
+    }
 
     config->set_name(regularizer);
     config->set_type(::artm::RegularizerType_SmoothSparsePhi);
@@ -538,10 +591,13 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
   }
   else if (regularizer_type == "decorrelation") {
     ::artm::DecorrelatorPhiConfig specific_config;
-    for (auto& topic_name : topic_names)
+    for (const auto& topic_name : topic_names) {
       specific_config.add_topic_name(topic_name);
-    for (auto& class_id : class_ids)
+    }
+
+    for (const auto& class_id : class_ids) {
       specific_config.add_class_id(class_id.first);
+    }
 
     config->set_name(regularizer);
     config->set_type(::artm::RegularizerType_DecorrelatorPhi);
@@ -550,8 +606,9 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
   }
   else if (regularizer_type == "topicselection") {
     ::artm::TopicSelectionThetaConfig specific_config;
-    for (auto& topic_name : topic_names)
+    for (const auto& topic_name : topic_names) {
       specific_config.add_topic_name(topic_name);
+    }
 
     config->set_name(regularizer);
     config->set_type(::artm::RegularizerType_TopicSelectionTheta);
@@ -563,12 +620,17 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
   }
   else if (regularizer_type == "labelregularization") {
     ::artm::LabelRegularizationPhiConfig specific_config;
-    for (auto& topic_name : topic_names)
+    for (const auto& topic_name : topic_names) {
       specific_config.add_topic_name(topic_name);
-    for (auto& class_id : class_ids)
+    }
+
+    for (const auto& class_id : class_ids) {
       specific_config.add_class_id(class_id.first);
-    if (!dictionary_name.empty())
+    }
+
+    if (!dictionary_name.empty()) {
       specific_config.set_dictionary_name(dictionary_name);
+    }
 
     config->set_name(regularizer);
     config->set_type(::artm::RegularizerType_LabelRegularizationPhi);
@@ -577,12 +639,17 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
   }
   else if (regularizer_type == "improvecoherence") {
     ::artm::ImproveCoherencePhiConfig specific_config;
-    for (auto& topic_name : topic_names)
+    for (const auto& topic_name : topic_names) {
       specific_config.add_topic_name(topic_name);
-    for (auto& class_id : class_ids)
+    }
+
+    for (const auto& class_id : class_ids) {
       specific_config.add_class_id(class_id.first);
-    if (!dictionary_name.empty())
+    }
+
+    if (!dictionary_name.empty()) {
       specific_config.set_dictionary_name(dictionary_name);
+    }
 
     config->set_name(regularizer);
     config->set_type(::artm::RegularizerType_ImproveCoherencePhi);
@@ -591,12 +658,17 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
   }
   else if (regularizer_type == "biterms") {
     ::artm::BitermsPhiConfig specific_config;
-    for (auto& topic_name : topic_names)
+    for (const auto& topic_name : topic_names) {
       specific_config.add_topic_name(topic_name);
-    for (auto& class_id : class_ids)
+    }
+
+    for (const auto& class_id : class_ids) {
       specific_config.add_class_id(class_id.first);
-    if (!dictionary_name.empty())
+    }
+
+    if (!dictionary_name.empty()) {
       specific_config.set_dictionary_name(dictionary_name);
+    }
 
     config->set_name(regularizer);
     config->set_type(::artm::RegularizerType_BitermsPhi);
@@ -609,13 +681,24 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
 
 void output_profile_information(const MasterModel& master) {
   auto info = master.info();
-  for (auto& model : info.model())
-    std::cerr << "\tModel " << model.name() << ": " << formatByteSize(model.byte_size()) << ", |T|=" << model.num_topics() << ", |W| = " << model.num_tokens() << ";\n";
-  for (auto& dict : info.dictionary())
-    std::cerr << "\tDictionary " << dict.name() << ": " << formatByteSize(dict.byte_size()) << ", |W|=" << dict.num_entries() << ";\n";
+  for (const auto& model : info.model()) {
+    std::cerr << "\tModel " << model.name()
+              << ": " << formatByteSize(model.byte_size())
+              << ", |T|=" << model.num_topics()
+              << ", |W| = " << model.num_tokens() << ";\n";
+  }
+
+  for (const auto& dict : info.dictionary()) {
+    std::cerr << "\tDictionary " << dict.name()
+              << ": " << formatByteSize(dict.byte_size())
+              << ", |W|=" << dict.num_entries() << ";\n";
+  }
   int64_t cache_size = 0;
-  for (auto& cache_entity : info.cache_entry()) cache_size += cache_entity.byte_size();
-  std::cerr << "\tCache size: " << formatByteSize(cache_size) << " in total across " << info.cache_entry_size() << " entries;\n";
+  for (const auto& cache_entity : info.cache_entry()) {
+    cache_size += cache_entity.byte_size();
+  }
+  std::cerr << "\tCache size: " << formatByteSize(cache_size)
+            << " in total across " << info.cache_entry_size() << " entries;\n";
 }
 
 class ScoreHelper {
@@ -634,8 +717,9 @@ class ScoreHelper {
          master_(nullptr),
          config_(config),
          dictionary_map_(dictionary_map) {
-     if (!artm_options_.write_scores.empty())
+     if (!artm_options_.write_scores.empty()) {
        output_.open(artm_options_.write_scores, std::ofstream::app);
+     }
    }
 
    void setMasterModel(::artm::MasterModel* master) { master_ = master; }
@@ -643,25 +727,34 @@ class ScoreHelper {
    void addScore(const std::string& score, const std::string& topics) {
      std::vector<std::string> strs;
      boost::split(strs, score, boost::is_any_of("\t "));
-     if (strs.size() < 1)
+     if (strs.size() < 1) {
        throw std::invalid_argument(std::string("Invalid score: " + score));
+     }
 
      std::vector<std::pair<std::string, float>> class_ids;
      std::vector<std::string> topic_names;
      std::string dictionary_path;
      for (unsigned i = 1; i < strs.size(); ++i) {
        std::string elem = strs[i];
-       if (elem.empty())
+       if (elem.empty()) {
          continue;
+       }
+
        if (elem[0] == '#') {
          topic_names = parseTopics(elem.substr(1, elem.size() - 1), topics);
-         if (topic_names.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+         if (topic_names.empty()) {
+           throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+         }
        } else if (elem[0] == '@') {
          class_ids = parseKeyValuePairs<float>(elem.substr(1, elem.size() - 1));
-         if (class_ids.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+         if (class_ids.empty()) {
+           throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+         }
        } else if (elem[0] == '!') {
          dictionary_path = elem.substr(1, elem.size() - 1);
-         if (dictionary_path.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+         if (dictionary_path.empty()) {
+           throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+         }
        } else {
          throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
        }
@@ -679,7 +772,7 @@ class ScoreHelper {
          score_arg = boost::lexical_cast<float>(score_type.substr(langle + 1, rangle - langle - 1));
          score_type = score_type.substr(0, langle);
        }
-       catch (...) {}
+       catch (...) { }
      }
 
      ::artm::ScoreConfig& score_config = *config_->add_score_config();
@@ -687,7 +780,9 @@ class ScoreHelper {
      score_config.set_name(score);
      if (score_type == "perplexity") {
        PerplexityScoreConfig specific_config;
-       for (auto& class_id : class_ids) specific_config.add_class_id(class_id.first);
+       for (const auto& class_id : class_ids) {
+         specific_config.add_transaction_type(class_id.first);
+       }
        if (dictionary_name.empty()) {
          specific_config.set_model_type(PerplexityScoreConfig_Type_UnigramDocumentModel);
        } else {
@@ -699,38 +794,73 @@ class ScoreHelper {
      }
      else if (score_type == "sparsitytheta") {
        SparsityThetaScoreConfig specific_config;
-       for (auto& topic_name : topic_names) specific_config.add_topic_name(topic_name);
+       for (const auto& topic_name : topic_names) {
+         specific_config.add_topic_name(topic_name);
+       }
+
        score_config.set_type(::artm::ScoreType_SparsityTheta);
        score_config.set_config(specific_config.SerializeAsString());
      }
      else if (score_type == "sparsityphi") {
        SparsityPhiScoreConfig specific_config;
-       for (auto& topic_name : topic_names) specific_config.add_topic_name(topic_name);
-       for (auto& class_id : class_ids) specific_config.set_class_id(class_id.first);
+       for (const auto& topic_name : topic_names) {
+         specific_config.add_topic_name(topic_name);
+       }
+
+       for (const auto& class_id : class_ids) {
+         specific_config.set_class_id(class_id.first);
+       }
+
        score_config.set_type(::artm::ScoreType_SparsityPhi);
        score_config.set_config(specific_config.SerializeAsString());
      }
      else if (score_type == "toptokens") {
        TopTokensScoreConfig specific_config;
-       if (score_arg != 0) specific_config.set_num_tokens(static_cast<int>(score_arg));
-       for (auto& topic_name : topic_names) specific_config.add_topic_name(topic_name);
-       for (auto& class_id : class_ids) specific_config.set_class_id(class_id.first);
-       if (!dictionary_name.empty()) specific_config.set_cooccurrence_dictionary_name(dictionary_name);
+       if (score_arg != 0) {
+         specific_config.set_num_tokens(static_cast<int>(score_arg));
+       }
+
+       for (const auto& topic_name : topic_names) {
+         specific_config.add_topic_name(topic_name);
+       }
+
+       for (const auto& class_id : class_ids) {
+         specific_config.set_class_id(class_id.first);
+       }
+
+       if (!dictionary_name.empty()) {
+         specific_config.set_cooccurrence_dictionary_name(dictionary_name);
+       }
+
        score_config.set_type(::artm::ScoreType_TopTokens);
        score_config.set_config(specific_config.SerializeAsString());
      }
      else if (score_type == "thetasnippet") {
        ThetaSnippetScoreConfig specific_config;
-       if (score_arg != 0) specific_config.set_num_items(score_arg);
+       if (score_arg != 0) {
+         specific_config.set_num_items(score_arg);
+       }
        score_config.set_type(::artm::ScoreType_ThetaSnippet);
        score_config.set_config(specific_config.SerializeAsString());
      }
      else if (score_type == "topickernel") {
        TopicKernelScoreConfig specific_config;
-       if (score_arg != 0) specific_config.set_probability_mass_threshold(score_arg);
-       for (auto& topic_name : topic_names) specific_config.add_topic_name(topic_name);
-       for (auto& class_id : class_ids) specific_config.set_class_id(class_id.first);
-       if (!dictionary_name.empty()) specific_config.set_cooccurrence_dictionary_name(dictionary_name);
+       if (score_arg != 0) {
+         specific_config.set_probability_mass_threshold(score_arg);
+       }
+
+       for (const auto& topic_name : topic_names) {
+         specific_config.add_topic_name(topic_name);
+       }
+
+       for (const auto& class_id : class_ids) {
+         specific_config.set_class_id(class_id.first);
+       }
+
+       if (!dictionary_name.empty()) {
+         specific_config.set_cooccurrence_dictionary_name(dictionary_name);
+       }
+
        score_config.set_type(::artm::ScoreType_TopicKernel);
        score_config.set_config(specific_config.SerializeAsString());
      }
@@ -758,21 +888,27 @@ class ScoreHelper {
      if (type == ::artm::ScoreType_Perplexity) {
        auto score_data = master_->GetScoreAs< ::artm::PerplexityScore>(get_score_args);
        std::cerr << "Perplexity      = " << score_data.value();
-       if (boost::to_lower_copy(score_name) != "perplexity") std::cerr << "\t(" << score_name << ")";
+       if (boost::to_lower_copy(score_name) != "perplexity") {
+         std::cerr << "\t(" << score_name << ")";
+       }
        std::cerr << "\n";
        retval = boost::lexical_cast<std::string>(score_data.value());
      }
      else if (type == ::artm::ScoreType_SparsityTheta) {
        auto score_data = master_->GetScoreAs< ::artm::SparsityThetaScore>(get_score_args);
        std::cerr << "SparsityTheta   = " << score_data.value();
-       if (boost::to_lower_copy(score_name) != "sparsitytheta") std::cerr << "\t(" << score_name << ")";
+       if (boost::to_lower_copy(score_name) != "sparsitytheta") {
+         std::cerr << "\t(" << score_name << ")";
+       }
        std::cerr << "\n";
        retval = boost::lexical_cast<std::string>(score_data.value());
      }
      else if (type == ::artm::ScoreType_SparsityPhi) {
        auto score_data = master_->GetScoreAs< ::artm::SparsityPhiScore>(get_score_args);
        std::cerr << "SparsityPhi     = " << score_data.value();
-       if (boost::to_lower_copy(score_name) != "sparsityphi") std::cerr << "\t(" << score_name << ")";
+       if (boost::to_lower_copy(score_name) != "sparsityphi") {
+         std::cerr << "\t(" << score_name << ")";
+       }
        std::cerr << "\n";
        retval = boost::lexical_cast<std::string>(score_data.value());
      }
@@ -792,7 +928,7 @@ class ScoreHelper {
      }
      else if (type == ::artm::ScoreType_ThetaSnippet) {
        auto score_data = master_->GetScoreAs< ::artm::ThetaSnippetScore>(get_score_args);
-       int docs_to_show = score_data.values_size();
+       //int docs_to_show = score_data.values_size();
        std::cerr << "ThetaSnippet (" << score_name << ")\n";
        for (int item_index = 0; item_index < score_data.values_size(); ++item_index) {
          std::cerr << "ItemID=" << score_data.item_id(item_index) << ": ";
@@ -807,25 +943,32 @@ class ScoreHelper {
      else if (type == ::artm::ScoreType_TopicKernel) {
        auto score_data = master_->GetScoreAs< ::artm::TopicKernelScore>(get_score_args);
        std::stringstream suffix;
-       if (boost::to_lower_copy(score_name) != "topickernel") suffix << "\t(" << score_name << ")";
+       if (boost::to_lower_copy(score_name) != "topickernel") {
+         suffix << "\t(" << score_name << ")";
+       }
 
        std::cerr << "KernelSize      = " << score_data.average_kernel_size() << suffix.str() << "\n";
        std::cerr << "KernelPurity    = " << score_data.average_kernel_purity() << suffix.str() << "\n";
        std::cerr << "KernelContrast  = " << score_data.average_kernel_contrast() << suffix.str() << "\n";
-       if (score_data.has_average_coherence())
+       if (score_data.has_average_coherence()) {
          std::cerr << "KernelCoherence = " << score_data.average_coherence() << suffix.str() << "\n";
+       }
      }
      else if (type == ::artm::ScoreType_ClassPrecision) {
        auto score_data = master_->GetScoreAs< ::artm::ClassPrecisionScore>(get_score_args);
        std::stringstream suffix;
-       if (boost::to_lower_copy(score_name) != "classprecision") suffix << "\t(" << score_name << ")";
+       if (boost::to_lower_copy(score_name) != "classprecision") {
+         suffix << "\t(" << score_name << ")";
+       }
        std::cerr << "ClassPrecision  = " << score_data.value() << suffix.str() << "\n";
        retval = boost::lexical_cast<std::string>(score_data.value());
      }
      else if (type == ::artm::ScoreType_PeakMemory) {
        auto score_data = master_->GetScoreAs< ::artm::PeakMemoryScore>(get_score_args);
        std::cerr << "PeakMemory      = " << formatByteSize(score_data.value());
-       if (boost::to_lower_copy(score_name) != "peakmemory") std::cerr << "\t(" << score_name << ")";
+       if (boost::to_lower_copy(score_name) != "peakmemory") {
+         std::cerr << "\t(" << score_name << ")";
+       }
        std::cerr << "\n";
        retval = boost::lexical_cast<std::string>(score_data.value());
        output_profile_information(*master_);
@@ -837,15 +980,25 @@ class ScoreHelper {
    }
 
    void showScoresHeader(int argc, char* argv[]) {
-     if (!output_.is_open())
+     if (!output_.is_open()) {
        return;
+     }
      for (int i = 0; i < argc; ++i) {
        bool has_space = (std::string(argv[i]).find(' ') != std::string::npos);
-       if (has_space) output_ << "\"";
+       if (has_space) {
+         output_ << "\"";
+       }
+
        output_ << argv[i];
-       if (has_space) output_ << "\"";
-       if ((i + 1) != argc) output_ << " ";
-       else output_ << std::endl;
+       if (has_space) {
+         output_ << "\"";
+       }
+
+       if ((i + 1) != argc) {
+         output_ << " ";
+       } else {
+         output_ << std::endl;
+       }
      }
 
      CsvEscape escape(artm_options_.csv_separator.size() == 1 ? artm_options_.csv_separator[0] : '\0');
@@ -860,19 +1013,27 @@ class ScoreHelper {
    void showScores(int iter, long long elapsed_ms) {
      CsvEscape escape(artm_options_.csv_separator.size() == 1 ? artm_options_.csv_separator[0] : '\0');
      const std::string sep = artm_options_.csv_separator;
-     if (output_.is_open()) output_ << iter << sep << elapsed_ms;
+     if (output_.is_open()) {
+       output_ << iter << sep << elapsed_ms;
+     }
      for (const auto& score_name: score_name_) {
        std::string score_value = showScore(score_name.first, score_name.second);
-       if (output_.is_open()) output_ << sep << score_value;
+       if (output_.is_open()) {
+         output_ << sep << score_value;
+       }
      }
-     if (output_.is_open()) output_ << std::endl;
-     if (iter > 0)
+     if (output_.is_open()) {
+       output_ << std::endl;
+     }
+     if (iter > 0) {
       std::cerr << "================= Iteration " << iter << " took " << formatMilliseconds(elapsed_ms) << std::endl;
+     }
    }
 
    void showScores() {
-     for (const auto& score_name : score_name_)
+     for (const auto& score_name : score_name_) {
        showScore(score_name.first, score_name.second);
+     }
    }
 
    static std::string formatMilliseconds(long long elapsed) {
@@ -887,7 +1048,7 @@ class ScoreHelper {
      elapsed /= 60;
      int h = elapsed % 24;
      int days = elapsed / 24;
-     char buffer[128] = {};
+     char buffer[128] = { };
      sprintf(buffer, "%02d:%02d:%02d.%03d", h, m, s, ms);
      if (days > 0) {
        return std::to_string(days) + " days " + buffer;
@@ -903,17 +1064,20 @@ class BatchVectorizer {
   std::string cleanup_folder_;
 
  public:
-  BatchVectorizer(const artm_options& options) : batch_folder_(), options_(options), cleanup_folder_() {}
+  BatchVectorizer(const artm_options& options) : batch_folder_(), options_(options), cleanup_folder_() { }
 
   void Vectorize() {
     const bool parse_vw_format = !options_.read_vw_corpus.empty();
     const bool parse_uci_format = !options_.read_uci_docword.empty();
     const bool use_batches = !options_.use_batches.empty();
 
-    if (((int)parse_vw_format + (int)parse_uci_format + (int)use_batches) >= 2)
+    if (((int)parse_vw_format + (int)parse_uci_format + (int)use_batches) >= 2) {
       throw std::invalid_argument("--read_vw_format, --read-uci-docword, --use-batches must not be used together");
-    if (parse_uci_format && options_.read_uci_vocab.empty())
+    }
+
+    if (parse_uci_format && options_.read_uci_vocab.empty()) {
       throw std::invalid_argument("--read-uci-vocab option must be specified together with --read-uci-docword\n");
+    }
 
     if (parse_vw_format || parse_uci_format) {
       if (options_.save_batches.empty()) {
@@ -924,34 +1088,69 @@ class BatchVectorizer {
         batch_folder_ = options_.save_batches;
       }
 
-      if (fs::exists(fs::path(batch_folder_)) && !fs::is_empty(fs::path(batch_folder_)))
+      if (fs::exists(fs::path(batch_folder_)) && !fs::is_empty(fs::path(batch_folder_))) {
         std::cerr << "Warning: --save-batches folder already exists, new batches will be added into " << batch_folder_ << "\n";
+      }
 
       boost::system::error_code error;
       fs::create_directories(batch_folder_, error);
-      if (error)
+      if (error) {
         throw std::runtime_error(std::string("Unable to create batch folder: ") + batch_folder_);
+      }
 
       ::artm::CollectionParserInfo parser_info;
       {
         ProgressScope scope("Parsing text collection");
         ::artm::CollectionParserConfig collection_parser_config;
-        if (parse_uci_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_BagOfWordsUci);
-        else if (parse_vw_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_VowpalWabbit);
-        else throw std::runtime_error("Internal error in bigartm.exe - unable to determine CollectionParserConfig_CollectionFormat");
+        if (parse_uci_format) {
+          collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_BagOfWordsUci);
+        } else if (parse_vw_format) {
+          collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_VowpalWabbit);
+        } else {
+          throw std::runtime_error("Internal error in bigartm.exe - unable to determine CollectionParserConfig_CollectionFormat");
+        }
 
         collection_parser_config.set_docword_file_path(parse_vw_format ? options_.read_vw_corpus : options_.read_uci_docword);
-        if (!options_.read_uci_vocab.empty())
+        if (!options_.read_uci_vocab.empty()) {
           collection_parser_config.set_vocab_file_path(options_.read_uci_vocab);
+        }
+
         collection_parser_config.set_target_folder(batch_folder_);
         collection_parser_config.set_num_items_per_batch(options_.batch_size);
         collection_parser_config.set_name_type(options_.b_guid_batch_name ? CollectionParserConfig_BatchNameType_Guid : CollectionParserConfig_BatchNameType_Code);
 
+        // Settings for co-occurrence gathering
+        if (!options_.write_cooc_tf.empty()) {
+          collection_parser_config.set_cooc_tf_file_path(options_.write_cooc_tf);
+        }
+        if (!options_.write_cooc_df.empty()) {
+          collection_parser_config.set_cooc_df_file_path(options_.write_cooc_df);
+        }
+        if (!options_.write_ppmi_tf.empty()) {
+          collection_parser_config.set_ppmi_tf_file_path(options_.write_ppmi_tf);
+        }
+        if (!options_.write_ppmi_df.empty()) {
+          collection_parser_config.set_ppmi_df_file_path(options_.write_ppmi_df);
+        }
+
+        collection_parser_config.set_gather_cooc_tf(collection_parser_config.has_cooc_tf_file_path() ||
+                                                    collection_parser_config.has_ppmi_tf_file_path());
+        collection_parser_config.set_gather_cooc_df(collection_parser_config.has_cooc_df_file_path() ||
+                                                    collection_parser_config.has_ppmi_df_file_path());
+
+        collection_parser_config.set_gather_cooc(collection_parser_config.gather_cooc_tf() ||
+                                                 collection_parser_config.gather_cooc_df());
+        collection_parser_config.set_cooc_window_width(options_.cooc_window);
+        collection_parser_config.set_cooc_min_tf(options_.cooc_min_tf);
+        collection_parser_config.set_cooc_min_df(options_.cooc_min_df);
+
         // If user specifies specific modalities "use_modality", pass it to collection parser to limit set of modalities available in batches
         std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options_.use_modality);
-        for (auto& class_id : class_ids)
-          if (!class_id.first.empty())
+        for (auto& class_id : class_ids) {
+          if (!class_id.first.empty()) {
             collection_parser_config.add_class_id(class_id.first);
+          }
+        }
 
         parser_info = ::artm::ParseCollection(collection_parser_config);
       }
@@ -962,12 +1161,14 @@ class BatchVectorizer {
     }
     else if (!options_.use_batches.empty()) {
       batch_folder_ = options_.use_batches;
-      if (!fs::exists(fs::path(batch_folder_)))
+      if (!fs::exists(fs::path(batch_folder_))) {
         throw std::runtime_error(std::string("Unable to find batch folder: ") + batch_folder_);
+      }
 
       int batch_files_count = findFilesInDirectory(batch_folder_, ".batch").size();
-      if (batch_files_count == 0)
+      if (batch_files_count == 0) {
         throw std::runtime_error(std::string("No batches found in batch folder: ") + batch_folder_);
+      }
 
       std::cerr << "Using " << batch_files_count << " batches from '" << batch_folder_ << "'\n";
     }
@@ -976,7 +1177,7 @@ class BatchVectorizer {
   ~BatchVectorizer() {
     if (options_.save_batches.empty() && !cleanup_folder_.empty()) {
       try { boost::filesystem::remove_all(cleanup_folder_); }
-      catch (...) {}
+      catch (...) { }
     }
   }
 
@@ -995,16 +1196,18 @@ void WritePredictions(const artm_options& options,
   // header
   output << "id" << sep << "title";
   for (int j = 0; j < theta_metadata.num_topics(); ++j) {
-    if (theta_metadata.topic_name_size() > 0)
+    if (theta_metadata.topic_name_size() > 0) {
       output << sep << escape.apply(theta_metadata.topic_name(j));
-    else
+    } else {
       output << sep << "topic" << j;
+    }
   }
   output << std::endl;
 
   std::vector<std::pair<int, int>> id_to_index;
-  for (int i = 0; i < theta_metadata.item_id_size(); ++i)
+  for (int i = 0; i < theta_metadata.item_id_size(); ++i) {
     id_to_index.push_back(std::make_pair(theta_metadata.item_id(i), i));
+  }
   std::sort(id_to_index.begin(), id_to_index.end());
 
   // bulk
@@ -1032,8 +1235,9 @@ void WriteClassPredictions(const artm_options& options,
   output << "id" << sep << "title" << sep << options.predict_class << std::endl;
 
   std::vector<std::pair<int, int>> id_to_index;
-  for (int i = 0; i < theta_metadata.item_id_size(); ++i)
+  for (int i = 0; i < theta_metadata.item_id_size(); ++i) {
     id_to_index.push_back(std::make_pair(theta_metadata.item_id(i), i));
+  }
   std::sort(id_to_index.begin(), id_to_index.end());
 
   // bulk
@@ -1059,8 +1263,9 @@ void WriteClassPredictions(const artm_options& options,
 void WriteVwCorpus(const artm_options& options, const std::string& batch_folder) {
   ProgressScope scope(std::string("Saving batches as Vowpal Wabbit corpus ") + options.write_vw_corpus);
   auto batch_file_names = findFilesInDirectory(batch_folder, ".batch");
-  if (batch_file_names.empty())
+  if (batch_file_names.empty()) {
     throw std::string("No batches found in ") + batch_folder + ", unabel to  active_class_id = defaultwrite VW corpus";
+  }
 
   auto remove_spaces = [](const std::string& input) {
     std::string retval = input;
@@ -1070,27 +1275,33 @@ void WriteVwCorpus(const artm_options& options, const std::string& batch_folder)
 
   std::ofstream output(options.write_vw_corpus);
   const std::string default_class_id = "@default_class";
-  for (auto batch_file_name : batch_file_names) {
+  for (const auto& batch_file_name : batch_file_names) {
     Batch batch = artm::LoadBatch(batch_file_name.string());
     std::string active_class_id = default_class_id;
 
-    for (auto& item : batch.item()) {
-      if (item.title().empty())
+    for (const auto& item : batch.item()) {
+      if (item.title().empty()) {
         output << item.id();
-      else
+      } else {
         output << remove_spaces(item.title());
+      }
       for (int i = 0; i < item.token_id_size(); ++i) {
         int token_id = item.token_id(i);
         float token_weight = (item.token_weight_size() > 0) ? item.token_weight(i) : 1.0f;
         std::string class_id = (batch.class_id_size() > 0) ? batch.class_id(token_id) : std::string();
-        if (class_id.empty()) class_id = default_class_id;
+        if (class_id.empty()) {
+          class_id = default_class_id;
+        }
+
         if (class_id != active_class_id) {
           output << " |" << class_id;
           active_class_id = class_id;
         }
         output << " " << remove_spaces(batch.token(token_id));
-        if (token_weight != 1.0f)
+    
+        if (token_weight != 1.0f) {
           output << ":" << std::setprecision(2) << token_weight;
+        }
       }
       output << std::endl;
     }
@@ -1099,9 +1310,11 @@ void WriteVwCorpus(const artm_options& options, const std::string& batch_folder)
 
 int get_dictionary_size(const MasterModel& master, std::string dictionary_name) {
   auto info = master.info();
-  for (int i = 0; i < info.dictionary_size(); ++i)
-    if (info.dictionary(i).name() == dictionary_name)
+  for (int i = 0; i < info.dictionary_size(); ++i) {
+    if (info.dictionary(i).name() == dictionary_name) {
       return info.dictionary(i).num_entries();
+    }
+  }
   return -1;
 }
 
@@ -1117,33 +1330,49 @@ int execute(const artm_options& options, int argc, char* argv[]) {
   master_config.set_pwt_name(options.pwt_model_name);
   master_config.set_nwt_name(options.nwt_model_name);
 
-  for (auto& topic_name : topic_names)
+  for (const auto& topic_name : topic_names) {
     master_config.add_topic_name(topic_name);
+  }
 
   std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options.use_modality);
-  for (auto& class_id : class_ids) {
-    if (class_id.first.empty())
+  for (const auto& class_id : class_ids) {
+    if (class_id.first.empty()) {
       continue;
+    }
+
     master_config.add_class_id(class_id.first);
-    master_config.add_class_weight(class_id.second == 0.0f ? 1.0f : class_id.second);
+    master_config.add_class_weight(std::abs(class_id.second) < 1e-16 ? 1.0f : class_id.second);
   }
 
   master_config.set_opt_for_avx(!options.b_disable_avx_opt);
-  if (options.b_reuse_theta) master_config.set_reuse_theta(true);
-  if (!options.disk_cache_folder.empty()) master_config.set_disk_cache_path(options.disk_cache_folder);
+  if (options.b_reuse_theta) {
+    master_config.set_reuse_theta(true);
+  }
+
+  if (!options.disk_cache_folder.empty()) {
+    master_config.set_disk_cache_path(options.disk_cache_folder);
+  }
 
   // Step 1.1. Configure regularizers.
   std::map<std::string, std::string> dictionary_map;
-  if (!options.use_dictionary.empty())
+  if (!options.use_dictionary.empty()) {
     dictionary_map.insert(std::make_pair(options.use_dictionary, options.main_dictionary_name));
-  for (auto& regularizer : options.regularizer)
+  }
+
+  for (const auto& regularizer : options.regularizer) {
     configureRegularizer(regularizer, options.topics, &dictionary_map, &master_config);
+  }
 
   // Step 1.2. Configure scores.
   ScoreHelper score_helper(options, &master_config, &dictionary_map);
   ScoreHelper final_score_helper(options, &master_config, &dictionary_map);
-  for (auto& score : options.score) score_helper.addScore(score, options.topics);
-  for (auto& score : options.final_score) final_score_helper.addScore(score, options.topics);
+  for (const auto& score : options.score) {
+    score_helper.addScore(score, options.topics);
+  }
+
+  for (const auto& score : options.final_score) {
+    final_score_helper.addScore(score, options.topics);
+  }
 
   score_helper.showScoresHeader(argc, argv);
 
@@ -1171,13 +1400,20 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     ::artm::GatherDictionaryArgs gather_dictionary_args;
     gather_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
     gather_dictionary_args.set_data_path(batch_vectorizer.batch_folder());
-    if (!options.read_cooc.empty()) gather_dictionary_args.set_cooc_file_path(options.read_cooc);
-    if (!options.read_uci_vocab.empty()) gather_dictionary_args.set_vocab_file_path(options.read_uci_vocab);
+
+    if (!options.read_cooc.empty()) {
+      gather_dictionary_args.set_cooc_file_path(options.read_cooc);
+    }
+
+    if (!options.read_uci_vocab.empty()) {
+      gather_dictionary_args.set_vocab_file_path(options.read_uci_vocab);
+    }
     master_component->GatherDictionary(gather_dictionary_args);
     has_dictionary = true;
   }
-  if (has_dictionary)
+  if (has_dictionary) {
     std::cerr << "Dictionary size: " << get_dictionary_size(*master_component, options.main_dictionary_name) << "\n";
+  }
 
   // Step 3.2. Filter dictionary
   if (!options.dictionary_max_df.empty() || !options.dictionary_min_df.empty() || (options.dictionary_size > 0)) {
@@ -1187,24 +1423,33 @@ int execute(const artm_options& options, int argc, char* argv[]) {
       filter_dictionary_args.set_dictionary_name(options.main_dictionary_name);
       filter_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
       bool fraction;
-      double value;
-      if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction))  {
-        if (fraction) filter_dictionary_args.set_min_df_rate(value);
-        else filter_dictionary_args.set_min_df(value);
+      float value;
+      if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction)) {
+        if (fraction) {
+          filter_dictionary_args.set_min_df_rate(value);
+        } else {
+          filter_dictionary_args.set_min_df(value);
+        }
       } else {
-        if (!options.dictionary_min_df.empty())
+        if (!options.dictionary_min_df.empty()) {
           std::cerr << "Error in parameter 'dictionary_min_df', the option will be ignored (" << options.dictionary_min_df << ")\n";
+        }
       }
       if (parseNumberOrPercent(options.dictionary_max_df, &value, &fraction))  {
-        if (fraction) filter_dictionary_args.set_max_df_rate(value);
-        else filter_dictionary_args.set_max_df(value);
+        if (fraction) {
+          filter_dictionary_args.set_max_df_rate(value);
+        } else {
+          filter_dictionary_args.set_max_df(value);
+        }
       } else {
-        if (!options.dictionary_max_df.empty())
+        if (!options.dictionary_max_df.empty()) {
           std::cerr << "Error in parameter 'dictionary_max_df', the option will be ignored (" << options.dictionary_max_df << ")\n";
+        }
       }
 
-      if (options.dictionary_size > 0)
+      if (options.dictionary_size > 0) {
         filter_dictionary_args.set_max_dictionary_size(options.dictionary_size);
+      }
 
       master_component->FilterDictionary(filter_dictionary_args);
     }
@@ -1216,14 +1461,18 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     ExportDictionaryArgs export_dictionary_args;
     export_dictionary_args.set_dictionary_name(options.main_dictionary_name);
     export_dictionary_args.set_file_name(options.save_dictionary);
-    if (options.force) boost::filesystem::remove(options.save_dictionary + ".dict");
+    if (options.force) {
+      boost::filesystem::remove(options.save_dictionary + ".dict");
+    }
     master_component->ExportDictionary(export_dictionary_args);
   }
 
   // Step 4.2. Loading remaining dictionaries.
-  for (auto iter : dictionary_map) {
-    if (iter.second == options.main_dictionary_name)
+  for (const auto iter : dictionary_map) {
+    if (iter.second == options.main_dictionary_name) {
       continue;  // already loaded at step 3.1
+    }
+
     ProgressScope scope(std::string("Importing dictionary ") + iter.first + " with ID=" + iter.second);
     ImportDictionaryArgs import_dictionary_args;
     import_dictionary_args.set_file_name(iter.first);
@@ -1250,8 +1499,14 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     ::artm::TopicModel imported_model = master_component->GetTopicModel(get_topic_model_args);
 
     std::set<std::string> remaining_topics;
-    for (auto& topic_name : master_config.topic_name()) remaining_topics.insert(topic_name);
-    for (auto& topic_name : imported_model.topic_name()) remaining_topics.erase(topic_name);
+    for (const auto& topic_name : master_config.topic_name()) {
+      remaining_topics.insert(topic_name);
+    }
+
+    for (const auto& topic_name : imported_model.topic_name()) {
+      remaining_topics.erase(topic_name);
+    }
+
     if (!remaining_topics.empty()) {
       DictionaryData tmp_dictionary;
       tmp_dictionary.set_name("cd85d76c-5869-41d9-93ca-f96f5f118fb8-temporary-dictionary");
@@ -1263,10 +1518,13 @@ int execute(const artm_options& options, int argc, char* argv[]) {
 
       InitializeModelArgs tmp_model;
       tmp_model.set_model_name("cd85d76c-5869-41d9-93ca-f96f5f118fb8-temporary-model");
-      for (auto& topic_name : remaining_topics) tmp_model.add_topic_name(topic_name);
+      for (const auto& topic_name : remaining_topics) {
+        tmp_model.add_topic_name(topic_name);
+      }
       tmp_model.set_dictionary_name(tmp_dictionary.name());
-      if (options.rand_seed != -1)
+      if (options.rand_seed != -1) {
         tmp_model.set_seed(static_cast< int >(options.rand_seed));
+      }
       master_component->InitializeModel(tmp_model);
 
       MergeModelArgs merge_model_args;
@@ -1286,8 +1544,9 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     initialize_model_args.mutable_topic_name()->CopyFrom(master_config.topic_name());
     initialize_model_args.set_dictionary_name(options.main_dictionary_name);
     // specify random seed
-    if (options.rand_seed != -1)
+    if (options.rand_seed != -1) {
       initialize_model_args.set_seed(static_cast< int >(options.rand_seed));
+    }
     master_component->InitializeModel(initialize_model_args);
 
     if (options.update_every > 0) {
@@ -1309,8 +1568,14 @@ int execute(const artm_options& options, int argc, char* argv[]) {
   int update_count = 0;
   CuckooWatch total_timer;
   for (int iter = 0;; ++iter) {
-    if ((options.num_collection_passes <= 0) && (options.time_limit <= 0)) break;
-    if ((options.num_collection_passes > 0) && (iter >= options.num_collection_passes)) break;
+    if ((options.num_collection_passes <= 0) && (options.time_limit <= 0)) {
+      break;
+    }
+
+    if ((options.num_collection_passes > 0) && (iter >= options.num_collection_passes)) {
+      break;
+    }
+
     if ((options.time_limit > 0) && (total_timer.elapsed_ms() >= options.time_limit)) {
       std::cerr << "Stopping iterations, time limit is reached." << std::endl;
       break;
@@ -1333,10 +1598,11 @@ int execute(const artm_options& options, int argc, char* argv[]) {
         update_after += options.update_every;
         fit_online_args.add_update_after(std::min<int>(update_after, batch_file_names.size()));
         fit_online_args.add_apply_weight(pow(options.tau0 + update_count, -options.kappa));
-      } while (update_after < batch_file_names.size());
+      } while (update_after < (int) batch_file_names.size());
 
-      for (auto& batch_file_name : batch_file_names)
+      for (const auto& batch_file_name : batch_file_names) {
         fit_online_args.add_batch_filename(batch_file_name.string());
+      }
 
       std::future<void> future = std::async(std::launch::async, [master_component, fit_online_args]() {
         master_component->FitOnlineModel(fit_online_args);
@@ -1344,12 +1610,15 @@ int execute(const artm_options& options, int argc, char* argv[]) {
 
       const int timeout_sec = options.profile > 0 ? options.profile : 60;
       while (future.wait_for(std::chrono::seconds(timeout_sec)) != std::future_status::ready) {
-        if (options.profile > 0) { output_profile_information(*master_component); std::cerr << "===========================================\n"; }
+        if (options.profile > 0) {
+          output_profile_information(*master_component); std::cerr << "===========================================\n";
+        }
       }
     } else {
       FitOfflineMasterModelArgs fit_offline_args;
-      for (auto& batch_file_name : batch_file_names)
+      for (const auto& batch_file_name : batch_file_names) {
         fit_offline_args.add_batch_filename(batch_file_name.string());
+      }
 
       std::future<void> future = std::async(std::launch::async, [master_component, fit_offline_args]() {
         master_component->FitOfflineModel(fit_offline_args);
@@ -1357,22 +1626,29 @@ int execute(const artm_options& options, int argc, char* argv[]) {
 
       const int timeout_sec = options.profile > 0 ? options.profile : 60;
       while (future.wait_for(std::chrono::seconds(timeout_sec)) != std::future_status::ready) {
-        if (options.profile > 0) { output_profile_information(*master_component); std::cerr << "===========================================\n"; }
+        if (options.profile > 0) {
+          output_profile_information(*master_component); std::cerr << "===========================================\n";
+        }
       }
     }
 
     score_helper.showScores(iter + 1, timer.elapsed_ms());
   }  // iter
 
-  if ((options.num_collection_passes > 0) || (options.time_limit > 0) || (options.score_level == 0 && !options.final_score.empty()))
+  if ((options.num_collection_passes > 0) ||
+      (options.time_limit > 0) ||
+      (options.score_level == 0 && !options.final_score.empty())) {
     final_score_helper.showScores();
+  }
 
   if (!options.save_model.empty()) {
     ProgressScope scope(std::string("Saving model to ") + options.save_model);
     ExportModelArgs export_model_args;
     export_model_args.set_model_name(pwt_model_name);
     export_model_args.set_file_name(options.save_model);
-    if (options.force) boost::filesystem::remove(options.save_model);
+    if (options.force) {
+      boost::filesystem::remove(options.save_model);
+    }
     master_component->ExportModel(export_model_args);
   }
 
@@ -1381,8 +1657,10 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     GetDictionaryArgs get_dictionary_args;
     get_dictionary_args.set_dictionary_name(options.main_dictionary_name);
     DictionaryData dict = master_component->GetDictionary(get_dictionary_args);
-    if (dict.token_size() != dict.class_id_size())
+    if (dict.token_size() != dict.class_id_size()) {
       throw "internal error (DictionaryData.token_size() != DictionaryData->class_id_size())";
+    }
+
     CsvEscape escape(options.csv_separator.size() == 1 ? options.csv_separator[0] : '\0');
     std::ofstream output(options.write_dictionary_readable);
     const std::string sep = options.csv_separator;
@@ -1404,8 +1682,9 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     CsvEscape escape(options.csv_separator.size() == 1 ? options.csv_separator[0] : '\0');
     ::artm::Matrix matrix;
     ::artm::TopicModel model = master_component->GetTopicModel(get_topic_model_args, &matrix);
-    if (matrix.no_columns() != model.num_topics())
+    if (matrix.no_columns() != model.num_topics()) {
       throw "internal error (matrix.no_columns() != theta->num_topics())";
+    }
 
     std::ofstream output(options.write_model_readable);
     const std::string sep = options.csv_separator;
@@ -1413,10 +1692,11 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     // header
     output << "token" << sep << "class_id";
     for (int j = 0; j < model.num_topics(); ++j) {
-      if (model.topic_name_size() > 0)
+      if (model.topic_name_size() > 0) {
         output << sep << escape.apply(model.topic_name(j));
-      else
+      } else {
         output << sep << "topic" << j;
+      }
     }
     output << std::endl;
 
@@ -1436,24 +1716,29 @@ int execute(const artm_options& options, int argc, char* argv[]) {
 
     TransformMasterModelArgs transform_args;
     transform_args.set_theta_matrix_type(::artm::ThetaMatrixType_Dense);
-    if (!options.predict_class.empty())
-      transform_args.set_predict_class_id(options.predict_class);
-    for (auto& batch_filename : batch_file_names)
+    if (!options.predict_class.empty()) {
+      transform_args.set_predict_transaction_type(options.predict_class);
+    }
+    for (const auto& batch_filename : batch_file_names) {
       transform_args.add_batch_filename(batch_filename.string());
+    }
 
     ::artm::Matrix theta_matrix;
     ThetaMatrix theta_metadata = master_component->Transform(transform_args, &theta_matrix);
     score_helper.showScores();
 
-    if (!options.write_predictions.empty())
+    if (!options.write_predictions.empty()) {
       WritePredictions(options, theta_metadata, theta_matrix);
+    }
 
-    if (!options.write_class_predictions.empty())
+    if (!options.write_class_predictions.empty()) {
       WriteClassPredictions(options, theta_metadata, theta_matrix);
+    }
   }
 
-  if (!options.write_vw_corpus.empty())
+  if (!options.write_vw_corpus.empty()) {
     WriteVwCorpus(options, batch_vectorizer.batch_folder());
+  }
 
   return 0;
 }
@@ -1478,6 +1763,10 @@ int main(int argc, char * argv[]) {
 
     po::options_description dictionary_options("Dictionary");
     dictionary_options.add_options()
+      ("cooc-min-tf", po::value(&options.cooc_min_tf)->default_value(0), "minimal value of cooccurrences of a pair of tokens that are saved in dictionary of cooccurrences")
+      ("cooc-min-df", po::value(&options.cooc_min_df)->default_value(0), "minimal value of documents in which a specific pair of tokens occurred together closely")
+      ("cooc-window", po::value(&options.cooc_window)->default_value(5), "number of tokens around specific token, which are used in calculation of cooccurrences")
+      ("doc-per-cooc-batch", po::value(&options.doc_per_cooc_batch)->default_value(10000), "number of documents which will be processed and written in 1 cooc batch")
       ("dictionary-min-df", po::value(&options.dictionary_min_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary-max-df", po::value(&options.dictionary_max_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary-size", po::value(&options.dictionary_size)->default_value(0), "limit dictionary size by filtering out tokens with high document frequency")
@@ -1508,6 +1797,10 @@ int main(int argc, char * argv[]) {
 
     po::options_description output_options("Output");
     output_options.add_options()
+      ("write-cooc-tf", po::value(&options.write_cooc_tf)->default_value(""), "save dictionary of co-occurrences with frequencies of co-occurrences of every specific pair of tokens in whole collection")
+      ("write-cooc-df", po::value(&options.write_cooc_df)->default_value(""), "save dictionary of co-occurrences with number of documents in which every specific pair occured together")
+      ("write-ppmi-tf", po::value(&options.write_ppmi_tf)->default_value(""), "save values of positive pmi of pairs of tokens from cooc_tf dictionary")
+      ("write-ppmi-df", po::value(&options.write_ppmi_df)->default_value(""), "save values of positive pmi of pairs of tokens from cooc_df dictionary")
       ("save-model", po::value(&options.save_model)->default_value(""), "save the model to binary file after processing")
       ("save-batches", po::value(&options.save_batches)->default_value(""), "batch folder")
       ("save-dictionary", po::value(&options.save_dictionary)->default_value(""), "filename of dictionary file")
@@ -1555,8 +1848,9 @@ int main(int argc, char * argv[]) {
       getchar();
     }
 
-    if (options.num_collection_passes_depr > 0 && options.num_collection_passes == 0)
+    if (options.num_collection_passes_depr > 0 && options.num_collection_passes == 0) {
       options.num_collection_passes = options.num_collection_passes_depr;
+    }
 
     if (vm.count("response-file") && !options.response_file.empty()) {
       // Load the file and tokenize it
@@ -1599,8 +1893,9 @@ int main(int argc, char * argv[]) {
         options.read_uci_docword.empty() &&
         options.use_batches.empty() &&
         options.load_model.empty() &&
-        options.use_dictionary.empty())
+        options.use_dictionary.empty()) {
       show_help = true;
+    }
 
     if (show_help_regularizer) {
       std::cerr << "List of regularizers available in BigARTM CLI:\n\n";
@@ -1705,13 +2000,19 @@ int main(int argc, char * argv[]) {
 
     fixScoreLevel(&options);
     fixOptions(&options);
-    if (!verifyOptions(options))
+    if (!verifyOptions(options)) {
       return 1;  // verifyOptions should log an error upon failures
+    }
 
     if (vm.count("log-dir") || vm.count("log-level")) {
       ::artm::ConfigureLoggingArgs args;
-      if (vm.count("log-dir")) args.set_log_dir(options.log_dir);
-      if (vm.count("log-level")) args.set_minloglevel(options.log_level);
+      if (vm.count("log-dir")) {
+        args.set_log_dir(options.log_dir);
+      }
+
+      if (vm.count("log-level")) {
+        args.set_minloglevel(options.log_level);
+      }
       ::artm::ConfigureLogging(args);
     }
 

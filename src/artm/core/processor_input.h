@@ -1,7 +1,6 @@
-// Copyright 2015, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_PROCESSOR_INPUT_H_
-#define SRC_ARTM_CORE_PROCESSOR_INPUT_H_
+#pragma once
 
 #include <string>
 
@@ -25,7 +24,7 @@ class ProcessorInput {
                      batch_filename_(), batch_weight_(1.0f), task_id_(), batch_manager_(nullptr),
                      score_manager_(nullptr), cache_manager_(nullptr),
                      ptdw_cache_manager_(nullptr),
-                     reuse_theta_cache_manager_(nullptr) {}
+                     reuse_theta_cache_manager_(nullptr) { }
 
   Batch* mutable_batch() { return &batch_; }
   const Batch& batch() const { return batch_; }
@@ -85,5 +84,3 @@ class ProcessorInput {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_PROCESSOR_INPUT_H_

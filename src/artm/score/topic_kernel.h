@@ -1,10 +1,10 @@
-/* Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2017, Additive Regularization of Topic Models.
 
    Author: Murat Apishev (great-mel@yandex.ru)
    
    This class for each topic in Phi matrix counts the kernel
    characteristics --- purity, contrast and size.
-   Also it can count the coherency of topics using kernel tokens.
+   Also it can count the coherence of topics using kernel tokens.
    
    The token is kernel for topic if its p(t|w) > threshold.
    
@@ -18,8 +18,7 @@
 
 */
 
-#ifndef SRC_ARTM_SCORE_TOPIC_KERNEL_H_
-#define SRC_ARTM_SCORE_TOPIC_KERNEL_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -48,5 +47,3 @@ class TopicKernel : public ScoreCalculatorInterface {
 
 }  // namespace score
 }  // namespace artm
-
-#endif  // SRC_ARTM_SCORE_TOPIC_KERNEL_H_

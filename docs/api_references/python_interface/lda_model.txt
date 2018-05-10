@@ -1,0 +1,10 @@
+LDA model
+=========
+
+This page describes LDA class.
+
+.. automodule:: artm
+
+.. autoclass:: LDA
+   :members:
+   :special-members: __init__

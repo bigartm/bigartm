@@ -1,0 +1,213 @@
+Creating New Regularizer
+========================
+
+This manual describes all necessary steps you need to proceed to create your own regularizer in the core of BigARTM library. We assume you are now in the root directory of BigARTM. The Google Protocol Buffers technology will be used, so we also assume you familiar with it. The instructions will be forwarded with corresponding examples of two regularizers, one per matrix (New Regulrizer Phi and New regularizer Theta).
+
+General steps
+-------------
+
+**1. Edit protobuf messages**
+
+- Open ``src/artm/messages.proto`` file and find there the ``RegularizerType`` message. As you can see, this enum contains all BigARTM regularizers. Add constants for your regularizer (save the natural numeric order, 14 and 15 is an example in case when the last constant is 13):
+
+.. code-block:: none
+ 
+   enum RegularizerType {
+     RegularizerType_SmoothSparseTheta = 0;
+     RegularizerType_SmoothSparsePhi = 1;
+     RegularizerType_DecorrelatorPhi = 2;
+     ...
+     RegularizerType_NewRegularizerPhi = 14;
+     RegularizerType_NewRegularizerTheta = 15;
+   }
+
+
+- In the same file you need to define the configuration of your regularizer. It should contain any meta-data your regularizer will use in it's work. You can see the messages for other regularizers, but in general any regularizer has ``topic_name`` field, that contains the names of topics, the regularizer will deal with. Regularizers of Phi matrix usually have ``class_id`` field, that can be an array (and then it denotes all modalities, which tokens will be regularized) or single string (the name of one modality to be regularized). Phi regularizers usually also contains ``dictionary_name`` parameter, because dictionaries are often contain useful information. Theta regularizers should contain ``alpha_iter`` parameter, that denotes the additional multipliers for regularization addition r_wt. It is an array with length equal to the number of document passes, and helps to change the influence of the regularizer on each pass through the document in a special way.
+
+Your messages can have the following form:
+
+.. code-block::  none
+
+    message NewRegularizerPhiConfig {
+      repeated string topic_name = 1;
+      repeated string class_id = 2;
+      optional string dictionary_name = 3;
+      ...
+    }
+
+    message NewRegularizerThetaConfig {
+      repeated string topic_name = 1;
+      repeated float alpha_iter = 2;
+      ...
+    }
+
+
+- You may use the following command to compile messages.proto, see :doc:`proto_windows` for details):
+
+.. code-block:: none
+
+   .\protoc.exe --cpp_out=. --python_out=. .\artm\messages.proto
+
+Alternatively, we recommend you to build re-project Visual Studio or Linux, and this step will be proceeded automatically. The only recommendation is to remove the old ``messages_pb2.py`` file from the ``python/artm/wrapper`` directory.
+
+**2. Edit core files and utilities**
+
+- The regularizers are the part of C++ core, so you need to create .h and .cc files for you regularizer and store them in the ``src/artm/regularizers`` directory. We recommend you to use ``smooth_sparse_phi.h`` and ``smooth_sparse_phi.cc`` (or ``smooth_sparse_theta.h`` and ``smooth_sparse_theta.cc`` respectively) as an example. We will talk about the content of these files in next sections. At first you need to change all names of macroses, classes, methods and types to new ones releated with name of your regularizer (do it in analogy to naming in this file).
+
+- In the head of file ``src/artm/core/instance.cc`` include file of your new regularizer:
+
+.. code-block:: c
+
+   #include "artm/regularizer_interface.h"
+   #include "artm/regularizer/decorrelator_phi.h"
+   #include "artm/regularizer/multilanguage_phi.h"
+   #include "artm/regularizer/smooth_sparse_theta.h"
+   ...
+   #include "artm/regularizer/new_regularizer_phi.h"
+   #include "artm/regularizer/new_regularizer_theta.h"
+
+   #include "artm/score/items_processed.h"
+   #include "artm/score/sparsity_theta.h"
+   ...
+
+- There is a switch/case statement in the same file in a need of expansion: 
+
+.. code-block:: c
+
+   switch (regularizer_type) {
+     case artm::RegularizerType_SmoothSparseTheta: {
+       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::SmoothSparseThetaConfig,
+                                         ::artm::regularizer::SmoothSparseTheta);
+       break;
+     }
+
+     case artm::RegularizerType_SmoothSparsePhi: {
+       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::SmoothSparsePhiConfig,
+                                         ::artm::regularizer::SmoothSparsePhi);
+       break;
+     }
+
+     ...
+
+     case artm::RegularizerType_NewRegularizerPhi: {
+       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::NewRegularizerPhiConfig,
+                                         ::artm::regularizer::NewRegularizerPhi);
+       break;
+
+     case artm::RegularizerType_NewRegularizerTheta: {
+       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::NewRegularizerThetaConfig,
+                                         ::artm::regularizer::NewRegularizerTheta);
+       break;
+     }
+
+- Modify file ``src/artm/CMakeLists.txt``:
+
+.. code-block:: none
+
+    regularizer/decorrelator_phi.cc
+    regularizer/decorrelator_phi.h
+    regularizer/multilanguage_phi.cc
+    regularizer/multilanguage_phi.h
+    regularizer/smooth_sparse_phi.cc
+    regularizer/smooth_sparse_phi.h
+    ...
+    regularizer/new_regularizer_phi.cc
+    regularizer/new_regularizer_phi.h
+    regularizer/new_regularizer_theta.cc
+    regularizer/new_regularizer_theta.h
+
+- Proceed the same operation with ``utils/cpplint_files.txt``
+
+**3. Changes in Python API code**
+
+- Edit ``python/artm/wrapper/constants.py`` to reflect the changes made to ``enum RegularizerType`` in ``messages.proto``:
+
+.. code-block:: none
+
+   RegularizerType_SmoothSparseTheta = 0
+   RegularizerType_SmoothSparsePhi = 1
+    ...
+   RegularizerType_NewRegularizerPhi = 14
+   RegularizerType_NewRegularizerTheta = 15
+
+- Update ``_regularizer_type`` in ``python/artm/master_component.py`` with something like this:
+
+.. code-block:: python
+
+   def _regularizer_type(config):
+       if isinstance(config, messages.SmoothSparseThetaConfig):
+           return constants.RegularizerType_SmoothSparseTheta
+    
+       ...
+
+       elif isinstance(config, messages.NewRegularizerPhiConfig):
+           return constants.RegularizerType_NewRegularizerPhi
+
+       elif isinstance(config, messages.NewRegularizerThetaConfig):
+           return constants.RegularizerType_NewRegularizerTheta
+
+- You need to add class-wrapper for your regularizer into the ``python/artm/regularizers.py``. Note, that the Phi regularizer should be inherited from the ``BaseRegularizerPhi``, and Theta one from ``BaseRegularizerTheta``. Use any other class as an example. Note, that these two classes and ``BaseRegularizer`` has pre-defined fields with properties and setters. Don't repeat these fields and add warning methods for ones that doesn't appear in your regularizer:
+
+.. code-block:: python
+
+    @property
+    def class_ids(self):
+        raise KeyError('No class_ids parameter')
+
+    ...
+    @class_ids.setter
+    def class_ids(self, class_ids):
+        raise KeyError('No class_ids parameter')
+
+Also take into consideration the notation of parameters naming (for example, class_ids is a list, and class_id is a scalar). Learn attentively other classes and don't forget to write the doc-strings in the same format.
+
+- Add your regularizers into ``__all__`` list in ``regularizers.py``:
+
+.. code-block:: python
+
+   __all__ = [
+       'KlFunctionInfo',
+       'SmoothSparsePhiRegularizer',
+       ...
+       'NewRegularizerPhi'
+       'NewRegularizerTheta'
+   ]
+
+- You may need to run
+
+.. code-block:: python
+
+   python setup.py build
+   python setup.py install
+
+for the changes to take effect.
+
+Phi regularizer C++ code
+------------------------
+
+All you need is to implement the method
+
+.. code-block:: c
+
+   bool NewRegularizerPhi::NewRegularizerPhi(const ::artm::core::PhiMatrix& p_wt,
+                                             const ::artm::core::PhiMatrix& n_wt,
+                                             ::artm::core::PhiMatrix* result);
+
+Here you use p_wt, n_wt and all information you have got as parameters through the config to count r_wt and put it in the ``result`` variable. The multiplication on ``tau`` and usage of coefficients of relative regularzation will be processed in further computations automaticaly and shouldn't worry you.
+
+Theta regularizer C++ code
+--------------------------
+
+You need to create a class implementing the ``RegularizeThetaAgent`` interface (e.g., ``NewRegularizerThetaAgent``) and a class implementing ``RegularizerInterface`` interface (e.g., ``NewRegularizerTheta``).
+
+In the ``NewRegularizerTheta`` class you need to define a ``CreateRegularizeThetaAgent`` method, which checks arguments and does some initialization work. This method will be called every outer iteration, once for every batch. 
+
+In the ``NewRegularizerThetaAgent`` class you need to define an ``Apply`` method, which takes the (unnormalized) probability distribution ``p(t|d)`` for a given ``d`` and transforms it in a some way (e.g. by adding a constant). This method will be called every inner iteration, once for every document in this batch (``inner_iter * batch_size`` times in total).
+
+.. code-block:: c
+
+   void Apply(int item_index, int inner_iter, int topics_size, float* theta);
+
+For an example, take a look at ``smooth_sparse_theta.cc``.
+
+Note that handling ``tau`` and ``alpha_iter`` is your responsibility: your code is assumed to be of form ``theta[topic_id] += tau * alpha_iter[inner_iter] * x`` instead of just ``theta[topic_id] += x``.

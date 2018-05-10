@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #include "artm/core/score_manager.h"
 
@@ -48,9 +48,10 @@ void ScoreManager::Clear() {
 bool ScoreManager::RequestScore(const ScoreName& score_name,
                                 ScoreData *score_data) const {
   auto score_calculator = instance_->scores_calculators()->get(score_name);
-  if (score_calculator == nullptr)
+  if (score_calculator == nullptr) {
     BOOST_THROW_EXCEPTION(InvalidOperation(
       std::string("Attempt to request non-existing score: " + score_name)));
+  }
 
   if (score_calculator->is_cumulative()) {
     boost::lock_guard<boost::mutex> guard(lock_);
@@ -71,21 +72,30 @@ bool ScoreManager::RequestScore(const ScoreName& score_name,
 }
 
 void ScoreManager::RequestAllScores(::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data) const {
-  if (score_data == nullptr)
+  if (score_data == nullptr) {
     return;
+  }
 
   std::vector<ScoreName> score_names;
   {
     boost::lock_guard<boost::mutex> guard(lock_);
-    for (auto& elem : score_map_)
+    for (const auto& elem : score_map_) {
       score_names.push_back(elem.first);
+    }
   }
 
   for (auto& score_name : score_names) {
     ScoreData requested_score_data;
-    if (RequestScore(score_name, &requested_score_data))
+    if (RequestScore(score_name, &requested_score_data)) {
       score_data->Add()->Swap(&requested_score_data);
+    }
   }
+}
+
+void ScoreManager::CopyFrom(const ScoreManager& score_manager) {
+  boost::lock_guard<boost::mutex> guard(lock_);
+  boost::lock_guard<boost::mutex> guard2(score_manager.lock_);
+  score_map_ = score_manager.score_map_;
 }
 
 void ScoreTracker::Clear() {
@@ -109,6 +119,12 @@ void ScoreTracker::RequestScoreArray(const GetScoreArrayArgs& args, ScoreArray* 
       score_array->add_score()->CopyFrom(*elem);
     }
   }
+}
+
+void ScoreTracker::CopyFrom(const ScoreTracker& score_tracker) {
+  boost::lock_guard<boost::mutex> guard(lock_);
+  boost::lock_guard<boost::mutex> guard2(score_tracker.lock_);
+  array_ = score_tracker.array_;
 }
 
 }  // namespace core

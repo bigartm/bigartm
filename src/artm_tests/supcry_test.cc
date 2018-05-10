@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #include <fstream>  // NOLINT
 #include <vector>
@@ -22,11 +22,16 @@ void GenerateBatches(std::vector< ::artm::Batch>* batches, ::artm::DictionaryDat
   int nTokens = 40;
 
   // Generate global dictionary
+  std::vector<std::string> tokens;
   for (int i = 0; i < nTokens; i++) {
     std::stringstream str;
     str << "token" << i;
-    if (dictionary != nullptr)
-      dictionary->add_token(str.str());
+
+    auto token = str.str();
+    tokens.push_back(token);
+    if (dictionary != nullptr) {
+      dictionary->add_token(token);
+    }
   }
 
   // Keep batch.token empty; batch.item.field.token_id point straight to global dictionary
@@ -35,13 +40,18 @@ void GenerateBatches(std::vector< ::artm::Batch>* batches, ::artm::DictionaryDat
     ::artm::Batch batch;
     batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
 
+    for (const auto& token : tokens) {
+      batch.add_token(token);
+    }
+
     for (int iItem = 0; iItem < nItemsPerBatch; ++iItem) {
       artm::Item* item = batch.add_item();
       item->set_id(itemId++);
       for (int iToken = 0; iToken < nTokens; ++iToken) {
         // Add each third token (randomly)
         if (rand() % 3 == 0) {  // NOLINT
-          item->add_token_id(iToken);
+          item->add_transaction_token_id(iToken);
+          item->add_transaction_start_index(item->transaction_start_index_size());
           item->add_token_weight(1.0);
         }
       }
@@ -85,10 +95,11 @@ void describeTopTokensScore(const ::artm::TopTokensScore& top_tokens) {
   */
   for (int i = 0; i < top_tokens.num_entries(); ++i) {
     bool is_new_topic = (i == 0 || top_tokens.topic_name(i) != top_tokens.topic_name(i - 1));
-    if (is_new_topic)
+    if (is_new_topic) {
       std::cout << std::endl << top_tokens.topic_name(i) << ": ";
-    else
+    } else {
       std::cout << ", ";
+    }
     std::cout << top_tokens.token(i) << "(" << std::setprecision(3) << top_tokens.weight(i) << ")";
   }
   std::cout << std::endl;
@@ -104,7 +115,9 @@ TEST(Supcry, Fit) {
   ::artm::MasterModelConfig config;
 
   // Add topic names (this steps defines how many topics it will be in the topic model)
-  for (auto& topic_name : getTopicNames()) config.add_topic_name(topic_name);
+  for (const auto& topic_name : getTopicNames()) {
+    config.add_topic_name(topic_name);
+  }
 
   ::artm::ScoreConfig* score_config = config.add_score_config();
   score_config->set_type(::artm::ScoreType_Perplexity);
@@ -131,8 +144,9 @@ TEST(Supcry, Fit) {
 
   // Step 3. Import batches into BigARTM memory
   ::artm::ImportBatchesArgs import_batches_args;
-  for (auto& batch : batches)
+  for (auto& batch : batches) {
     import_batches_args.add_batch()->CopyFrom(batch);
+  }
   master_model.ImportBatches(import_batches_args);
 
   // Step 4. Import dictionary into BigARTM memory
@@ -163,7 +177,8 @@ TEST(Supcry, Fit) {
   ::artm::ExportModelArgs export_model_args;
   export_model_args.set_file_name("artm_model.bin");
 
-  try { boost::filesystem::remove("artm_model.bin"); } catch (...) {}  // NOLINT
+  try { boost::filesystem::remove("artm_model.bin"); }
+  catch (...) { }
   master_model.ExportModel(export_model_args);
 
   // Step 9. Memory export
@@ -178,7 +193,9 @@ TEST(Supcry, TransformAfterImport) {
   ::artm::MasterModelConfig config;
 
   // Add topic names (this steps defines how many topics it will be in the topic model)
-  for (auto& topic_name : getTopicNames()) config.add_topic_name(topic_name);
+  for (const auto& topic_name : getTopicNames()) {
+    config.add_topic_name(topic_name);
+  }
 
   ::artm::MasterModel master_model(config);
 
@@ -193,8 +210,9 @@ TEST(Supcry, TransformAfterImport) {
 
   // Step 4. Find theta matrix
   ::artm::TransformMasterModelArgs transform_args;
-  for (auto& batch : batches)
+  for (const auto& batch : batches) {
     transform_args.add_batch()->CopyFrom(batch);
+  }
   ::artm::ThetaMatrix theta = master_model.Transform(transform_args);
 
   describeTheta(theta, 5);
@@ -207,7 +225,9 @@ TEST(Supcry, TransformAfterOverwrite) {
   ::artm::MasterModelConfig config;
 
   // Add topic names (this steps defines how many topics it will be in the topic model)
-  for (auto& topic_name : getTopicNames()) config.add_topic_name(topic_name);
+  for (const auto& topic_name : getTopicNames()) {
+    config.add_topic_name(topic_name);
+  }
 
   ::artm::MasterModel master_model(config);
 
@@ -218,16 +238,18 @@ TEST(Supcry, TransformAfterOverwrite) {
   // Step 3. Import topic model
   topic_model->set_name("garbage");  // to test ArtmOverwriteTopicModelNamed
   std::string blob;
-  if (ArtmProtobufMessageFormatIsJson())
+  if (ArtmProtobufMessageFormatIsJson()) {
     ::google::protobuf::util::MessageToJsonString(*topic_model, &blob);
-  else
+  } else {
     topic_model->SerializeToString(&blob);
+  }
   ArtmOverwriteTopicModelNamed(master_model.id(), blob.size(), &*(blob.begin()), /*name=*/ nullptr);
 
   // Step 4. Find theta matrix
   ::artm::TransformMasterModelArgs transform_args;
-  for (auto& batch : batches)
+  for (const auto& batch : batches) {
     transform_args.add_batch()->CopyFrom(batch);
+  }
   ::artm::ThetaMatrix theta = master_model.Transform(transform_args);
 
   describeTheta(theta, 5);
@@ -238,7 +260,10 @@ TEST(Supcry, TransformAfterOverwrite) {
 TEST(Supcry, FitFromDiskFolder) {
   // Step 1. Configure and create MasterModel
   ::artm::MasterModelConfig config;
-  for (auto& topic_name : getTopicNames()) config.add_topic_name(topic_name);
+  for (const auto& topic_name : getTopicNames()) {
+    config.add_topic_name(topic_name);
+  }
+
   ::artm::ScoreConfig* score_config = config.add_score_config();
   score_config->set_type(::artm::ScoreType_Perplexity);
   score_config->set_name("Perplexity");
@@ -247,7 +272,8 @@ TEST(Supcry, FitFromDiskFolder) {
 
   // Step 2. Generate batches and save them to disk
   std::string batch_folder = "./batch_folder";
-  try { boost::filesystem::remove_all(batch_folder); } catch (...) {}  // NOLINT
+  try { boost::filesystem::remove_all(batch_folder); }
+  catch (...) { }
   boost::filesystem::create_directory(batch_folder);
 
   std::vector< ::artm::Batch> batches;

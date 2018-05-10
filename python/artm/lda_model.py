@@ -1,4 +1,7 @@
+# Copyright 2017, Additive Regularization of Topic Models.
+
 from six.moves import range, zip
+from copy import deepcopy
 
 from .artm_model import ARTM
 
@@ -62,6 +65,16 @@ class LDA(object):
         self._tt_score_name = 'tt_score'
 
         self._create_regularizers_and_scores()
+
+    def clone(self):
+        """
+        :Description: returns a deep copy of the artm.LDA object
+
+        :Note:
+          * This method is equivalent to copy.deepcopy() of your artm.LDA object.
+            For more information refer to artm.ARTM.clone() method.
+        """
+        return deepcopy(self)
 
     def _create_regularizers_and_scores(self):
         self._internal_model.regularizers.add(SmoothSparseThetaRegularizer(name=self._theta_reg_name, tau=self._alpha))
@@ -311,7 +324,8 @@ class LDA(object):
             model, used earlier.
         """
         self._internal_model.load(filename=filename, model_name=model_name)
-        self._create_regularizers_and_scores()
+        if not len(self._internal_model.regularizers):
+            self._create_regularizers_and_scores()
 
     def get_top_tokens(self, num_tokens=10, with_weights=False):
         """
@@ -325,7 +339,8 @@ class LDA(object):
             natural order, if with_weights == False, or list, or list of lists\
             of tules, each tuple is (str, float)
         """
-        self._internal_model.scores.add(TopTokensScore(name=self._tt_score_name, num_tokens=num_tokens))
+        self._internal_model.scores.add(
+            TopTokensScore(name=self._tt_score_name, num_tokens=num_tokens), overwrite=True)
         result = self._internal_model.get_score(self._tt_score_name)
 
         tokens = []

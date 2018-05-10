@@ -1,4 +1,4 @@
-/* Copyright 2016, Additive Regularization of Topic Models.
+/* Copyright 2017, Additive Regularization of Topic Models.
 
    Author: Alexander Frey (sashafrey@gmail.com)
    
@@ -8,8 +8,7 @@
 
 */
 
-#ifndef SRC_ARTM_SCORE_PEAK_MEMORY_H_
-#define SRC_ARTM_SCORE_PEAK_MEMORY_H_
+#pragma once
 
 #include "artm/score_calculator_interface.h"
 
@@ -18,7 +17,7 @@ namespace score {
 
 class PeakMemory : public ScoreCalculatorInterface {
  public:
-  explicit PeakMemory(const ScoreConfig& config) : ScoreCalculatorInterface(config) {}
+  explicit PeakMemory(const ScoreConfig& config) : ScoreCalculatorInterface(config) { }
 
   virtual bool is_cumulative() const { return false; }
 
@@ -29,5 +28,3 @@ class PeakMemory : public ScoreCalculatorInterface {
 
 }  // namespace score
 }  // namespace artm
-
-#endif  // SRC_ARTM_SCORE_PEAK_MEMORY_H_

@@ -155,9 +155,9 @@ if (protobuf_BUILD_TESTS)
   include(tests.cmake)
 endif (protobuf_BUILD_TESTS)
 
-if (NOT MSVC)
+#if (NOT MSVC)
   include(install.cmake)
-endif()
+#endif()
 
 if (protobuf_BUILD_EXAMPLES)
   include(examples.cmake)

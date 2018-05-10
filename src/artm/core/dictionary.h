@@ -1,12 +1,12 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_DICTIONARY_H_
-#define SRC_ARTM_CORE_DICTIONARY_H_
+#pragma once
 
 #include <map>
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 #include "artm/core/common.h"
@@ -69,6 +69,8 @@ class Dictionary {
 
   bool HasToken(const Token& token) const { return token_index_.find(token) != token_index_.end(); }
 
+  void AddTransactionType(const ClassId& class_id, const TransactionType& transaction_type);
+
   // SECTION OF GETTERS
   // general method to return all cooc tokens with their values for given token
   const std::unordered_map<int, float>* token_cooc_values(const Token& token) const;
@@ -78,8 +80,8 @@ class Dictionary {
   const DictionaryEntry* entry(const Token& token) const;
   const DictionaryEntry* entry(int index) const;
 
-  size_t size() const { return entries_.size(); }
-  size_t num_items() const { return num_items_in_collection_; }
+  int size() const { return entries_.size(); }
+  int num_items() const { return num_items_in_collection_; }
   const std::string& name() const { return name_; }
   bool has_valid_cooc_state() const;
   int64_t ByteSize() const;
@@ -90,6 +92,11 @@ class Dictionary {
   const std::unordered_map<int, std::unordered_map<int, float> >& cooc_values() const { return cooc_values_; }
   const std::unordered_map<int, std::unordered_map<int, float> >& cooc_tfs() const { return cooc_tfs_; }
   const std::unordered_map<int, std::unordered_map<int, float> >& cooc_dfs() const { return cooc_dfs_; }
+
+  const std::unordered_set<TransactionType, TransactionHasher>* GetTransactionTypes(const ClassId& class_id) const;
+  const std::unordered_set<TransactionType, TransactionHasher> GetAllTransactionTypes() const;
+
+  bool HasTransactions() const { return !class_id_to_transaction_types_.empty(); }
 
   // SECTION OF OPERATIONS
   float CountTopicCoherence(const std::vector<core::Token>& tokens_to_score);
@@ -107,6 +114,7 @@ class Dictionary {
   CoocMap cooc_tfs_;
   CoocMap cooc_dfs_;
   size_t num_items_in_collection_;
+  std::unordered_map<ClassId, std::unordered_set<TransactionType, TransactionHasher>> class_id_to_transaction_types_;
 
   void AddCoocImpl(const Token& token_1, const Token& token_2, float value, CoocMap* cooc_map);
   void AddCoocImpl(int index_1, int index_2, float value, CoocMap* cooc_map);
@@ -115,5 +123,3 @@ class Dictionary {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_DICTIONARY_H_

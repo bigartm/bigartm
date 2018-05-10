@@ -1,4 +1,4 @@
-// Copyright 2015, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 // Author: Anya Potapenko (anya_potapenko@mail.ru)
 
@@ -15,16 +15,17 @@ namespace regularizer {
 
 void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::LocalPhiMatrix<float>* ptdw) const {
   int local_token_size = ptdw->num_tokens();
-  int num_topics = ptdw->num_topics();
+  int topic_size = ptdw->num_topics();
+
   if (config_.type() == SmoothPtdwConfig_SmoothType_MovingAverage) {
     // 1. evaluate wich tokens are background
-    double threshold = config_.threshold();
+    float threshold = config_.threshold();
     std::vector<bool> is_background(local_token_size, false);
     int count_background = 0;
     for (int i = 0; i < local_token_size; ++i) {
       const float* local_ptdw_ptr = &(*ptdw)(i, 0);  // NOLINT
-      double sum_background = 0.0;
-      for (int k = 0; k < num_topics; ++k) {
+      float sum_background = 0.0;
+      for (int k = 0; k < topic_size; ++k) {
         char b = 'b';
         if (args_.topic_name(k)[0] == b) {  // background topic
           sum_background += local_ptdw_ptr[k];
@@ -35,34 +36,40 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Loc
         ++count_background;
       }
     }
-    // LOG(WARNING) << 1.0 * count_background / local_token_size;
 
     // 2. prepare ptdw copy and smoothing profile
     int h = config_.window() / 2;
-    double tau = tau_;
     ::artm::utility::LocalPhiMatrix<float> copy_ptdw(*ptdw);
-    ::artm::utility::LocalPhiMatrix<float> smoothed(1, num_topics);
+    ::artm::utility::LocalPhiMatrix<float> smoothed(1, topic_size);
     smoothed.InitializeZeros();
     float* smoothed_ptr = &smoothed(0, 0);
+
     for (int i = 0; i < h && i < local_token_size; ++i) {
-      if (is_background[i]) continue;
+      if (is_background[i]) {
+        continue;
+      }
+
       const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
-      for (int k = 0; k < num_topics; ++k) {
+      for (int k = 0; k < topic_size; ++k) {
         smoothed_ptr[k] += copy_ptdw_ptr[k];
       }
     }
 
     // 3. regularize
     for (int i = 0; i < local_token_size; ++i) {
-      if (is_background[i]) continue;
-      const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
+      if (is_background[i]) {
+        continue;
+      }
+
       float* local_ptdw_ptr = &(*ptdw)(i, 0);  // NOLINT
-      for (int k = 0; k < num_topics; ++k) {
+      for (int k = 0; k < topic_size; ++k) {
         local_ptdw_ptr[k] += tau_ * smoothed_ptr[k];
-        if (i + h < local_token_size && !is_background[i + h])
+        if (i + h < local_token_size && !is_background[i + h]) {
           smoothed_ptr[k] += copy_ptdw(i + h, k);
-        if (i - h >= 0 && !is_background[i - h])
+        }
+        if (i - h >= 0 && !is_background[i - h]) {
           smoothed_ptr[k] -= copy_ptdw(i - h, k);
+        }
       }
     }
   }
@@ -71,13 +78,14 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Loc
   if (config_.type() == SmoothPtdwConfig_SmoothType_MovingProduct) {
     ::artm::utility::LocalPhiMatrix<float> copy_ptdw(*ptdw);
     for (int i = 0; i < local_token_size; ++i) {
-      const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
       float* local_ptdw_ptr = &(*ptdw)(i, 0);  // NOLINT
-      for (int k = 0; k < num_topics; ++k) {
-        if (i + 1 < local_token_size)
+      for (int k = 0; k < topic_size; ++k) {
+        if (i + 1 < local_token_size) {
           local_ptdw_ptr[k] *= copy_ptdw(i + 1, k);
-        if (i - 1 >= 0)
+        }
+        if (i - 1 >= 0) {
           local_ptdw_ptr[k] *= copy_ptdw(i - 1, k);
+        }
       }
     }
   }
@@ -85,7 +93,7 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Loc
 
 std::shared_ptr<RegularizePtdwAgent>
 SmoothPtdw::CreateRegularizePtdwAgent(const Batch& batch,
-                                      const ProcessBatchesArgs& args, double tau) {
+                                      const ProcessBatchesArgs& args, float tau) {
   SmoothPtdwAgent* agent = new SmoothPtdwAgent(config_, args, tau);
   std::shared_ptr<RegularizePtdwAgent> retval(agent);
   return retval;

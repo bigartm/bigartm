@@ -1,0 +1,69 @@
+7. Attach Model and Custom Phi Initialization
+=============================================
+
+Detailed description of all parameters and methods of BigARTM Python API classes can be found in :doc:`../../api_references/python_interface`.
+
+Library supports an ability to access all :math:`\Phi`-like matrices directly from Python. This is a low-level functionality, so it wasn't included in the ``ARTM`` class, and can be used via low-level ``master_component`` interface. User can attach the matrix, e.g. get reference to it in the Python, and can change it's content between the iterations. The changes will be written in the native C++ memory.
+
+The most evidence case of usage of this feature is a custom initialization of :math:`\Phi` matrix. The library initalizes it with random numbers by default. But there're several more complex and useful methods of initialization, that the library doesn't support yet. And in this case ``attach_model`` method can help you.
+
+So let's attach to the :math:`\Phi` matrix of our model:
+
+.. code-block:: python
+
+   (_, phi_ref) = model.master.attach_model(model=model.model_pwt)
+
+At this moment you can print :math:`\Phi` matrix to see it's content:
+
+.. code-block:: python
+
+   model.get_phi(model_name=model.model_pwt)
+
+Next code can be used to check whether the attaching was successful:
+
+.. code-block:: python
+
+   for model_description in model.info.model:
+        print model_description
+
+The output will be similar to the following
+
+.. code-block:: none
+
+
+
+   name: "nwt"
+
+   type: "class artm::core::DensePhiMatrix"
+
+   num_topics: 50
+
+   num_tokens: 2500
+
+
+
+   name: "pwt"
+
+   type: "class __artm::core::AttachedPhiMatrix__"
+
+   num_topics: 50
+
+   num_tokens: 2500
+
+
+
+You can see, that the type of :math:`\Phi` matrix has changed from ``DensePhiMatrix`` to ``AttachedPhiMatrix``.
+
+Now let's assume that you have created ``pwt_new`` matrix with the same size, filled with custom values. Let's write these values into our :math:`\Phi` matrix.
+
+.. note::
+
+   You need to write the values by accessing ``phi_ref`` variable, you are not allowed to assing it the whole ``pwt_new`` matrix, this operation will lead to an error in future work.
+
+   .. code-block:: python
+
+      numpy.copyto(phi_ref, new_phi.values)  # CORRECT!
+        
+      phi_ref = pwt_new  # NO!
+
+After that you can print :math:`\Phi` matrix again and check the change of it's values. From this moment you can continue our work.

@@ -1,7 +1,6 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_REGULARIZER_MULTILANGUAGE_PHI_H_
-#define SRC_ARTM_REGULARIZER_MULTILANGUAGE_PHI_H_
+#pragma once
 
 #include "artm/regularizer_interface.h"
 
@@ -12,7 +11,7 @@ class MultiLanguagePhi : public RegularizerInterface {
  public:
   explicit MultiLanguagePhi(const MultiLanguagePhiConfig& config)
     : config_(config)
-    , no_regularization_calls_(0) {}
+    , no_regularization_calls_(0) { }
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,
@@ -27,5 +26,3 @@ class MultiLanguagePhi : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_MULTILANGUAGE_PHI_H_

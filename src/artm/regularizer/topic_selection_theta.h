@@ -1,11 +1,11 @@
-/* Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2017, Additive Regularization of Topic Models.
 
    Author: Murat Apishev (great-mel@yandex.ru)
 
    This class proceeds topic selection according to Theta matrix.
    The formula of M-step is
    
-   p_td \propto n_td - tau * n_td * topic_value[t],
+   p_td \propto n_td - tau * n_td * topic_value[t] * alpha_iter[iter],
    
    where topic_value[t] = n / (n_t * |T|) --- shuld be defined
    by user for each topic, and alpha_iter is an array of
@@ -20,8 +20,7 @@
 
 */
 
-#ifndef SRC_ARTM_REGULARIZER_TOPIC_SELECTION_THETA_H_
-#define SRC_ARTM_REGULARIZER_TOPIC_SELECTION_THETA_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -51,7 +50,7 @@ class TopicSelectionTheta : public RegularizerInterface {
   explicit TopicSelectionTheta(const TopicSelectionThetaConfig& config);
 
   virtual std::shared_ptr<RegularizeThetaAgent>
-  CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau);
+  CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, float tau);
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
 
@@ -63,5 +62,3 @@ class TopicSelectionTheta : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_TOPIC_SELECTION_THETA_H_

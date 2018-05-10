@@ -1,0 +1,130 @@
+Input Data Formats and Datasets
+===============================
+
+* **Formats**
+
+This page describes input data formats compatible with BigARTM.
+Currently all formats support `Bag-of-words representation <https://en.wikipedia.org/wiki/Bag-of-words_model>`_,
+meaning that all linguistic processing (lemmatization, tokenization, detection of n-grams, etc) needs to be done outside BigARTM.
+
+1. `Vowpal Wabbit <https://github.com/JohnLangford/vowpal_wabbit/wiki/Input-format>`_ is a single-format file, based on the following principles:
+
+   * each document is represented in a single line
+   * all tokens are represented as strings (no need to convert them into an integer identifier)
+   * token frequency defaults to ``1.0``, and can be optionally specified after a colon (:)
+   * namespaces (:attr:`Batch.class_id`) can be identified by a pipe (|)
+  
+   *Example 1*
+ 
+   .. code-block:: bash
+
+      doc1 Alpha Bravo:10 Charlie:5 |author Ola_Nordmann
+      doc2 Bravo:5 Delta Echo:3 |author Ivan_Ivanov
+
+   *Example 2*
+
+   .. code-block:: bash
+ 
+      user123 |track-like track2 track5 track7 |track-play track1:10 track2:25 track3:2 track7:8 |track-skip track2:3 track8:1 |artist-like artist4:2 artist5:6 |artist-play artist4:100 artist5:20
+      user345 |track-like track2 track5 track7 |track-play track1:10 track2:25 track3:2 track7:8 |track-skip track2:3 track8:1 |artist-like artist4:2 artist5:6 |artist-play artist4:100 artist5:20
+
+   * putting tokens in each document in their natural order without specifying token frequencies will lead to model with sequential texts (not Bag-of-words)
+
+   *Example 3*
+
+   .. code-block:: bash
+
+      doc1 this text will be processed not as bag of words | Some_Author
+  
+2. `UCI Bag-of-words <https://archive.ics.uci.edu/ml/datasets/Bag+of+Words>`_
+   format consists of two files - ``vocab.*.txt`` and ``docword.*.txt``.
+   The format of the ``docword.*.txt`` file is 3 header lines, followed by NNZ triples:
+
+   .. code-block:: bash
+
+      D
+      W
+      NNZ
+      docID wordID count
+      docID wordID count
+      ...
+      docID wordID count
+
+   The file must be sorted on docID.
+   Values of wordID must be unity-based (not zero-based).
+   The format of the ``vocab.*.txt`` file is line containing wordID=n.
+   Note that words must not have spaces or tabs.
+   In ``vocab.*.txt`` file it is also possible to specify
+   the namespace (:attr:`Batch.class_id`) for tokens, as it is shown in this example:
+
+   .. code-block:: bash
+
+      token1 @default_class
+      token2 custom_class
+      token3 @default_class
+      token4
+
+   Use space or tab to separate token from its class.
+   Token that are not followed by class label automatically
+   get ''@default_class'' as a label (see ''token4'' in the example).
+
+   **Unicode support**. For non-ASCII characters save ``vocab.*.txt`` file in **UTF-8** format.
+  
+3. Batches (binary BigARTM-specific format).
+
+   This is compact and efficient format, based on several protobuf messages in public BigARTM interface (:ref:`Batch <Batch>` and :ref:`Item <Item>`).
+   
+   * A batch is a collection of several items
+   * An item is a collection of pairs ``(token_id, token_weight)``.
+   
+   Note that the batch has its local dictionary, ``batch.token``.
+   This dictionary which maps ``token_id`` into the actual token.
+   In order to create a batch from textual files involve one needs to find all distinct words,
+   and map them into sequential indices.
+
+   ``batch.id`` must be set to a unique GUID in a format of ``00000000-0000-0000-0000-000000000000``.
+
+* **Datasets**
+
+  Download one of the following datasets to start experimenting with BigARTM.
+  Note that ``docword.*`` and ``vocab.*`` files indicate ``UCI BOW`` format,
+  while ``vw.*`` file indicate ``Vowpal Wabbit`` format.
+
+    ========= ========= ======= ======= ==================================================================================================================
+    Task      Source    #Words  #Items  Files
+    ========= ========= ======= ======= ==================================================================================================================
+    kos       `UCI`_    6906    3430    * `docword.kos.txt.gz (1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz>`_
+                                        * `vocab.kos.txt (54 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt>`_
+    nips      `UCI`_    12419   1500    * `docword.nips.txt.gz (2.1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nips.txt.gz>`_
+                                        * `vocab.nips.txt (98 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nips.txt>`_
+    enron     `UCI`_    28102   39861   * `docword.enron.txt.gz (11.7 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.enron.txt.gz>`_
+                                        * `vocab.enron.txt (230 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.enron.txt>`_
+    nytimes   `UCI`_    102660  300000  * `docword.nytimes.txt.gz (223 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nytimes.txt.gz>`_
+                                        * `vocab.nytimes.txt (1.2 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nytimes.txt>`_
+    pubmed    `UCI`_    141043  8200000 * `docword.pubmed.txt.gz (1.7 GB) <https://s3-eu-west-1.amazonaws.com/artm/docword.pubmed.txt.gz>`_
+                                        * `vocab.pubmed.txt (1.3 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.pubmed.txt>`_
+    wiki      `Gensim`_ 100000  3665223 * `vw.wiki-en.txt.zip (1.8 GB) <https://s3-eu-west-1.amazonaws.com/artm/vw.wiki-en.txt.zip>`_
+    wiki_enru `Wiki`_   196749  216175  * `vw.wiki_enru.txt.zip (285 MB)  <https://s3-eu-west-1.amazonaws.com/artm/vw.wiki-enru.txt.zip>`_
+    eurlex    `eurlex`_ 19800   21000   * `vw.eurlex.txt.zip (13 MB) <https://s3-eu-west-1.amazonaws.com/artm/vw.eurlex.txt.zip>`_
+                                        * `vw.eurlex-test.txt.zip (13 MB) <https://s3-eu-west-1.amazonaws.com/artm/vw.eurlex-test.txt.zip>`_
+    lastfm    `lastfm`_         1k,     * `vw.lastfm_1k.txt.zip (100 MB)  <https://s3-eu-west-1.amazonaws.com/artm/vw.lastfm_1k.txt.zip>`_
+                                360k    * `vw.lastfm_360k.txt.zip (330 MB)  <https://s3-eu-west-1.amazonaws.com/artm/vw.lastfm_360k.txt.zip>`_
+    mmro      `mmro`_   7805    1061    * `docword.mmro.txt.gz (500 KB) <https://s3-eu-west-1.amazonaws.com/artm/docword.mmro.txt.7z>`_
+                                        * `vocab.mmro.txt (150 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.mmro.txt>`_
+                                        * `pPMI_w100.mmro.txt.7z (23 MB) <https://s3-eu-west-1.amazonaws.com/artm/pPMI_w100.mmro.txt.7z>`_
+                                        * `vw.mmro.txt.7z (1.4 MB) <https://s3-eu-west-1.amazonaws.com/artm/vw.mmro.txt.7z>`_
+    ========= ========= ======= ======= ==================================================================================================================
+
+.. _UCI: https://archive.ics.uci.edu/ml/datasets/Bag+of+Words
+
+.. _Gensim: http://radimrehurek.com/gensim/wiki.html
+
+.. _Wiki: http://dumps.wikimedia.org
+
+.. _lastfm: http://www.dtic.upf.edu/~ocelma/MusicRecommendationDataset/
+
+.. _mmro: http://mmro.ru/
+
+.. _eurlex: http://www.ke.tu-darmstadt.de/resources/eurlex
+
+.. vim:ft=rst

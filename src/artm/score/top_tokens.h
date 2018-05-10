@@ -1,10 +1,10 @@
-/* Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2017, Additive Regularization of Topic Models.
 
    Authors: Marina Suvorova (m.dudarenko@gmail.com)
             Murat Apishev (great-mel@yandex.ru)
    
    This class returns the most probable tokens in each topic in Phi matrix.
-   Also it can count the coherency of topics using top tokens.
+   Also it can count the coherence of topics using top tokens.
    
    Parameters:
    - num_tokens (the number of top tokens to extract from each topic) 
@@ -15,8 +15,7 @@
 
 */
 
-#ifndef SRC_ARTM_SCORE_TOP_TOKENS_H_
-#define SRC_ARTM_SCORE_TOP_TOKENS_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -44,5 +43,3 @@ class TopTokens : public ScoreCalculatorInterface {
 
 }  // namespace score
 }  // namespace artm
-
-#endif  // SRC_ARTM_SCORE_TOP_TOKENS_H_

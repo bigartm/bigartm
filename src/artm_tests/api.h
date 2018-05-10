@@ -1,7 +1,6 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_TESTS_API_H_
-#define SRC_ARTM_TESTS_API_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -16,7 +15,7 @@ namespace test {
 // Defines additional APIs, not exposed through ::artm::MasterModel interface.
 class Api {
  public:
-  explicit Api(MasterModel& master_model) : master_model_(master_model) {}
+  explicit Api(MasterModel& master_model) : master_model_(master_model) { }
 
   // Methods wrapping c_interface
   TopicModel AttachTopicModel(const AttachModelArgs& args, Matrix* matrix);
@@ -44,5 +43,3 @@ class Api {
 
 }  // namespace test
 }  // namespace artm
-
-#endif  // SRC_ARTM_TESTS_API_H_

@@ -44,8 +44,8 @@
 
 namespace google {
 
-#include "log_severity.h"
-#include "vlog_is_on.h"
+#include "glog/log_severity.h"
+#include "glog/vlog_is_on.h"
 
 // Annoying stuff for windows -- makes sure clients can import these functions
 #ifndef GOOGLE_GLOG_DLL_DECL

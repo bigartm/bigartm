@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #include "artm/c_interface.h"
 
@@ -63,28 +63,53 @@ static void set_last_error(const std::string& error) {
 static void EnableLogging(artm::ConfigureLoggingArgs* args) {
   static bool logging_enabled = false;
 
-  if (logging_enabled && args != nullptr && args->has_log_dir() && (FLAGS_log_dir != args->log_dir()))
+  if (logging_enabled && args != nullptr && args->has_log_dir() && (FLAGS_log_dir != args->log_dir())) {
     BOOST_THROW_EXCEPTION(::artm::core::InvalidOperation(
       "Logging directory can't be change after the logging started."));
-  if (!logging_enabled && args != nullptr && args->has_log_dir())
-    if (!boost::filesystem::exists(args->log_dir()) || !boost::filesystem::is_directory(args->log_dir()))
+  }
+  if (!logging_enabled && args != nullptr && args->has_log_dir()) {
+    if (!boost::filesystem::exists(args->log_dir()) || !boost::filesystem::is_directory(args->log_dir())) {
       BOOST_THROW_EXCEPTION(::artm::core::InvalidOperation(
         "Can not enable logging to " + args->log_dir() + ", check that the folder exist"));
+    }
+  }
 
   // Setting all other flags except log_dir
   if (args != nullptr) {
-    if (args->has_minloglevel()) FLAGS_minloglevel = args->minloglevel();
-    if (args->has_stderrthreshold()) FLAGS_stderrthreshold = args->stderrthreshold();
-    if (args->has_logtostderr()) FLAGS_logtostderr = args->logtostderr();
+    if (args->has_minloglevel()) {
+      FLAGS_minloglevel = args->minloglevel();
+    }
 
-    if (args->has_colorlogtostderr()) FLAGS_colorlogtostderr = args->colorlogtostderr();
-    if (args->has_alsologtostderr()) FLAGS_alsologtostderr = args->alsologtostderr();
+    if (args->has_stderrthreshold()) {
+      FLAGS_stderrthreshold = args->stderrthreshold();
+    }
 
-    if (args->has_logbufsecs()) FLAGS_logbufsecs = args->logbufsecs();
-    if (args->has_logbuflevel()) FLAGS_logbuflevel = args->logbuflevel();
+    if (args->has_logtostderr()) {
+      FLAGS_logtostderr = args->logtostderr();
+    }
 
-    if (args->has_max_log_size()) FLAGS_max_log_size = args->max_log_size();
-    if (args->has_stop_logging_if_full_disk()) FLAGS_stop_logging_if_full_disk = args->stop_logging_if_full_disk();
+    if (args->has_colorlogtostderr()) {
+      FLAGS_colorlogtostderr = args->colorlogtostderr();
+    }
+
+    if (args->has_alsologtostderr()) {
+      FLAGS_alsologtostderr = args->alsologtostderr();
+    }
+
+    if (args->has_logbufsecs()) {
+      FLAGS_logbufsecs = args->logbufsecs();
+    }
+
+    if (args->has_logbuflevel()) {
+      FLAGS_logbuflevel = args->logbuflevel();
+    }
+
+    if (args->has_max_log_size()) {
+      FLAGS_max_log_size = args->max_log_size();
+    }
+    if (args->has_stop_logging_if_full_disk()) {
+      FLAGS_stop_logging_if_full_disk = args->stop_logging_if_full_disk();
+    }
 
     // ::google::SetVLOGLevel() is not supported in non-gcc compilers
     // https://groups.google.com/forum/#!topic/google-glog/f8D7qpXLWXw
@@ -100,6 +125,7 @@ static void EnableLogging(artm::ConfigureLoggingArgs* args) {
 
     logging_enabled = true;
     LOG(INFO) << "Logging enabled to " << log_dir.c_str();
+    LOG(INFO) << "BigARTM version: v" << ArtmGetVersion();
   }
 }
 
@@ -241,6 +267,8 @@ int64_t ArtmCreateMasterModel(int64_t length, const char* master_model_config) {
     artm::MasterModelConfig config;
     ParseFromArray(master_model_config, length, &config);
     ::artm::core::FixAndValidateMessage(&config, /* throw_error =*/ true);
+    std::string description = ::artm::core::DescribeMessage(config);
+    LOG_IF(INFO, !description.empty()) << "Pass " << description << " to ArtmCreateMasterModel";
     auto& mcm = MasterComponentManager::singleton();
     int retval = mcm.Store(std::make_shared< ::artm::core::MasterComponent>(config));
     LOG(INFO) << "Creating MasterModel (id=" << retval << ")...";
@@ -277,14 +305,16 @@ int64_t ArtmAwaitOperation(int operation_id, int64_t length, const char* await_o
     const int timeout = args.timeout_milliseconds();
     auto time_start = boost::posix_time::microsec_clock::local_time();
     for (;;) {
-      if (batch_manager->IsEverythingProcessed())
+      if (batch_manager->IsEverythingProcessed()) {
         return ARTM_SUCCESS;
+      }
 
       boost::this_thread::sleep(boost::posix_time::milliseconds(::artm::core::kIdleLoopFrequency));
       auto time_end = boost::posix_time::microsec_clock::local_time();
       if (timeout >= 0) {
-        if ((time_end - time_start).total_milliseconds() >= timeout)
+        if ((time_end - time_start).total_milliseconds() >= timeout) {
           break;
+        }
       }
     }
 
@@ -369,10 +399,11 @@ int64_t ArtmExecute(int master_id, int64_t length, const char* args_blob, const 
     ArgsT args;
     ParseFromArray(args_blob, length, &args);
 
-    if (name != nullptr)
+    if (name != nullptr) {
       args.set_name(name);
-    else
+    } else {
       args.clear_name();
+    }
 
     ::artm::core::FixAndValidateMessage(&args, /* throw_error =*/ true);
     std::string description = ::artm::core::DescribeMessage(args);
@@ -416,6 +447,14 @@ int64_t ArtmExportModel(int master_id, int64_t length, const char* args) {
 
 int64_t ArtmImportModel(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::ImportModelArgs>(master_id, length, args, &MasterComponent::ImportModel);
+}
+
+int64_t ArtmExportScoreTracker(int master_id, int64_t length, const char* args) {
+  return ArtmExecute< ::artm::ExportScoreTrackerArgs>(master_id, length, args, &MasterComponent::ExportScoreTracker);
+}
+
+int64_t ArtmImportScoreTracker(int master_id, int64_t length, const char* args) {
+  return ArtmExecute< ::artm::ImportScoreTrackerArgs>(master_id, length, args, &MasterComponent::ImportScoreTracker);
 }
 
 int64_t ArtmCreateRegularizer(int master_id, int64_t length, const char* config) {

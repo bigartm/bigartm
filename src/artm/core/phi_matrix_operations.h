@@ -1,18 +1,47 @@
-// Copyright 2015, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_PHI_MATRIX_OPERATIONS_H_
-#define SRC_ARTM_CORE_PHI_MATRIX_OPERATIONS_H_
+#pragma once
 
 #include <map>
 #include <vector>
 #include <memory>
+#include <string>
 
 #include "artm/core/common.h"
 #include "artm/core/phi_matrix.h"
 #include "artm/core/instance.h"
+#include "artm/core/token.h"
 
 namespace artm {
 namespace core {
+
+struct NormalizerKey {
+  NormalizerKey(const ClassId& class_id, TransactionType transaction_type)
+      : token_(class_id, std::string(), transaction_type) { }
+
+  bool operator==(const NormalizerKey& key) const {
+    return this->token_ == key.token_;
+  }
+
+  bool operator!=(const NormalizerKey& key) const {
+    return !(*this == key);
+  }
+
+  const ClassId& class_id() const { return token_.class_id; }
+  const TransactionType& transaction_type() const { return token_.transaction_type; }
+
+ private:
+  friend struct NormalizerKeyHasher;
+  Token token_;
+};
+
+struct NormalizerKeyHasher {
+  size_t operator()(const NormalizerKey& key) const {
+    return key.token_.hash();
+  }
+};
+
+typedef std::unordered_map<NormalizerKey, std::vector<float>, NormalizerKeyHasher> Normalizers;
 
 // PhiMatrixOperations contains helper methods to operate on PhiMatrix class.
 class PhiMatrixOperations {
@@ -33,8 +62,8 @@ class PhiMatrixOperations {
     const PhiMatrix& p_wt, const PhiMatrix& n_wt, PhiMatrix* r_wt);
 
   // For each ClassId finds a sum of all n_wt values for each topic with (optionally) regularizers r_wt
-  static std::map<ClassId, std::vector<float> > FindNormalizers(const PhiMatrix& n_wt);
-  static std::map<ClassId, std::vector<float> > FindNormalizers(const PhiMatrix& n_wt, const PhiMatrix& r_wt);
+  static Normalizers FindNormalizers(const PhiMatrix& n_wt);
+  static Normalizers FindNormalizers(const PhiMatrix& n_wt, const PhiMatrix& r_wt);
 
   // Produce normalized p_wt matrix from counters n_wt and (optionaly) regularizers r_wt
   static void FindPwt(const PhiMatrix& n_wt, PhiMatrix* p_wt);
@@ -44,9 +73,11 @@ class PhiMatrixOperations {
   // The order of the tokens and topics must also match.
   static bool HasEqualShape(const PhiMatrix& first, const PhiMatrix& second);
   static void AssignValue(float value, PhiMatrix* phi_matrix);
+
+  // Convert ::artm::TopicModel to ::artm:Batch (pseudo-batch in hierarchical topic models)
+  // Input object 'topic_model' could be modified by this operation.
+  static void ConvertTopicModelToPseudoBatch(::artm::TopicModel* topic_model, ::artm::Batch* batch);
 };
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_PHI_MATRIX_OPERATIONS_H_

@@ -1,12 +1,12 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_COLLECTION_PARSER_H_
-#define SRC_ARTM_CORE_COLLECTION_PARSER_H_
+#pragma once
 
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -14,6 +14,7 @@
 
 #include "artm/core/common.h"
 #include "artm/core/token.h"
+#include "artm/core/cooccurrence_collector.h"
 
 namespace artm {
 namespace core {
@@ -43,16 +44,16 @@ class CollectionParser : boost::noncopyable {
  private:
   struct CollectionParserTokenInfo {
     CollectionParserTokenInfo()
-      : keyword(), class_id(DefaultClass), token_weight(), items_count() {}
+      : keyword(), class_id(DefaultClass), token_weight(), items_count() { }
     explicit CollectionParserTokenInfo(std::string keyword_, ClassId class_id_)
-      : keyword(keyword_), class_id(class_id_), token_weight(0.0f), items_count(0) {}
+      : keyword(keyword_), class_id(class_id_), token_weight(0.0f), items_count(0) { }
     std::string keyword;
     ClassId class_id;
     float token_weight;
     int items_count;
   };
 
-  typedef std::map<int, CollectionParserTokenInfo> TokenMap;
+  typedef std::unordered_map<int, CollectionParserTokenInfo> TokenMap;
 
   class BatchCollector;
 
@@ -69,5 +70,3 @@ class CollectionParser : boost::noncopyable {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_COLLECTION_PARSER_H_

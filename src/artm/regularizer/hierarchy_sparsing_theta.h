@@ -1,4 +1,4 @@
-/* Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2017, Additive Regularization of Topic Models.
 
 Author: Nadia Chirkova (nadiinchi@gmail.com)
 Based on code of Murat Apishev (great-mel@yandex.ru)
@@ -36,8 +36,8 @@ remember to take these values into account when computing p(topic)
 in formula (*)!
 */
 
-#ifndef SRC_ARTM_REGULARIZER_HIERARCHY_SPARSING_THETA_H_
-#define SRC_ARTM_REGULARIZER_HIERARCHY_SPARSING_THETA_H_
+#pragma once
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -60,7 +60,7 @@ class HierarchySparsingThetaAgent : public RegularizeThetaAgent {
   std::vector<float> topic_weight;              // tau for every topic
   std::vector<float> alpha_weight;              // iteration coef
   std::vector<float> parent_topic_proportion;   // p(supertopic)
-  double prior_parent_topic_probability;        // 1.0 / count(supertopics)
+  float prior_parent_topic_probability;         // 1.0 / count(supertopics)
   bool regularization_on = true;                // true if current batch is parent phi batch
 };
 
@@ -69,7 +69,7 @@ class HierarchySparsingTheta : public RegularizerInterface {
   explicit HierarchySparsingTheta(const HierarchySparsingThetaConfig& config);
 
   virtual std::shared_ptr<RegularizeThetaAgent>
-    CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau);
+  CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, float tau);
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
 
@@ -81,6 +81,3 @@ class HierarchySparsingTheta : public RegularizerInterface {
 
 }  // namespace regularizer
 }  // namespace artm
-
-#endif  // SRC_ARTM_REGULARIZER_HIERARCHY_SPARSING_THETA_H_
-

@@ -1,7 +1,6 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_UTILITY_BLAS_H_
-#define SRC_ARTM_UTILITY_BLAS_H_
+#pragma once
 
 #include <assert.h>
 #include <memory>
@@ -274,5 +273,3 @@ void AssignDenseMatrixByDivision(const DenseMatrix<T>& first_matrix,
 }  // namespace artm
 
 #undef CATCH_BIG_ALLOCATION
-
-#endif  // SRC_ARTM_UTILITY_BLAS_H_

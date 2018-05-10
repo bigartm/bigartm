@@ -3,60 +3,15 @@ Downloads
 
 * **Windows**
 
-  * Latest 64 bit release: `BigARTM_v0.8.2_win64 <https://github.com/bigartm/bigartm/releases/download/v0.8.2/BigARTM_v0.8.2_win64.7z>`_
-  * Latest build from master branch: `BigARTM_master_win64.7z <https://ci.appveyor.com/api/projects/bigartm/bigartm/artifacts/BigARTM.7z?branch=master&job=Environment%3A%20JOB%3Dpython3%2C%20PYTHON_VERSION%3D3.5%2C%20MINICONDA%3DC%3A%5CMiniconda35-x64>`_ (warning, use this with caution)
+  * Latest 64 bit release: `BigARTM_v0.9.0_win64 <https://github.com/bigartm/bigartm/releases/download/v0.9.0/BigARTM_v0.9.0_win64.7z>`_
+  * Latest build from master branch: `BigARTM_master_win64.7z <https://ci.appveyor.com/api/projects/bigartm/bigartm/artifacts/BigARTM.7z?branch=master&job=Environment%3A%20PYTHON_VERSION%3D3.6%2C%20MINICONDA%3DC%3A%5CMiniconda36-x64>`_ (warning, use this with caution)
   * All previous releases are available at https://github.com/bigartm/bigartm/releases
-
-  Please refer to :doc:`tutorials/windows_basic` for step by step installation procedure.
 
 * **Linux, Mac OS-X**
 
   To run BigARTM on Linux and Mac OS-X you need to clone BigARTM repository
-  (https://github.com/bigartm/bigartm) and build it as described in 
-  :doc:`tutorials/linux_basic`.
+  (https://github.com/bigartm/bigartm).
 
-* **Datasets**
+* **Docker container**
 
-  Download one of the following datasets to start experimenting with BigARTM.
-  See :doc:`formats` page for the description of input data formats.
-  Note that ``docword.*`` and ``vocab.*`` files indicate ``UCI BOW`` format,
-  while ``vw.*`` file indicate ``Vowpal Wabbit`` format.
-  
-    ========= ========= ======= ======= ==================================================================================================================
-    Task      Source    #Words  #Items  Files
-    ========= ========= ======= ======= ==================================================================================================================
-    kos       `UCI`_    6906    3430    * `docword.kos.txt.gz (1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz>`_
-                                        * `vocab.kos.txt (54 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt>`_      
-    nips      `UCI`_    12419   1500    * `docword.nips.txt.gz (2.1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nips.txt.gz>`_
-                                        * `vocab.nips.txt (98 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nips.txt>`_
-    enron     `UCI`_    28102   39861   * `docword.enron.txt.gz (11.7 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.enron.txt.gz>`_
-                                        * `vocab.enron.txt (230 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.enron.txt>`_
-    nytimes   `UCI`_    102660  300000  * `docword.nytimes.txt.gz (223 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nytimes.txt.gz>`_
-                                        * `vocab.nytimes.txt (1.2 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nytimes.txt>`_
-    pubmed    `UCI`_    141043  8200000 * `docword.pubmed.txt.gz (1.7 GB) <https://s3-eu-west-1.amazonaws.com/artm/docword.pubmed.txt.gz>`_
-                                        * `vocab.pubmed.txt (1.3 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.pubmed.txt>`_
-    wiki      `Gensim`_ 100000  3665223 * `vw.wiki-en.txt.zip (1.8 GB) <https://s3-eu-west-1.amazonaws.com/artm/vw.wiki-en.txt.zip>`_
-    wiki_enru `Wiki`_   196749  216175  * `vw.wiki_enru.txt.zip (285 MB)  <https://s3-eu-west-1.amazonaws.com/artm/vw.wiki-enru.txt.zip>`_
-    eurlex    `eurlex`_ 19800   21000   * `vw.eurlex.txt.zip (13 MB) <https://s3-eu-west-1.amazonaws.com/artm/vw.eurlex.txt.zip>`_
-                                        * `vw.eurlex-test.txt.zip (13 MB) <https://s3-eu-west-1.amazonaws.com/artm/vw.eurlex-test.txt.zip>`_
-    lastfm    `lastfm`_         1k,     * `vw.lastfm_1k.txt.zip (100 MB)  <https://s3-eu-west-1.amazonaws.com/artm/vw.lastfm_1k.txt.zip>`_
-                                360k    * `vw.lastfm_360k.txt.zip (330 MB)  <https://s3-eu-west-1.amazonaws.com/artm/vw.lastfm_360k.txt.zip>`_
-    mmro      `mmro`_   7805    1061    * `docword.mmro.txt.gz (500 KB) <https://s3-eu-west-1.amazonaws.com/artm/docword.mmro.txt.7z>`_
-                                        * `vocab.mmro.txt (150 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.mmro.txt>`_
-                                        * `pPMI_w100.mmro.txt.7z (23 MB) <https://s3-eu-west-1.amazonaws.com/artm/pPMI_w100.mmro.txt.7z>`_
-                                        * `vw.mmro.txt.7z (1.4 MB) <https://s3-eu-west-1.amazonaws.com/artm/vw.mmro.txt.7z>`_
-    ========= ========= ======= ======= ==================================================================================================================
-
-.. _UCI: https://archive.ics.uci.edu/ml/datasets/Bag+of+Words
-
-.. _Gensim: http://radimrehurek.com/gensim/wiki.html
-
-.. _Wiki: http://dumps.wikimedia.org
-
-.. _lastfm: http://www.dtic.upf.edu/~ocelma/MusicRecommendationDataset/
-
-.. _mmro: http://mmro.ru/
-
-.. _eurlex: http://www.ke.tu-darmstadt.de/resources/eurlex
-
-.. vim:ft=rst
+  On any OS it is possible to run BigARTM as docker container, as described in :doc:`installation/docker`

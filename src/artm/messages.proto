@@ -2,11 +2,6 @@ syntax = "proto2";
 // File messages.proto defines all messages that can be transefer in or out from BigARTM library.
 package artm;
 
-// Represents an array of double-precision floating point values
-message DoubleArray {
-  repeated double value = 1 [packed = true];
-}
-
 // Represents an array of single-precision floating point values
 message FloatArray {
   repeated float value = 1 [packed = true];
@@ -32,8 +27,16 @@ message Item {
   optional int32 id = 1;
   repeated Field field = 2;  // obsolete in BigARTM v0.8.0
   optional string title = 3;
-  repeated int32 token_id = 4;
+  repeated int32 token_id = 4;  // obsolete
   repeated float token_weight = 5;
+
+  // new alternative to token_id field, containa ids of transaction tokens
+  repeated int32 transaction_token_id = 6;
+
+  // Field with lenght equal to token_weight, contains strat index
+  // of each transaction from transaction_token_id.
+  // In case of regular batch will be 0, 1, 2, 3 ... etc.
+  repeated int32 transaction_start_index = 7;
 }
 
 // Represents a field withing an item.
@@ -64,12 +67,15 @@ message Batch {
   repeated Item item = 3;
   optional string description = 4;
   optional string id = 5;
+
+  // should be consistent with all batch items or empty
+  repeated string transaction_type = 6;
 }
 
 message RegularizerSettings {
   optional string name = 1;
-  optional double tau = 2;
-  optional double gamma = 3;
+  optional float tau = 2;
+  optional float gamma = 3;
 }
 
 enum RegularizerType {
@@ -85,6 +91,8 @@ enum RegularizerType {
   RegularizerType_BitermsPhi = 9;
   RegularizerType_HierarchySparsingTheta = 10;
   RegularizerType_TopicSegmentationPtdw = 11;
+  RegularizerType_SmoothTimeInTopicsPhi = 12;
+  RegularizerType_NetPlsaPhi = 13;
   RegularizerType_Unknown = 9999;
 }
 
@@ -94,7 +102,7 @@ message RegularizerConfig {
   optional RegularizerType type = 2 [default = RegularizerType_Unknown];
   optional bytes config = 3;
   optional float tau = 4;
-  optional double gamma = 5;
+  optional float gamma = 5;
   optional string config_json = 6;
 }
 
@@ -104,7 +112,7 @@ message SmoothSparseThetaConfig {
   repeated float alpha_iter = 2;
   optional TransformConfig transform_config = 3;
   repeated string item_title = 4;
-  repeated DoubleArray item_topic_multiplier = 5;
+  repeated FloatArray item_topic_multiplier = 5;
 }
 
 // Represents a configuration of a SmoothSparse Phi regularizer
@@ -113,12 +121,17 @@ message SmoothSparsePhiConfig {
   repeated string class_id = 2;
   optional string dictionary_name = 3;
   optional TransformConfig transform_config = 4;
+  repeated string transaction_type = 5;
 }
 
 // Represents a configuration of a Decorrelator Phi regularizer
 message DecorrelatorPhiConfig {
   repeated string topic_name = 1;
   repeated string class_id = 2;
+  repeated string first_topic_name = 3;
+  repeated string second_topic_name = 4;
+  repeated float value = 5;
+  repeated string transaction_type = 6;
 }
 
 // Represents a configuration of a MultiLanguage Phi regularizer
@@ -129,6 +142,7 @@ message LabelRegularizationPhiConfig {
   repeated string topic_name = 1;
   repeated string class_id = 2;
   optional string dictionary_name = 3;
+  repeated string transaction_type = 4;
 }
 
 message SpecifiedSparsePhiConfig {
@@ -142,6 +156,7 @@ message SpecifiedSparsePhiConfig {
   optional int32 max_elements_count = 3 [default = 20];
   optional float probability_threshold = 4 [default = 0.99];
   optional SparseMode mode = 5 [default = SparseTopics];
+  optional string transaction_type = 6;
 }
 
 // Represents a configuration of a ImproveCoherence Phi regularizer
@@ -149,6 +164,7 @@ message ImproveCoherencePhiConfig {
   repeated string topic_name = 1;
   repeated string class_id = 2;
   optional string dictionary_name = 3;
+  repeated string transaction_type = 4;
 }
 
 // Represents a configuration of a Smooth Ptdw regularizer
@@ -160,7 +176,7 @@ message SmoothPtdwConfig {
 
   optional SmoothType type = 1 [default = MovingAverage];
   optional int32 window = 3 [default = 10];
-  optional double threshold = 4 [default = 1.0];
+  optional float threshold = 4 [default = 1.0];
 }
 
 // Represents a configuration of a TopicSelection Theta regularizer
@@ -175,6 +191,7 @@ message BitermsPhiConfig {
   repeated string topic_name = 1;
   repeated string class_id = 2;
   optional string dictionary_name = 3;
+  repeated string transaction_type = 4;
 }
 
 // Represents a configuration of a HierarchySparsing Theta regularizer
@@ -188,7 +205,26 @@ message HierarchySparsingThetaConfig {
 message TopicSegmentationPtdwConfig {
   repeated string background_topic_names = 1;
   optional int32 window = 3 [default = 10];
-  optional double threshold = 4 [default = 0.5];
+  optional float threshold = 4 [default = 0.5];
+}
+
+// Represents a configuration of a SmoothTimeInTopics Phi regularizer
+message SmoothTimeInTopicsPhiConfig {
+  repeated string topic_name = 1;
+  optional string class_id = 2 [default = "@default_class"];
+  optional string transaction_type = 3;
+}
+
+message NetPlsaPhiConfig {
+  optional string class_id = 1;
+  optional string transaction_type = 2;
+  repeated string topic_name = 3;
+  repeated string vertex_name = 4;
+  repeated float vertex_weight = 5;
+  repeated int32 first_vertex_index = 6;
+  repeated int32 second_vertex_index = 7;
+  repeated float edge_weight = 8;
+  optional bool symmetric_edge_weights = 9 [default = false];
 }
 
 // Represents the transform functions
@@ -200,8 +236,8 @@ message TransformConfig {
   }
 
   optional TransformType type = 1 [default = Constant];
-  optional double n = 2 [default = 1];
-  optional double a = 3 [default = 1];
+  optional float n = 2 [default = 1];
+  optional float a = 3 [default = 1];
 }
 
 enum ScoreType {
@@ -248,15 +284,31 @@ message PerplexityScoreConfig {
   }
   optional Type model_type = 3 [default = UnigramDocumentModel];
   optional string dictionary_name = 4;
-  repeated string class_id = 7;
+  repeated string transaction_type = 8;
 }
 
 // Represents a result of calculation of a perplexity score
 message PerplexityScore {
-  optional double value = 1;
+  message TransactionTypeInfo {
+    optional string transaction_type = 1;
+
+    // here and below we sum a lot of small values,
+    // so double type is required
+    optional double raw = 2;
+    optional double normalizer = 3;
+    optional int64 zero_words = 4;
+  }
+
+  // general perplexity value for all cases
+  optional float value = 1;
+  
+  // fields for case of all class ids
   optional double raw = 2;
   optional double normalizer = 3;
   optional int64 zero_words = 4;
+
+  // field for case of custom transaction types
+  repeated TransactionTypeInfo transaction_type_info = 5;
 }
 
 // Represents a configuration of a theta sparsity score
@@ -267,7 +319,7 @@ message SparsityThetaScoreConfig {
 
 // Represents a result of calculation of a theta sparsity score
 message SparsityThetaScore {
-  optional double value = 1;
+  optional float value = 1;
   optional int64 zero_topics = 2;
   optional int64 total_topics = 3;
 }
@@ -277,11 +329,12 @@ message SparsityPhiScoreConfig {
   optional float eps = 1 [default = 1e-37];
   optional string class_id = 2 [default = "@default_class"];
   repeated string topic_name = 3;
+  optional string transaction_type = 4;
 }
 
 // Represents a result of calculation of a phi sparsity score
 message SparsityPhiScore {
-  optional double value = 1;
+  optional float value = 1;
   optional int64 zero_tokens = 2;
   optional int64 total_tokens = 3;
 }
@@ -294,8 +347,8 @@ message ItemsProcessedScoreConfig {
 message ItemsProcessedScore {
   optional int32 value = 1 [default = 0];
   optional int32 num_batches = 2 [default = 0];
-  optional double token_weight = 3 [default = 0];
-  optional double token_weight_in_effect = 4 [default = 0];
+  optional float token_weight = 3 [default = 0];
+  optional float token_weight_in_effect = 4 [default = 0];
 }
 
 // Represents a configuration of a top tokens score
@@ -305,6 +358,7 @@ message TopTokensScoreConfig {
   repeated string topic_name = 3;
   optional string cooccurrence_dictionary_name = 4;
   optional float eps = 5 [default = 1e-37];
+  optional string transaction_type = 6;
 }
 
 // Represents a result of calculation of a top tokens score
@@ -335,19 +389,20 @@ message TopicKernelScoreConfig {
   optional float eps = 1 [default = 1e-37];
   optional string class_id = 2 [default = "@default_class"];
   repeated string topic_name = 3;
-  optional double probability_mass_threshold = 4 [default = 0.1];
+  optional float probability_mass_threshold = 4 [default = 0.1];
   optional string cooccurrence_dictionary_name = 5;
+  optional string transaction_type = 6;
 }
 
 // Represents a result of calculation of a topic kernel score
 message TopicKernelScore {
-  repeated double kernel_size = 1;
-  repeated double kernel_purity = 2;
-  repeated double kernel_contrast = 3;
-  optional double average_kernel_size = 4;
-  optional double average_kernel_purity = 5;
-  optional double average_kernel_contrast = 6;
-  repeated double coherence = 7;
+  repeated float kernel_size = 1;
+  repeated float kernel_purity = 2;
+  repeated float kernel_contrast = 3;
+  optional float average_kernel_size = 4;
+  optional float average_kernel_purity = 5;
+  optional float average_kernel_contrast = 6;
+  repeated float coherence = 7;
   optional float average_coherence = 8;
   repeated StringArray kernel_tokens = 9;
   repeated string topic_name = 10;
@@ -356,16 +411,17 @@ message TopicKernelScore {
 // Represents a configuration of a topic part in nwt score
 message TopicMassPhiScoreConfig {
   optional float eps = 1 [default = 1e-37];
-  optional string class_id = 2 [default = "@default_class"];
+  repeated string class_id = 2;
   repeated string topic_name = 3;
+  repeated string transaction_type = 4;
 }
 
 // Represents a result of calculation of a topic part in nwt score
 message TopicMassPhiScore {
-  optional double value = 1;
+  optional float value = 1;
   repeated string topic_name = 2;
-  repeated double topic_ratio = 3;
-  repeated double topic_mass = 4;
+  repeated float topic_ratio = 3;
+  repeated float topic_mass = 4;
 }
 
 // Represents a configuration of a class precision score
@@ -374,9 +430,9 @@ message ClassPrecisionScoreConfig {
 
 // Represents a result of calculation of a class precision score
 message ClassPrecisionScore {
-  optional double value = 1;
-  optional double error = 2;
-  optional double total = 3;
+  optional float value = 1;
+  optional float error = 2;
+  optional float total = 3;
 }
 
 // Represents a configuration of a class precision score
@@ -394,6 +450,7 @@ message BackgroundTokensRatioScoreConfig {
   optional bool save_tokens = 2 [default = true];
   optional bool direct_kl = 3 [default = true];
   optional string class_id = 4 [default = "@default_class"];
+  optional string transaction_type = 5;
 }
 
 // Represents a result of calculation of a background tokens part score
@@ -412,6 +469,9 @@ message TopicModel {
   repeated string class_id = 6;
   repeated IntArray topic_indices = 8;
   optional int64 num_values = 9;  // NNZ for sparse retrieval
+
+  // field with length equal to 'token'
+  repeated string transaction_type = 10;
 }
 
 // Represents a theta matrix.
@@ -447,6 +507,16 @@ message CollectionParserConfig {
   optional BatchNameType name_type = 7 [default = Guid];
   optional int32 num_threads = 8;
   repeated string class_id = 9;
+  optional string cooc_tf_file_path = 10;
+  optional string cooc_df_file_path = 11;
+  optional string ppmi_tf_file_path = 12;
+  optional string ppmi_df_file_path = 13;
+  optional bool gather_cooc_tf = 14;
+  optional bool gather_cooc_df = 15;
+  optional bool gather_cooc = 16;
+  optional int32 cooc_window_width = 17 [default = 10];
+  optional int32 cooc_min_tf = 18 [default = 1];
+  optional int32 cooc_min_df = 19 [default = 1];
 }
 
 // Misc statistics produced by collection parser
@@ -456,6 +526,32 @@ message CollectionParserInfo {
   optional int64 dictionary_size = 3;
   optional int64 num_tokens = 4;
   optional float total_token_weight = 5;
+}
+
+// Represents a configuration of a cooccurrence collector.
+message CooccurrenceCollectorConfig {
+  optional bool gather_cooc = 1;
+  optional bool gather_cooc_tf = 2;
+  optional bool gather_cooc_df = 3;
+  optional bool use_symetric_cooc = 4;
+  optional bool calculate_ppmi_tf = 5;
+  optional bool calculate_ppmi_df = 6;
+  optional string vw_file_path = 7;
+  optional string vocab_file_path = 8;
+  optional string target_folder = 9;
+  optional string cooc_tf_file_path = 10;
+  optional string cooc_df_file_path = 11;
+  optional string ppmi_tf_file_path = 12;
+  optional string ppmi_df_file_path = 13;
+  optional int32 cooc_window_width = 14 [default = 10];
+  optional int32 cooc_min_tf = 15 [default = 1];
+  optional int32 cooc_min_df = 16 [default = 1];
+  optional int32 max_num_of_open_files = 17;
+  optional int32 num_items_per_batch = 18 [default = 1000];
+  optional int32 num_of_cpu = 19;
+  optional int64 total_num_of_pairs = 20;
+  optional int32 total_num_of_documents = 21;
+  repeated string class_id = 22;
 }
 
 // Represents an argument of 'initialize model' operation
@@ -480,6 +576,9 @@ message DictionaryData {
   optional int64 num_items_in_collection = 10;  // number of documents in the collection
   repeated float cooc_tf = 11; // these two arrays should be either empty or with size
   repeated float cooc_df = 12; // equal to cooc_value and consistent with cooc indices
+
+  // field with length equal to number of all unique transaction types
+  repeated string transaction_type = 13;
 }
 
 message FilterDictionaryArgs {
@@ -495,6 +594,7 @@ message FilterDictionaryArgs {
   optional float max_tf = 9;
 
   optional int64 max_dictionary_size = 10;
+  optional bool recalculate_value = 11 [default = false];
 }
 
 message GatherDictionaryArgs {
@@ -523,6 +623,9 @@ message GetTopicModelArgs {
   optional bool use_sparse_format = 5;  // deprecated, use matrix_layout
   optional float eps = 6 [default = 1e-37];
   optional MatrixLayout matrix_layout = 8 [default = MatrixLayout_Dense];
+  
+  // field with length equal to 'token' (if length of 'token' > 0)
+  repeated string transaction_type = 9;
 }
 
 message GetThetaMatrixArgs {
@@ -550,6 +653,14 @@ message ImportModelArgs {
   optional string model_name = 2;
 }
 
+message ExportScoreTrackerArgs {
+  optional string file_name = 1;
+}
+
+message ImportScoreTrackerArgs {
+  optional string file_name = 1;
+}
+
 message AttachModelArgs {
   optional string model_name = 1;
 }
@@ -569,7 +680,7 @@ message ProcessBatchesArgs {
   optional string pwt_source_name = 3;
   optional int32 num_document_passes = 4 [default = 10];
   repeated string regularizer_name = 6;
-  repeated double regularizer_tau = 7;
+  repeated float regularizer_tau = 7;
   repeated string class_id = 8;
   repeated float class_weight = 9;
   optional bool reuse_theta = 10 [default = false];
@@ -580,6 +691,10 @@ message ProcessBatchesArgs {
   repeated Batch batch = 18;
   optional bool use_random_theta = 19 [default = false];
   repeated string topic_name = 20;
+  repeated string transaction_type = 21;
+  repeated float transaction_weight = 22;
+  optional string predict_transaction_type = 23;
+  optional bool reset_nwt = 24 [default = true];
 }
 
 message ProcessBatchesResult {
@@ -694,6 +809,11 @@ message MasterModelConfig {
   optional bool opt_for_avx = 11 [default = true];
   optional string disk_cache_path = 13;
   optional bool cache_theta = 15 [default = false];
+  optional string ptd_name = 16 [default = ""];
+  repeated string transaction_type = 17;
+  repeated float transaction_weight = 18;
+  optional int32 parent_master_model_id = 19;
+  optional float parent_master_model_weight = 20 [default = 1.0];
 }
 
 message FitOfflineMasterModelArgs {
@@ -701,6 +821,7 @@ message FitOfflineMasterModelArgs {
   repeated float batch_weight = 2;
   optional int32 num_collection_passes = 3 [default = 1];
   optional string batch_folder = 4;
+  optional bool reset_nwt = 5 [default = true];
 }
 
 message FitOnlineMasterModelArgs {
@@ -717,6 +838,7 @@ message TransformMasterModelArgs {
   repeated string batch_filename = 2;
   optional ThetaMatrixType theta_matrix_type = 3 [default = ThetaMatrixType_Dense];
   optional string predict_class_id = 4;
+  optional string predict_transaction_type = 5;
 }
 
 message ConfigureLoggingArgs {

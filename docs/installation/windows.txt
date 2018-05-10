@@ -5,65 +5,56 @@ Download
 --------
 
 Download latest binary distribution of BigARTM from https://github.com/bigartm/bigartm/releases.
-Explicit download links can be found at :doc:`/download` section (for 32 bit and 64 bit configurations).
+Explicit download links can be found at :doc:`/download` section (64 bit only).
 
 The distribution will contain pre-build binaries, command-line interface and BigARTM API for Python.
 The distribution also contains a simple dataset.
 More datasets in BigARTM-compatible format are available in the :doc:`/download` section.
 
-Refer to :doc:`/ref/windows_distribution` for details about other files, included in the binary distribution package.
+You may also try BigARTM from pre-built docker container, as described in :doc:`docker`.
+
+Use BigARTM from command line
+-----------------------------
+
+Download the latest package from https://github.com/bigartm/bigartm/releases.
+Unpack it to ``C:\BigARTM``.
+Open command line or power shell and change working directory to ``C:\BigARTM\bin``.
+Now you may use BigARTM command line utility ``bigartm.exe``.
+Go to :doc:`/tutorials/bigartm_cli` for examples and further directions.
 
 Configure BigARTM Python API
 ----------------------------
 
-1.  Install Python, for example from the following links:
+1.  Install Python, for example from Anaconda distribution (https://www.continuum.io/downloads).
+    You are free to choose ``Python 2.7`` or ``Python 3``, both are supported with BigARTM.
+    You have to choose 64 bit Python installation.
 
-    * Python 2.7.11, 64 bit --  https://www.python.org/ftp/python/2.7.11/python-2.7.11.amd64.msi, or
-    * Python 2.7.11, 32 bit -- https://www.python.org/ftp/python/2.7.11/python-2.7.11.msi
+2.  Install Python packages that BigARTM depend on.
 
-    Remember that the version of BigARTM package must match your version Python installed on your machine.
-    If you have 32 bit operating system then you must select 32 bit for Python and BigARTM package.
-    If you have 64 bit operating system then you are free to select either version.
-    However, please note that memory usage of 32 bit processes is limited by 2 GB.
-    For this reason we recommend to select 64 bit configurations.
+    * ``numpy >= 1.9.2`` (skip this if you install via Anaconda)
+    * ``pandas >= 0.16.2`` (skip this if you install via Anaconda)
+    * ``protobuf >= 3.0.0`` (not included in Anaconda; install by running ``pip install protobuf==3.0.0``)
+    * ``tqdm`` (not included in Anaconda; install by running ``pip install tqdm``)
 
-    Please note that you must use ``Python 2.7``, because ``Python 3`` is not
-    supported by BigARTM.
-	
-    Also you need to have several Python libraries to be installed on your machine:
-	
-    * numpy >= 1.9.2
-    * pandas >= 0.16.2
-
-
-2.  Add ``C:\BigARTM\bin`` folder to your ``PATH`` system variable, and
+3.  Add ``C:\BigARTM\bin`` folder to your ``PATH`` system variable, and
     add ``C:\BigARTM\python`` to your ``PYTHONPATH`` system variable:
 
     .. code-block:: bash
   
        set PATH=%PATH%;C:\BigARTM\bin
-       set PATH=%PATH%;C:\Python27;C:\Python27\Scripts
        set PYTHONPATH=%PYTHONPATH%;C:\BigARTM\Python
 
-    Remember to change ``C:\BigARTM`` and ``C:\Python27`` with your local folders.
+    Remember to change ``C:\BigARTM`` if you unpack to another location.
 
-3.  Setup *Google Protocol Buffers* library, included in the BigARTM release package.
+4. Now you can used BigARTM from Python shell or from ipython notebook.
+   Refer to :doc:`/tutorials/python_tutorial` or :doc:`/tutorials/python_userguide/index`  for examples,
+   or to :doc:`/api_references/python_interface` for documentation.
 
-    * Copy ``C:\BigARTM\bin\protoc.exe`` file into ``C:\BigARTM\protobuf\src`` folder
-    * Run the following commands from command prompt
-    
-    .. code-block:: bash
-  
-        cd C:\BigARTM\protobuf\Python
-        python setup.py build
-        python setup.py install
-
-    Avoid ``python setup.py test`` step, as it produces several confusing errors. Those errors are harmless.
-    For further details about protobuf installation refer to `protobuf/python/README
-    <https://raw.githubusercontent.com/bigartm/bigartm/master/3rdparty/protobuf/python/README.txt>`_.
-
-.. If you are getting errors when configuring or using Python API,
-   please refer to Troubleshooting chapter in :doc:`/installation/linux`.
-   The list of issues is common between Windows and Linux.
+If you are getting errors when configuring or using Python API,
+please refer to Troubleshooting chapter in :doc:`/installation/linux`.
+The list of issues is common between Windows and Linux.
+Normally you should install protobuf for python with ``pip install``.
+An alternative way is to install it from the package that comes with BigARTM.
+This is described `here <https://github.com/bigartm/bigartm/wiki/Q&A#how-to-install-python-protobuf-from-bigartm-package-on-windows>`_.
 
 .. vim:ft=rst

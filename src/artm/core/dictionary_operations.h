@@ -1,7 +1,6 @@
-// Copyright 2015, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_DICTIONARY_OPERATIONS_H_
-#define SRC_ARTM_CORE_DICTIONARY_OPERATIONS_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -26,9 +25,12 @@ class DictionaryOperations {
   static std::shared_ptr<Dictionary> Filter(const FilterDictionaryArgs& args, const Dictionary& dict);
 
   static void StoreIntoDictionaryData(const Dictionary& dict, DictionaryData* data);
+
+  static void WriteDictionarySummaryToLog(const Dictionary& dict);
+
+ private:
+  static void UpdateTransactionTypes(const DictionaryData& data, std::shared_ptr<Dictionary> dict);
 };
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_DICTIONARY_OPERATIONS_H_

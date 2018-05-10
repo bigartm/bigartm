@@ -1,4 +1,4 @@
-/* Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2017, Additive Regularization of Topic Models.
 
    Author: Marina Suvorova (m.dudarenko@gmail.com)
    
@@ -13,8 +13,7 @@
 
 */
 
-#ifndef SRC_ARTM_SCORE_PERPLEXITY_H_
-#define SRC_ARTM_SCORE_PERPLEXITY_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -50,5 +49,3 @@ class Perplexity : public ScoreCalculatorInterface {
 
 }  // namespace score
 }  // namespace artm
-
-#endif  // SRC_ARTM_SCORE_PERPLEXITY_H_

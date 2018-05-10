@@ -1,4 +1,4 @@
-/* Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2017, Additive Regularization of Topic Models.
 
    Author: Marina Suvorova (m.dudarenko@gmail.com)
    
@@ -10,8 +10,7 @@
 
 */
 
-#ifndef SRC_ARTM_SCORE_SPARSITY_THETA_H_
-#define SRC_ARTM_SCORE_SPARSITY_THETA_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -49,5 +48,3 @@ class SparsityTheta : public ScoreCalculatorInterface {
 
 }  // namespace score
 }  // namespace artm
-
-#endif  // SRC_ARTM_SCORE_SPARSITY_THETA_H_

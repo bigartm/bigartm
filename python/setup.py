@@ -1,6 +1,7 @@
 from __future__ import print_function
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Distribution
+from setuptools.command.build_py import build_py
 from distutils.spawn import find_executable
 
 # parse arguments
@@ -91,9 +92,49 @@ class build(_build):
         _build.run(self)
 
 
-setup(
+class AddLibraryBuild(build_py):
+    """
+    This hacky inheritor adds the shared library into the binary distribution.
+    We pretend that we generated our library and place it into the temporary
+    build directory.
+    """
+    def run(self):
+        if not self.dry_run:
+            self.copy_library()
+        build_py.run(self)
+
+    def get_outputs(self, *args, **kwargs):
+        outputs = build_py.get_outputs(*args, **kwargs)
+        outputs.extend(self._library_paths)
+        return outputs
+
+    def copy_library(self, builddir=None):
+        self._library_paths = []
+        library = os.getenv("ARTM_SHARED_LIBRARY", None)
+        if library is None:
+            return
+        destdir = os.path.join(self.build_lib, 'artm')
+        self.mkpath(destdir)
+        dest = os.path.join(destdir, os.path.basename(library))
+        shutil.copy(library, dest)
+        self._library_paths = [dest]
+
+
+class BinaryDistribution(Distribution):
+    """
+    This inheritor forces setuptools to include the "built" shared library into
+    the binary distribution.
+    """
+    def has_ext_modules(self):
+        return True
+
+    def is_pure(self):
+        return False
+
+
+setup_kwargs = dict(
     name='bigartm',
-    version='0.8.2',
+    version='0.9.0',
     packages=find_packages(),
     install_requires=[
         'pandas',
@@ -109,3 +150,11 @@ setup(
     ],
     cmdclass={'build': build},
 )
+
+if sys.argv[1] == "bdist_wheel":
+    # we only mess up with those hacks if we are building a wheel
+    setup_kwargs['distclass'] = BinaryDistribution
+    setup_kwargs['cmdclass']['build_py'] = AddLibraryBuild
+
+setup(**setup_kwargs)
+

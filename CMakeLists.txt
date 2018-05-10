@@ -35,11 +35,7 @@ option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
 option(BUILD_BIGARTM_CLI "Indicates whether to build bigartm-CLI executable" ON)
 option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
 
-if (MSVC OR APPLE)
 set(PYTHON python CACHE INTERNAL "Python command")
-else (MSVC OR APPLE)
-set(PYTHON python2 CACHE INTERNAL "Python command")
-endif (MSVC OR APPLE)
 
 if (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
   option(BUILD_BIGARTM_CLI_STATIC "Request build of static executable bigartm (for Linux only)" ON)
@@ -94,9 +90,12 @@ find_package(Boost COMPONENTS REQUIRED ${BIGARTM_BOOST_COMPONENTS})
 if (NOT Boost_FOUND)
   message(SEND_ERROR "Failed to find required boost libraries.")
   return()
-else (NOT Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
 endif (NOT Boost_FOUND)
+
+set(BOOST_IMPORTED_TARGETS Boost::boost)
+foreach(boost_component ${BIGARTM_BOOST_COMPONENTS})
+    list(APPEND BOOST_IMPORTED_TARGETS Boost::${boost_component})
+endforeach(boost_component)
 
 add_subdirectory(3rdparty)  # gflags must be compiled without -std=c++11
 

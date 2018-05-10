@@ -1,10 +1,10 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_PROCESSOR_H_
-#define SRC_ARTM_CORE_PROCESSOR_H_
+#pragma once
 
 #include <atomic>
 
+#include "boost/functional/hash.hpp"
 #include "boost/thread.hpp"
 #include "boost/thread/mutex.hpp"
 #include "boost/utility.hpp"
@@ -36,6 +36,3 @@ class Processor : boost::noncopyable {
 
 }  // namespace core
 }  // namespace artm
-
-
-#endif  // SRC_ARTM_CORE_PROCESSOR_H_

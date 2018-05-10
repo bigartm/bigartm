@@ -1,4 +1,6 @@
-# Utility to generate pairwise coocurancy information of tokens
+# Copyright 2017, Additive Regularization of Topic Models.
+
+# Utility to generate pairwise co-occurrence information of tokens
 # of collection in BigARTM batches with default dictionary.
 # It will create 'cooc_data.txt' file in the directory with
 # this script, that should be passed into artm.Dictionary.gather()

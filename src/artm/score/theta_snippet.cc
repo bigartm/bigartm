@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 // Author: Marina Suvorova (m.dudarenko@gmail.com)
 
@@ -17,7 +17,7 @@ void ThetaSnippet::AppendScore(
     const artm::ProcessBatchesArgs& args,
     const std::vector<float>& theta,
     Score* score) {
-  int topic_size = p_wt.topic_size();
+  const int topic_size = p_wt.topic_size();
 
   ThetaSnippetScore theta_snippet_score;
   theta_snippet_score.add_item_id(item.id());
@@ -45,20 +45,23 @@ void ThetaSnippet::AppendScore(const Score& score, Score* target) {
     BOOST_THROW_EXCEPTION(::artm::core::InternalError(error_message));
   }
 
-  if (config_.num_items() <= 0 || theta_snippet_score->values_size() == 0)
+  if (config_.num_items() <= 0 || theta_snippet_score->values_size() == 0) {
     return;
+  }
 
   while (theta_snippet_target->values_size() < config_.num_items()) {
     theta_snippet_target->add_item_id(-1);
     artm::FloatArray* values_target = theta_snippet_target->add_values();
-    for (int i = 0; i < theta_snippet_score->values(0).value_size(); ++i)
+    for (int i = 0; i < theta_snippet_score->values(0).value_size(); ++i) {
       values_target->add_value(0.0f);
+    }
   }
 
   for (int item_index = 0; item_index < theta_snippet_score->item_id_size(); item_index++) {
     int item_id = theta_snippet_score->item_id(item_index);
-    if (item_id < 0)
+    if (item_id < 0) {
       continue;
+    }
 
     theta_snippet_target->set_item_id(item_id % config_.num_items(), item_id);
     artm::FloatArray* values_target = theta_snippet_target->mutable_values(item_id % config_.num_items());

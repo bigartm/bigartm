@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 // Author: Marina Suvorova (m.dudarenko@gmail.com)
 
@@ -19,7 +19,7 @@ void SparsityTheta::AppendScore(
     const artm::ProcessBatchesArgs& args,
     const std::vector<float>& theta,
     Score* score) {
-  int topic_size = p_wt.topic_size();
+  const int topic_size = p_wt.topic_size();
 
   std::vector<bool> topics_to_score;
   ::google::protobuf::int64 topics_to_score_size = topic_size;
@@ -64,7 +64,7 @@ void SparsityTheta::AppendScore(const Score& score, Score* target) {
                                          sparsity_theta_score->zero_topics());
   sparsity_theta_target->set_total_topics(sparsity_theta_target->total_topics() +
                                           sparsity_theta_score->total_topics());
-  sparsity_theta_target->set_value(static_cast<double>(sparsity_theta_target->zero_topics()) /
+  sparsity_theta_target->set_value(static_cast<float>(sparsity_theta_target->zero_topics()) /
                                     sparsity_theta_target->total_topics());
 }
 

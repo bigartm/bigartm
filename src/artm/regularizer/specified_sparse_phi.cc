@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 // Author: Murat Apishev (great-mel@yandex.ru)
 
@@ -15,9 +15,9 @@ namespace artm {
 namespace regularizer {
 
 struct Comparator {
-    bool operator() (std::pair<int, float> left, std::pair<int, float> right) {
-        return left.second > right.second;
-    }
+  bool operator() (std::pair<int, float> left, std::pair<int, float> right) {
+    return left.second > right.second;
+  }
 };
 
 bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
@@ -28,21 +28,33 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   const int token_size = n_wt.token_size();
 
   std::vector<bool> topics_to_regularize;
-  if (config_.topic_name().size() == 0)
+  if (config_.topic_name().size() == 0) {
     topics_to_regularize.assign(topic_size, true);
-  else
+  } else {
     topics_to_regularize = core::is_member(n_wt.topic_name(), config_.topic_name());
+  }
 
-  // proceed the regularization
-  bool mode_topics = config_.mode() == artm::SpecifiedSparsePhiConfig_SparseMode_SparseTopics;
+  const  bool mode_topics = config_.mode() == artm::SpecifiedSparsePhiConfig_SparseMode_SparseTopics;
   const int global_end = mode_topics ? topic_size : token_size;
   const int local_end = !mode_topics ? topic_size : token_size;
 
+  const auto& class_id = config_.class_id();
+  auto tt = ::artm::core::TransactionType(class_id);
+  if (config_.has_transaction_type()) {
+    tt = artm::core::TransactionType(config_.transaction_type());
+  }
+
+  // proceed the regularization
   for (int global_index = 0; global_index < global_end; ++global_index) {
     if (mode_topics) {
-      if (!topics_to_regularize[global_index]) continue;
+      if (!topics_to_regularize[global_index]) {
+        continue;
+      }
     } else {
-      if (n_wt.token(global_index).class_id != config_.class_id()) continue;
+      const auto& token = n_wt.token(global_index);
+      if (token.class_id != class_id || token.transaction_type != tt) {
+        continue;
+      }
     }
 
     google::protobuf::RepeatedField<int> indices_of_max;
@@ -54,12 +66,17 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
 
     for (int local_index = 0; local_index < local_end; ++local_index) {
       if (mode_topics) {
-        if (n_wt.token(local_index).class_id != config_.class_id()) continue;
+        const auto& token = n_wt.token(local_index);
+        if (token.class_id != class_id || token.transaction_type != tt) {
+          continue;
+        }
       } else {
-        if (!topics_to_regularize[local_index]) continue;
+        if (!topics_to_regularize[local_index]) {
+          continue;
+        }
       }
 
-      auto value = std::pair<int, float>(local_index,
+      const auto value = std::pair<int, float>(local_index,
           mode_topics ? n_wt.get(local_index, global_index) : n_wt.get(global_index, local_index));
       normalizer += value.second;
 
@@ -123,6 +140,13 @@ google::protobuf::RepeatedPtrField<std::string> SpecifiedSparsePhi::class_ids_to
   google::protobuf::RepeatedPtrField<std::string> retval;
   std::string* ptr = retval.Add();
   *ptr = config_.class_id();
+  return retval;
+}
+
+google::protobuf::RepeatedPtrField<std::string> SpecifiedSparsePhi::transaction_types_to_regularize() {
+  google::protobuf::RepeatedPtrField<std::string> retval;
+  std::string* ptr = retval.Add();
+  *ptr = config_.has_transaction_type() ? config_.transaction_type() : config_.class_id();
   return retval;
 }
 

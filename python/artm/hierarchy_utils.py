@@ -1,14 +1,17 @@
+# Copyright 2017, Additive Regularization of Topic Models.
+
 import artm
 import uuid
 import copy
 import numpy as np
+import pandas
 import os.path
 import os
 import pickle
 import glob
 import warnings
-from pandas import DataFrame
-import pandas
+
+from six.moves import range
 
 
 class hARTM(object):
@@ -228,7 +231,7 @@ class hARTM(object):
     # ========== METHODS ==========
     def _get_seed(self, level_idx):
         np.random.seed(self._seed)
-        return np.random.randint(10000, size=level_idx + 1)[-1]
+        return int(np.random.randint(10000, size=level_idx + 1)[-1])
 
     def add_level(self, num_topics=None, topic_names=None, parent_level_weight=1):
         """
@@ -285,7 +288,7 @@ class hARTM(object):
         if level_idx == -1:
             del self._levels[-1]
             return
-        for _ in xrange(level_idx, len(self._levels)):
+        for _ in range(level_idx, len(self._levels)):
             del self._levels[-1]
 
     def get_level(self, level_idx):
@@ -361,7 +364,7 @@ class hARTM(object):
             level.save(os.path.join(path, "level" +
                                     str(level_idx) + "_pwt.model"), model_name="p_wt")
         info = {"parent_level_weight": [
-            level.phi_batch_weight for level in self._levels[1:]]}
+            level.parent_level_weight for level in self._levels[1:]]}
         with open(os.path.join(path, "info.dump"), "wb") as fout:
             pickle.dump(info, fout)
 
@@ -384,14 +387,14 @@ class hARTM(object):
         info_filename = glob.glob(os.path.join(path, "info.dump"))
         if len(info_filename) != 1:
             raise ValueError("Given path is not hARTM safe")
-        with open(info_filename[0]) as fin:
+        with open(info_filename[0], "rb") as fin:
             info = pickle.load(fin)
         model_filenames = glob.glob(os.path.join(path, "*.model"))
         if len({len(info["parent_level_weight"]) + 1, len(model_filenames) / 2}) > 1:
             raise ValueError("Given path is not hARTM safe")
         self._levels = []
         sorted_model_filenames = sorted(model_filenames)
-        for level_idx in xrange(len(model_filenames) / 2):
+        for level_idx in range(len(model_filenames) // 2):
             if not len(self._levels):
                 model = artm.ARTM(num_topics=1,
                                   seed=self._get_seed(level_idx),
@@ -405,10 +408,10 @@ class hARTM(object):
                                    num_topics=1,
                                    seed=self._get_seed(level_idx),
                                    **self._common_models_args)
-            filename = sorted_model_filenames[2 * level_idx]
-            model.load(filename, "n_wt")
             filename = sorted_model_filenames[2 * level_idx + 1]
             model.load(filename, "p_wt")
+            filename = sorted_model_filenames[2 * level_idx]
+            model.load(filename, "n_wt")
             config = model.master._config
             config.opt_for_avx = False
             model.master._lib.ArtmReconfigureMasterModel(
@@ -478,8 +481,8 @@ class hARTM(object):
         """
         :Description: get level-wise horizontally stacked Phi matrices
 
-        :param class_ids: list with class ids to extract, None means all class ids
-        :type class_ids: list of str
+        :param class_ids: list with class_ids or single class_id to extract, None means all class ids
+        :type class_ids: list of str or str
         :param str model_name: self.model_pwt by default, self.model_nwt is also\
                       reasonable to extract unnormalized counters
 
@@ -499,6 +502,16 @@ class hARTM(object):
                                      for i in range(level.num_topics)]).\
             str.cat(phi.columns, sep="_")
         return phi
+
+    def clone(self):
+        """
+        :Description: returns a deep copy of the artm.hARTM object
+
+        :Note:
+          * This method is equivalent to copy.deepcopy() of your artm.hARTM object.
+            For more information refer to artm.ARTM.clone() method.
+        """
+        return copy.deepcopy(self)
 
 
 class ARTM_Level(artm.ARTM):
@@ -638,9 +651,9 @@ class ARTM_Level(artm.ARTM):
         _, nd_array = self.master.get_theta_matrix(topic_names=use_topic_names)
 
         titles_list = [item_title for item_title in theta_info.item_title]
-        theta_data_frame = DataFrame(data=nd_array.transpose(),
-                                     columns=titles_list,
-                                     index=use_topic_names)
+        theta_data_frame = pandas.DataFrame(data=nd_array.transpose(),
+                                            columns=titles_list,
+                                            index=use_topic_names)
         item_idxs = np.logical_not(
             theta_data_frame.columns.isin(self._parent_model.topic_names))
         theta_data_frame = theta_data_frame.drop(
@@ -649,3 +662,13 @@ class ARTM_Level(artm.ARTM):
             ids_list = [item_id for item_id in theta_info.item_id]
             theta_data_frame.columns = np.array(ids_list)[item_idxs]
         return theta_data_frame
+
+    def clone(self):
+        """
+        :Description: returns a deep copy of the artm.ARTM_Level object
+
+        :Note:
+          * This method is equivalent to copy.deepcopy() of your artm.ARTM_Level object.
+            For more information refer to artm.ARTM.clone() method.
+        """
+        return copy.deepcopy(self)

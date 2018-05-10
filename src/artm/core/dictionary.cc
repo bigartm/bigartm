@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #include "artm/core/dictionary.h"
 #include "artm/utility/memory_usage.h"
@@ -70,8 +70,9 @@ void Dictionary::AddCoocDf(int index_1, int index_2, float value) {
 }
 
 bool Dictionary::has_valid_cooc_state() const {
-  if (cooc_tfs_.size() == 0 && cooc_dfs_.size() == 0)
+  if (cooc_tfs_.size() == 0 && cooc_dfs_.size() == 0) {
     return true;
+  }
 
   return (cooc_dfs_.size() == cooc_tfs_.size()) && (cooc_dfs_.size() == cooc_values_.size());
 }
@@ -83,20 +84,34 @@ int64_t Dictionary::ByteSize() const {
   retval += ::artm::utility::getMemoryUsage(cooc_values_);
   retval += ::artm::utility::getMemoryUsage(cooc_tfs_);
   retval += ::artm::utility::getMemoryUsage(cooc_dfs_);
-  for (auto& entry : cooc_values_) retval += ::artm::utility::getMemoryUsage(entry.second);
-  for (auto& entry : cooc_tfs_) retval += ::artm::utility::getMemoryUsage(entry.second);
-  for (auto& entry : cooc_dfs_) retval += ::artm::utility::getMemoryUsage(entry.second);
-  for (auto& entry : entries_)
+  for (const auto& entry : cooc_values_) {
+    retval += ::artm::utility::getMemoryUsage(entry.second);
+  }
+
+  for (const auto& entry : cooc_tfs_) {
+    retval += ::artm::utility::getMemoryUsage(entry.second);
+  }
+
+  for (const auto& entry : cooc_dfs_) {
+    retval += ::artm::utility::getMemoryUsage(entry.second);
+  }
+
+  for (const auto& entry : entries_) {
     retval += 2 * (entry.token().keyword.size() + entry.token().class_id.size());
+  }
   return retval;
 }
 
 const std::unordered_map<int, float>* Dictionary::cooc_info_impl(const Token& token, const CoocMap& cooc_map) const {
   auto index_iter = token_index_.find(token);
-  if (index_iter == token_index_.end()) return nullptr;
+  if (index_iter == token_index_.end()) {
+    return nullptr;
+  }
 
   auto cooc_map_iter = cooc_map.find(index_iter->second);
-  if (cooc_map_iter == cooc_map.end()) return nullptr;
+  if (cooc_map_iter == cooc_map.end()) {
+    return nullptr;
+  }
 
   return &(cooc_map_iter->second);
 }
@@ -115,41 +130,60 @@ const std::unordered_map<int, float>*  Dictionary::token_cooc_dfs(const Token& t
 
 const DictionaryEntry* Dictionary::entry(const Token& token) const {
   auto find_iter = token_index_.find(token);
-  if (find_iter != token_index_.end())
+  if (find_iter != token_index_.end()) {
     return &entries_[find_iter->second];
-  else
+  } else {
     return nullptr;
+  }
 }
 
 const DictionaryEntry* Dictionary::entry(int index) const {
-  if (index < 0 || index >= entries_.size()) return nullptr;
+  if (index < 0 || index >= (int64_t) entries_.size()) {
+    return nullptr;
+  }
   return &entries_[index];
 }
 
 float Dictionary::CountTopicCoherence(const std::vector<core::Token>& tokens_to_score) {
   float coherence_value = 0.0;
   int k = static_cast<int>(tokens_to_score.size());
-  if (k == 0 || k == 1) return 0.0f;
+  if (k == 0 || k == 1) {
+    return 0.0f;
+  }
 
   // -1 means that find() result == end()
   auto indices = std::vector<int>(k, -1);
   for (int i = 0; i < k; ++i) {
     auto token_index_iter = token_index_.find(tokens_to_score[i]);
-    if (token_index_iter == token_index_.end()) continue;
+    if (token_index_iter == token_index_.end()) {
+      continue;
+    }
     indices[i] = token_index_iter->second;
   }
 
   for (int i = 0; i < k - 1; ++i) {
-    if (indices[i] == -1) continue;
+    if (indices[i] == -1) {
+      continue;
+    }
+
     auto cooc_map_iter = cooc_values_.find(indices[i]);
-    if (cooc_map_iter == cooc_values_.end()) continue;
+    if (cooc_map_iter == cooc_values_.end()) {
+      continue;
+    }
 
     for (int j = i; j < k; ++j) {
-      if (indices[j] == -1) continue;
-      if (tokens_to_score[j].class_id != tokens_to_score[i].class_id) continue;
+      if (indices[j] == -1) {
+        continue;
+      }
+
+      if (tokens_to_score[j].class_id != tokens_to_score[i].class_id) {
+        continue;
+      }
 
       auto value_iter = cooc_map_iter->second.find(indices[j]);
-      if (value_iter == cooc_map_iter->second.end()) continue;
+      if (value_iter == cooc_map_iter->second.end()) {
+        continue;
+      }
       coherence_value += static_cast<float>(value_iter->second);
     }
   }
@@ -172,6 +206,28 @@ void Dictionary::clear_cooc() {
   cooc_values_.clear();
   cooc_tfs_.clear();
   cooc_dfs_.clear();
+}
+
+void Dictionary::AddTransactionType(const ClassId& class_id, const TransactionType& transaction_type) {
+  class_id_to_transaction_types_[class_id].insert(transaction_type);
+}
+
+const std::unordered_set<TransactionType, TransactionHasher>*
+Dictionary::GetTransactionTypes(const ClassId& class_id) const {
+  auto iter = class_id_to_transaction_types_.find(class_id);
+  if (iter != class_id_to_transaction_types_.end()) {
+    return &(iter->second);
+  }
+  return nullptr;
+}
+
+const std::unordered_set<TransactionType, TransactionHasher>
+Dictionary::GetAllTransactionTypes() const {
+  std::unordered_set<TransactionType, TransactionHasher> retval;
+  for (const auto& elem : class_id_to_transaction_types_) {
+    retval.insert(elem.second.begin(), elem.second.end());
+  }
+  return retval;
 }
 
 }  // namespace core

@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 // Author: Marina Suvorova (m.dudarenko@gmail.com)
 
@@ -13,11 +13,11 @@ namespace artm {
 namespace score {
 
 std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::PhiMatrix& p_wt) {
-  int topic_size = p_wt.topic_size();
-  int token_size = p_wt.token_size();
+  // parameters preparation
+  const int topic_size = p_wt.topic_size();
+  const int token_size = p_wt.token_size();
   ::google::protobuf::int64 zero_tokens_count = 0;
 
-  // parameters preparation
   std::vector<bool> topics_to_score;
   ::google::protobuf::int64 topics_to_score_size = topic_size;
   if (config_.topic_name_size() == 0) {
@@ -28,12 +28,19 @@ std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::PhiMatrix& 
   }
 
   ::artm::core::ClassId class_id = ::artm::core::DefaultClass;
-  if (config_.has_class_id())
+  if (config_.has_class_id()) {
     class_id = config_.class_id();
+  }
+
+  auto tt = ::artm::core::TransactionType(class_id);
+  if (config_.has_transaction_type()) {
+    tt = artm::core::TransactionType(config_.transaction_type());
+  }
 
   ::google::protobuf::int64 class_tokens_count = 0;
   for (int token_index = 0; token_index < token_size; token_index++) {
-    if (p_wt.token(token_index).class_id == class_id) {
+    const auto& token = p_wt.token(token_index);
+    if (token.class_id == class_id && token.transaction_type == tt) {
       class_tokens_count++;
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
         if ((fabs(p_wt.get(token_index, topic_index)) < config_.eps()) &&
@@ -49,8 +56,8 @@ std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::PhiMatrix& 
 
   sparsity_phi_score->set_zero_tokens(zero_tokens_count);
   sparsity_phi_score->set_total_tokens(class_tokens_count * topics_to_score_size);
-  sparsity_phi_score->set_value(static_cast<double>(sparsity_phi_score->zero_tokens()) /
-                                static_cast<double>(sparsity_phi_score->total_tokens()));
+  sparsity_phi_score->set_value(static_cast<float>(sparsity_phi_score->zero_tokens()) /
+                                static_cast<float>(sparsity_phi_score->total_tokens()));
 
   return retval;
 }

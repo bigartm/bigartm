@@ -1,0 +1,11 @@
+Batches Utils
+=============
+
+This page describes BatchVectorizer class.
+
+.. automodule:: artm
+
+.. autoclass:: BatchVectorizer
+   :members:
+   :undoc-members:
+   :special-members: __init__

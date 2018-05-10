@@ -19,7 +19,7 @@ New CLI is named ``bigartm`` (or ``bigrtm.exe`` on Windows),
 and it supersedes previous CLI named ``cpp_client``. 
 New CLI has the following features:
 
-* Parse collection in one of the :doc:`/formats`
+* Parse collection in one of the :doc:`../tutorials/python_userguide/loading_data`
 * Load dictionary
 * Initialize a new model, or import previously created model
 * Perform EM-iterations to fit the model

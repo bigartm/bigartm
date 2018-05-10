@@ -1,9 +1,10 @@
-// Copyright 2015, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_CHECK_MESSAGES_H_
-#define SRC_ARTM_CORE_CHECK_MESSAGES_H_
+#pragma once
 
+#include <set>
 #include <string>
+#include <vector>
 
 #include "boost/lexical_cast.hpp"
 #include "boost/uuid/uuid_io.hpp"
@@ -37,24 +38,36 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
 
   const bool has_topic_data = (message.num_topics() != 0 || message.topic_name_size() != 0);
   const bool has_token_data = (message.class_id_size() != 0 || message.token_size() != 0);
+  const bool has_transaction_data = (message.transaction_type_size() != 0);
   const bool has_bulk_data = (message.token_weights_size() != 0);
   const bool has_sparse_format = has_bulk_data && (message.topic_indices_size() != 0);
 
   if (has_topic_data) {
-    if (message.num_topics() != message.topic_name_size())
+    if (message.num_topics() != message.topic_name_size()) {
       ss << "Length mismatch in fields TopicModel.num_topics and TopicModel.topic_name";
+    }
   }
 
   if (has_token_data) {
-    if (message.class_id_size() != message.token_size())
+    if (message.class_id_size() != message.token_size()) {
       ss << "Inconsistent fields size in TopicModel.token and TopicModel.class_id: "
          << message.token_size() << " vs " << message.class_id_size();
+    }
+
+    if (has_transaction_data) {
+      if (message.transaction_type_size() != message.token_size()) {
+        ss << "Inconsistent fields size in TopicModel.token and TopicModel.transaction_type: "
+          << message.token_size() << " vs " << message.transaction_type_size();
+      }
+    }
   }
 
-  if (has_bulk_data && !has_topic_data)
+  if (has_bulk_data && !has_topic_data) {
     ss << "TopicModel.topic_name_size is empty";
-  if (has_bulk_data && !has_token_data)
+  }
+  if (has_bulk_data && !has_token_data) {
     ss << "TopicModel.token_size is empty";
+  }
 
   if (has_bulk_data) {
     if ((message.token_weights_size() != message.token_size()) ||
@@ -83,8 +96,9 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
           }
         }
 
-        if (!ok)
+        if (!ok) {
           break;
+        }
       }
 
       if (!has_sparse_format) {
@@ -112,10 +126,12 @@ inline std::string DescribeErrors(const ::artm::ThetaMatrix& message) {
        << " vs " << message.item_title_size() << " vs " << message.topic_indices_size() << ";";
   }
 
-  if (message.num_topics() == 0 || message.topic_name_size() == 0)
+  if (message.num_topics() == 0 || message.topic_name_size() == 0) {
     ss << "ThetaMatrix.topic_name_size is empty";
-  if (message.num_topics() != message.topic_name_size())
+  }
+  if (message.num_topics() != message.topic_name_size()) {
     ss << "Length mismatch in fields ThetaMatrix.num_topics and ThetaMatrix.topic_name";
+  }
 
   for (int i = 0; i < message.item_id_size(); ++i) {
     if (has_sparse_format) {
@@ -135,11 +151,30 @@ inline std::string DescribeErrors(const ::artm::ThetaMatrix& message) {
         }
       }
 
-      if (!ok)
+      if (!ok) {
         break;
+      }
     }
   }
 
+  return ss.str();
+}
+
+inline std::string DescribeErrors(const ::artm::Item& message) {
+  std::stringstream ss;
+  std::string id = "NO_ID";
+  id = message.has_id() ? std::to_string(message.id()) : id;
+  id = message.has_title() ? message.title() : id;
+
+  if (message.transaction_token_id_size() == 0 && message.token_weight_size() > 0) {
+    ss << "Item " << id << " has empty transaction_token_id with non-empty token_weight\n";
+  }
+
+  if (message.transaction_start_index_size() != message.token_weight_size()) {
+    ss << "Item " << id << " has incocnsistent transaction_start_index_size ("
+       << message.transaction_start_index_size() << ") and token_weight_size ("
+       << message.token_weight_size() << ")\n";
+  }
   return ss.str();
 }
 
@@ -159,8 +194,8 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
   }
 
   const bool has_tokens = (message.token_size() > 0);
-  if (!has_tokens && (message.class_id_size() > 0)) {
-    ss << "Empty Batch.token require that Batch.class_id must also be empty, batch.id = " << message.id();
+  if (!has_tokens) {
+    ss << "Empty Batch.token is no longer supported, batch.id = " << message.id();
     return ss.str();
   }
 
@@ -170,54 +205,37 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
   }
 
   for (int item_id = 0; item_id < message.item_size(); ++item_id) {
-    for (const auto& field : message.item(item_id).field()) {
-      if (field.token_count_size() != 0) {
-        ss << "Field.token_count field is deprecated. Use Field.token_weight instead; ";
-        break;
-      }
-
-      if (field.token_weight_size() != field.token_id_size()) {
-        ss << "Length mismatch in field Batch.item(" << item_id << ").token_weight and token_id; ";
-        break;
-      }
-
-      for (int token_index = 0; token_index < field.token_id_size(); token_index++) {
-        int token_id = field.token_id(token_index);
-        if ((token_id < 0) || (has_tokens && (token_id >= message.token_size()))) {
-          ss << "Value " << token_id << " in Batch.Item(" << item_id
-             << ").token_id is negative or exceeds Batch.token_size";
-          return ss.str();
-        }
-      }
-    }
+    ss << DescribeErrors(message.item(item_id));
   }
-
   return ss.str();
 }
 
 inline std::string DescribeErrors(const ::artm::GetScoreValueArgs& message) {
   std::stringstream ss;
 
-  if (!message.has_score_name() || message.score_name().empty())
+  if (!message.has_score_name() || message.score_name().empty()) {
     ss << "GetScoreValueArgs.score_name is missing; ";
-
+  }
   return ss.str();
 }
 
 inline std::string DescribeErrors(const ::artm::MasterModelConfig& message) {
   std::stringstream ss;
 
-  if (message.class_weight_size() != message.class_id_size())
+  if (message.class_weight_size() != message.class_id_size()) {
     ss << "Length mismatch in fields MasterModelConfig.class_id and MasterModelConfig.class_weight; ";
+  }
 
-  if (message.num_document_passes() < 0)
+  if (message.num_document_passes() < 0) {
     ss << "Field MasterModelConfig.num_document_passes must be non-negative; ";
+  }
 
   for (int i = 0; i < message.regularizer_config_size(); ++i) {
     const RegularizerConfig& config = message.regularizer_config(i);
-    if (!config.has_tau())
+    if (!config.has_tau()) {
       ss << "Field MasterModelConfig.RegularizerConfig.tau must not be empty "
          << "(regularizer name: " << config.name() << "); ";
+    }
   }
 
   return ss.str();
@@ -226,16 +244,19 @@ inline std::string DescribeErrors(const ::artm::MasterModelConfig& message) {
 inline std::string DescribeErrors(const ::artm::FitOfflineMasterModelArgs& message) {
   std::stringstream ss;
 
-  if (message.batch_filename_size() != message.batch_weight_size())
+  if (message.batch_filename_size() != message.batch_weight_size()) {
     ss << "Length mismatch in fields FitOfflineMasterModelArgs.batch_filename "
        << "and FitOfflineMasterModelArgs.batch_weight; ";
+  }
 
-  if (message.num_collection_passes() <= 0)
+  if (message.num_collection_passes() <= 0) {
     ss << "FitOfflineMasterModelArgs.passes() must be a positive number";
+  }
 
-  if (message.has_batch_folder() && (message.batch_filename_size() != 0))
+  if (message.has_batch_folder() && (message.batch_filename_size() != 0)) {
     ss << "Only one of FitOfflineMasterModelArgs.batch_folder, "
        << "FitOfflineMasterModelArgs.batch_filename must be specified; ";
+  }
 
   return ss.str();
 }
@@ -243,15 +264,18 @@ inline std::string DescribeErrors(const ::artm::FitOfflineMasterModelArgs& messa
 inline std::string DescribeErrors(const ::artm::FitOnlineMasterModelArgs& message) {
   std::stringstream ss;
 
-  if (message.batch_filename_size() == 0)
+  if (message.batch_filename_size() == 0) {
     ss << "Fields FitOnlineMasterModelArgs.batch_filename must not be empty; ";
+  }
 
-  if (message.batch_filename_size() != message.batch_weight_size())
+  if (message.batch_filename_size() != message.batch_weight_size()) {
     ss << "Length mismatch in fields FitOnlineMasterModelArgs.batch_filename "
     << "and FitOnlineMasterModelArgs.batch_weight; ";
+  }
 
-  if (message.update_after_size() == 0)
+  if (message.update_after_size() == 0) {
     ss << "Field FitOnlineMasterModelArgs.update_after must not be empty; ";
+  }
 
   if (message.update_after_size() != message.apply_weight_size() ||
       message.update_after_size() != message.decay_weight_size()) {
@@ -292,11 +316,18 @@ inline std::string DescribeErrors(const ::artm::FitOnlineMasterModelArgs& messag
 inline std::string DescribeErrors(const ::artm::TransformMasterModelArgs& message) {
   std::stringstream ss;
 
-  if (message.batch_filename_size() == 0 && message.batch_size() == 0)
+  if (message.batch_filename_size() == 0 && message.batch_size() == 0) {
     ss << "Either TransformMasterModelArgs.batch_filename or TransformMasterModelArgs.batch must be specified; ";
-  if (message.batch_filename_size() != 0 && message.batch_size() != 0)
+  }
+  if (message.batch_filename_size() != 0 && message.batch_size() != 0) {
     ss << "Only one of TransformMasterModelArgs.batch_filename, "
        << "TransformMasterModelArgs.batch must be specified; ";
+  }
+
+  if (message.has_predict_class_id()) {
+    ss << "TransformMasterModelArgs.predict_class_id field is deprecated, use"
+      << " only TransformMasterModelArgs.predict_transaction_type instead; ";
+  }
 
   return ss.str();
 }
@@ -319,14 +350,17 @@ inline std::string DescribeErrors(const ::artm::InitializeModelArgs& message) {
 inline std::string DescribeErrors(const ::artm::FilterDictionaryArgs& message) {
   std::stringstream ss;
 
-  if (!message.has_dictionary_name())
+  if (!message.has_dictionary_name()) {
     ss << "FilterDictionaryArgs has no dictionary name; ";
+  }
 
-  if (!message.has_dictionary_target_name())
+  if (!message.has_dictionary_target_name()) {
      ss << "FilterDictionaryArgs has no target dictionary name; ";
+  }
 
-  if (message.has_max_dictionary_size() && (message.max_dictionary_size() <= 0))
+  if (message.has_max_dictionary_size() && (message.max_dictionary_size() <= 0)) {
     ss << "FilterDictionaryArgs.max_dictionary_size must be positive integer; ";
+  }
 
   return ss.str();
 }
@@ -334,11 +368,13 @@ inline std::string DescribeErrors(const ::artm::FilterDictionaryArgs& message) {
 inline std::string DescribeErrors(const ::artm::GatherDictionaryArgs& message) {
   std::stringstream ss;
 
-  if (!message.has_dictionary_target_name())
+  if (!message.has_dictionary_target_name()) {
     ss << "GatherDictionaryArgs has no target dictionary name; ";
+  }
 
-  if (!message.has_data_path() && (message.batch_path_size() == 0))
+  if (!message.has_data_path() && (message.batch_path_size() == 0)) {
     ss << "GatherDictionaryArgs has neither batch_path nor data_path set; ";
+  }
 
   return ss.str();
 }
@@ -346,8 +382,9 @@ inline std::string DescribeErrors(const ::artm::GatherDictionaryArgs& message) {
 inline std::string DescribeErrors(const ::artm::DictionaryData& message) {
   std::stringstream ss;
 
-  if (!message.has_name())
+  if (!message.has_name()) {
     ss << "DictionaryData has no dictionary name; ";
+  }
 
   bool is_token_df_ok = message.token_df_size() == 0 || message.token_df_size() == message.token_size();
   bool is_token_tf_ok = message.token_tf_size() == 0 || message.token_tf_size() == message.token_size();
@@ -378,7 +415,9 @@ inline std::string DescribeErrors(const ::artm::DictionaryData& message) {
 
 inline std::string DescribeErrors(const ::artm::ExportModelArgs& message) {
   std::stringstream ss;
-  if (!message.has_file_name()) ss << "ExportModelArgs.file_name is not defined; ";
+  if (!message.has_file_name()) {
+    ss << "ExportModelArgs.file_name is not defined; ";
+  }
 
   // Allow this to default to MasterModelConfig.pwt_name
   // if (!message.has_model_name()) ss << "ExportModelArgs.model_name is not defined; ";
@@ -388,7 +427,9 @@ inline std::string DescribeErrors(const ::artm::ExportModelArgs& message) {
 
 inline std::string DescribeErrors(const ::artm::ImportModelArgs& message) {
   std::stringstream ss;
-  if (!message.has_file_name()) ss << "ImportModelArgs.file_name is not defined; ";
+  if (!message.has_file_name()) {
+    ss << "ImportModelArgs.file_name is not defined; ";
+  }
 
   // Allow this to default to MasterModelConfig.pwt_name
   // if (!message.has_model_name()) ss << "ImportModelArgs.model_name is not defined; ";
@@ -396,11 +437,33 @@ inline std::string DescribeErrors(const ::artm::ImportModelArgs& message) {
   return ss.str();
 }
 
+inline std::string DescribeErrors(const ::artm::ExportScoreTrackerArgs& message) {
+  std::stringstream ss;
+  if (!message.has_file_name()) {
+    ss << "ExportScoreTrackerArgs.file_name is not defined; ";
+  }
+
+  return ss.str();
+}
+
+inline std::string DescribeErrors(const ::artm::ImportScoreTrackerArgs& message) {
+  std::stringstream ss;
+  if (!message.has_file_name()) {
+    ss << "ImportScoreTrackerArgs.file_name is not defined; ";
+  }
+
+  return ss.str();
+}
+
 inline std::string DescribeErrors(const ::artm::ImportDictionaryArgs& message) {
   std::stringstream ss;
-  if (!message.has_file_name()) ss << "ImportDictionaryArgs.file_name is not defined; ";
-  if (!message.has_dictionary_name())
+  if (!message.has_file_name()) {
+    ss << "ImportDictionaryArgs.file_name is not defined; ";
+  }
+
+  if (!message.has_dictionary_name()) {
     ss << "ImportDictionaryArgs.dictionary_name is not defined; ";
+  }
 
   return ss.str();
 }
@@ -408,17 +471,26 @@ inline std::string DescribeErrors(const ::artm::ImportDictionaryArgs& message) {
 inline std::string DescribeErrors(const ::artm::ProcessBatchesArgs& message) {
   std::stringstream ss;
 
-  if (message.batch_filename_size() == 0 && message.batch_size() == 0)
+  if (message.batch_filename_size() == 0 && message.batch_size() == 0) {
     ss << "Either ProcessBatchesArgs.batch_filename or ProcessBatchesArgs.batch must be specified; ";
-  if (message.batch_filename_size() != 0 && message.batch_size() != 0)
+  }
+  if (message.batch_filename_size() != 0 && message.batch_size() != 0) {
     ss << "Only one of ProcessBatchesArgs.batch_filename, "
        << "ProcessBatchesArgs.batch must be specified; ";
+  }
 
-  if (message.batch_filename_size() != 0 && message.batch_filename_size() != message.batch_weight_size())
+  if (message.batch_filename_size() != 0 && message.batch_filename_size() != message.batch_weight_size()) {
     ss << "Length mismatch in fields ProcessBatchesArgs.batch_filename and ProcessBatchesArgs.batch_weight";
+  }
 
-  if (message.batch_size() != 0 && message.batch_size() != message.batch_weight_size())
+  if (message.batch_size() != 0 && message.batch_size() != message.batch_weight_size()) {
     ss << "Length mismatch in fields ProcessBatchesArgs.batch_filename and ProcessBatchesArgs.batch_weight";
+  }
+
+  if (message.has_predict_class_id()) {
+    ss << "ProcessBatchesArgs.predict_class_id field is deprecated, use"
+       << " only ProcessBatchesArgs.predict_transaction_type instead; ";
+  }
 
   return ss.str();
 }
@@ -426,8 +498,9 @@ inline std::string DescribeErrors(const ::artm::ProcessBatchesArgs& message) {
 inline std::string DescribeErrors(const ::artm::ImportBatchesArgs& message) {
   std::stringstream ss;
 
-  if (message.batch_size() == 0)
+  if (message.batch_size() == 0) {
     ss << "Empty ImportBatchesArgs.batch field";
+  }
 
   return ss.str();
 }
@@ -435,8 +508,9 @@ inline std::string DescribeErrors(const ::artm::ImportBatchesArgs& message) {
 inline std::string DescribeErrors(const ::artm::MergeModelArgs& message) {
   std::stringstream ss;
 
-  if (message.source_weight_size() != 0 && message.source_weight_size() != message.nwt_source_name_size())
+  if (message.source_weight_size() != 0 && message.source_weight_size() != message.nwt_source_name_size()) {
     ss << "Length mismatch in fields MergeModelArgs.source_weight and MergeModelArgs.nwt_source_name";
+  }
 
   return ss.str();
 }
@@ -465,7 +539,7 @@ inline std::string DescribeErrors(const ::artm::CollectionParserConfig& message)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-inline void FixMessage(T* message) {}
+inline void FixMessage(T* message) { }
 
 #define FIX_REGULARIZER_CONFIG(T, U) if (message->type() == T) { message->set_config(ProtobufSerialization::ConvertJsonToBinary< U>(message->config_json())); fixed = true; }  // NOLINT
 #define FIX_SCORE_CONFIG(T, U) if (message->type() == T) { message->set_config(ProtobufSerialization::ConvertJsonToBinary< U>(message->config_json())); fixed = true; }  // NOLINT
@@ -486,7 +560,15 @@ inline void FixMessage(::artm::RegularizerConfig* message) {
     FIX_REGULARIZER_CONFIG(RegularizerType_TopicSelectionTheta, ::artm::TopicSelectionThetaConfig);
     FIX_REGULARIZER_CONFIG(RegularizerType_BitermsPhi, ::artm::BitermsPhiConfig);
     FIX_REGULARIZER_CONFIG(RegularizerType_HierarchySparsingTheta, ::artm::HierarchySparsingThetaConfig);
-    if (!fixed) BOOST_THROW_EXCEPTION(InternalError("Given RegularizerType is not supported for json serialization"));
+    if (!fixed) {
+      BOOST_THROW_EXCEPTION(InternalError("Given RegularizerType is not supported for json serialization"));
+    }
+  }
+
+  if (message->has_gamma() && (message->gamma() < 0) || (message->gamma() > 1)) {
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      "Regularization parameter 'gamma' must be between 0 and 1. "
+      "Refer to documentation for more details. "));
   }
 }
 
@@ -505,11 +587,14 @@ inline void FixMessage(::artm::ScoreConfig* message) {
     FIX_SCORE_CONFIG(ScoreType_ClassPrecision, ::artm::ClassPrecisionScoreConfig);
     FIX_SCORE_CONFIG(ScoreType_PeakMemory, ::artm::PeakMemoryScoreConfig);
     FIX_SCORE_CONFIG(ScoreType_BackgroundTokensRatio, ::artm::BackgroundTokensRatioScoreConfig);
-    if (!fixed) BOOST_THROW_EXCEPTION(InternalError("Given ScoreType is not supported for json serialization"));
+    if (!fixed) {
+      BOOST_THROW_EXCEPTION(InternalError("Given ScoreType is not supported for json serialization"));
+    }
   }
 
-  if (message->type() == ScoreType_TopTokens)
+  if (message->type() == ScoreType_TopTokens) {
     FixPackedMessage<TopTokensScoreConfig>(message->mutable_config());
+  }
 }
 
 template<>
@@ -527,7 +612,9 @@ inline void FixMessage(::artm::ScoreData* message) {
     FIX_SCORE_DATA(ScoreType_ClassPrecision, ::artm::ClassPrecisionScore);
     FIX_SCORE_DATA(ScoreType_PeakMemory, ::artm::PeakMemoryScore);
     FIX_SCORE_DATA(ScoreType_BackgroundTokensRatio, ::artm::BackgroundTokensRatioScore);
-    if (!fixed) BOOST_THROW_EXCEPTION(InternalError("Given ScoreType is not supported for json de-serialization"));
+    if (!fixed) {
+      BOOST_THROW_EXCEPTION(InternalError("Given ScoreType is not supported for json de-serialization"));
+    }
   }
 }
 
@@ -540,12 +627,22 @@ inline void FixMessage(::artm::TopicModel* message) {
   const int token_size = message->token_size();
   if ((message->class_id_size() == 0) && (token_size > 0)) {
     message->mutable_class_id()->Reserve(token_size);
-    for (int i = 0; i < token_size; ++i)
+    for (int i = 0; i < token_size; ++i) {
       message->add_class_id(::artm::core::DefaultClass);
+    }
   }
 
-  if (message->topic_name_size() > 0)
+  const int class_id_size = message->class_id_size();
+  if ((message->transaction_type_size() == 0) && (class_id_size > 0)) {
+    message->mutable_transaction_type()->Reserve(class_id_size);
+    for (int i = 0; i < class_id_size; ++i) {
+      message->add_transaction_type(message->class_id(i));
+    }
+  }
+
+  if (message->topic_name_size() > 0) {
     message->set_num_topics(message->topic_name_size());
+  }
 }
 
 template<>
@@ -561,8 +658,9 @@ inline void FixMessage(::artm::Batch* message) {
     for (auto& field : *item.mutable_field()) {
       if (field.token_count_size() != 0 && field.token_weight_size() == 0) {
         field.mutable_token_weight()->Reserve(field.token_count_size());
-        for (int i = 0; i < field.token_count_size(); ++i)
+        for (int i = 0; i < field.token_count_size(); ++i) {
           field.add_token_weight(static_cast<float>(field.token_count(i)));
+        }
         field.clear_token_count();
       }
     }
@@ -577,18 +675,81 @@ inline void FixMessage(::artm::Batch* message) {
 
     item.clear_field();
   }
+
+  // Upgrade away from token_id
+  for (auto& item : *message->mutable_item()) {
+    if (item.transaction_token_id_size() == 0) {
+      item.clear_transaction_start_index();
+      for (const int val : item.token_id()) {
+        item.add_transaction_token_id(val);
+        item.transaction_start_index(item.transaction_start_index_size());
+      }
+      item.clear_token_id();
+    }
+  }
+
+  for (auto& item : *message->mutable_item()) {
+    if (item.transaction_start_index_size() != item.token_weight_size()) {
+      item.clear_transaction_start_index();
+      for (int i = 0; i < item.token_weight_size(); ++i) {
+        item.add_transaction_start_index(i);
+      }
+    }
+  }
+
+  // For items without title set title to item id
+  for (auto& item : *message->mutable_item()) {
+    if (!item.has_title() && item.has_id()) {
+      item.set_title(boost::lexical_cast<std::string>(item.id()));
+    }
+  }
+
+  // Fill internal transaction_type field if it is not defined
+  if (message->transaction_type_size() == 0) {
+    LOG(INFO) << "Batch " << message->id() << " is old and should be re-generated for processing speed-up";
+    std::set<TransactionType> batch_tt;
+    for (int item_id = 0; item_id < message->item_size(); ++item_id) {
+      const Item& item = message->item(item_id);
+      for (int token_index = 0; token_index < item.transaction_start_index_size(); ++token_index) {
+        const int start_index = item.transaction_start_index(token_index);
+        const int end_index = (token_index + 1) < item.transaction_start_index_size() ?
+                              item.transaction_start_index(token_index + 1) :
+                              item.transaction_token_id_size();
+
+        std::string str;
+        for (int token_id = start_index; token_id < end_index; ++token_id) {
+          auto& tmp = message->class_id(item.transaction_token_id(token_id));
+          str += (token_id == start_index) ? tmp : TransactionSeparator + tmp;
+        }
+
+        if (!str.empty()) {
+          batch_tt.insert(TransactionType(str));
+        } else {
+          LOG(WARNING) << "Item " << item_id << " in batch " << message->id()
+            << " has empty transaction_token_id in position " << token_index;
+          continue;
+        }
+      }
+    }
+
+    for (const auto& tt : batch_tt) {
+      message->add_transaction_type(tt.AsString());
+    }
+  }
 }
 
 template<>
 inline void FixMessage(::artm::GetThetaMatrixArgs* message) {
-  if (message->has_use_sparse_format())
+  if (message->has_use_sparse_format()) {
     message->set_matrix_layout(MatrixLayout_Sparse);
+  }
 }
 
 template<>
 inline void FixMessage(::artm::GetTopicModelArgs* message) {
-  if (message->has_use_sparse_format())
+  if (message->has_use_sparse_format()) {
     message->set_matrix_layout(MatrixLayout_Sparse);
+  }
 }
 
 template<>
@@ -598,22 +759,69 @@ inline void FixMessage(::artm::DictionaryData* message) {
       message->add_class_id(DefaultClass);
     }
   }
+
+  if (message->transaction_type_size() == 0) {
+    std::set<ClassId> class_ids;
+    for (int i = 0; i < message->token_size(); ++i) {
+      class_ids.emplace(message->class_id(i));
+    }
+    for (const ClassId& class_id : class_ids) {
+      message->add_transaction_type(class_id);
+    }
+  }
 }
 
 template<>
 inline void FixMessage(::artm::ProcessBatchesArgs* message) {
   if (message->batch_weight_size() == 0) {
     int size = message->batch_filename_size() > 0 ? message->batch_filename_size() : message->batch_size();
-    for (int i = 0; i < size; ++i)
+    for (int i = 0; i < size; ++i) {
       message->add_batch_weight(1.0f);
+    }
   }
 
-  for (int i = 0; i < message->batch_size(); ++i)
+  for (int i = 0; i < message->batch_size(); ++i) {
     FixMessage(message->mutable_batch(i));
+  }
 
-  if (message->class_weight_size() == 0) {
-    for (int i = 0; i < message->class_id_size(); ++i)
-      message->add_class_weight(1.0f);
+  const int class_id_size = message->class_id_size();
+  int class_weight_size = message->class_weight_size();
+  int tt_size = message->transaction_type_size();
+  int tt_weight_size = message->transaction_weight_size();
+
+  if (class_id_size > 0) {
+    if (class_weight_size == 0) {
+      for (int i = 0; i < class_id_size; ++i) {
+        message->add_class_weight(1.0f);
+      }
+      class_weight_size = class_id_size;
+    }
+
+    if (tt_size == 0) {
+      for (int i = 0; i < class_id_size; ++i) {
+        message->add_transaction_type(message->class_id(i));
+      }
+      tt_size = class_id_size;
+    }
+  }
+
+  if (tt_size > 0 && tt_weight_size == 0) {
+    if (tt_size == class_id_size && class_weight_size == class_id_size) {
+      for (int i = 0; i < class_id_size; ++i) {
+        message->add_transaction_weight(message->class_weight(i));
+      }
+    } else {
+      message->add_transaction_weight(1.0);
+    }
+  }
+
+  message->clear_class_id();
+  message->clear_class_weight();
+
+  if (!message->has_predict_transaction_type()) {
+    if (message->has_predict_class_id()) {
+      message->set_predict_transaction_type(message->predict_class_id());
+    }
   }
 }
 
@@ -626,13 +834,43 @@ inline void FixMessage(::artm::TopTokensScoreConfig* message) {
 
 template<>
 inline void FixMessage(::artm::MasterModelConfig* message) {
-  if (message->class_weight_size() == 0) {
-    for (int i = 0; i < message->class_id_size(); ++i)
-      message->add_class_weight(1.0f);
+  const int class_id_size = message->class_id_size();
+  int class_weight_size = message->class_weight_size();
+  int tt_size = message->transaction_type_size();
+  int tt_weight_size = message->transaction_weight_size();
+
+  if (class_id_size > 0) {
+    if (class_weight_size == 0) {
+      for (int i = 0; i < class_id_size; ++i) {
+        message->add_class_weight(1.0f);
+      }
+      class_weight_size = class_id_size;
+    }
+
+    if (tt_size == 0) {
+      for (int i = 0; i < class_id_size; ++i) {
+        message->add_transaction_type(message->class_id(i));
+      }
+      tt_size = class_id_size;
+    }
   }
 
-  if (message->reuse_theta())
+  if (tt_size > 0 && tt_weight_size == 0) {
+    if (tt_size == class_id_size && class_weight_size == class_id_size) {
+      for (int i = 0; i < class_id_size; ++i) {
+        message->add_transaction_weight(message->class_weight(i));
+      }
+    } else {
+      message->add_transaction_weight(1.0);
+    }
+  }
+
+  message->clear_class_id();
+  message->clear_class_weight();
+
+  if (message->reuse_theta()) {
     message->set_cache_theta(true);
+  }
 
   for (int i = 0; i < message->regularizer_config_size(); ++i) {
     FixMessage(message->mutable_regularizer_config(i));
@@ -642,34 +880,42 @@ inline void FixMessage(::artm::MasterModelConfig* message) {
     ScoreConfig* score_config = message->mutable_score_config(i);
     FixMessage(score_config);
 
-    if (!score_config->has_model_name())
+    if (!score_config->has_model_name()) {
       score_config->set_model_name(message->pwt_name());
+    }
   }
 
   ScoreConfig* items_processed_score = message->add_score_config();
   items_processed_score->set_name("^^^ItemsProcessedScore^^^");
   items_processed_score->set_type(ScoreType_ItemsProcessed);
   items_processed_score->set_config(::artm::ItemsProcessedScore().SerializeAsString());
+
+  if (message->topic_name_size() == 0) {
+    message->set_ptd_name(std::string());
+  }
 }
 
 template<>
 inline void FixMessage(::artm::FitOfflineMasterModelArgs* message) {
   if (message->batch_weight_size() == 0) {
-    for (int i = 0; i < message->batch_filename_size(); ++i)
+    for (int i = 0; i < message->batch_filename_size(); ++i) {
       message->add_batch_weight(1.0f);
+    }
   }
 }
 
 template<>
 inline void FixMessage(::artm::FitOnlineMasterModelArgs* message) {
   if (message->batch_weight_size() == 0) {
-    for (int i = 0; i < message->batch_filename_size(); ++i)
+    for (int i = 0; i < message->batch_filename_size(); ++i) {
       message->add_batch_weight(1.0f);
+    }
   }
 
   if (message->apply_weight_size() == 0) {
-    for (int i = 0; i < message->decay_weight_size(); ++i)
+    for (int i = 0; i < message->decay_weight_size(); ++i) {
       message->add_apply_weight(1.0f - message->decay_weight(i));
+    }
   }
 
   if (message->decay_weight_size() == 0) {
@@ -681,33 +927,44 @@ inline void FixMessage(::artm::FitOnlineMasterModelArgs* message) {
 
 template<>
 inline void FixMessage(::artm::TransformMasterModelArgs* message) {
-  for (int i = 0; i < message->batch_size(); ++i)
+  for (int i = 0; i < message->batch_size(); ++i) {
     FixMessage(message->mutable_batch(i));
+  }
+
+  if (!message->has_predict_transaction_type()) {
+    if (message->has_predict_class_id()) {
+      message->set_predict_transaction_type(message->predict_class_id());
+    }
+  }
 }
 
 template<>
 inline void FixMessage(::artm::ImportBatchesArgs* message) {
-  for (int i = 0; i < message->batch_size(); ++i)
+  for (int i = 0; i < message->batch_size(); ++i) {
     FixMessage(message->mutable_batch(i));
+  }
 }
 
 template<>
 inline void FixMessage(::artm::ProcessBatchesResult* message) {
-  for (int i = 0; i < message->score_data_size(); ++i)
+  for (int i = 0; i < message->score_data_size(); ++i) {
     FixMessage(message->mutable_score_data(i));
+  }
 }
 
 template<>
 inline void FixMessage(::artm::ScoreArray* message) {
-  for (int i = 0; i < message->score_size(); ++i)
+  for (int i = 0; i < message->score_size(); ++i) {
     FixMessage(message->mutable_score(i));
+  }
 }
 
 template<>
 inline void FixMessage(::artm::MergeModelArgs* message) {
   if (message->source_weight().empty()) {
-    for (int i = 0; i < message->nwt_source_name_size(); ++i)
+    for (int i = 0; i < message->nwt_source_name_size(); ++i) {
       message->add_source_weight(1.0f);
+    }
   }
 }
 
@@ -723,10 +980,11 @@ inline std::string DescribeMessage(const ::artm::RegularizerSettings& message) {
   std::stringstream ss;
   ss << ", regularizer=(name:" << message.name() <<
         ", tau:" << message.tau();
-  if (message.has_gamma())
+  if (message.has_gamma()) {
     ss << "gamma:" << message.gamma() << ")";
-  else
+  } else {
     ss << "gamma:None" << ")";
+  }
   return ss.str();
 }
 
@@ -736,9 +994,11 @@ inline std::string DescribeMessage(const ::artm::InitializeModelArgs& message) {
   ss << "InitializeModelArgs";
   ss << ": model_name=" << message.model_name();
 
-  if (message.has_dictionary_name())
+  if (message.has_dictionary_name()) {
     ss << ", dictionary_name=" << message.dictionary_name();
+  }
   ss << ", topic_name_size=" << message.topic_name_size();
+  ss << ", seed=" << message.seed();
   return ss.str();
 }
 
@@ -748,21 +1008,28 @@ inline std::string DescribeMessage(const ::artm::FilterDictionaryArgs& message) 
   ss << "FilterDictionaryArgs";
   ss << ": dictionary_name=" << message.dictionary_name();
 
-  if (message.has_class_id())
+  if (message.has_class_id()) {
     ss << ", class_id=" << message.class_id();
-  if (message.has_min_df())
+  }
+  if (message.has_min_df()) {
     ss << ", min_df=" << message.min_df();
-  if (message.has_max_df())
+  }
+  if (message.has_max_df()) {
     ss << ", max_df=" << message.max_df();
-  if (message.has_min_tf())
+  }
+  if (message.has_min_tf()) {
     ss << ", min_tf=" << message.min_tf();
-  if (message.has_max_tf())
+  }
+  if (message.has_max_tf()) {
     ss << ", max_tf=" << message.max_tf();
+  }
 
-  if (message.has_min_df_rate())
+  if (message.has_min_df_rate()) {
     ss << ", min_df_rate=" << message.min_df_rate();
-  if (message.has_max_df_rate())
+  }
+  if (message.has_max_df_rate()) {
     ss << ", max_df_rate=" << message.max_df_rate();
+  }
 
   return ss.str();
 }
@@ -773,12 +1040,15 @@ inline std::string DescribeMessage(const ::artm::GatherDictionaryArgs& message) 
   ss << "GatherDictionaryArgs";
   ss << ": dictionary_target_name=" << message.dictionary_target_name();
 
-  if (message.has_data_path())
+  if (message.has_data_path()) {
     ss << ", data_path=" << message.data_path();
-  if (message.has_cooc_file_path())
+  }
+  if (message.has_cooc_file_path()) {
     ss << ", cooc_file_path=" << message.cooc_file_path();
-  if (message.has_vocab_file_path())
+  }
+  if (message.has_vocab_file_path()) {
     ss << ", vocab_file_path=" << message.vocab_file_path();
+  }
   ss << ", symmetric_cooc_values=" << message.symmetric_cooc_values();
 
   return ss.str();
@@ -794,13 +1064,18 @@ inline std::string DescribeMessage(const ::artm::ProcessBatchesArgs& message) {
   ss << ", batch_weight_size=" << message.batch_weight_size();
   ss << ", pwt_source_name=" << message.pwt_source_name();
   ss << ", num_document_passes=" << message.num_document_passes();
-  for (int i = 0; i < message.regularizer_name_size(); ++i)
+  for (int i = 0; i < message.regularizer_name_size(); ++i) {
     ss << ", regularizer=(name:" << message.regularizer_name(i) << ", tau:" << message.regularizer_tau(i) << ")";
-  for (int i = 0; i < message.class_id_size(); ++i)
-    ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
+  }
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
   ss << ", predict_class_id=" << (message.predict_class_id());
+  ss << ", predict_transaction_type=" << (message.predict_transaction_type());
+  for (int i = 0; i < message.transaction_type_size(); ++i) {
+    ss << ", transaction_type=(" << message.transaction_type(i)
+       << ":" << message.transaction_weight(i) << ")";
+  }
+  ss << ", reset_nwt=" << (message.reset_nwt() ? "yes" : "no");
   return ss.str();
 }
 
@@ -819,8 +1094,9 @@ inline std::string DescribeMessage(const ::artm::MergeModelArgs& message) {
   std::stringstream ss;
   ss << "MergeModelArgs";
   ss << ": nwt_target_name=" << message.nwt_target_name();
-  for (int i = 0; i < message.nwt_source_name_size(); ++i)
+  for (int i = 0; i < message.nwt_source_name_size(); ++i) {
     ss << ", class=(" << message.nwt_source_name(i) << ":" << message.source_weight(i) << ")";
+  }
   ss << ", topic_name_size=" << message.topic_name_size();
   return ss.str();
 }
@@ -832,8 +1108,9 @@ inline std::string DescribeMessage(const ::artm::RegularizeModelArgs& message) {
   ss << ": rwt_target_name=" << message.rwt_target_name();
   ss << ", pwt_source_name=" << message.pwt_source_name();
   ss << ", nwt_source_name=" << message.nwt_source_name();
-  for (int i = 0; i < message.regularizer_settings_size(); ++i)
+  for (int i = 0; i < message.regularizer_settings_size(); ++i) {
     DescribeMessage(message.regularizer_settings(i));
+  }
   return ss.str();
 }
 
@@ -842,21 +1119,28 @@ inline std::string DescribeMessage(const ::artm::MasterModelConfig& message) {
   std::stringstream ss;
   ss << "MasterModelConfig";
   ss << ": topic_name_size=" << message.topic_name_size();
-  for (int i = 0; i < message.class_id_size(); ++i)
-    ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
   ss << ", score_config_size=" << message.score_config_size();
   ss << ", num_processors=" << message.num_processors();
   ss << ", pwt_name=" << message.pwt_name();
   ss << ", nwt_name=" << message.nwt_name();
   ss << ", num_document_passes=" << message.num_document_passes();
-  for (int i = 0; i < message.regularizer_config_size(); ++i)
+  for (int i = 0; i < message.regularizer_config_size(); ++i) {
     ss << ", regularizer=("
        << message.regularizer_config(i).name() << ":"
        << message.regularizer_config(i).tau() << ")";
+  }
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
   ss << ", cache_theta=" << (message.cache_theta() ? "yes" : "no");
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
-  ss << ", disk_cache_path" << message.disk_cache_path();
+  ss << ", disk_cache_path=" << message.disk_cache_path();
+  for (int i = 0; i < message.transaction_type_size(); ++i) {
+    ss << ", transaction_type=(" << message.transaction_type(i)
+      << ":" << message.transaction_weight(i) << ")";
+  }
+  if (message.has_parent_master_model_id()) {
+    ss << ", parent_master_model_id=" << message.parent_master_model_id();
+    ss << ", parent_master_model_weight=" << message.parent_master_model_weight();
+  }
 
   return ss.str();
 }
@@ -868,6 +1152,7 @@ inline std::string DescribeMessage(const ::artm::FitOfflineMasterModelArgs& mess
   ss << ", batch_filename_size=" << message.batch_filename_size();
   ss << ", batch_weight_size=" << message.batch_weight_size();
   ss << ", num_collection_passes=" << message.num_collection_passes();
+  ss << ", reset_nwt=" << (message.reset_nwt() ? "yes" : "no");
   return ss.str();
 }
 
@@ -879,7 +1164,9 @@ inline std::string DescribeMessage(const ::artm::FitOnlineMasterModelArgs& messa
   ss << ", batch_weight_size=" << message.batch_weight_size();
   ss << ", update_after:apply_weight:decay_weight=(";
   for (int i = 0; i < message.update_after_size(); ++i) {
-    if (i != 0) ss << ", ";
+    if (i != 0) {
+      ss << ", ";
+    }
     ss << message.update_after(i) << ":";
     ss << message.apply_weight(i) << ":";
     ss << message.decay_weight(i);
@@ -896,7 +1183,8 @@ inline std::string DescribeMessage(const ::artm::TransformMasterModelArgs& messa
   ss << ", batch_filename_size=" << message.batch_filename_size();
   ss << ", batch_size=" << message.batch_size();
   ss << ", theta_matrix_type=" << message.theta_matrix_type();
-  ss << ", predict_class_id=" << message.predict_class_id();
+  ss << ", predict_class_id=" << (message.predict_class_id());
+  ss << ", predict_transaction_type=" << message.predict_transaction_type();
   return ss.str();
 }
 
@@ -951,11 +1239,14 @@ template <typename T>
 inline bool ValidateMessage(const T& message, bool throw_error) {
   std::string ss = DescribeErrors(message);
 
-  if (ss.empty())
+  if (ss.empty()) {
     return true;
+  }
 
-  if (throw_error)
+  if (throw_error) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss));
+  }
+
   LOG(WARNING) << ss;
   return false;
 }
@@ -977,6 +1268,3 @@ inline void FixPackedMessage(std::string* message) {
 
 }  // namespace core
 }  // namespace artm
-
-
-#endif  // SRC_ARTM_CORE_CHECK_MESSAGES_H_

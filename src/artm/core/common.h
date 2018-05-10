@@ -1,10 +1,9 @@
-// Copyright 2014, Additive Regularization of Topic Models.
-//
+// Copyright 2017, Additive Regularization of Topic Models.
+
 // File 'common.h' contains constants, helpers and typedefs used across the entire library.
 // The goal is to keep this file as short as possible.
 
-#ifndef SRC_ARTM_CORE_COMMON_H_
-#define SRC_ARTM_CORE_COMMON_H_
+#pragma once
 
 #include <string>
 
@@ -14,7 +13,9 @@
 
 #include "artm/core/exceptions.h"
 
-#if defined(WIN32)
+#include "artm/artm_export.h"
+
+#if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable: 4244 4267)
 #include "artm/messages.pb.h"
@@ -40,6 +41,16 @@ const int kIdleLoopFrequency = 1;  // 1 ms
 
 const int kBatchNameLength = 6;
 
+// Defined in 3rdparty/protobuf-3.0.0/src/google/protobuf/io/coded_stream.h
+const int64_t kProtobufCodedStreamTotalBytesLimit = 2147483647ULL;
+
+static const std::string TransactionSeparator = "^";
+
+const std::string TokenCoocFrequency = "tf";
+const std::string DocumentCoocFrequency = "df";
+
+const std::string kParentPhiMatrixBatch = "__parent_phi_matrix_batch__";
+
 template <typename T>
 std::string to_string(T value) {
   return boost::lexical_cast<std::string>(value);
@@ -47,5 +58,3 @@ std::string to_string(T value) {
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_COMMON_H_

@@ -1,0 +1,87 @@
+version: "{build}"
+
+image: Visual Studio 2017
+
+configuration:
+    - Release
+
+platform:
+    - x64
+
+clone_folder: C:\projects\bigartm
+
+environment:
+    global:
+        BIGARTM_UNITTEST_DATA: C:\projects\bigartm\test_data
+        INSTALL_FOLDER: '"C:\Program Files\BigARTM"'
+        PROTOC: C:\projects\bigartm\build\bin\protoc.exe
+        ARTM_SHARED_LIBRARY: C:\projects\bigartm\build\bin\artm.dll
+
+    matrix:
+        - PYTHON_VERSION: 3.6
+          MINICONDA: C:\Miniconda36-x64
+
+        - PYTHON_VERSION: 2.7
+          MINICONDA: C:\Miniconda-x64
+
+cache:
+    # Cache MSYS2 packages to speed up builds. If version in repo changes, pacman will update it
+    - c:\msys64\mingw64
+    - c:\msys64\var\lib\pacman
+    - C:\Miniconda36-x64\Lib\site-packages
+    - C:\Miniconda-x64\Lib\site-packages
+
+install:
+    - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;C:\\msys64\\mingw64\\bin;C:\\Program Files\\7-Zip;%SystemRoot%\\system32;%SystemRoot%;%SystemRoot%\\System32\\Wbem;%SYSTEMROOT%\\System32\\WindowsPowerShell\\v1.0\\
+"
+    - c:\msys64\usr\bin\pacman -Sy --noconfirm
+    - c:\msys64\usr\bin\pacman -S --noconfirm --needed mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-make
+    - c:\msys64\usr\bin\pacman -U --noconfirm http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-boost-1.64.0-3-any.pkg.tar.xz
+    - conda config --set always_yes yes --set changeps1 no
+    - conda update -q -c conda-forge conda
+    - conda info -a
+    - conda install -c conda-forge numpy scipy pandas pytest
+    - conda install -c conda-forge tqdm
+
+before_build:
+    - cmd: cd C:\projects\bigartm
+    - cmd: md build
+    - cmd: cd build
+    - cmd: cmake -DPYTHON="%MINICONDA%\\python.exe" -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%configuration% ..
+    - cmd: cd %BIGARTM_UNITTEST_DATA%
+    - ps: Start-FileDownload 'https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt'
+    - ps: Start-FileDownload 'https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt'
+
+build_script:
+    - cmd: cd C:\projects\bigartm\build
+    - cmd: mingw32-make VERBOSE=1 -j4
+    - cmd: mingw32-make VERBOSE=1 install
+
+after_build:
+    - cmd: cd C:\projects\bigartm\3rdparty\protobuf-3.0.0\python
+    - cmd: python setup.py install
+    - cmd: cd C:\projects\bigartm\python
+    - cmd: python setup.py install
+    - cmd: 7z.exe a C:\projects\bigartm\BigARTM-MinGW.7z "C:\\Program Files (x86)\\BigARTM"
+
+test_script:
+    - cmd: cd C:\projects\bigartm\build\
+    - ps: |
+        & mingw32-make VERBOSE=1 ARGS=-V test
+        $testCode = $lastExitCode
+
+        $wc = New-Object 'System.Net.WebClient'
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\src\artm_tests\junit.xml))
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\python\tests\artm\junit.xml))
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\python\tests\wrapper\junit.xml))
+
+        if ($testCode -ne 0) {
+            exit $testCode
+        }
+
+#on_finish:
+    #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+artifacts:
+    - path: BigARTM-MinGW.7z
+      name: BigARTM-MinGW

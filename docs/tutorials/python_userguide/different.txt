@@ -1,0 +1,125 @@
+Different Useful Techniques
+===========================
+
+* **Dictionary filtering**:
+
+In this section we'll discuss dictionary's self-filtering ability. Let's remember the structure of the dictionary, saved in textual format (see :doc:`m_artm`). There are many lines, one per each unique token, and each line contains 5 values: token (string), its class_id (string), its value (double) and two more integer parameters, called token_tf and token_df. token_tf is an absolute frequency of the token in the whole collection, and token_df is the number of documents in the collection, where the token had appeared at least once. These values are generating during gathering dictionary by the library. They differ from the value in the fact, that you can't use them in the regularizers and scores, so you shouldn't change them.
+
+They need for filtering of the dictionary. You likely needn't to use very seldom or too frequent tokens in your model. Or you simply want to reduce your dictionary to hold your model in the memory. In both cases the solution is to use the ``Dictionary.filter()`` method. See its parameters in :doc:`../../api_references/python_interface`. Now let's filter the modality of usual tokens:
+
+.. code-block:: python
+
+   dictionary.filter(min_tf=10, max_tf=2000, min_df_rate=0.01)
+
+.. note::
+   If the parameter has \_rate suffix, it denotes relative value (e.g. from 0 to 1), otherwise - absolute value.
+
+This call has one feature, it rewrites the old dictionary with new one. So if you don't want to lose your full dictionary, you need firstly to save it to disk, and then filter the copy located in the memory.
+
+* **Saving/loading model**:
+
+Now let's study saving the model to disk. To save your model on disk from Python you can use ``artm.ARTM.dump_artm_model`` method:
+
+.. code-block:: python
+
+   model.dump_artm_model('my_model_folder')
+
+The model will be saved in binary format, its parameters will be duplicated also in json file. To use it later you need to load it back via ``artm.load_artm_model`` function:
+
+.. code-block:: python
+
+   model = artm.load_artm_model('my_model_folder')
+
+.. note::
+
+   To use these methods correctly you should either set ``cache_theta`` flag to False (and don't use Theta matrix) or set it to True and also set ``theta_name`` parameter (that will store Theta as Phi-like object).
+
+.. warning::
+
+  This method allows to store only plain (non-hierarchic, e.g. ARTM) topic models!
+
+You can use pair of ``dump_artm_model/load_artm_model`` functions in case of long fitting, when restoring parameters is much more easier than model re-fitting.
+
+* **Creating batches manually**:
+
+There're some cases where you may need to create your own batches without using vowpal wabbit/UCI files. To do it from Python you should create ``artm.messages.Batch`` object and fill it. The parameters of this meassage can be found in :doc:`../../devguide/messages`, it looks like this:
+
+.. code-block:: none
+
+   message Batch {
+     repeated string token = 1;
+     repeated string class_id = 2;
+     repeated Item item = 3;
+     optional string description = 4;
+     optional string id = 5;
+   }
+
+First two fields are the vocabulary of the batch, e.g. the set of all unique tokens from it's documents (items). In case of no modalities or only one modality you may skip ``class_id`` field. Last two fileds are not very important, you can skip them. Third field is the set of the documents. The ``Item`` message has the next structure:
+
+.. code-block:: none
+
+   message Item {
+     optional int32 id = 1;
+     repeated Field field = 2;  // obsolete in BigARTM v0.8.0
+     optional string title = 3;
+     repeated int32 token_id = 4;
+     repeated float token_weight = 5;
+   }
+
+First field of it is the identifier, second is obsoleted, third is the title. You need to specify at least first one, or both ``id`` and ``title``. ``token_id`` is a list of indices of the tokens in this item from ``Batch.token`` vocabulary. ``token_weight`` is the list of corresponding counters. In case of Bag-of-Words ``token_id`` should contain unique indices, in case of sequential text ``token_weight`` should contain only 1.0. But really you can fill these fields as you like, the only limitation is to keep their lengths equal.
+
+Now let's create a simple batch for collection without modalities (it is quite simple to modify the code to use them). If you have list ``vocab`` with all uniqie tokens, and also have a list of lists ``documents``, where each internal list is a document in it's natural represenatation, you can ran the following code to create batch:
+
+.. code-block:: python
+
+   import artm
+   import uuid
+
+   vocab = ['aaa', 'bbb', 'ccc', 'ddd']
+
+   documents = [
+                ['aaa', 'ccc', 'aaa', 'ddd'],
+                ['bbb', 'ccc', 'aaa', 'bbb', 'bbb'],
+               ]
+
+   batch = artm.messages.Batch()
+   batch.id = str(uuid.uuid4())
+   dictionary = {}
+   use_bag_of_words = True
+
+   # first step: fill the general batch vocabulary
+   for i, token in enumerate(vocab):
+       batch.token.append(token)
+       dictionary[token] = i
+
+   # second step: fill the items
+   for doc in documents:
+       item = batch.item.add()
+
+       if use_bag_of_words:
+	   local_dict = {}
+           for token in doc:
+               if not token in local_dict:
+                   local_dict[token] = 0
+               local_dict[token] += 1
+
+           for k, v in local_dict.iteritems():
+               item.token_id.append(dictionary[k])
+               item.token_weight.append(v)
+
+        else:
+            for token in doc:
+                item.token_id.append(dictionary[token])
+                item.token_weight.append(1.0)
+
+   # save batch into the file
+   with open('my_batch.batch', 'wb') as fout:
+       fout.write(batch.SerializeToString())
+
+   # you can read it back using the next code
+   #batch2 = artm.messages.Batch()
+   #with open('my_batch.batch', 'rb') as fin:
+   #    batch2.ParseFromString(fin.read())
+
+   # to print your batch run
+   print batch

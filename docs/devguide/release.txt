@@ -1,0 +1,57 @@
+Release new version
+===================
+
+This is a memo for BigARTM maintaineres about releasing new BigARTM version.
+
+* Submit and integrate pull request against ``master`` branch to
+
+  * bump version in ``src/artm/CMakeLists.txt``,
+  * bump version in ``python/setup.py``,
+  * update links to the latest release in ``docs/downloads.txt``.
+
+* Run installation tests in `bigartm-install <https://github.com/bigartm/bigartm-install>`_ repository
+
+  * Bump version in `install.sh <https://github.com/bigartm/bigartm-install/edit/master/install.sh>`_ script
+  * Submit pull request and inspect both personal builds - for Appveyor (Windows) and for Travis (Linux)
+  * If installation build fails investigate and fix issues before releasing the new version
+
+* Submit and integrate pull request against `stable` branch to integrate all changes from `master` branch.
+
+  .. warning::
+
+     Choose REBASE option when merging pull request. DO NOT use squash commits option.
+
+  .. warning::
+
+     Make sure to wait for personal build (appveyor and travis), and investigate issues if builds are failing.
+
+* Create new release `here <https://github.com/bigartm/bigartm/releases>`_:
+  
+  * fill in ``vX.Y.Z`` tag
+  * fill in a description, using previous release as an example
+  * download ``BigARTM.7z`` from ``python2`` job in the latest appveyor build.
+    Rename it to ``BigARTM_vX.Y.Z_win64.7z``, and attach as binary to the release.
+
+* Update `bigartm-docker <https://github.com/bigartm/bigartm-docker>`_ repo and image
+
+  * Only once: install docker from https://www.docker.com/ .
+    If you run docker in a VM, configure memory to at least 8 GB (otherwise docker build fails to compile bigartm c++ code).
+    If you are new to docker, read `a tutorial <https://docs.docker.com/engine/getstarted/step_six/>`_ on how to publish containers on docker hub.
+  * Edit `Dockerfile <https://github.com/bigartm/bigartm-docker/edit/master/Dockerfile>`_ to update BigARTM version in the `git clone` command.
+    Click ``Commit changes`` to submit this change directly to master branch of ``bigartm-docker`` repository.
+  * Clone ``bigartm/bigartm-docker`` repository and open command shell. Change working directory to the root of ``bigartm-docker`` repository.
+  * Build and publish the image. Example:
+
+    .. code-block:: bash
+
+       docker build .
+       docker login
+       docker images   # to find the tag
+       docker tag e744db1be133 ofrei/bigartm:v0.8.2
+       docker tag e744db1be133 ofrei/bigartm:latest
+       docker push ofrei/bigartm:v0.8.2
+       docker push ofrei/bigartm:latest
+
+   * Try to execute commands from `bigartm-docker/README.md <https://github.com/bigartm/bigartm-docker/blob/master/README.md>`_ to test the image.
+
+* Send an announce e-mail to ``bigartm-users@googlegroups.com``

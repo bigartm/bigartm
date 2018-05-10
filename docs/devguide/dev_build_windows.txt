@@ -13,7 +13,7 @@ The following steps describe the procedure to build BigARTM's C++ code on Window
   at `www.visualstudio.com <http://www.visualstudio.com/en-us/products/visual-studio-express-vs.aspx>`_).
 
 * Install `CMake <http://www.cmake.org/cmake/resources/software.html>`_
-  (tested with cmake-3.0.1, Win32 Installer).
+  (at least version 3.1, Win32 Installer).
 
   Make sure that CMake executable is added to the ``PATH`` environmental variable.
   To achieve this either select the option *"Add CMake to the system PATH for all users"*
@@ -25,7 +25,7 @@ The following steps describe the procedure to build BigARTM's C++ code on Window
   Make sure to select version that match your version of Visual Studio.
   You may choose to work with either x64 or Win32 configuration, both of them are supported.
 
-* Configure system variables ``BOOST_ROOT`` and ``Boost_LIBRARY_DIR``.
+* Configure system variables ``BOOST_ROOT`` and ``BOOST_LIBRARYDIR``.
 
   If you have installed boost from the link above, and used the default location, then the setting should look similar to this:
 
@@ -60,7 +60,7 @@ The following steps describe the procedure to build BigARTM's C++ code on Window
 
   .. code-block:: bash
 
-     cmake .. -G"Visual Studio 12 Win64"
+     cmake .. -G"Visual Studio 12 2013 Win64"
 
   CMake will generate Visual Studio under ``$(BIGARTM_ROOT)/build/``.
 

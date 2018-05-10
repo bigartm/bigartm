@@ -1,3 +1,5 @@
+# Copyright 2017, Additive Regularization of Topic Models.
+
 import shutil
 import glob
 import tempfile
@@ -14,15 +16,34 @@ def test_func():
     
     num_tokens = 6906
     num_filtered_tokens = 2852
+    num_rate_filtered_tokens = 122
+    eps = 1e-5
     
-    def _check_num_tokens_in_saved_text_dictionary(file_name, filtered=False):
+    def _check_num_tokens_in_saved_text_dictionary(file_name, case_type=0):
         with open(file_name, 'r') as fin:
             fin.readline()
             fin.readline()
             counter = 0
+            value = 0.0
+
             for line in fin:
-                counter += 1
-            assert counter == (num_tokens if not filtered else num_filtered_tokens)
+                splitted = line.split(' ')
+                if len(splitted) == 5:
+                    counter += 1
+                    value += float(splitted[2][: -1])
+
+            if case_type == 0:
+                assert counter == num_tokens
+                assert abs(value - 1.0) < eps
+            elif case_type == 1:
+                assert counter == num_tokens
+                assert abs(value - 0.0) < eps
+            elif case_type == 2:
+                assert counter == num_filtered_tokens
+                assert abs(value - 1.0) < eps
+            elif case_type == 3:
+                assert counter == num_rate_filtered_tokens
+                assert abs(value - 1.0) < eps
 
     try:
         batch_vectorizer = artm.BatchVectorizer(data_path=data_path,
@@ -32,7 +53,6 @@ def test_func():
 
         dictionary_1 = artm.Dictionary()
         dictionary_1.gather(data_path=batches_folder)
-        
         dictionary_1.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_1.txt'))
         _check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_1.txt'))
 
@@ -53,17 +73,31 @@ def test_func():
             dictionary_data.class_id.append('@default_class')
             dictionary_data.token_value.append(0.0)
             dictionary_data.token_df.append(0.0)
-            dictionary_data.token_tf.append(0.0)
+            dictionary_data.token_tf.append(1.0)
+        f = os.path.join(batches_folder, 'saved_text_dict_3.txt')
+        dictionary_data.num_items_in_collection = int(open(f).readline()[: -1].split(' ')[3])
 
         dictionary_4 = artm.Dictionary()
         dictionary_4.create(dictionary_data=dictionary_data)
+        dictionary_4.filter()
         dictionary_4.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_4.txt'))
-        _check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_4.txt'))
+        _check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_4.txt'), case_type=1)
 
         dictionary_5 = artm.Dictionary()
-        dictionary_5.load(dictionary_path=os.path.join(batches_folder, 'saved_dict_1.dict'))
-        dictionary_5.filter(min_df=2, max_df=100, min_tf=1, max_tf=20)
+        dictionary_5.create(dictionary_data=dictionary_data)
+        dictionary_5.filter(recalculate_value=True)
         dictionary_5.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_5.txt'))
-        _check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_5.txt'), filtered=True)
+        _check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_5.txt'))
+
+        dictionary_6 = artm.Dictionary()
+        dictionary_6.load(dictionary_path=os.path.join(batches_folder, 'saved_dict_1.dict'))
+        dictionary_6.filter(min_df=2, max_df=100, min_tf=1, max_tf=20, recalculate_value=True)
+        dictionary_6.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_6.txt'))
+        _check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_6.txt'), case_type=2)
+
+        dictionary_6.filter(min_df_rate=0.001, max_df_rate=0.002, recalculate_value=True)
+        dictionary_6.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_6.txt'))
+        _check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_6.txt'), case_type=3)
     finally:
         shutil.rmtree(batches_folder)
+

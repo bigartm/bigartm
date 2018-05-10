@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 // Author: Alexander Frey (sashafrey@gmail.com)
 
@@ -20,21 +20,25 @@ void ClassPrecision::AppendScore(
     const artm::ProcessBatchesArgs& args,
     const std::vector<float>& theta,
     Score* score) {
-  if (!args.has_predict_class_id())
+  if (!args.has_predict_transaction_type() || !args.has_predict_class_id()) {
     return;
+  }
 
-  int topic_size = p_wt.topic_size();
+  const int topic_size = p_wt.topic_size();
+  const auto predict_tt = artm::core::TransactionType(args.predict_transaction_type());
 
   float max_token_weight = 0.0f;
   std::string keyword;
   for (int token_index = 0; token_index < p_wt.token_size(); token_index++) {
-    const ::artm::core::Token& token = p_wt.token(token_index);
-    if (token.class_id != args.predict_class_id())
+    const auto& token = p_wt.token(token_index);
+    if (token.class_id != args.predict_class_id() || token.transaction_type != predict_tt) {
       continue;
+    }
 
-    float weight = 0.0;
-    for (int topic_index = 0; topic_index < topic_size; ++topic_index)
+    float weight = 0.0f;
+    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
       weight += theta[topic_index] * p_wt.get(token_index, topic_index);
+    }
 
     if (weight >= max_token_weight) {
       keyword = token.keyword;
@@ -43,17 +47,25 @@ void ClassPrecision::AppendScore(
   }
 
   bool error = true;
-  for (auto& token_id : item.token_id()) {
-    const artm::core::Token& token = token_dict[token_id];
-    if (token.class_id == args.predict_class_id() && token.keyword == keyword) {
-      error = false;
-      break;
+  for (int token_index = 0; token_index < item.transaction_start_index_size(); ++token_index) {
+    const int start_index = item.transaction_start_index(token_index);
+    const int end_index = (token_index + 1) < item.transaction_start_index_size() ?
+                          item.transaction_start_index(token_index + 1) :
+                          item.transaction_token_id_size();
+    for (int token_id = start_index; token_id < end_index; ++token_id) {
+      const auto& token = token_dict[item.transaction_token_id(token_id)];
+      if (token.class_id == args.predict_class_id() &&
+          token.keyword == keyword &&
+          token.transaction_type == predict_tt) {
+        error = false;
+        break;
+      }
     }
   }
 
   ClassPrecisionScore class_prediction_score;
-  class_prediction_score.set_error(error ? 1 : 0);
-  class_prediction_score.set_total(1);
+  class_prediction_score.set_error(error ? 1.0f : 0.0f);
+  class_prediction_score.set_total(1.0f);
   AppendScore(class_prediction_score, score);
 }
 
@@ -77,8 +89,8 @@ void ClassPrecision::AppendScore(const Score& score, Score* target) {
                                     class_precision_score->error());
   class_precision_target->set_total(class_precision_target->total() +
                                     class_precision_score->total());
-  class_precision_target->set_value(1.0 - class_precision_target->error() /
-                                          class_precision_target->total());
+  class_precision_target->set_value(1.0f - class_precision_target->error() /
+                                           class_precision_target->total());
 }
 
 }  // namespace score

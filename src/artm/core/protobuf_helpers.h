@@ -1,10 +1,10 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
+
 // This file contains several helper methods to work with protobuf messages.
 // Most common tasks are to search for a value (or values) in a repeated protobuf field.
 // The name 'is_member' is motivated by MatLab method (http://se.mathworks.com/help/matlab/ref/ismember.html)
 
-#ifndef SRC_ARTM_CORE_PROTOBUF_HELPERS_H_
-#define SRC_ARTM_CORE_PROTOBUF_HELPERS_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -48,12 +48,14 @@ std::vector<bool> is_member(const T& elements, const T& set) {
   retval.assign(elements.size(), false);
 
   if (elements.size() > 0) {
-    for (int j = 0; j < set.size(); ++j)
-      for (int i = 0; i < elements.size(); ++i)
+    for (int j = 0; j < set.size(); ++j) {
+      for (int i = 0; i < elements.size(); ++i) {
         if (set.Get(j) == elements.Get(i)) {
           retval[i] = true;
           break;
         }
+      }
+    }
   }
 
   return retval;
@@ -72,14 +74,16 @@ bool is_member(const V& value, const T& set) {
 
 template<class T>
 bool repeated_field_equals(const T& f1, const T& f2) {
-  if (f1.size() != f2.size()) return false;
-  for (int i = 0; i < f1.size(); i++)
-    if (f1.Get(i) != f2.Get(i))
+  if (f1.size() != f2.size()) {
+    return false;
+  }
+  for (int i = 0; i < f1.size(); i++) {
+    if (f1.Get(i) != f2.Get(i)) {
       return false;
+    }
+  }
   return true;
 }
 
 }  // namespace core
 }  // namespace artm
-
-#endif  // SRC_ARTM_CORE_PROTOBUF_HELPERS_H_

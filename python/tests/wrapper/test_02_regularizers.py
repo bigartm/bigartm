@@ -1,3 +1,5 @@
+# Copyright 2017, Additive Regularization of Topic Models.
+
 from __future__ import print_function
 
 import os
@@ -31,7 +33,7 @@ def test_func():
     num_document_passes = 10
     num_outer_iterations = 8
 
-    perplexity_tol = 0.001
+    perplexity_tol = 1.0
     expected_perplexity_value_on_iteration = {
         0: 6703.161,
         1: 2426.277,

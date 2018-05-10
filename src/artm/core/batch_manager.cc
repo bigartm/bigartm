@@ -1,4 +1,4 @@
-// Copyright 2016, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #include "artm/core/batch_manager.h"
 
@@ -7,7 +7,7 @@
 namespace artm {
 namespace core {
 
-BatchManager::BatchManager() : lock_(), in_progress_() {}
+BatchManager::BatchManager() : lock_(), in_progress_() { }
 
 void BatchManager::Add(const boost::uuids::uuid& task_id) {
   boost::lock_guard<boost::mutex> guard(lock_);

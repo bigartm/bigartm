@@ -1,3 +1,5 @@
+# Copyright 2017, Additive Regularization of Topic Models.
+
 import shutil
 import tempfile
 import os
@@ -59,6 +61,24 @@ def test_func():
         on_python_35 = abs(support - 0.1522 < zero_eps)
         assert(on_python_27 or on_python_35)
         
+        assert(level1.clone() is not None)
+        assert(hier.clone() is not None)
+
+        # test the same functionality with hARTM, and validate that resulting psi matrix is exactly the same
+        level1_plain = artm.ARTM(num_topics=num_topics_level0, num_document_passes=num_document_passes,
+                                 theta_columns_naming='title', seed=level0.seed)
+        level1_plain.initialize(dictionary=dictionary)
+        level1_plain.fit_offline(num_collection_passes=num_collection_passes, batch_vectorizer=batch_vectorizer)
+        level2_plain = artm.ARTM(num_topics=num_topics_level1, parent_model=level1_plain,
+                                 parent_model_weight=parent_level_weight, theta_columns_naming='title',
+                                 seed=level1.seed)
+        level2_plain.initialize(dictionary=dictionary)
+        level2_plain.regularizers.add(artm.HierarchySparsingThetaRegularizer(name='HierSp', tau=regularizer_tau))
+        level2_plain.fit_offline(num_collection_passes=num_collection_passes, batch_vectorizer=batch_vectorizer)
+        psi_plain = level2_plain.get_parent_psi()
+        max_diff = (psi_plain - psi).abs().max().max()
+        assert(max_diff < 1e-3)
+
     finally:
         shutil.rmtree(batches_folder)
         shutil.rmtree(parent_batch_folder)

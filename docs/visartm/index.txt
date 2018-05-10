@@ -1,0 +1,13 @@
+VisARTM
+=======
+
+VisARTM is a web-based tool for topic models visualiztion. It uses BigARTM as topic modelling core.
+
+VisARTM can store dataset and topic models, create topic models automatically, 
+visualize topics models in different ways. Also it is framework for assessment tools.
+ 
+To use VisARTM, use its `website <http://visartm.vdi.mipt.ru>`_ or `deploy it locally <http://visartm.vdi.mipt.ru/docs/installation>`_.
+
+Also see `VisARTM documentation <http://visartm.vdi.mipt.ru/docs>`_ and `github repository <https://github.com/bigartm/visartm>`_.
+
+

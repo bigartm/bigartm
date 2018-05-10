@@ -1,0 +1,10 @@
+Dictionary
+==========
+
+This page describes Dictionary class.
+
+.. automodule:: artm
+
+.. autoclass:: Dictionary
+   :members:
+   :special-members: __init__

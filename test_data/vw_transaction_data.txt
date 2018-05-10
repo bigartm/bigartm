@@ -1,0 +1,2 @@
+doc1 hello world:2 |user^action mel-lain^click:3 mel-lain^show
+doc2 |author mel-lain |@default_class^action^qualifier hello^show^twice:5 world^click^first |@default_class world

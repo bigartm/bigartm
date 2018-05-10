@@ -1,10 +1,10 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
+
+#include <memory>
 
 #include "gtest/gtest.h"
 
 #include "artm/core/batch_manager.h"
-
-#include <memory>
 
 #include "boost/uuid/random_generator.hpp"
 #include "boost/uuid/uuid.hpp"

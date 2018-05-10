@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 #include <sstream>  // NOLINT
 
@@ -16,11 +16,14 @@
 
 void ShowTopicModel(const ::artm::TopicModel& topic_model) {
   for (int i = 0; i < topic_model.token_size(); ++i) {
-    if (i > 10) break;
+    if (i > 10) {
+      break;
+    }
     std::cout << topic_model.token(i) << "(" << topic_model.class_id(i) << "): ";
     const ::artm::FloatArray& weights = topic_model.token_weights(i);
-    for (int j = 0; j < weights.value_size(); ++j)
+    for (int j = 0; j < weights.value_size(); ++j) {
       std::cout << std::fixed << std::setw(4) << std::setprecision(3) << weights.value(j) << " ";
+    }
     std::cout << std::endl;
   }
   std::cout << std::endl;
@@ -28,7 +31,9 @@ void ShowTopicModel(const ::artm::TopicModel& topic_model) {
 
 void ShowThetaMatrix(const ::artm::ThetaMatrix& theta_matrix) {
   for (int i = 0; i < theta_matrix.item_id_size(); ++i) {
-    if (i > 10) break;
+    if (i > 10) {
+      break;
+    }
     std::cout << theta_matrix.item_id(i) << ": ";
     const artm::FloatArray& weights = theta_matrix.item_weights(i);
     for (int j = 0; j < weights.value_size(); ++j) {
@@ -41,16 +46,27 @@ void ShowThetaMatrix(const ::artm::ThetaMatrix& theta_matrix) {
 
 bool CompareTopicModels(const ::artm::TopicModel& t1, const ::artm::TopicModel& t2, float* max_diff) {
   *max_diff = 0.0f;
-  if (t1.token_size() != t2.token_size()) return false;
+  if (t1.token_size() != t2.token_size()) {
+    return false;
+  }
+
   for (int i = 0; i < t1.token_size(); ++i) {
-    if (t1.token(i) != t2.token(i)) return false;
-    if (t1.class_id(i) != t2.class_id(i)) return false;
+    if (t1.token(i) != t2.token(i) || t1.class_id(i) != t2.class_id(i)) {
+      return false;
+    }
+
     const artm::FloatArray& w1 = t1.token_weights(i);
     const artm::FloatArray& w2 = t2.token_weights(i);
-    if (w1.value_size() != w2.value_size()) return false;
+
+    if (w1.value_size() != w2.value_size()) {
+      return false;
+    }
+
     for (int j = 0; j < w1.value_size(); ++j) {
       float diff = fabs(w1.value(j) - w2.value(j));
-      if (diff > *max_diff) *max_diff = diff;
+      if (diff > *max_diff) {
+        *max_diff = diff;
+      }
     }
   }
 
@@ -59,58 +75,31 @@ bool CompareTopicModels(const ::artm::TopicModel& t1, const ::artm::TopicModel& 
 
 bool CompareThetaMatrices(const ::artm::ThetaMatrix& t1, const ::artm::ThetaMatrix& t2, float *max_diff) {
   *max_diff = 0.0f;
-  if (t1.item_id_size() != t2.item_id_size()) return false;
+  if (t1.item_id_size() != t2.item_id_size()) {
+    return false;
+  }
+
   for (int i = 0; i < t1.item_id_size(); ++i) {
-    if (t1.item_id(i) != t2.item_id(i)) return false;
+    if (t1.item_id(i) != t2.item_id(i)) {
+      return false;
+    }
+
     const artm::FloatArray& w1 = t1.item_weights(i);
     const artm::FloatArray& w2 = t2.item_weights(i);
-    if (w1.value_size() != w2.value_size()) return false;
+
+    if (w1.value_size() != w2.value_size()) {
+      return false;
+    }
+
     for (int j = 0; j < w1.value_size(); ++j) {
       float diff = (fabs(w1.value(j) - w2.value(j)));
-      if (diff > *max_diff) *max_diff = diff;
+      if (diff > *max_diff) {
+        *max_diff = diff;
+      }
     }
   }
 
   return true;
-}
-
-artm::DictionaryData GenerateDictionary(int nTokens, std::string class1, std::string class2) {
-  ::artm::DictionaryData dictionary_data;
-  for (int i = 0; i < nTokens; i++) {
-    std::stringstream str;
-    str << "token" << i;
-    std::string class_id = (i % 2 == 0) ? class1 : class2;
-    if (class_id.empty())
-      continue;
-    dictionary_data.add_token(str.str());
-    dictionary_data.add_class_id(class_id);
-  }
-  return dictionary_data;
-}
-
-artm::Batch GenerateBatch(int nTokens, int nDocs, std::string class1, std::string class2) {
-  artm::Batch batch;
-  batch.set_id("11972762-6a23-4524-b089-7122816aff72");
-  for (int i = 0; i < nTokens; i++) {
-    std::stringstream str;
-    str << "token" << i;
-    std::string class_id = (i % 2 == 0) ? class1 : class2;
-    batch.add_token(str.str());
-    batch.add_class_id(class_id);
-  }
-
-  for (int iDoc = 0; iDoc < nDocs; iDoc++) {
-    artm::Item* item = batch.add_item();
-    item->set_id(iDoc);
-    for (int iToken = 0; iToken < nTokens; ++iToken) {
-      item->add_token_id(iToken);
-      int background_count = (iToken > 40) ? (1 + rand() % 5) : 0;  // NOLINT
-      int topical_count = ((iToken < 40) && ((iToken % 10) == (iDoc % 10))) ? 10 : 0;
-      item->add_token_weight(static_cast<float>(background_count + topical_count));
-    }
-  }
-
-  return batch;
 }
 
 // artm_tests.exe --gtest_filter=MultipleClasses.BasicTest
@@ -147,7 +136,7 @@ TEST(MultipleClasses, BasicTest) {
   regularizer_config2->set_tau(2.0);
 
   // Generate doc-token matrix
-  artm::Batch batch = GenerateBatch(nTokens, nDocs, "@default_class", "__custom_class");
+  artm::Batch batch = ::artm::test::Helpers::GenerateBatch(nTokens, nDocs, "@default_class", "__custom_class");
   artm::TopicModel initial_model;
   initial_model.set_name(master_config.pwt_name());
   for (int i = 0; i < nTopics; ++i) {
@@ -226,14 +215,18 @@ TEST(MultipleClasses, BasicTest) {
   ASSERT_EQ(matrix_phi.no_columns(), nTopics);
   ASSERT_EQ(matrix_theta.no_rows(), nDocs);
   ASSERT_EQ(matrix_theta.no_columns(), nTopics);
-  for (int token_index = 0; token_index < nTokens; ++token_index)
-    for (int topic_index = 0; topic_index < nTopics; ++topic_index)
+  for (int token_index = 0; token_index < nTokens; ++token_index) {
+    for (int topic_index = 0; topic_index < nTopics; ++topic_index) {
       ASSERT_APPROX_EQ(matrix_phi(token_index, topic_index),
                        topic_model1.token_weights(token_index).value(topic_index));
-  for (int topic_index = 0; topic_index < nTopics; ++topic_index)
-    for (int item_index = 0; item_index < nDocs; ++item_index)
+    }
+  }
+  for (int topic_index = 0; topic_index < nTopics; ++topic_index) {
+    for (int item_index = 0; item_index < nDocs; ++item_index) {
       ASSERT_APPROX_EQ(matrix_theta(item_index, topic_index),
                        theta_matrix1.item_weights(item_index).value(topic_index));
+    }
+  }
 
   // ToDo: validate matrix_phi and matrix_theta
 
@@ -260,8 +253,6 @@ TEST(MultipleClasses, BasicTest) {
 
 // artm_tests.exe --gtest_filter=MultipleClasses.InitializeSomeModalities
 TEST(MultipleClasses, InitializeSomeModalities) {
-  int nTokens = 60;
-  int nDocs = 100;
   int nTopics = 10;
 
   ::artm::MasterModelConfig master_config = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
@@ -297,7 +288,6 @@ TEST(MultipleClasses, ThrowIfNoTokensInEffect) {
   int nTokens = 60;
   int nDocs = 100;
   int nTopics = 10;
-  int nIters = 5;
 
   ::artm::MasterModelConfig master_config = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
   master_config.add_class_id("@default_class"); master_config.add_class_weight(0.5f);
@@ -306,7 +296,7 @@ TEST(MultipleClasses, ThrowIfNoTokensInEffect) {
   ::artm::MasterModelConfig master_config_reg(master_config);
 
   // Generate doc-token matrix
-  artm::Batch batch = GenerateBatch(nTokens, nDocs, "@default_class", "__custom_class");
+  artm::Batch batch = ::artm::test::Helpers::GenerateBatch(nTokens, nDocs, "@default_class", "__custom_class");
   std::vector<std::shared_ptr< ::artm::Batch>> batches;
   batches.push_back(std::make_shared< ::artm::Batch>(batch));
 
@@ -326,18 +316,12 @@ void configureTopTokensScore(std::string score_name, std::string class_id, artm:
   ::artm::ScoreConfig score_config;
   ::artm::TopTokensScoreConfig top_tokens_config;
   top_tokens_config.set_num_tokens(4);
-  if (!class_id.empty()) top_tokens_config.set_class_id(class_id);
+  if (!class_id.empty()) {
+    top_tokens_config.set_class_id(class_id);
+  }
+
   score_config.set_config(top_tokens_config.SerializeAsString());
   score_config.set_type(::artm::ScoreType_TopTokens);
-  score_config.set_name(score_name);
-  master_config->add_score_config()->CopyFrom(score_config);
-}
-
-void configurePerplexityScore(std::string score_name, artm::MasterModelConfig* master_config) {
-  ::artm::ScoreConfig score_config;
-  ::artm::PerplexityScoreConfig perplexity_config;
-  score_config.set_config(perplexity_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreType_Perplexity);
   score_config.set_name(score_name);
   master_config->add_score_config()->CopyFrom(score_config);
 }
@@ -383,7 +367,7 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   configureTopTokensScore("tts_class_one", "class_one", &master_config);
   configureTopTokensScore("tts_class_two", "class_two", &master_config);
   configureThetaSnippetScore("theta_snippet", /*num_items = */ 5, &master_config);
-  configurePerplexityScore("perplexity", &master_config);
+  ::artm::test::Helpers::ConfigurePerplexityScore("perplexity", &master_config);
   configureItemsProcessedScore("items_processed", &master_config);
 
   master_config.add_class_id("class_one"); master_config.add_class_weight(2.0f);
@@ -395,8 +379,8 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   ::artm::test::Api api2(master2);
 
   // Generate doc-token matrix
-  artm::Batch batch = GenerateBatch(nTokens, nDocs, "class_one", "class_two");
-  artm::DictionaryData dict = GenerateDictionary(nTokens, "class_one", "");
+  artm::Batch batch = ::artm::test::Helpers::GenerateBatch(nTokens, nDocs, "class_one", "class_two");
+  artm::DictionaryData dict = ::artm::test::Helpers::GenerateDictionary(nTokens, "class_one", "");
   std::vector<std::shared_ptr< ::artm::Batch>> batches;
   batches.push_back(std::make_shared< ::artm::Batch>(batch));
 
@@ -424,8 +408,8 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   gs.set_score_name("tts_class_two"); EXPECT_TRUE(master2.GetScoreAs< ::artm::TopTokensScore>(gs).num_entries() > 0);
 
   gs.set_score_name("perplexity");
-  double p1 = master.GetScoreAs< ::artm::PerplexityScore>(gs).value();
-  double p2 = master2.GetScoreAs< ::artm::PerplexityScore>(gs).value();
+  float p1 = master.GetScoreAs< ::artm::PerplexityScore>(gs).value();
+  float p2 = master2.GetScoreAs< ::artm::PerplexityScore>(gs).value();
   EXPECT_TRUE((p1 > 0) && (p2 > 0) && (p1 != p2));
 
   gs.set_score_name("theta_snippet");
@@ -458,10 +442,12 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
   ASSERT_GT(tm_sparse.token_size(), 0);
 
   if (!all_topics) {
-    for (int i = 0; i < tm_dense.topic_name_size(); ++i)
+    for (int i = 0; i < tm_dense.topic_name_size(); ++i) {
       EXPECT_EQ(tm_dense.topic_name(i), args.topic_name(i));
-    for (int i = 0; i < tm_sparse.topic_name_size(); ++i)
+    }
+    for (int i = 0; i < tm_sparse.topic_name_size(); ++i) {
       EXPECT_EQ(tm_sparse.topic_name(i), args.topic_name(i));
+    }
   }
 
   ASSERT_EQ(tm_sparse.token_size(), tm_dense.token_size());
@@ -469,7 +455,9 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
   ASSERT_EQ(tm_sparse.class_id_size(), tm_dense.class_id_size());
   ASSERT_TRUE(tm_sparse.token_size() == tm_sparse.token_weights_size() &&
               tm_sparse.token_size() == tm_sparse.class_id_size());
-  if (!all_tokens) ASSERT_TRUE(tm_sparse.token_size() == args.token_size());
+  if (!all_tokens) {
+    ASSERT_TRUE(tm_sparse.token_size() == args.token_size());
+  }
 
   for (int i = 0; i < tm_sparse.token_size(); ++i) {
     EXPECT_EQ(tm_sparse.token(i), tm_dense.token(i));
@@ -485,9 +473,11 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
 
     if (some_classes) {
       bool contains = false;
-      for (int j = 0; j < args.class_id_size(); ++j)
-        if (args.class_id(j) == tm_sparse.class_id(i))
+      for (int j = 0; j < args.class_id_size(); ++j) {
+        if (args.class_id(j) == tm_sparse.class_id(i)) {
           contains = true;
+        }
+      }
       EXPECT_TRUE(contains);  // only return classes that had been requested
     }
 
@@ -518,7 +508,6 @@ void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, 
   auto tm_all = master->GetThetaMatrix();
 
   bool by_names = args.topic_name_size() > 0;
-  bool all_topics = !by_names;
 
   ASSERT_EQ(tm_dense.num_topics(), tm_dense.topic_name_size());
   ASSERT_EQ(tm_sparse.num_topics(), tm_sparse.topic_name_size());
@@ -529,15 +518,17 @@ void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, 
 
   if (by_names) {
     ASSERT_EQ(tm_dense.num_topics(), args.topic_name_size());
-    for (int i = 0; i < tm_dense.num_topics(); ++i)
+    for (int i = 0; i < tm_dense.num_topics(); ++i) {
       EXPECT_EQ(tm_dense.topic_name(i), args.topic_name(i));
+    }
   } else {
     ASSERT_EQ(tm_dense.num_topics(), tm_all.num_topics());
   }
 
   ASSERT_EQ(tm_sparse.num_topics(), tm_all.num_topics());
-  for (int i = 0; i < tm_sparse.num_topics(); ++i)
+  for (int i = 0; i < tm_sparse.num_topics(); ++i) {
     EXPECT_EQ(tm_sparse.topic_name(i), tm_all.topic_name(i));
+  }
 
   ASSERT_EQ(tm_sparse.item_id_size(), tm_dense.item_id_size());
   ASSERT_EQ(tm_sparse.item_weights_size(), tm_dense.item_weights_size());
@@ -582,7 +573,7 @@ TEST(MultipleClasses, GetTopicModel) {
   ::artm::test::Api api(master);
 
   // Generate doc-token matrix
-  artm::Batch batch = GenerateBatch(nTokens, nDocs, "class_one", "class_two");
+  artm::Batch batch = ::artm::test::Helpers::GenerateBatch(nTokens, nDocs, "class_one", "class_two");
   std::vector<std::shared_ptr< ::artm::Batch>> batches;
   batches.push_back(std::make_shared< ::artm::Batch>(batch));
   auto offline_args = api.Initialize(batches);
@@ -593,8 +584,9 @@ TEST(MultipleClasses, GetTopicModel) {
   args.set_eps(0.05f);
   VerifySparseVersusDenseTopicModel(args, &master);
 
-  for (int i = 0; i < nTopics; i += 2)
+  for (int i = 0; i < nTopics; i += 2) {
     args.add_topic_name(master_config.topic_name(i));
+  }
   VerifySparseVersusDenseTopicModel(args, &master);
 
   args.add_class_id("class_two");

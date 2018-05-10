@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 // Author: Murat Apishev (great-mel@yandex.ru)
 
@@ -32,17 +32,17 @@ std::shared_ptr<TransformFunction> TransformFunction::create() {
   return TransformFunction::create(config);
 }
 
-double LogarithmTransformFunction::apply(double value) {
+float LogarithmTransformFunction::apply(float value) {
   return value > 0 ? log(value) : 0.0;
 }
 
-PolynomialTransformFunction::PolynomialTransformFunction(double a, double n) : a_(a), n_(n) { }
+PolynomialTransformFunction::PolynomialTransformFunction(float a, float n) : a_(a), n_(n) { }
 
-double PolynomialTransformFunction::apply(double value) {
+float PolynomialTransformFunction::apply(float value) {
   return value > 0 ? a_ * pow(value, n_) : 0.0;
 }
 
-double ConstantTransformFunction::apply(double value) {
+float ConstantTransformFunction::apply(float value) {
   return 1.0;
 }
 

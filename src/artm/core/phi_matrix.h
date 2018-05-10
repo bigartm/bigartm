@@ -1,8 +1,6 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_PHI_MATRIX_H_
-#define SRC_ARTM_CORE_PHI_MATRIX_H_
-
+#pragma once
 
 #include <string>
 #include <vector>
@@ -41,12 +39,8 @@ class PhiMatrix {
   virtual int AddToken(const Token& token) = 0;
 
   virtual std::shared_ptr<PhiMatrix> Duplicate() const = 0;
-  virtual ~PhiMatrix() {}
+  virtual ~PhiMatrix() { }
 };
-
 
 }  // namespace core
 }  // namespace artm
-
-
-#endif  // SRC_ARTM_CORE_PHI_MATRIX_H_

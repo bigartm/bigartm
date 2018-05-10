@@ -1,4 +1,4 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2017, Additive Regularization of Topic Models.
 
 // Author: Marina Suvorova (m.dudarenko@gmail.com)
 
@@ -6,30 +6,53 @@
 
 #include "artm/score/items_processed.h"
 #include "artm/core/protobuf_helpers.h"
+#include "artm/core/common.h"
 
 namespace artm {
 namespace score {
 
-void ItemsProcessed::AppendScore(
-    const Batch& batch,
-    const artm::core::PhiMatrix& p_wt,
-    const artm::ProcessBatchesArgs& args,
-    Score* score) {
-  double token_weight = 0.0;
-  double token_weight_in_effect = 0.0;
-  for (auto& item : batch.item()) {
-    for (int token_index = 0; token_index < item.token_id_size(); token_index++) {
-      int token_id = item.token_id(token_index);
-      token_weight += item.token_weight(token_index);
-      const std::string& token = batch.token(token_id);
-      const std::string& class_id = batch.class_id(token_id);
+void ItemsProcessed::AppendScore(const Batch& batch,
+                                 const artm::core::PhiMatrix& p_wt,
+                                 const artm::ProcessBatchesArgs& args,
+                                 Score* score) {
+  float token_weight = 0.0f;
+  float token_weight_in_effect = 0.0f;
 
-      // Check whether token is in effect (e.g. present in the model, and belongs to relevant modality)
-      if (!p_wt.has_token(::artm::core::Token(class_id, token)))
+  for (const auto& item : batch.item()) {
+    for (int token_index = 0; token_index < item.transaction_start_index_size(); ++token_index) {
+      const int start_index = item.transaction_start_index(token_index);
+      const int end_index = (token_index + 1) < item.transaction_start_index_size() ?
+                            item.transaction_start_index(token_index + 1) :
+                            item.transaction_token_id_size();
+      std::string str;
+      for (int token_id = start_index; token_id < end_index; ++token_id) {
+        auto& tmp = batch.class_id(item.transaction_token_id(token_id));
+        str += (token_id == start_index) ? tmp : artm::core::TransactionSeparator + tmp;
+      }
+
+      artm::core::TransactionType tt(str);
+      if (args.transaction_type_size() > 0 && !tt.ContainsIn(args.transaction_type())) {
         continue;
-      if (args.class_id_size() > 0 && !::artm::core::is_member(class_id, args.class_id()))
-        continue;
-      token_weight_in_effect += item.token_weight(token_index);
+      }
+
+      bool all_transaction_tokens_exist = true;
+      for (int idx = start_index; idx < end_index; ++idx) {
+        const int token_id = item.transaction_token_id(idx);
+        const std::string& token = batch.token(token_id);
+        const std::string& class_id = batch.class_id(token_id);
+
+        // Check whether token is in effect,
+        // e.g. present in the model, and belongs to relevant modality and tt)
+        if (!p_wt.has_token(::artm::core::Token(class_id, token, tt))) {
+          all_transaction_tokens_exist = false;
+          break;
+        }
+      }
+
+      if (all_transaction_tokens_exist) {
+        token_weight += item.token_weight(token_index);
+        token_weight_in_effect += item.token_weight(token_index);
+      }
     }
   }
 

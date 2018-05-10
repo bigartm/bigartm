@@ -39,14 +39,13 @@ Welcome to BigARTM's documentation!
 
    intro
    download
-   formats
    installation/index
    tutorials/index
-   python_interface
+   api_references/index
+   visartm/index
    release_notes/index
 
 .. toctree::
    :maxdepth: 1
    
    devguide
-   legacy_pages
