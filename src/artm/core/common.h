@@ -44,8 +44,6 @@ const int kBatchNameLength = 6;
 // Defined in 3rdparty/protobuf-3.0.0/src/google/protobuf/io/coded_stream.h
 const int64_t kProtobufCodedStreamTotalBytesLimit = 2147483647ULL;
 
-static const std::string TransactionSeparator = "^";
-
 const std::string TokenCoocFrequency = "tf";
 const std::string DocumentCoocFrequency = "df";
 

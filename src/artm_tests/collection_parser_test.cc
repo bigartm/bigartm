@@ -299,9 +299,9 @@ TEST(CollectionParser, TransactionVowpalWabbit) {
 
       ASSERT_EQ(batch.item_size(), 2);
 
-      ASSERT_EQ(batch.item(0).transaction_token_id_size(), 6);
+      ASSERT_EQ(batch.item(0).token_id_size(), 6);
       ASSERT_EQ(batch.item(0).transaction_start_index_size(), 4);
-      ASSERT_EQ(batch.item(1).transaction_token_id_size(), 8);
+      ASSERT_EQ(batch.item(1).token_id_size(), 8);
       ASSERT_EQ(batch.item(1).transaction_start_index_size(), 4);
 
       // check first item
@@ -316,8 +316,8 @@ TEST(CollectionParser, TransactionVowpalWabbit) {
       ASSERT_EQ(batch.item(0).transaction_start_index(3), 4);
 
       // both are ids of "mel-lain" as "user"
-      ASSERT_EQ(batch.item(0).transaction_token_id(2),
-                batch.item(0).transaction_token_id(4));
+      ASSERT_EQ(batch.item(0).token_id(2),
+                batch.item(0).token_id(4));
 
       // check second item
       ASSERT_FLOAT_EQ(batch.item(1).token_weight(0), 1.0);
@@ -331,8 +331,8 @@ TEST(CollectionParser, TransactionVowpalWabbit) {
       ASSERT_EQ(batch.item(1).transaction_start_index(3), 7);
 
       // both are ids of "wordl" as "@default_class"
-      ASSERT_EQ(batch.item(1).transaction_token_id(4),
-                batch.item(1).transaction_token_id(7));
+      ASSERT_EQ(batch.item(1).token_id(4),
+                batch.item(1).token_id(7));
     }
     ++it;
   }

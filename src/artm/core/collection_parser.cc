@@ -241,8 +241,9 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
       iter = batch_dictionary.find(token_id);
     }
 
-    item->add_transaction_token_id(iter->second);
+    item->add_token_id(iter->second);
     item->add_transaction_start_index(item->transaction_start_index_size());
+    item->add_transaction_typename_id(0);
     item->add_token_weight(token_weight);
 
     // Increment statistics
@@ -254,6 +255,8 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
 
   if (batch.item_size() > 0) {
     batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
+    batch.add_transaction_type(DefaultTransactionType);
+    batch.add_transaction_typename(DefaultTransactionTypeName);
     ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
     num_batches++;
   }
@@ -362,6 +365,8 @@ class CollectionParser::BatchCollector {
   float total_token_weight_;
   int64_t total_items_count_;
   int64_t total_tokens_count_;
+  std::unordered_map<TransactionTypeName, int> tt_name_to_id_;
+  std::unordered_map<TransactionTypeName, std::unordered_set<ClassId>> tt_name_to_tt_;
 
   void StartNewItem() {
     item_ = batch_.add_item();
@@ -373,15 +378,29 @@ class CollectionParser::BatchCollector {
     batch_.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
   }
 
-  void Record(std::vector<ClassId> class_ids, std::vector<std::string> tokens, float token_weight) {
+  void RecordTransaction(std::vector<ClassId> class_ids, std::vector<std::string> tokens,
+      std::vector<float> token_weights, TransactionTypeName transaction_typename) {
     // prepare item for transaction insetion
     if (item_ == nullptr) {
       StartNewItem();
     }
-    item_->add_token_weight(token_weight);
-    item_->add_transaction_start_index(item_->transaction_token_id_size());
+
+    auto id_iter = tt_name_to_id_.find(transaction_typename);
+    auto tt_iter = tt_name_to_tt_.find(transaction_typename);
+    if (id_iter == tt_name_to_id_.end()) {
+      tt_name_to_id_.emplace(transaction_typename, tt_name_to_id_.size());
+      tt_name_to_tt_.emplace(transaction_typename, std::unordered_set<ClassId>());
+
+      id_iter = tt_name_to_id_.find(transaction_typename);
+      tt_iter = tt_name_to_tt_.find(transaction_typename);
+    }
+
+    item_->add_transaction_start_index(item_->token_id_size());
+    item_->add_transaction_typename_id(id_iter->second);
 
     for (int i = 0; i < class_ids.size(); ++i) {
+      tt_iter->second.emplace(class_ids[i]);
+
       Token token(class_ids[i], tokens[i]);
       if (global_map_.find(token) == global_map_.end()) {
         global_map_.insert(std::make_pair(token, CollectionParserTokenInfo(token.keyword, token.class_id)));
@@ -395,10 +414,11 @@ class CollectionParser::BatchCollector {
       CollectionParserTokenInfo& token_info = global_map_[token];
       int local_token_id = local_map_[token];
 
-      item_->add_transaction_token_id(local_token_id);
+      item_->add_token_id(local_token_id);
+      item_->add_token_weight(token_weights[i]);
       token_info.items_count++;
-      token_info.token_weight += token_weight;
-      total_token_weight_ += token_weight;
+      token_info.token_weight += token_weights[i];
+      total_token_weight_ += token_weights[i];
       total_tokens_count_ += 1;
     }
   }
@@ -424,9 +444,21 @@ class CollectionParser::BatchCollector {
     info->set_total_token_weight(info->total_token_weight() + total_token_weight_);
     info->set_num_batches(info->num_batches() + 1);
 
+    auto vec = std::vector<TransactionTypeName>(tt_name_to_id_.size());
+    for (const auto& tt_id : tt_name_to_id_) {
+      vec[tt_id.second] = tt_id.first;
+    }
+
+    for (const auto& v : vec) {
+      batch_.add_transaction_typename(v);
+      batch_.add_transaction_type(TransactionType(tt_name_to_tt_.find(v)->second).AsString());
+    }
+
     Batch batch;
     batch.Swap(&batch_);
     local_map_.clear();
+    tt_name_to_id_.clear();
+    tt_name_to_tt_.clear();
     return batch;
   }
 
@@ -478,7 +510,6 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
       std::vector<std::string> all_strs_for_batch;
       std::string batch_name;
       BatchCollector batch_collector;
-      std::unordered_set<TransactionType, TransactionHasher> transaction_types;
 
       {  // Read portion of documents
         std::lock_guard<std::mutex> guard(read_access);
@@ -530,42 +561,55 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
 
         std::string item_title = strs[0];
 
-        // ToDo: calcualte cross-modality co-occurrurrence (window width is doc length)
-        std::vector<ClassId> class_ids = { DefaultClass };
+        TransactionTypeName current_tt_name = DefaultTransactionTypeName;
+        ClassId current_class_id = DefaultClass;
+
+        std::vector<std::string> tokens;
+        std::vector<ClassId> class_ids;
+        std::vector<float> weights;
+
         for (unsigned elem_index = 1; elem_index < strs.size(); ++elem_index) {
           std::string elem = strs[elem_index];
           if (elem.size() == 0) {
             continue;
           }
 
+          if (elem[0] == '^') {
+            if (elem.size() == 1) {
+              // end of previous transaction
+              if (tokens.size() > 0) {
+                batch_collector.RecordTransaction(class_ids, tokens, weights, current_tt_name);
+              }
+            } else {
+              // change of transaction typename
+              // dump all previous tokens, each as one transaction
+              for (int i = 0; i < tokens.size(); ++i) {
+                batch_collector.RecordTransaction({ class_ids[i] }, { tokens[i] }, { weights[i] }, current_tt_name);
+              }
+              current_tt_name = elem.substr(1);
+            }
+
+            // reset class_id in context to default when change tt_name of finish transaction
+            current_class_id = DefaultClass;
+            continue;
+          }
+
           if (elem[0] == '|') {
-            std::string temp = elem.substr(1);
-            boost::split(class_ids, temp, boost::is_any_of(TransactionSeparator));
-            if (class_ids.empty()) {
-              class_ids = { DefaultClass };
+            current_class_id = elem.substr(1);
+            if (current_class_id.empty()) {
+              current_class_id = DefaultClass;
             }
             continue;
           }
 
           // Skip token when it is not among modalities that user has requested to parse
-          if (!useClassId(class_ids, config)) {
+          if (!useClassId(current_class_id, config)) {
             continue;
           }
 
-          float transaction_weight = 1.0f;
+          float token_weight = 1.0f;
+          std::string token = elem;
           size_t split_index = elem.find(':');
-          std::vector<std::string> tokens;
-          std::string temp = split_index != std::string::npos ? elem.substr(0, split_index) : elem;
-          boost::split(tokens, temp, boost::is_any_of(TransactionSeparator));
-
-          if (class_ids.size() != tokens.size()) {
-            std::stringstream ss;
-            ss << "Error in " << config.docword_file_path() << ":" << line_no
-               << ", transaction type size is " << class_ids.size() << " and transaction size is "
-               << tokens.size() << " in " << elem;
-            BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-          }
-
           if (split_index != std::string::npos) {
             if (split_index == 0 || split_index == (elem.size() - 1)) {
               std::stringstream ss;
@@ -573,9 +617,9 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
                  << ", entries can not start or end with colon: " << elem;
               BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
             }
-            std::string transaction_occurences_string = elem.substr(split_index + 1);
+            token = elem.substr(0, split_index);
             try {
-              transaction_weight = boost::lexical_cast<float>(transaction_occurences_string);
+              token_weight = boost::lexical_cast<float>(elem.substr(split_index + 1));
             }
             catch (boost::bad_lexical_cast &) {
               std::stringstream ss;
@@ -585,8 +629,9 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
             }
           }
 
-          transaction_types.emplace(TransactionType(class_ids));
-          batch_collector.Record(class_ids, tokens, transaction_weight);
+          tokens.push_back(token);
+          class_ids.push_back(current_class_id);
+          weights.push_back(token_weight);
 
           if (config.gather_cooc()) {
             if (class_ids.size() > 1) {
@@ -659,6 +704,12 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
             }  // End of token's neghbors parsing
           }  // End of token parsing
         }  // End of item parsing
+
+        // dump all previous tokens, each as one transaction
+        for (int i = 0; i < tokens.size(); ++i) {
+          batch_collector.RecordTransaction({ class_ids[i] }, { tokens[i] }, { weights[i] }, current_tt_name);
+        }
+
         batch_collector.FinishItem(line_no, item_title);
       }  // End of items of 1 batch parsing
       if (config.gather_cooc() && !cooc_stat_holder.Empty()) {
@@ -677,15 +728,12 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
           for (int token_id = 0; token_id < batch.token_size(); ++token_id) {
             token_map[artm::core::Token(batch.class_id(token_id), batch.token(token_id))] = true;
           }
-
-          for (const auto& tt : transaction_types) {
-            batch.add_transaction_type(tt.AsString());
-          }
         }
         ::artm::core::Helpers::SaveBatch(batch, config.target_folder(), batch_name);
       }
     }  // End of collection parsing
-    {  // Save number of pairs (needed for ppmi)
+
+{  // Save number of pairs (needed for ppmi)
       std::unique_lock<std::mutex> lock(cooc_config_access);
       total_num_of_pairs += local_num_of_pairs;
     }
