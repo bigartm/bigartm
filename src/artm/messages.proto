@@ -472,12 +472,13 @@ message TopicModel {
   repeated string class_id = 6;
   repeated IntArray topic_indices = 8;
   optional int64 num_values = 9;  // NNZ for sparse retrieval
+  
+  // length equal to token
+  repeated int32 transaction_typename_id = 10;
 
-  // see the same field in Batch
-  repeated string transaction_type = 10;
-
-  // field with length equal to 'token'
-  repeated string transaction_typename = 11;
+  // see the same fields in Batch
+  repeated string transaction_type = 11;
+  repeated string transaction_typename = 12;
 }
 
 // Represents a theta matrix.
@@ -635,6 +636,8 @@ message GetTopicModelArgs {
   optional MatrixLayout matrix_layout = 8 [default = MatrixLayout_Dense];
   
   // field with length equal to 'token' (if length of 'token' > 0)
+  repeated int32 transaction_typename_id = 9;
+  
   repeated string transaction_typename = 9;
 }
 

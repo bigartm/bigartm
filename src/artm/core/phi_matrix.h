@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "artm/core/common.h"
@@ -34,6 +35,9 @@ class PhiMatrix {
   virtual void set(int token_id, int topic_id, float value) = 0;
   virtual void increase(int token_id, int topic_id, float increment) = 0;
   virtual void increase(int token_id, const std::vector<float>& increment) = 0;  // must be thread-safe
+
+  virtual const std::unordered_map<TransactionTypeName, TransactionType>& GetTransactionTypes() const = 0;
+  virtual void AddTransactionType(const TransactionTypeName& name, const TransactionType ttype) = 0;
 
   virtual void Clear() = 0;
   virtual int AddToken(const Token& token) = 0;

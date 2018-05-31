@@ -117,9 +117,9 @@ void Processor::ThreadFunction() {
       const ModelName& model_name = part->model_name();
       const ProcessBatchesArgs& args = part->args();
       {
-        if (args.transaction_type_size() != args.transaction_weight_size()) {
+        if (args.transaction_typename_size() != args.transaction_weight_size()) {
           std::stringstream ss;
-          ss << "model.transaction_type_size() [ " << args.transaction_type_size()
+          ss << "model.transaction_type_size() [ " << args.transaction_typename_size()
              << " ] != model.transaction_weight_size() [ " << args.transaction_weight_size() << " ]";
           BOOST_THROW_EXCEPTION(InternalError(ss.str()));
         }
@@ -206,15 +206,12 @@ void Processor::ThreadFunction() {
             ProcessorHelpers::CreateRegularizerAgents(batch, args, instance_, &theta_agents, &ptdw_agents);
           }
 
-          bool use_real_transactions = false;
-          for (const auto& tt : batch.transaction_type()) {
-            // We assum here that batch is correct, e.g. it's transaction_type field
-            // in case of regular model contains ALL class_ids from batch, not their subset.
-            // Both parser and checker generates such batches.
-            if (TransactionType(tt).AsVector().size() > 1) {
-              use_real_transactions = true;
-              break;
-            }
+          // We assum here that batch is correct, e.g. it's transaction_type field
+          // in case of regular model contains ALL class_ids from batch, not their subset.
+          // Both parser and checker generates such batches.
+          bool use_real_transactions = true;
+          if (batch.transaction_typename_size() == 1 && batch.transaction_typename(0) == DefaultTransactionTypeName) {
+            use_real_transactions = false;
           }
 
           if (use_real_transactions) {

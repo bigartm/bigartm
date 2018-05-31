@@ -16,8 +16,8 @@ namespace artm {
 namespace core {
 
 struct NormalizerKey {
-  NormalizerKey(const ClassId& class_id, TransactionType transaction_type)
-      : token_(class_id, std::string(), transaction_type) { }
+  NormalizerKey(const ClassId& class_id, TransactionTypeName transaction_typename)
+      : token_(class_id, std::string(), transaction_typename) { }
 
   bool operator==(const NormalizerKey& key) const {
     return this->token_ == key.token_;
@@ -28,7 +28,7 @@ struct NormalizerKey {
   }
 
   const ClassId& class_id() const { return token_.class_id; }
-  const TransactionType& transaction_type() const { return token_.transaction_type; }
+  const TransactionTypeName& transaction_typename() const { return token_.transaction_typename; }
 
  private:
   friend struct NormalizerKeyHasher;

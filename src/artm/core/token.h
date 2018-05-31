@@ -20,7 +20,6 @@ typedef std::string TransactionTypeName;
 
 const std::string DefaultClass = "@default_class";
 const std::string DefaultTransactionTypeName = "@default_transaction";
-const std::string DefaultTransactionType = "";  // includes all class_ids
 const std::string DocumentsClass = "@documents_class";
 
 // Token is a triple of keyword, its class_id (also known as tokens' modality) and typename of the transaction.
@@ -35,6 +34,11 @@ struct Token {
     , transaction_typename(_transaction_typename)
     , hash_(calcHash(_class_id, _keyword, _transaction_typename)) { }
 
+  Token(const ClassId& _class_id, const std::string& _keyword)
+    : keyword(_keyword)
+    , class_id(_class_id)
+    , transaction_typename(DefaultTransactionTypeName)
+    , hash_(calcHash(_class_id, _keyword, DefaultTransactionTypeName)) { }
 
   Token& operator=(const Token &token) {
     if (this != &token) {

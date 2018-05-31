@@ -148,6 +148,7 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
   }
 
   std::unordered_map<int, int> batch_dictionary;
+  std::unordered_set<ClassId> batch_class_ids;
   ::artm::Batch batch;
   ::artm::Item* item = nullptr;
   int prev_item_id = -1;
@@ -214,10 +215,13 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
       prev_item_id = item_id;
       if (batch.item_size() >= config_.num_items_per_batch()) {
         batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
+        batch.add_transaction_type(TransactionType(batch_class_ids).AsString());
+        batch.add_transaction_typename(DefaultTransactionTypeName);
         ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
         num_batches++;
         batch.Clear();
         batch_dictionary.clear();
+        batch_class_ids.clear();
       }
 
       item = batch.add_item();
@@ -237,7 +241,10 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
     if (iter == batch_dictionary.end()) {
       batch_dictionary.insert(std::make_pair(token_id, static_cast<int>(batch_dictionary.size())));
       batch.add_token((*token_map)[token_id].keyword);
-      batch.add_class_id((*token_map)[token_id].class_id);
+
+      const auto& class_id = (*token_map)[token_id].class_id;
+      batch.add_class_id(class_id);
+      batch_class_ids.emplace(class_id);
       iter = batch_dictionary.find(token_id);
     }
 
@@ -255,7 +262,7 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
 
   if (batch.item_size() > 0) {
     batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
-    batch.add_transaction_type(DefaultTransactionType);
+    batch.add_transaction_type(TransactionType(batch_class_ids).AsString());
     batch.add_transaction_typename(DefaultTransactionTypeName);
     ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
     num_batches++;

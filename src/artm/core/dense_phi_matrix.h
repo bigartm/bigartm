@@ -73,6 +73,14 @@ class PhiMatrixFrame : public PhiMatrix {
   virtual ModelName model_name() const;
   virtual int64_t ByteSize() const;
 
+  virtual const std::unordered_map<TransactionTypeName, TransactionType>& GetTransactionTypes() const {
+    return transaction_typename_to_type_;
+  }
+
+  virtual void AddTransactionType(const TransactionTypeName& name, const TransactionType ttype) {
+    transaction_typename_to_type_.emplace(name, ttype);
+  }
+
   void Clear();
   virtual int AddToken(const Token& token);
 
@@ -90,6 +98,8 @@ class PhiMatrixFrame : public PhiMatrix {
 
   TokenCollection token_collection_;
   std::vector<std::shared_ptr<SpinLock> > spin_locks_;
+
+  std::unordered_map<TransactionTypeName, TransactionType> transaction_typename_to_type_;
 };
 
 class DensePhiMatrix;

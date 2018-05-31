@@ -26,31 +26,38 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
                                                      ::artm::TopicModel* topic_model) {
   const bool has_sparse_format = (get_model_args.matrix_layout() == MatrixLayout_Sparse);
 
+  std::unordered_map<TransactionTypeName, int> transaction_typenames_to_index;
+  const auto& tts = phi_matrix.GetTransactionTypes();
+  for (const auto& name : get_model_args.transaction_typename()) {
+    transaction_typenames_to_index.emplace(name, transaction_typenames_to_index.size());
+  }
+
+  const bool use_default_class = (get_model_args.class_id_size() == 0);
+  const bool use_transaction_typename = (get_model_args.transaction_typename_size() > 0);
+
   std::vector<int> tokens_to_use;
   if (get_model_args.token_size() > 0) {
-    const bool use_default_class = (get_model_args.class_id_size() == 0);
-    const bool use_class_id_as_transaction = (get_model_args.transaction_type_size() == 0);
-
     if (!use_default_class && (get_model_args.token_size() != get_model_args.class_id_size())) {
       BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(
           "GetTopicModelArgs: token_size != class_id_size, both greater then zero"));
     }
 
-    if (!use_class_id_as_transaction &&
-       (get_model_args.token_size() != get_model_args.transaction_type_size())) {
+    if (use_transaction_typename &&
+       (get_model_args.token_size() != get_model_args.transaction_typename_id_size())) {
       BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(
-        "GetTopicModelArgs: token_size != transaction_type_size, both greater then zero"));
+        "GetTopicModelArgs: token_size != transaction_typename_id_size, both greater then zero"));
+    }
+
+    if (!use_transaction_typename && tts.find(DefaultTransactionTypeName) != tts.end()) {
+      transaction_typenames_to_index.emplace(DefaultTransactionTypeName, 0);
     }
 
     for (int i = 0; i < get_model_args.token_size(); ++i) {
       ClassId class_id = use_default_class ? DefaultClass : get_model_args.class_id(i);
-      TransactionType transaction_type;
-      if (use_class_id_as_transaction) {
-        transaction_type = TransactionType(class_id);
-      } else {
-        transaction_type = TransactionType(get_model_args.transaction_type(i));
-      }
-      Token token(class_id, get_model_args.token(i), transaction_type);
+      TransactionTypeName transaction_typename =
+        use_transaction_typename ? get_model_args.transaction_typename(get_model_args.transaction_typename_id(i))
+                                 : DefaultTransactionTypeName;
+      Token token(class_id, get_model_args.token(i), transaction_typename);
 
       int token_id = phi_matrix.token_index(token);
       if (token_id != -1) {
@@ -59,26 +66,24 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
       }
     }
   } else {
-    const bool use_class_id = get_model_args.class_id_size() > 0;
-    const bool use_transaction_type = get_model_args.transaction_type_size() > 0;
-
-    std::unordered_set<TransactionType, TransactionHasher> transaction_types;
-    for (const auto& tt : get_model_args.transaction_type()) {
-      transaction_types.insert(TransactionType(tt));
-    }
-
     for (int i = 0; i < phi_matrix.token_size(); ++i) {
-      auto tt = phi_matrix.token(i).transaction_type;
+      auto tt = phi_matrix.token(i).transaction_typename;
       bool use_token = true;
-      if (use_class_id) {
+      if (!use_default_class) {
         use_token = repeated_field_contains(get_model_args.class_id(), phi_matrix.token(i).class_id);
       }
 
-      if (use_token && use_transaction_type) {
-        use_token = transaction_types.find(tt) != transaction_types.end();
+      if (use_token && use_transaction_typename) {
+        use_token = transaction_typenames_to_index.find(tt) != transaction_typenames_to_index.end();
       }
       if (use_token) {
         tokens_to_use.push_back(i);
+      }
+    }
+
+    if (!use_transaction_typename) {
+      for (const auto& name_type : phi_matrix.GetTransactionTypes()) {
+        transaction_typenames_to_index.emplace(name_type.first, transaction_typenames_to_index.size());
       }
     }
   }
@@ -119,11 +124,22 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
   // Populate all non-internal part of the resulting message
   topic_model->set_name(phi_matrix.model_name());
 
+  // Filter transaction typenames by names from Phi
+  auto temp = std::unordered_map<TransactionTypeName, int>(transaction_typenames_to_index);
+  transaction_typenames_to_index.clear();
+  for (const auto& name_id : temp) {
+    if (tts.find(name_id.first) != tts.end()) {
+      transaction_typenames_to_index.emplace(name_id.first, transaction_typenames_to_index.size());
+    }
+  }
+
   for (int token_index : tokens_to_use) {
     const Token& current_token = phi_matrix.token(token_index);
+    int transaction_id = transaction_typenames_to_index.find(current_token.transaction_typename)->second;
+
     topic_model->add_token(current_token.keyword);
     topic_model->add_class_id(current_token.class_id);
-    topic_model->add_transaction_type(current_token.transaction_type.AsString());
+    topic_model->add_transaction_typename_id(transaction_id);
 
     ::artm::FloatArray *target = topic_model->add_token_weights();
 
@@ -143,6 +159,16 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
         }
       }
     }
+  }
+
+  std::vector<TransactionTypeName> vec(transaction_typenames_to_index.size());
+  for (const auto& name_id : transaction_typenames_to_index) {
+    vec[name_id.second] = name_id.first;
+  }
+
+  for (const auto& v : vec) {
+    topic_model->add_transaction_typename(v);
+    topic_model->add_transaction_type(tts.find(v)->second.AsString());
   }
 }
 
@@ -192,15 +218,11 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
   for (int token_index = 0; token_index < topic_model.token_size(); ++token_index) {
     const std::string& token_keyword = topic_model.token(token_index);
     const ClassId& class_id = topic_model.class_id(token_index);
+    const TransactionTypeName& tt_name = (topic_model.transaction_typename_id_size() > 0)
+      ? topic_model.transaction_typename(topic_model.transaction_typename_id(token_index))
+      : DefaultTransactionTypeName;
 
-    TransactionType transaction_type;
-    if (topic_model.transaction_type_size() > 0) {
-      transaction_type = TransactionType(topic_model.transaction_type(token_index));
-    } else {
-      transaction_type = TransactionType(class_id);
-    }
-
-    Token token(class_id, token_keyword, transaction_type);
+    Token token(class_id, token_keyword, tt_name);
     const ::artm::FloatArray& counters = topic_model.token_weights(token_index);
     const ::artm::IntArray* sparse_topic_indices =
       has_sparse_format ? &topic_model.topic_indices(token_index) : nullptr;
@@ -310,7 +332,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
         std::vector<float> r_it = std::vector<float>(topic_size, 0.0f);
         std::vector<float> coefficients = std::vector<float>(topic_size, 0.0f);
         for (const auto& class_id : class_ids) {
-          auto iter = n_t_all.find(NormalizerKey(class_id, TransactionType(class_id)));
+          auto iter = n_t_all.find(NormalizerKey(class_id, DefaultTransactionTypeName));
           if (iter != n_t_all.end()) {
             double n = 0.0;
             double r_i = 0.0;
@@ -383,7 +405,7 @@ static Normalizers FindNormalizersImpl(const PhiMatrix& n_wt, const PhiMatrix* r
 
   for (int token_id = 0; token_id < n_wt.token_size(); ++token_id) {
     const Token& token = n_wt.token(token_id);
-    auto normalizer_key = NormalizerKey(token.class_id, token.transaction_type);
+    auto normalizer_key = NormalizerKey(token.class_id, token.transaction_typename);
 
     assert(r_wt == nullptr || r_wt->token(token_id) == token);
     auto iter = retval.find(normalizer_key);
@@ -420,7 +442,7 @@ static void FindPwtImpl(const PhiMatrix& n_wt, const PhiMatrix* r_wt, PhiMatrix*
     const Token& token = n_wt.token(token_id);
     assert(r_wt == nullptr || r_wt->token(token_id) == token);
     assert(p_wt->token(token_id) == token);
-    const std::vector<float>& nt = n_t[NormalizerKey(token.class_id, token.transaction_type)];
+    const std::vector<float>& nt = n_t[NormalizerKey(token.class_id, token.transaction_typename)];
     for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
       if (nt[topic_index] <= 0) {
         continue;
