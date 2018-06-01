@@ -32,7 +32,7 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
 
   bool use_all_tts = false;
-  if (config_.transaction_type_size() == 0) {
+  if (config_.transaction_typename_size() == 0) {
     use_all_tts = true;
   }
 
@@ -103,7 +103,7 @@ google::protobuf::RepeatedPtrField<std::string> ImproveCoherencePhi::class_ids_t
 }
 
 google::protobuf::RepeatedPtrField<std::string> ImproveCoherencePhi::transaction_types_to_regularize() {
-  return config_.transaction_type();
+  return config_.transaction_typename();
 }
 
 bool ImproveCoherencePhi::Reconfigure(const RegularizerConfig& config) {

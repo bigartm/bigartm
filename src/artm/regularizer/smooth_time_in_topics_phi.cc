@@ -32,9 +32,9 @@ bool SmoothTimeInTopicsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
 
   const auto& class_id = config_.class_id();
-  auto tt = ::artm::core::TransactionType(class_id);
-  if (config_.has_transaction_type()) {
-    tt = artm::core::TransactionType(config_.transaction_type());
+  auto tt = ::artm::core::DefaultTransactionTypeName;
+  if (config_.has_transaction_typename()) {
+    tt = config_.transaction_typename();
   }
 
   // proceed the regularization
@@ -44,7 +44,7 @@ bool SmoothTimeInTopicsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   for (int token_id = 0; token_id < token_size; ++token_id) {
     const auto& token = p_wt.token(token_id);
 
-    if (token.class_id != class_id || token.transaction_type != tt) {
+    if (token.class_id != class_id || token.transaction_typename != tt) {
       continue;
     }
 
@@ -89,7 +89,7 @@ google::protobuf::RepeatedPtrField<std::string> SmoothTimeInTopicsPhi::class_ids
 google::protobuf::RepeatedPtrField<std::string> SmoothTimeInTopicsPhi::transaction_types_to_regularize() {
   google::protobuf::RepeatedPtrField<std::string> retval;
   std::string* ptr = retval.Add();
-  *ptr = config_.has_transaction_type() ? config_.transaction_type() : config_.class_id();
+  *ptr = config_.has_transaction_typename() ? config_.transaction_typename() : artm::core::DefaultTransactionTypeName;
   return retval;
 }
 

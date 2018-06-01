@@ -14,7 +14,7 @@
    The parameters of the regularizer:
    - topic_names (the names of topics to regularize, empty == all)
    - class_ids (class ids to regularize, empty == all)
-   - transaction_types (transaction types to regularize, empty == all)
+   - transaction_typenames (transaction typenames to regularize, empty == all)
    - topic_pairs (pair of topic names with value for their decorrelation,
                   empty == simple case usage)
 

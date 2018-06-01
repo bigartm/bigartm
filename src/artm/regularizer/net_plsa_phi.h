@@ -17,7 +17,8 @@
    - topic_names (the names of topics to regularize, empty == all)
    - class_id (the name of specific class_id, should be equal to one in
                documents and is required)
-   - transaction_type (transaction type to regularize, if empty -> == class_id)
+   - transaction_typename (transaction typename to regularize,
+                           if empty -> == DefaultTransactionTypeName)
    - weights w_uv (sparce matrix of weights w_uv, required)
    - weights D_u (vector with weights D_u, if is not set, all weights should be 1.0)
    - symmetric_weights (flag that indicates if w_uv is a symmetric sparce matrix or not)

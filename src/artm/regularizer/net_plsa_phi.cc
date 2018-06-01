@@ -36,9 +36,9 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     return false;
   }
   const auto& class_id = config_.class_id();
-  auto tt = ::artm::core::TransactionType(class_id);
-  if (config_.has_transaction_type()) {
-    tt = artm::core::TransactionType(config_.transaction_type());
+  auto tt = artm::core::DefaultTransactionTypeName;
+  if (config_.has_transaction_typename()) {
+    tt = config_.transaction_typename();
   }
 
   bool has_weights = config_.vertex_weight_size();
@@ -52,7 +52,7 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   auto norm_iter = normalizers.find(artm::core::NormalizerKey(class_id, tt));
   if (norm_iter == normalizers.end()) {
     LOG(ERROR) << "NetPlsaPhiConfig.class_id " << class_id
-               << " with transaction type " << tt.AsString()
+               << " with transaction typename " << tt
                << " does not exists in n_wt matrix. Cancel regularization.";
   }
   const auto& n_t = norm_iter->second;
@@ -115,7 +115,7 @@ google::protobuf::RepeatedPtrField<std::string> NetPlsaPhi::class_ids_to_regular
 google::protobuf::RepeatedPtrField<std::string> NetPlsaPhi::transaction_types_to_regularize() {
   google::protobuf::RepeatedPtrField<std::string> retval;
   std::string* ptr = retval.Add();
-  *ptr = config_.has_transaction_type() ? config_.transaction_type() : config_.class_id();
+  *ptr = config_.has_transaction_typename() ? config_.transaction_typename() : artm::core::DefaultTransactionTypeName;
   return retval;
 }
 

@@ -248,5 +248,9 @@ bool isZero(float value, float tol) {
   return std::fabs(value) < tol;
 }
 
+bool isZero(double value, double tol) {
+  return std::fabs(value) < tol;
+}
+
 }  // namespace core
 }  // namespace artm

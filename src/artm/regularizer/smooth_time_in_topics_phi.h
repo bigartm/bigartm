@@ -14,7 +14,8 @@
    The parameters of the regularizer:
    - topic_names (the names of topics to regularize, empty == all)
    - class_id (class id to regularize, required)
-   - transaction_type (transaction type to regularize, if empty -> == class_id)
+   - transaction_typename (transaction type to regularize,
+     if empty -> == DefaultTransactionTypeName)
 
    Note: regularizer ignores first and last tokens of given modality.
 */

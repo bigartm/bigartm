@@ -6,7 +6,7 @@ namespace artm {
 namespace core {
 
 namespace {
-const float kTransactionsEps = 1e-35f;
+const double kTransactionsEps = 1e-100;
 
 struct IntVectorHasher {
   size_t operator()(const std::vector<int>& elems) const {
@@ -207,7 +207,7 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
           }
         }
 
-        float p_dx_val = 0.0f;
+        double p_dx_val = 0.0;
         for (int k = 0; k < num_topics; ++k) {
           p_dx_val += p_xt_local[k] * theta_ptr[k];
         }
@@ -259,7 +259,7 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
     std::fill(helper_vector.begin(), helper_vector.end(), 0.0f);
     for (int i = sparse_nxd.row_ptr()[transaction_index]; i < sparse_nxd.row_ptr()[transaction_index + 1]; ++i) {
       int d = sparse_nxd.col_ind()[i];
-      float p_xd_val = blas->sdot(num_topics, &p_xt_local[0], 1, &(*theta_matrix)(0, d), 1);  // NOLINT
+      double p_xd_val = blas->sdot(num_topics, &p_xt_local[0], 1, &(*theta_matrix)(0, d), 1);  // NOLINT
       if (isZero(p_xd_val, kTransactionsEps)) {
         continue;
       }

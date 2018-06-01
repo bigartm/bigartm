@@ -34,7 +34,7 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
 
   bool use_all_tts = false;
-  if (config_.transaction_type_size() == 0) {
+  if (config_.transaction_typename_size() == 0) {
     use_all_tts = true;
   }
 
@@ -47,7 +47,7 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   for (int token_id = 0; token_id < token_size; ++token_id) {
     const auto& token = p_wt.token(token_id);
     if ((!use_all_classes && !core::is_member(token.class_id, config_.class_id())) ||
-      (!use_all_tts && !token.transaction_type.ContainsIn(config_.transaction_type()))) {
+      (!use_all_tts && !!core::is_member(token.transaction_typename, config_.transaction_typename()))) {
       continue;
     }
 

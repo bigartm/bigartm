@@ -40,7 +40,7 @@ bool BitermsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
 
   bool use_all_tts = false;
-  if (config_.transaction_type_size() == 0) {
+  if (config_.transaction_typename_size() == 0) {
     use_all_tts = true;
   }
   // ToDo(MelLain): refactor this regularizer for transaction model case
@@ -138,7 +138,7 @@ google::protobuf::RepeatedPtrField<std::string> BitermsPhi::class_ids_to_regular
 }
 
 google::protobuf::RepeatedPtrField<std::string> BitermsPhi::transaction_types_to_regularize() {
-  return config_.transaction_type();
+  return config_.transaction_typename();
 }
 
 bool BitermsPhi::Reconfigure(const RegularizerConfig& config) {

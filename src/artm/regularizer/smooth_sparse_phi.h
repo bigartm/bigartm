@@ -16,7 +16,7 @@
    The parameters of the regularizer:
    - topic_names (the names of topics to regularize, empty == all)
    - class_ids (class ids to regularize, empty == all)
-   - transaction_types (transaction types to regularize, empty == all)
+   - transaction_typenames (transaction typenames to regularize, empty == all)
    - dictionary_name
    - transform_function (default is 1, corresponds log() under
      KL-divergence)
