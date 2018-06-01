@@ -35,6 +35,7 @@ class ThetaSnippet : public ScoreCalculatorInterface {
 
   virtual void AppendScore(
       const Item& item,
+      const Batch& batch,
       const std::vector<artm::core::Token>& token_dict,
       const artm::core::PhiMatrix& p_wt,
       const artm::ProcessBatchesArgs& args,

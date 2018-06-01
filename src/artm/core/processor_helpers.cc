@@ -261,7 +261,7 @@ std::shared_ptr<Score> ProcessorHelpers::CalcScores(ScoreCalculatorInterface* sc
       theta_vec.push_back(theta_matrix(topic_index, item_index));
     }
 
-    score_calc->AppendScore(item, batch_token_dict, p_wt, args, theta_vec, score.get());
+    score_calc->AppendScore(item, batch, batch_token_dict, p_wt, args, theta_vec, score.get());
   }
 
   score_calc->AppendScore(batch, p_wt, args, score.get());
