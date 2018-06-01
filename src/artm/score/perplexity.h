@@ -10,6 +10,7 @@
    - theta_sparsity_topic_name (topic names to count Theta sparsity)
    - theta_sparsity_eps
    - class_id (array of class_ids to count perplexity, empty == all)
+   - transaction_typenames (transaction typenames to regularize, empty == all)
 
 */
 

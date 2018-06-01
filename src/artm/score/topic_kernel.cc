@@ -40,9 +40,14 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
     class_id = config_.class_id();
   }
 
-  auto tt = ::artm::core::TransactionType(class_id);
-  if (config_.has_transaction_type()) {
-    tt = artm::core::TransactionType(config_.transaction_type());
+  auto tt = ::artm::core::DefaultTransactionTypeName;
+  if (config_.has_transaction_typename()) {
+    tt = config_.transaction_typename();
+  }
+
+  if (count_coherence && tt != artm::core::DefaultTransactionTypeName) {
+    LOG(ERROR) << "Coherence computation in TopicKernel score does not support transactions!";
+    return false;
   }
 
   float probability_mass_threshold = config_.probability_mass_threshold();
@@ -85,7 +90,7 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
   if (norm_iter == normalizers.end()) {
     BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(
         "TopicKernelScoreConfig.class_id " + class_id +
-        " with TopicKernelScoreConfig.transaction_type " + tt.AsString() +
+        " with TopicKernelScoreConfig.transaction_typename " + tt +
         " does not exists in n_wt matrix"));
   }
 
@@ -95,7 +100,7 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
 
   for (int token_index = 0; token_index < token_size; ++token_index) {
     const auto& token = p_wt.token(token_index);
-    if (token.class_id == class_id && token.transaction_type == tt) {
+    if (token.class_id == class_id && token.transaction_typename == tt) {
       float p_w = 0.0;
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
         if (topics_to_score[topic_index]) {

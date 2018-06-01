@@ -20,18 +20,21 @@ void ClassPrecision::AppendScore(
     const artm::ProcessBatchesArgs& args,
     const std::vector<float>& theta,
     Score* score) {
-  if (!args.has_predict_transaction_type() || !args.has_predict_class_id()) {
+  if (!args.has_predict_class_id()) {
     return;
   }
 
   const int topic_size = p_wt.topic_size();
-  const auto predict_tt = artm::core::TransactionType(args.predict_transaction_type());
+  const auto predict_tt = artm::core::DefaultTransactionTypeName;
+  if (args.has_predict_transaction_typename()) {
+    args.predict_transaction_typename();
+  }
 
   float max_token_weight = 0.0f;
   std::string keyword;
   for (int token_index = 0; token_index < p_wt.token_size(); token_index++) {
     const auto& token = p_wt.token(token_index);
-    if (token.class_id != args.predict_class_id() || token.transaction_type != predict_tt) {
+    if (token.class_id != args.predict_class_id() || token.transaction_typename != predict_tt) {
       continue;
     }
 
@@ -50,13 +53,12 @@ void ClassPrecision::AppendScore(
   for (int token_index = 0; token_index < item.transaction_start_index_size(); ++token_index) {
     const int start_index = item.transaction_start_index(token_index);
     const int end_index = (token_index + 1) < item.transaction_start_index_size() ?
-                          item.transaction_start_index(token_index + 1) :
-                          item.transaction_token_id_size();
+                          item.transaction_start_index(token_index + 1) : item.token_id_size();
     for (int token_id = start_index; token_id < end_index; ++token_id) {
-      const auto& token = token_dict[item.transaction_token_id(token_id)];
+      const auto& token = token_dict[item.token_id(token_id)];
       if (token.class_id == args.predict_class_id() &&
           token.keyword == keyword &&
-          token.transaction_type == predict_tt) {
+          token.transaction_typename == predict_tt) {
         error = false;
         break;
       }
