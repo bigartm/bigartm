@@ -13,6 +13,7 @@
 
 #include "artm/core/common.h"
 #include "artm/core/phi_matrix.h"
+#include "artm/core/transaction_type.h"
 
 namespace artm {
 namespace core {
@@ -73,13 +74,8 @@ class PhiMatrixFrame : public PhiMatrix {
   virtual ModelName model_name() const;
   virtual int64_t ByteSize() const;
 
-  virtual const std::unordered_map<TransactionTypeName, TransactionType>& GetTransactionTypes() const {
-    return transaction_typename_to_type_;
-  }
-
-  virtual void AddTransactionType(const TransactionTypeName& name, const TransactionType ttype) {
-    transaction_typename_to_type_.emplace(name, ttype);
-  }
+  virtual const std::unordered_map<TransactionTypeName, TransactionType>& GetTransactionTypes() const;
+  virtual void AddTransactionType(const TransactionTypeName& name, const TransactionType& ttype);
 
   void Clear();
   virtual int AddToken(const Token& token);

@@ -5,12 +5,13 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <unordered_set>
 
 #include "boost/algorithm/string.hpp"
 #include "boost/functional/hash.hpp"
 
 #include "artm/core/common.h"
-#include "artm/core/transaction_type.h"
+#include "artm/core/token.h"
 
 namespace artm {
 namespace core {
@@ -30,7 +31,10 @@ class TransactionType {
   explicit TransactionType(const std::unordered_set<ClassId>& src)
     : str_data_(TransactionTypeAsStr(src))
     , set_data_(src)
-    , hash_(calcHash(str_data_)) { }
+    , hash_(-1)
+  {
+    hash_ = calcHash(str_data_);
+  }
 
   const std::string& AsString() const { return str_data_; }
   const std::unordered_set<ClassId>& AsSet() const { return set_data_; }
@@ -63,7 +67,7 @@ class TransactionType {
   std::unordered_set<ClassId> set_data_;
   size_t hash_;
 
-  static std::string TransactionTypeAsStr(const std::unordered_set<ClassId>& src) {
+  std::string TransactionTypeAsStr(const std::unordered_set<ClassId>& src) {
     std::stringstream ss;
     int i = 0;
     for (const auto& e : src) {
@@ -72,13 +76,13 @@ class TransactionType {
     return ss.str();
   }
 
-  static std::unordered_set<std::string> TransactionTypeAsSet(const std::string& tt) {
+  std::unordered_set<std::string> TransactionTypeAsSet(const std::string& tt) {
     std::unordered_set<ClassId> retval;
     boost::split(retval, tt, boost::is_any_of("^"));
     return retval;
   }
 
-  static size_t calcHash(const std::string& data) {
+  size_t calcHash(const std::string& data) {
     size_t hash = 0;
     boost::hash_combine<std::string>(hash, data);
     return hash;

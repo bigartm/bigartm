@@ -10,7 +10,6 @@
 #include "boost/functional/hash.hpp"
 
 #include "artm/core/common.h"
-#include "artm/core/transaction_type.h"
 
 namespace artm {
 namespace core {
@@ -18,9 +17,9 @@ namespace core {
 typedef std::string ClassId;
 typedef std::string TransactionTypeName;
 
-const std::string DefaultClass = "@default_class";
-const std::string DefaultTransactionTypeName = "@default_transaction";
-const std::string DocumentsClass = "@documents_class";
+const ClassId DefaultClass = "@default_class";
+const ClassId DocumentsClass = "@documents_class";
+const TransactionTypeName DefaultTransactionTypeName = "@default_transaction";
 
 // Token is a triple of keyword, its class_id (also known as tokens' modality) and typename of the transaction.
 // Pay attention to the order of the arguments in the constructor.

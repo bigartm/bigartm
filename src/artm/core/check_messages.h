@@ -15,6 +15,7 @@
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/token.h"
+#include "artm/core/transaction_type.h"
 #include "artm/core/protobuf_serialization.h"
 
 namespace artm {

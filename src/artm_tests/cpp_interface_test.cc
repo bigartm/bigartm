@@ -114,7 +114,7 @@ void RunBasicTest(bool serialize_as_json) {
     item->set_title(str.str());
     item->set_id(666 + iDoc);
     for (int iToken = 0; iToken < nTokens; ++iToken) {
-      item->add_transaction_token_id(iToken);
+      item->add_token_id(iToken);
       item->add_transaction_start_index(item->transaction_start_index_size());
       item->add_token_weight(static_cast<float>(iDoc + iToken + 1));
     }
@@ -122,7 +122,7 @@ void RunBasicTest(bool serialize_as_json) {
 
   EXPECT_EQ(batch.item().size(), nDocs);
   for (int i = 0; i < batch.item().size(); i++) {
-    EXPECT_EQ(batch.item(i).transaction_token_id_size(), nTokens);
+    EXPECT_EQ(batch.item(i).token_id_size(), nTokens);
   }
 
   // Index doc-token matrix
@@ -340,8 +340,7 @@ TEST(CppInterface, BasicTrasactionTest) {
         std::unordered_map<artm::core::NormalizerKey, float, artm::core::NormalizerKeyHasher> normalizer_keys;
         for (int i = 0; i < model.token_size(); ++i) {
           float value = model.token_weights(i).value(0);
-          normalizer_keys[artm::core::NormalizerKey(model.class_id(i),
-            artm::core::TransactionType(model.transaction_type(i)))] += value;
+          normalizer_keys[artm::core::NormalizerKey(model.class_id(i), model.transaction_typename(i))] += value;
         }
 
         ASSERT_EQ(normalizer_keys.size(), num_transactions);
@@ -358,12 +357,12 @@ TEST(CppInterface, BasicTrasactionTest) {
       func(model_1, 7);
 
       args.set_model_name(init_model_args.model_name());
-      args.add_transaction_type("class_1" + artm::core::TransactionSeparator + "class_2");
+      args.add_transaction_typename("trans1");
       auto model_2 = master_component.GetTopicModel(args);
       func(model_2, 2);
 
       args.set_model_name(init_model_args.model_name());
-      args.add_transaction_type("class_1" + artm::core::TransactionSeparator + "class_2");
+      args.add_transaction_typename("trans1");
       args.add_class_id("class_1");
       auto model_3 = master_component.GetTopicModel(args);
       func(model_3, 1);
@@ -853,22 +852,21 @@ TEST(CppInterface, TransactionDictionaries) {
     ASSERT_EQ(dict.transaction_type_size(), 4);
 
     for (int i = 0; i < dict.transaction_type_size(); ++i) {
-      auto vec = artm::core::TransactionType(dict.transaction_type(i)).AsVector();
+      auto s = artm::core::TransactionType(dict.transaction_type(i)).AsSet();
       artm::core::TransactionType tt(dict.transaction_type(i));
-      if (vec.size() == 1) {
+      if (s.size() == 1) {
         std::string str = (dict.transaction_type(i) == "class_1") ? "class_1" : "class_3";
         ASSERT_EQ(dict.transaction_type(i), str);
         ASSERT_EQ(tt.AsString(), str);
-        ASSERT_EQ(vec[0], str);
-      } else if (vec.size() == 2) {
-        ASSERT_EQ(dict.transaction_type(i), "class_1" + artm::core::TransactionSeparator + "class_2");
-        ASSERT_EQ(tt.AsString(), "class_1" + artm::core::TransactionSeparator + "class_2");
-        ASSERT_EQ(vec[0], "class_1");
-        ASSERT_EQ(vec[1], "class_2");
-      } else if (vec.size() == 3) {
-        ASSERT_EQ(vec[0], "class_4");
-        ASSERT_EQ(vec[1], "class_2");
-        ASSERT_EQ(vec[2], "class_1");
+        ASSERT_EQ(*s.begin(), str);
+      } else if (s.size() == 2) {
+        ASSERT_EQ(dict.transaction_type(i), "trans1");
+        ASSERT_EQ(tt.AsString(), "trans1");
+        std::unordered_set<artm::core::ClassId> temp = { "class_1", "class_2" };
+        ASSERT_EQ(s, temp);
+      } else if (s.size() == 3) {
+        std::unordered_set<artm::core::ClassId> temp = { "class_1", "class_2", "class_4" };
+        ASSERT_EQ(s, temp);
       } else {
         ASSERT_TRUE(false);
       }

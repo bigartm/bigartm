@@ -29,11 +29,11 @@ namespace core {
 
 void DictionaryOperations::TransactionsFromDataToDict(const DictionaryData& data, std::shared_ptr<Dictionary> dict) {
   for (int i = 0; i < data.transaction_type_size(); ++i) {
-    const auto tt = TransactionType(data.transaction_type[i]);
-    dict->AddTransactionType(data.transaction_typename[i], tt);
+    const auto tt = TransactionType(data.transaction_type(i));
+    dict->AddTransactionType(data.transaction_typename(i), tt);
 
     for (const auto& class_id : tt.AsSet()) {
-      dict->AddTransactionTypeNameForClassId(class_id, data.transaction_typename[i]);
+      dict->AddTransactionTypeNameForClassId(class_id, data.transaction_typename(i));
     }
   }
 }
@@ -346,8 +346,8 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
     }
 
     for (int i = 0; i < batch.transaction_type_size(); ++i) {
-      TransactionTypeName t_name = batch.transaction_typename[i];
-      auto t_set = TransactionType(batch.transaction_type[i]).AsSet();
+      TransactionTypeName t_name = batch.transaction_typename(i);
+      auto t_set = TransactionType(batch.transaction_type(i)).AsSet();
       
       auto iter = transaction_types.find(t_name);
       if (iter != transaction_types.end()) {

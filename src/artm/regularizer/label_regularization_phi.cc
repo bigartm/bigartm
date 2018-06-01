@@ -88,7 +88,7 @@ google::protobuf::RepeatedPtrField<std::string> LabelRegularizationPhi::class_id
 }
 
 google::protobuf::RepeatedPtrField<std::string> LabelRegularizationPhi::transaction_types_to_regularize() {
-  return config_.transaction_type();
+  return config_.transaction_typename();
 }
 
 bool LabelRegularizationPhi::Reconfigure(const RegularizerConfig& config) {

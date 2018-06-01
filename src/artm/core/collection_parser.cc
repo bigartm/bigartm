@@ -31,6 +31,7 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/core/protobuf_helpers.h"
+#include "artm/core/transaction_type.h"
 
 using ::artm::utility::ifstream_or_cin;
 

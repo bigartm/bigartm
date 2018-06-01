@@ -167,6 +167,16 @@ int64_t PhiMatrixFrame::ByteSize() const {
   return token_collection_.ByteSize();
 }
 
+const std::unordered_map<TransactionTypeName, TransactionType>&
+PhiMatrixFrame::GetTransactionTypes() const {
+  return transaction_typename_to_type_;
+}
+
+void PhiMatrixFrame::AddTransactionType(
+  const TransactionTypeName& name, const TransactionType& ttype) {
+  transaction_typename_to_type_.emplace(name, ttype);
+}
+
 // =======================================================
 // PackedValues methods
 // =======================================================
