@@ -638,7 +638,7 @@ message GetTopicModelArgs {
   // field with length equal to 'token' (if length of 'token' > 0)
   repeated int32 transaction_typename_id = 9;
   
-  repeated string transaction_typename = 9;
+  repeated string transaction_typename = 10;
 }
 
 message GetThetaMatrixArgs {

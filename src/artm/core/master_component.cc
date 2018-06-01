@@ -1151,8 +1151,12 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
     process_batches_args.set_reuse_theta(config->reuse_theta());
   }
 
+  process_batches_args.mutable_class_id()->CopyFrom(config->class_id());
+  process_batches_args.mutable_class_weight()->CopyFrom(config->class_weight());
+
   process_batches_args.mutable_transaction_typename()->CopyFrom(config->transaction_typename());
   process_batches_args.mutable_transaction_weight()->CopyFrom(config->transaction_weight());
+
   process_batches_args.set_theta_matrix_type(args.theta_matrix_type());
   if (args.has_predict_class_id()) {
     process_batches_args.set_predict_class_id(args.predict_class_id());
@@ -1295,6 +1299,9 @@ class ArtmExecutor {
     if (master_model_config.has_num_document_passes()) {
       process_batches_args_.set_num_document_passes(master_model_config.num_document_passes());
     }
+
+    process_batches_args_.mutable_class_id()->CopyFrom(master_model_config.class_id());
+    process_batches_args_.mutable_class_weight()->CopyFrom(master_model_config.class_weight());
 
     process_batches_args_.mutable_transaction_typename()->CopyFrom(master_model_config.transaction_typename());
     process_batches_args_.mutable_transaction_weight()->CopyFrom(master_model_config.transaction_weight());

@@ -31,68 +31,83 @@ std::shared_ptr<BatchTransactionInfo> ProcessorTransactionHelpers::PrepareBatchI
   TokenIdsToInfo token_ids_to_info;
   TransactionIdToInfo transaction_id_to_info;
 
-  bool use_weights = false;
-  std::unordered_map<TransactionType, float, TransactionHasher> tt_to_weight;
-  if (args.transaction_type_size() != 0) {
-    use_weights = true;
-    for (int i = 0; i < args.transaction_type_size(); ++i) {
-      tt_to_weight.insert(std::make_pair(TransactionType(args.transaction_type(i)),
-                                         args.transaction_weight(i)));
+  bool use_class_weight = false;
+  std::unordered_map<ClassId, float> class_id_to_weight;
+  if (args.class_id_size() > 0) {
+    use_class_weight = true;
+    for (int i = 0; i < args.class_id_size(); ++i) {
+      class_id_to_weight.emplace(args.class_id(i), args.class_weight(i));
     }
   }
 
-  int max_doc_len = 0;
+  bool use_transaction_weight = false;
+  std::unordered_map<TransactionTypeName, float> tt_name_to_weight;
+  if (args.transaction_typename_size() > 0) {
+    use_transaction_weight = true;
+    for (int i = 0; i < args.transaction_typename_size(); ++i) {
+      tt_name_to_weight.emplace(args.transaction_typename(i), args.transaction_weight(i));
+    }
+  }
+
+  // Weight of each transaction is a sum of weights of its tokens
+  // (multiplied by their class_weight), multiplied by its transaction_weight
   std::vector<int> vec;
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
     n_dw_row_ptr.push_back(static_cast<int>(n_dw_val.size()));
     const Item& item = batch.item(item_index);
 
-    auto func = [](int start_idx, int end_idx, const Batch& b, const Item& d) -> std::shared_ptr<TransactionType> {
-      std::string str;
-      for (int token_id = start_idx; token_id < end_idx; ++token_id) {
-        auto& tmp = b.class_id(d.transaction_token_id(token_id));
-        str += (token_id == start_idx) ? tmp : TransactionSeparator + tmp;
+    for (int t_index = 0; t_index < item.transaction_start_index_size(); ++t_index) {
+      const int start_index = item.transaction_start_index(t_index);
+      const int end_index = (t_index + 1) < item.transaction_start_index_size() ?
+          item.transaction_start_index(t_index + 1) : item.token_id_size();
+
+      TransactionTypeName tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
+      float tt_weight = 1.0f;
+      if (use_transaction_weight) {
+        auto iter = tt_name_to_weight.find(tt_name);
+        tt_weight = (iter == tt_name_to_weight.end()) ? 0.0f : iter->second;
       }
-      return std::make_shared<TransactionType>(str);
-    };
+      
+      float transaction_weight = 0.0f;
+      auto it = p_wt.GetTransactionTypes().find(tt_name);
+      if (it != p_wt.GetTransactionTypes().end()) {
+        for (int idx = start_index; idx < end_index; ++idx) {
+          const int token_id = item.token_id(idx);
+          const float token_weight = item.token_weight(idx);
 
-    for (int token_index = 0; token_index < item.transaction_start_index_size(); ++token_index) {
-      const int start_index = item.transaction_start_index(token_index);
-      const int end_index = (token_index + 1) < item.transaction_start_index_size() ?
-                            item.transaction_start_index(token_index + 1) :
-                            item.transaction_token_id_size();
+          ClassId class_id = batch.class_id(token_id);
+          if (it->second.AsSet().find(class_id) == it->second.AsSet().end()) {
+            continue;  // transaction contains token of invalid class_id, ignore this token
+          }
 
-      std::shared_ptr<TransactionType> tt = nullptr;
-      float transaction_weight = 1.0f;
-      if (use_weights) {
-        tt = func(start_index, end_index, batch, item);
-        auto it = tt_to_weight.find(*tt);
-        transaction_weight = (it == tt_to_weight.end()) ? 0.0f : it->second;
+          float class_weight = 1.0f;
+          if (use_class_weight) {
+            auto iter = class_id_to_weight.find(class_id);
+            class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
+          }
+
+          transaction_weight += (token_weight * class_weight);
+        }
       }
 
-      const float token_weight = item.token_weight(token_index);
-      n_dw_val.push_back(transaction_weight * token_weight);
+      n_dw_val.push_back(transaction_weight * tt_weight);
 
       vec.clear();
       for (int i = start_index; i < end_index; ++i) {
-        vec.push_back(item.transaction_token_id(i));
+        vec.push_back(item.token_id(i));
       }
-      auto iter = token_ids_to_info.find(vec);
 
+      auto iter = token_ids_to_info.find(vec);
       if (iter != token_ids_to_info.end()) {
         n_dw_col_ind.push_back(iter->second->transaction_index);
       } else {
         std::vector<int> local_indices;
         std::vector<int> global_indices;
 
-        if (tt == nullptr) {
-          tt = func(start_index, end_index, batch, item);
-        }
-
         for (int idx = start_index; idx < end_index; ++idx) {
-          const int token_id = item.transaction_token_id(idx);
-          auto token = Token(batch.class_id(token_id), batch.token(token_id), *tt);
-          token_to_index.insert(std::make_pair(token, token_to_index.size()));
+          const int token_id = item.token_id(idx);
+          auto token = Token(batch.class_id(token_id), batch.token(token_id), tt_name);
+          token_to_index.emplace(token, token_to_index.size());
 
           local_indices.push_back(token_to_index.size() - 1);
           global_indices.push_back(p_wt.token_index(token));
@@ -100,8 +115,8 @@ std::shared_ptr<BatchTransactionInfo> ProcessorTransactionHelpers::PrepareBatchI
 
         auto ptr = std::make_shared<TransactionInfo>(token_ids_to_info.size(), local_indices, global_indices);
 
-        token_ids_to_info.insert(std::make_pair(vec, ptr));
-        transaction_id_to_info.insert(std::make_pair(transaction_id_to_info.size(), ptr));
+        token_ids_to_info.emplace(vec, ptr);
+        transaction_id_to_info.emplace(transaction_id_to_info.size(), ptr);
 
         n_dw_col_ind.push_back(token_ids_to_info.size() - 1);
       }

@@ -117,6 +117,11 @@ void Processor::ThreadFunction() {
       const ModelName& model_name = part->model_name();
       const ProcessBatchesArgs& args = part->args();
       {
+        if (args.class_id_size() != args.class_weight_size()) {
+          BOOST_THROW_EXCEPTION(InternalError(
+              "model.class_id_size() != model.class_weight_size()"));
+        }
+
         if (args.transaction_typename_size() != args.transaction_weight_size()) {
           std::stringstream ss;
           ss << "model.transaction_type_size() [ " << args.transaction_typename_size()
@@ -151,12 +156,6 @@ void Processor::ThreadFunction() {
           model_description << &p_wt;
         }
         VLOG(0) << "Processor: start processing batch " << batch.id() << " into model " << model_description.str();
-
-        std::shared_ptr<CsrMatrix<float>> sparse_ndw;
-        {
-          CuckooWatch cuckoo2("InitializeSparseNdw", &cuckoo, kTimeLoggingThreshold);
-          sparse_ndw = ProcessorHelpers::InitializeSparseNdw(batch, args);
-        }
 
         std::shared_ptr<ThetaMatrix> cache;
         if (part->has_reuse_theta_cache_manager()) {
@@ -234,6 +233,12 @@ void Processor::ThreadFunction() {
                 << " ptdw matrix operations with with complex transactions";
             }
           } else {
+            std::shared_ptr<CsrMatrix<float>> sparse_ndw;
+            {
+              CuckooWatch cuckoo2("InitializeSparseNdw", &cuckoo, kTimeLoggingThreshold);
+              sparse_ndw = ProcessorHelpers::InitializeSparseNdw(batch, args);
+            }
+
             if (ptdw_agents.empty() && !part->has_ptdw_cache_manager()) {
               CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
               ProcessorHelpers::InferThetaAndUpdateNwtSparse(args, batch, part->batch_weight(), *sparse_ndw, p_wt,
