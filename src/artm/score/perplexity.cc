@@ -89,7 +89,7 @@ void Perplexity::AppendScore(
       }
     }
     if (transaction_weight_map.empty()) {
-      LOG_FIRST_N(ERROR, 100) << "None of requested transaction types were presented in model."
+      LOG_FIRST_N(ERROR, 100) << "None of requested transaction typenames are presented in model."
                               << " Score calculation will be skipped";
       return;
     }
@@ -97,14 +97,28 @@ void Perplexity::AppendScore(
 
   const bool use_tt = !transaction_weight_map.empty();
 
-  bool use_class_weight = false;
   std::unordered_map<artm::core::ClassId, float> class_id_to_weight;
-  if (args.class_id_size() > 0) {
-    use_class_weight = true;
-    for (int i = 0; i < args.class_id_size(); ++i) {
+  if (config_.class_id_size() == 0) {
+    for (int i = 0; (i < args.class_id_size()) && (i < args.class_weight_size()); ++i) {
       class_id_to_weight.emplace(args.class_id(i), args.class_weight(i));
     }
+  } else {
+    for (const auto& class_id : config_.class_id()) {
+      for (int i = 0; (i < args.class_id_size()) && (i < args.class_weight_size()); ++i) {
+        if (class_id == args.class_id(i)) {
+          class_id_to_weight.emplace(args.class_id(i), args.class_weight(i));
+          break;
+        }
+      }
+    }
+    if (class_id_to_weight.empty()) {
+      LOG_FIRST_N(ERROR, 100) << "None of requested class ids are presented in model."
+        << " Score calculation will be skipped";
+      return;
+    }
   }
+
+  bool use_class_weight = !class_id_to_weight.empty();
 
   auto t_func = [&](const artm::core::TransactionTypeName& name, int s_idx, int e_idx) -> float {
     float transaction_weight = 0.0f;

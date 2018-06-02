@@ -15,7 +15,8 @@ namespace test {
 
 namespace fs = boost::filesystem;
 
-artm::Batch Helpers::GenerateBatch(int nTokens, int nDocs, std::string class1, std::string class2) {
+artm::Batch Helpers::GenerateBatch(int nTokens, int nDocs,
+                                   const std::string& class1, const std::string& class2) {
   artm::Batch batch;
   batch.set_id("11972762-6a23-4524-b089-7122816aff72");
   for (int i = 0; i < nTokens; i++) {
@@ -41,7 +42,7 @@ artm::Batch Helpers::GenerateBatch(int nTokens, int nDocs, std::string class1, s
   return batch;
 }
 
-artm::DictionaryData Helpers::GenerateDictionary(int nTokens, std::string class1, std::string class2) {
+artm::DictionaryData Helpers::GenerateDictionary(int nTokens, const std::string& class1, const std::string& class2) {
   ::artm::DictionaryData dictionary_data;
   for (int i = 0; i < nTokens; i++) {
     std::stringstream str;
@@ -56,11 +57,16 @@ artm::DictionaryData Helpers::GenerateDictionary(int nTokens, std::string class1
   return dictionary_data;
 }
 
-void Helpers::ConfigurePerplexityScore(std::string score_name,
+void Helpers::ConfigurePerplexityScore(const std::string& score_name,
                                        artm::MasterModelConfig* master_config,
-                                       std::vector<std::string> tt_names) {
+                                       const std::vector<std::string>& class_ids,
+                                       const std::vector<std::string>& tt_names) {
   ::artm::ScoreConfig score_config;
   ::artm::PerplexityScoreConfig perplexity_config;
+  for (const auto& c : class_ids) {
+    perplexity_config.add_class_id(c);
+  }
+
   for (const auto& s : tt_names) {
     perplexity_config.add_transaction_typename(s);
   }

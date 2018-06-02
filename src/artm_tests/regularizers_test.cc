@@ -369,8 +369,6 @@ TEST(Regularizers, RelativeRegularization) {
     args.set_score_name("SparsityPhi");
 
     auto sparsity_scores = master.GetScoreArrayAs< ::artm::SparsityPhiScore>(args);
-
-    std::cout << i << " - " << sparsity_scores.back().value() << "\n";
     ASSERT_EQ(sparsity_scores.size(), (i + 1));
     ASSERT_NEAR(sparsity_scores.back().value(), true_score[i], 1e-3);
   }
