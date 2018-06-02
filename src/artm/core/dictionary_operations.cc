@@ -346,14 +346,16 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
     }
 
     for (int i = 0; i < batch.transaction_type_size(); ++i) {
-      TransactionTypeName t_name = batch.transaction_typename(i);
-      auto t_set = TransactionType(batch.transaction_type(i)).AsSet();
+      TransactionTypeName tt_name = batch.transaction_typename(i);
+      auto tt_set = TransactionType(batch.transaction_type(i)).AsSet();
       
-      auto iter = transaction_types.find(t_name);
-      if (iter != transaction_types.end()) {
-        t_set.insert(iter->second.begin(), iter->second.end());
+      auto iter = transaction_types.find(tt_name);
+      if (iter == transaction_types.end()) {
+        transaction_types.emplace(tt_name, tt_set);
+      } else {
+        tt_set.insert(iter->second.begin(), iter->second.end());
+        iter->second = tt_set;
       }
-      transaction_types.emplace(t_name, t_set);
     }
   }
 

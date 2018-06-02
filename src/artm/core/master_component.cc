@@ -403,11 +403,21 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
 
   const char version = 0;
   fout << version;
+
+  std::unordered_map<TransactionTypeName, int> tt_name_to_index;
   for (int token_id = 0; token_id < token_size; ++token_id) {
     Token token = n_wt.token(token_id);
     get_topic_model_args.add_token(token.keyword);
     get_topic_model_args.add_class_id(token.class_id);
-    get_topic_model_args.add_transaction_typename(token.transaction_typename);
+
+    auto it = tt_name_to_index.find(token.transaction_typename);
+    if (it != tt_name_to_index.end()) {
+      get_topic_model_args.add_transaction_typename_id(it->second);
+    } else {
+      tt_name_to_index.emplace(token.transaction_typename, tt_name_to_index.size());
+      get_topic_model_args.add_transaction_typename_id(tt_name_to_index.size() - 1);
+      get_topic_model_args.add_transaction_typename(token.transaction_typename);
+    }
 
     if (((token_id + 1) == token_size) || (get_topic_model_args.token_size() >= tokens_per_chunk)) {
       ::artm::TopicModel external_topic_model;

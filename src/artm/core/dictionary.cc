@@ -200,7 +200,6 @@ void Dictionary::AddTransactionTypeNameForClassId(const ClassId& class_id, const
     ttn.insert(iter->second.begin(), iter->second.end());
     iter->second = ttn;
   }
-  
 }
 
 std::unordered_set<TransactionTypeName> Dictionary::GetTransactionTypeNamesForClassId(

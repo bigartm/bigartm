@@ -3,6 +3,6 @@ doc2 |class_1 token_2:2 ^trans1 |class_1 token_2:3 |class_2 token_3:3 ^
 doc3 ^@default_transaction |class_1 token_3:3 ^trans1 |class_1 token_3:4 |class_2 token_4:4 ^
 doc4 |class_1 token_1:4 ^trans1 |class_1 token_1:5 |class_2 token_2:5 ^
 doc5 ^@default_transaction |class_1 token_2:5 ^trans1 |class_1 token_2:6 |class_2 token_3:6  ^
-doc6 |class_1 token_3:6 ^trans1 |class_1 token_3:7 |class_2 token_4:7  ^ 
+doc6 |class_1 token_3:6 ^trans1 |class_1 token_3:7 |class_2 token_4:7  ^
 doc7 |class_3 token_5:7 ^trans2 |class_4 token_5:8 |class_1 token_2:8 |class_2 token_2:8 ^
 doc8 ^trans1 |class_1 token_1 |class_2 token_2:1 ^ |class_1 token_2:2 |class_2 token_3:2 ^ ^@default_transaction |class_1 token_1:3
