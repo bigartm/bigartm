@@ -72,7 +72,6 @@ TEST(Transactions, BasicTest) {
 
   ::artm::FitOfflineMasterModelArgs offline_args = api.Initialize(batches);
 
-
   /*
   // should be consistent with "../../../test_data/vw_transaction_data_extended.txt"
   std::unordered_map<int, std::vector<std::vector<artm::core::Token>>> doc_to_transactions;

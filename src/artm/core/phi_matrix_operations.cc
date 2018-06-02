@@ -254,6 +254,22 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
       }
     }
   }
+
+  // merge transaction types
+  if (add_missing_tokens) {
+    for (int i = 0; i < topic_model.transaction_typename_size(); ++i) {
+      const TransactionTypeName& tt_name = topic_model.transaction_typename(i);
+      TransactionType tt = TransactionType(topic_model.transaction_type(i));
+
+      auto iter = phi_matrix->GetTransactionTypes().find(tt_name);
+      if (iter != phi_matrix->GetTransactionTypes().end()) {
+        auto temp = tt.AsSet(); 
+        temp.insert(iter->second.AsSet().begin(), iter->second.AsSet().end());
+        tt = TransactionType(temp);
+      }
+      phi_matrix->AddTransactionType(tt_name, tt);
+    }
+  }
 }
 
 void PhiMatrixOperations::InvokePhiRegularizers(

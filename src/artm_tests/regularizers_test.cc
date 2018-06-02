@@ -305,8 +305,8 @@ TEST(Regularizers, NetPlsa) {
 
 // artm_tests.exe --gtest_filter=Regularizers.RelativeRegularization
 TEST(Regularizers, RelativeRegularization) {
-  int nTopics = 500;
-  int nTokens = 500;
+  int nTopics = 50;
+  int nTokens = 50;
   int nDocs = 100;
 
   // generate batch

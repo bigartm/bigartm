@@ -359,6 +359,9 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 
   for (const auto& tt : transaction_types) {
     dictionary->AddTransactionType(tt.first, TransactionType(tt.second));
+    for (const auto& class_id : tt.second) {
+      dictionary->AddTransactionTypeNameForClassId(class_id, tt.first);
+    }
   }
 
   for (auto& token_freq : token_freq_map) {
@@ -524,6 +527,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
   for (const auto& tt : dict.GetTransactionTypes()) {
     dictionary->AddTransactionType(tt.first, tt.second);
   }
+  dictionary->SetClassIdToTransactionTypeNames(dict.GetClassIdToTransactionTypeNames());
 
   auto& src_entries = dict.entries();
   auto& dictionary_token_index = dict.token_index();

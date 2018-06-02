@@ -74,6 +74,11 @@ class Dictionary {
 
   void AddTransactionTypeNameForClassId(const ClassId& class_id, const TransactionTypeName& name);
 
+  void SetClassIdToTransactionTypeNames(
+      const std::unordered_map<ClassId, std::unordered_set<TransactionTypeName>>& mapping) {
+    class_id_to_type_name_ = mapping;
+  }
+
   // SECTION OF GETTERS
   bool HasToken(const Token& token) const { return token_index_.find(token) != token_index_.end(); }
 
@@ -102,7 +107,12 @@ class Dictionary {
     return transaction_name_to_type_;
   }
 
-  const std::unordered_set<TransactionTypeName>& GetTransactionTypeNamesForClassId(const ClassId& class_id) const;
+  std::unordered_set<TransactionTypeName> GetTransactionTypeNamesForClassId(const ClassId& class_id) const;
+
+  const std::unordered_map<ClassId, std::unordered_set<TransactionTypeName>>&
+  GetClassIdToTransactionTypeNames() const {
+    return class_id_to_type_name_;
+  }
 
   // SECTION OF OPERATIONS
   float CountTopicCoherence(const std::vector<core::Token>& tokens_to_score);

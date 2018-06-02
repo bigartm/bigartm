@@ -194,13 +194,16 @@ float Dictionary::CountTopicCoherence(const std::vector<core::Token>& tokens_to_
 void Dictionary::AddTransactionTypeNameForClassId(const ClassId& class_id, const TransactionTypeName& name) {
   auto iter = class_id_to_type_name_.find(class_id);
   std::unordered_set<TransactionTypeName> ttn = { name };
-  if (iter != class_id_to_type_name_.end()) {
+  if (iter == class_id_to_type_name_.end()) {
+    class_id_to_type_name_.emplace(class_id, ttn);
+  } else {
     ttn.insert(iter->second.begin(), iter->second.end());
+    iter->second = ttn;
   }
-  class_id_to_type_name_.emplace(class_id, ttn);
+  
 }
 
-const std::unordered_set<TransactionTypeName>& Dictionary::GetTransactionTypeNamesForClassId(
+std::unordered_set<TransactionTypeName> Dictionary::GetTransactionTypeNamesForClassId(
     const ClassId& class_id) const {
   auto iter = class_id_to_type_name_.find(class_id);
   return iter == class_id_to_type_name_.end() ? std::unordered_set<TransactionTypeName>() : iter->second;
@@ -214,6 +217,8 @@ void Dictionary::clear() {
   name_.clear();
   entries_.clear();
   token_index_.clear();
+  transaction_name_to_type_.clear();
+  class_id_to_type_name_.clear();
   clear_cooc();
 }
 

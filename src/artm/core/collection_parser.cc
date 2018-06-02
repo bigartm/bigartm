@@ -386,8 +386,8 @@ class CollectionParser::BatchCollector {
     batch_.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
   }
 
-  void RecordTransaction(std::vector<ClassId> class_ids, std::vector<std::string> tokens,
-      std::vector<float> token_weights, TransactionTypeName transaction_typename) {
+  void RecordTransaction(const std::vector<ClassId>& class_ids, const std::vector<std::string>& tokens,
+      const std::vector<float>& token_weights, const TransactionTypeName& transaction_typename) {
     // prepare item for transaction insetion
     if (item_ == nullptr) {
       StartNewItem();
@@ -598,7 +598,11 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
             }
 
             // reset class_id in context to default when change tt_name of finish transaction
+            tokens.clear();
+            weights.clear();
+            class_ids.clear();
             current_class_id = DefaultClass;
+
             continue;
           }
 

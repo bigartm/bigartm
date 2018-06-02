@@ -620,6 +620,8 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
       allowed_typenames.emplace(name);
     }
 
+    new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), args.topic_name());
+
     // in each transaction type tokens should have the same order, as in dictionary
     std::unordered_map<TransactionTypeName, std::vector<Token>> tt_to_tokens;
     for (int index = 0; index < (int64_t) dict->size(); ++index) {
@@ -634,6 +636,10 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
           }
         }
         included_tokens += used_token ? 1.0 : 0.0;
+
+        for (const auto& tt_name_to_tt : dict->GetTransactionTypes()) {
+          new_ttm->AddTransactionType(tt_name_to_tt.first, tt_name_to_tt.second);
+        }
       } else {
         std::stringstream ss;
         ss << "Dictionary '" << args.dictionary_name()
@@ -642,7 +648,6 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
       }
     }
 
-    new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), args.topic_name());
     for (const auto& tt_tokens : tt_to_tokens) {
       for (const auto& token : tt_tokens.second) {
         new_ttm->AddToken(token);
@@ -666,6 +671,10 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
 
     new_ttm = ttm->Duplicate();
     PhiMatrixOperations::AssignValue(0.0f, new_ttm.get());
+
+    for (const auto& tt_name_to_tt : ttm->GetTransactionTypes()) {
+      new_ttm->AddTransactionType(tt_name_to_tt.first, tt_name_to_tt.second);
+    }
   }
 
   if (new_ttm->token_size() == 0) {
@@ -972,6 +981,11 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
            << "' is old-style one without transaction info. It should be re-gathered";
         BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
       }
+    }
+
+    // As we have dictionary, we need to get transaction info from it
+    for (const auto& tt_name_to_tt : dictionary->GetTransactionTypes()) {
+      nwt_target->AddTransactionType(tt_name_to_tt.first, tt_name_to_tt.second);
     }
   }
 

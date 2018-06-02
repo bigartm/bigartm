@@ -650,6 +650,21 @@ inline void FixMessage(::artm::TopicModel* message) {
     }
   }
 
+  // fix old-style models
+  if (message->transaction_typename_size() == 0
+    && message->transaction_typename_id_size() == 0 && token_size > 0) {
+    message->mutable_transaction_typename_id()->Reserve(token_size);
+    for (int i = 0; i < token_size; ++i) {
+      message->add_transaction_typename_id(0);
+    }
+    message->add_transaction_typename(DefaultTransactionTypeName);
+    std::unordered_set<ClassId> class_ids;
+    for (const auto& class_id : message->class_id()) {
+      class_ids.emplace(class_id);
+    }
+    message->add_transaction_type(TransactionType(class_ids).AsString());
+  }
+
   if (message->topic_name_size() > 0) {
     message->set_num_topics(message->topic_name_size());
   }
@@ -736,6 +751,7 @@ inline void FixMessage(::artm::DictionaryData* message) {
     }
   }
 
+  // fix old-style dictionary
   if (message->transaction_type_size() == 0 && message->transaction_typename_size() == 0) {
     std::unordered_set<ClassId> class_ids;
     for (const auto& c : message->class_id()) {

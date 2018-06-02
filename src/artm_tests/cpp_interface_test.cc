@@ -134,14 +134,6 @@ void RunBasicTest(bool serialize_as_json) {
   for (int iter = 0; iter < 5; ++iter) {
     master_component.FitOfflineModel(offline_args);
     {
-      artm::GetTopicModelArgs args;
-      args.set_model_name(master_component.config().pwt_name());
-      args.mutable_topic_name()->CopyFrom(master_component.config().topic_name());
-      for (int i = 0; i < nTokens; i++) {
-        args.add_token("token" + std::to_string(i));
-        args.add_class_id("@default_class");
-      }
-
       topic_model = master_component.GetTopicModel();
     }
 
@@ -848,8 +840,8 @@ TEST(CppInterface, TransactionDictionaries) {
 
   auto checker = [](const artm::DictionaryData& dict) {
     ASSERT_EQ(dict.token_size(), 8);
-
-    ASSERT_EQ(dict.transaction_type_size(), 4);
+    ASSERT_EQ(dict.transaction_type_size(), 3);
+    ASSERT_EQ(dict.transaction_typename_size(), 3);
 
     for (int i = 0; i < dict.transaction_type_size(); ++i) {
       auto s = artm::core::TransactionType(dict.transaction_type(i)).AsSet();

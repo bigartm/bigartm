@@ -282,6 +282,7 @@ void CacheManager::UpdateCacheEntry(const std::string& batch_id, const ThetaMatr
         mutable_phi_matrix->set(token_id, topic_index, theta_matrix.item_weights(i).value(topic_index));
       }
     }
+    mutable_phi_matrix->AddTransactionType(DefaultTransactionTypeName, TransactionType(DocumentsClass));
     return;
   }
 
