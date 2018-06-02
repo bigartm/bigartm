@@ -637,6 +637,10 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
     for (int index = 0; index < (int64_t) dict->size(); ++index) {
       ::artm::core::Token token = dict->entry(index)->token();
 
+      if (config->class_id_size() > 0 && !is_member(token.class_id, config->class_id())) {
+        continue;
+      }
+
       if (dict->GetTransactionTypes().size() > 0) {
         bool used_token = false;
         for (const auto& name : dict->GetTransactionTypeNamesForClassId(token.class_id)) {

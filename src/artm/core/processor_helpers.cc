@@ -332,7 +332,7 @@ void ProcessorHelpers::InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& arg
           p_dw_val += p_tdw_val;
         }
 
-        if (p_dw_val == 0) {
+        if (isZero(p_dw_val)) {
           continue;
         }
         const float Z = 1.0f / p_dw_val;
@@ -463,11 +463,11 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
         for (int i = begin_index; i < end_index; ++i) {
           const float* phi_ptr = &local_phi(i - begin_index, 0);
 
-          float p_dw_val = 0;
+          float p_dw_val = 0.0f;
           for (int k = 0; k < num_topics; ++k) {
             p_dw_val += phi_ptr[k] * theta_ptr[k];
           }
-          if (p_dw_val == 0) {
+          if (isZero(p_dw_val)) {
             continue;
           }
 
@@ -500,7 +500,7 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
         for (int i = sparse_ndw.row_ptr()[d]; i < sparse_ndw.row_ptr()[d + 1]; ++i) {
           int w = sparse_ndw.col_ind()[i];
           float p_dw_val = blas->sdot(num_topics, &phi_matrix(w, 0), 1, &(*theta_matrix)(0, d), 1);  // NOLINT
-          if (p_dw_val == 0) {
+          if (isZero(p_dw_val)) {
             continue;
           }
           blas->saxpy(num_topics, sparse_ndw.val()[i] / p_dw_val, &phi_matrix(w, 0), 1, &helper_td(0, d), 1);
@@ -542,7 +542,7 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
     for (int i = sparse_nwd.row_ptr()[w]; i < sparse_nwd.row_ptr()[w + 1]; ++i) {
       int d = sparse_nwd.col_ind()[i];
       float p_wd_val = blas->sdot(num_topics, &p_wt_local[0], 1, &(*theta_matrix)(0, d), 1);  // NOLINT
-      if (p_wd_val == 0) {
+      if (isZero(p_wd_val)) {
         continue;
       }
       blas->saxpy(num_topics, sparse_nwd.val()[i] / p_wd_val,

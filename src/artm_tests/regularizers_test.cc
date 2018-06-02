@@ -356,10 +356,10 @@ TEST(Regularizers, RelativeRegularization) {
   artm::MasterModel master(master_config);
   ::artm::test::Api api(master);
 
-  std::vector<double> true_score = { 0.249724, 0.390548, 0.48292, 0.549428, 0.60086,
-                                     0.641332, 0.673568, 0.70006, 0.722924, 0.741688,
-                                     0.758396, 0.773184, 0.78594, 0.797584, 0.808048,
-                                     0.816872, 0.82518, 0.832504, 0.839472, 0.845976 };
+  std::vector<double> true_score = { 0.244, 0.380, 0.478, 0.544, 0.588,
+                                     0.627, 0.665, 0.694, 0.716, 0.734,
+                                     0.750, 0.768, 0.781, 0.790, 0.804,
+                                     0.814, 0.824, 0.830, 0.836, 0.839 };
 
   auto offline_args = api.Initialize({ batch });
   for (int i = 0; i < 20; ++i) {
@@ -369,7 +369,9 @@ TEST(Regularizers, RelativeRegularization) {
     args.set_score_name("SparsityPhi");
 
     auto sparsity_scores = master.GetScoreArrayAs< ::artm::SparsityPhiScore>(args);
+
+    std::cout << i << " - " << sparsity_scores.back().value() << "\n";
     ASSERT_EQ(sparsity_scores.size(), (i + 1));
-    ASSERT_APPROX_EQ(sparsity_scores.back().value(), true_score[i]);
+    ASSERT_NEAR(sparsity_scores.back().value(), true_score[i], 1e-3);
   }
 }

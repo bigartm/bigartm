@@ -32,6 +32,10 @@ void ItemsProcessed::AppendScore(const Batch& batch,
       for (int idx = start_index; idx < end_index; ++idx) {
         const int token_id = item.token_id(idx);
 
+        if (args.class_id_size() > 0 && !::artm::core::is_member(batch.class_id(token_id), args.class_id())) {
+          continue;
+        }
+
         // Check whether token is in effect,
         // e.g. present in the model, and belongs to relevant modality and tt)
         if (p_wt.has_token(::artm::core::Token(batch.class_id(token_id), batch.token(token_id), tt_name))) {

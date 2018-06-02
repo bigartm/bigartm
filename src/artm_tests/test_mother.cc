@@ -58,10 +58,10 @@ artm::DictionaryData Helpers::GenerateDictionary(int nTokens, std::string class1
 
 void Helpers::ConfigurePerplexityScore(std::string score_name,
                                        artm::MasterModelConfig* master_config,
-                                       std::vector<std::string> class_ids) {
+                                       std::vector<std::string> tt_names) {
   ::artm::ScoreConfig score_config;
   ::artm::PerplexityScoreConfig perplexity_config;
-  for (const auto& s : class_ids) {
+  for (const auto& s : tt_names) {
     perplexity_config.add_transaction_typename(s);
   }
   score_config.set_config(perplexity_config.SerializeAsString());

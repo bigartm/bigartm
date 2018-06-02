@@ -9,6 +9,7 @@
    - dictionary_name
    - theta_sparsity_topic_name (topic names to count Theta sparsity)
    - theta_sparsity_eps
+   - class_ids (class_ids to score within each transaction type, empty == all)
    - transaction_typenames (transaction typenames to regularize, empty == all)
 
 */

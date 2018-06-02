@@ -285,9 +285,10 @@ message PerplexityScoreConfig {
     UnigramDocumentModel = 0;
     UnigramCollectionModel = 1;
   }
-  optional Type model_type = 3 [default = UnigramDocumentModel];
-  optional string dictionary_name = 4;
-  repeated string transaction_typename = 8;
+  optional Type model_type = 1 [default = UnigramDocumentModel];
+  optional string dictionary_name = 2;
+  repeated string class_id = 3;
+  repeated string transaction_typename = 4;
 }
 
 // Represents a result of calculation of a perplexity score
