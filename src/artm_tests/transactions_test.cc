@@ -72,46 +72,45 @@ TEST(Transactions, BasicTest) {
 
   ::artm::FitOfflineMasterModelArgs offline_args = api.Initialize(batches);
 
-  /*
   // should be consistent with "../../../test_data/vw_transaction_data_extended.txt"
   std::unordered_map<int, std::vector<std::vector<artm::core::Token>>> doc_to_transactions;
   for (int d = 0; d < nDocs; ++d) {
     doc_to_transactions.emplace(std::make_pair(d, std::vector<std::vector<artm::core::Token>>()));
   }
   doc_to_transactions[0].push_back({ { "class_1", "token_1" } });
-  doc_to_transactions[0].push_back({ { "class_1", "token_1", artm::core::TransactionType("class_1^class_2") },
-                                     { "class_2", "token_2", artm::core::TransactionType("class_1^class_2") }
+  doc_to_transactions[0].push_back({ { "class_1", "token_1", "trans1" },
+                                     { "class_2", "token_2", "trans1" }
   });
   doc_to_transactions[1].push_back({ { "class_1", "token_2" } });
-  doc_to_transactions[1].push_back({ { "class_1", "token_2", artm::core::TransactionType("class_1^class_2") },
-                                     { "class_2", "token_3", artm::core::TransactionType("class_1^class_2") }
+  doc_to_transactions[1].push_back({ { "class_1", "token_2", "trans1" },
+                                     { "class_2", "token_3", "trans1" }
   });
   doc_to_transactions[2].push_back({ { "class_1", "token_3" } });
-  doc_to_transactions[2].push_back({ { "class_1", "token_3", artm::core::TransactionType("class_1^class_2") },
-                                     { "class_2", "token_4", artm::core::TransactionType("class_1^class_2") }
+  doc_to_transactions[2].push_back({ { "class_1", "token_3", "trans1" },
+                                     { "class_2", "token_4", "trans1" }
   });
   doc_to_transactions[3].push_back({ { "class_1", "token_1" } });
-  doc_to_transactions[3].push_back({ { "class_1", "token_1", artm::core::TransactionType("class_1^class_2") },
-                                     { "class_2", "token_2", artm::core::TransactionType("class_1^class_2") }
+  doc_to_transactions[3].push_back({ { "class_1", "token_1", "trans1" },
+                                     { "class_2", "token_2", "trans1" }
   });
   doc_to_transactions[4].push_back({ { "class_1", "token_2" } });
-  doc_to_transactions[4].push_back({ { "class_1", "token_2", artm::core::TransactionType("class_1^class_2") },
-                                     { "class_2", "token_3", artm::core::TransactionType("class_1^class_2") }
+  doc_to_transactions[4].push_back({ { "class_1", "token_2", "trans1" },
+                                     { "class_2", "token_3", "trans1" }
   });
   doc_to_transactions[5].push_back({ { "class_1", "token_3" } });
-  doc_to_transactions[5].push_back({ { "class_1", "token_3", artm::core::TransactionType("class_1^class_2") },
-                                     { "class_2", "token_4", artm::core::TransactionType("class_1^class_2") }
+  doc_to_transactions[5].push_back({ { "class_1", "token_3", "trans1" },
+                                     { "class_2", "token_4", "trans1" }
   });
   doc_to_transactions[6].push_back({ { "class_3", "token_5" } });
-  doc_to_transactions[6].push_back({ { "class_4", "token_5", artm::core::TransactionType("class_4^class_2^class_1") },
-                                     { "class_2", "token_2", artm::core::TransactionType("class_4^class_2^class_1") },
-                                     { "class_1", "token_2", artm::core::TransactionType("class_4^class_2^class_1") },
+  doc_to_transactions[6].push_back({ { "class_4", "token_5", "trans2" },
+                                     { "class_2", "token_2", "trans2" },
+                                     { "class_1", "token_2", "trans2" },
   });
-  doc_to_transactions[7].push_back({ { "class_1", "token_1", artm::core::TransactionType("class_1^class_2") },
-                                     { "class_2", "token_2", artm::core::TransactionType("class_1^class_2") }
+  doc_to_transactions[7].push_back({ { "class_1", "token_1", "trans1" },
+                                     { "class_2", "token_2", "trans1" }
   });
-  doc_to_transactions[7].push_back({ { "class_1", "token_2", artm::core::TransactionType("class_1^class_2") },
-                                     { "class_2", "token_3", artm::core::TransactionType("class_1^class_2") }
+  doc_to_transactions[7].push_back({ { "class_1", "token_2", "trans1" },
+                                     { "class_2", "token_3", "trans1" }
   });
   doc_to_transactions[7].push_back({ { "class_1", "token_1" } });
 
@@ -142,10 +141,12 @@ TEST(Transactions, BasicTest) {
 
       token_to_index.clear();
       for (int i = 0; i < phi.token_size(); ++i) {
-        token_to_index.emplace(std::make_pair(
-          artm::core::Token(phi.class_id(i), phi.token(i),
-            artm::core::TransactionType(phi.transaction_type(i))), i));
+        token_to_index.emplace(
+            artm::core::Token(phi.class_id(i), phi.token(i),
+            phi.transaction_typename(phi.transaction_typename_id(i))), i);
       }
+
+      std::cout << phi.DebugString() << "\n";
 
       for (int d = 0; d < nDocs; ++d) {
         const auto& transactions = doc_to_transactions[d];
@@ -179,5 +180,4 @@ TEST(Transactions, BasicTest) {
       }
     }
   }
-  */
 }
