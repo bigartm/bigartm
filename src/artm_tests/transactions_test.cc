@@ -146,8 +146,6 @@ TEST(Transactions, BasicTest) {
             phi.transaction_typename(phi.transaction_typename_id(i))), i);
       }
 
-      std::cout << phi.DebugString() << "\n";
-
       for (int d = 0; d < nDocs; ++d) {
         const auto& transactions = doc_to_transactions[d];
         for (int x = 0; x < transactions.size(); ++x) {

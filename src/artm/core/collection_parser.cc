@@ -582,36 +582,36 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
             continue;
           }
 
-          if (elem[0] == '^') {
-            if (elem.size() == 1) {
-              // end of previous transaction
-              if (tokens.size() > 0) {
-                batch_collector.RecordTransaction(class_ids, tokens, weights, current_tt_name);
-              }
-            } else {
-              // change of transaction typename
-              // dump all previous tokens, each as one transaction
-              for (int i = 0; i < tokens.size(); ++i) {
-                batch_collector.RecordTransaction({ class_ids[i] }, { tokens[i] }, { weights[i] }, current_tt_name);
-              }
-              current_tt_name = elem.substr(1);
-            }
-
-            // reset class_id in context to default when change tt_name of finish transaction
-            tokens.clear();
-            weights.clear();
-            class_ids.clear();
-            current_class_id = DefaultClass;
-
-            continue;
-          }
-
           if (elem[0] == '|') {
-            current_class_id = elem.substr(1);
-            if (current_class_id.empty()) {
+            if (elem.size() > 1 && elem[1] == '|') {
+              if (elem.size() == 2) {
+                // end of previous transaction
+                if (tokens.size() > 0) {
+                  batch_collector.RecordTransaction(class_ids, tokens, weights, current_tt_name);
+                }
+              } else {
+                // change of transaction typename
+                // dump all previous tokens, each as one transaction
+                for (int i = 0; i < tokens.size(); ++i) {
+                  batch_collector.RecordTransaction({ class_ids[i] }, { tokens[i] }, { weights[i] }, current_tt_name);
+                }
+                current_tt_name = elem.substr(2);
+              }
+
+              // reset class_id in context to default when change tt_name of finish transaction
+              tokens.clear();
+              weights.clear();
+              class_ids.clear();
               current_class_id = DefaultClass;
+
+              continue;
+            } else {
+              current_class_id = elem.substr(1);
+              if (current_class_id.empty()) {
+                current_class_id = DefaultClass;
+              }
+              continue;
             }
-            continue;
           }
 
           // Skip token when it is not among modalities that user has requested to parse
