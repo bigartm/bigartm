@@ -29,8 +29,8 @@ class DictionaryOperations {
   static void WriteDictionarySummaryToLog(const Dictionary& dict);
 
  private:
-   static void TransactionsFromDataToDict(const DictionaryData& data, std::shared_ptr<Dictionary> dict);
-   static void TransactionsFromDictToData(const Dictionary& dict, DictionaryData* data);
+  static void TransactionsFromDataToDict(const DictionaryData& data, std::shared_ptr<Dictionary> dict);
+  static void TransactionsFromDictToData(const Dictionary& dict, DictionaryData* data);
 };
 
 }  // namespace core

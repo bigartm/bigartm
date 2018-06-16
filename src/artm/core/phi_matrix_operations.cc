@@ -263,7 +263,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
 
       auto iter = phi_matrix->GetTransactionTypes().find(tt_name);
       if (iter != phi_matrix->GetTransactionTypes().end()) {
-        auto temp = tt.AsSet(); 
+        auto temp = tt.AsSet();
         temp.insert(iter->second.AsSet().begin(), iter->second.AsSet().end());
         tt = TransactionType(temp);
       }

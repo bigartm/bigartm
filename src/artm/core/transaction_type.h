@@ -31,8 +31,7 @@ class TransactionType {
   explicit TransactionType(const std::unordered_set<ClassId>& src)
     : str_data_(TransactionTypeAsStr(src))
     , set_data_(src)
-    , hash_(-1)
-  {
+    , hash_(-1) {
     hash_ = calcHash(str_data_);
   }
 

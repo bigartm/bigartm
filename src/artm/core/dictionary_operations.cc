@@ -4,6 +4,7 @@
 #include <climits>
 #include <fstream>
 #include <functional>
+#include <map>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -322,14 +323,14 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
       // (assume that token might have multiple occurence in each item)
       std::vector<bool> local_token_df(batch.token_size(), false);
       const Item& item = batch.item(item_id);
-      
+
       for (int token_index = 0; token_index < item.token_weight_size(); ++token_index) {
         const float token_weight = item.token_weight(token_index);
         const int token_id = item.token_id(token_index);
         token_n_w[token_id] += token_weight;
         local_token_df[token_id] = true;
       }
-      
+
       for (int i = 0; i < batch.token_size(); ++i) {
         token_df[i] += local_token_df[i] ? 1.0f : 0.0f;
       }
@@ -348,7 +349,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
     for (int i = 0; i < batch.transaction_type_size(); ++i) {
       TransactionTypeName tt_name = batch.transaction_typename(i);
       auto tt_set = TransactionType(batch.transaction_type(i)).AsSet();
-      
+
       auto iter = transaction_types.find(tt_name);
       if (iter == transaction_types.end()) {
         transaction_types.emplace(tt_name, tt_set);

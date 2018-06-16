@@ -276,7 +276,7 @@ TEST(MultipleClasses, InitializeSomeModalities) {
   mm.InitializeModel(ia);
 
   auto tm = mm.GetTopicModel();
-  
+
   ASSERT_EQ(tm.token_size(), 1);
   ASSERT_EQ(tm.token(0), "t1");
 

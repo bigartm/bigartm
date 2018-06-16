@@ -48,8 +48,7 @@ void Perplexity::AppendScore(
     if (config_.model_type() == PerplexityScoreConfig_Type_UnigramCollectionModel) {
       if (dictionary_ptr) {
         use_document_unigram_model = false;
-      }
-      else {
+      } else {
         LOG_FIRST_N(ERROR, 100) << "Perplexity was configured to use UnigramCollectionModel with dictionary "
           << config_.dictionary_name() << ". This dictionary can't be found.";
         return;
@@ -67,7 +66,7 @@ void Perplexity::AppendScore(
   double raw = 0.0;
   ::google::protobuf::int64 zero_words = 0;
 
-  auto func = [&](const artm::core::TransactionTypeName& name, float value) {
+  auto func = [&](const artm::core::TransactionTypeName& name, float value) {  // NOLINT
     transaction_weight_map.emplace(name, value);
     normalizer_map.emplace(name, 0.0);
     raw_map.emplace(name, 0.0);
@@ -120,7 +119,7 @@ void Perplexity::AppendScore(
 
   bool use_class_weight = !class_id_to_weight.empty();
 
-  auto t_func = [&](const artm::core::TransactionTypeName& name, int s_idx, int e_idx) -> float {
+  auto t_func = [&](const artm::core::TransactionTypeName& name, int s_idx, int e_idx) -> float {  // NOLINT
     float transaction_weight = 0.0f;
     auto it = p_wt.GetTransactionTypes().find(name);
     if (it != p_wt.GetTransactionTypes().end()) {
@@ -150,7 +149,7 @@ void Perplexity::AppendScore(
     const int start_index = item.transaction_start_index(t_index);
     const int end_index = (t_index + 1) < item.transaction_start_index_size() ?
                           item.transaction_start_index(t_index + 1) : item.token_id_size();
-      
+
     artm::core::TransactionTypeName tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
 
     float transaction_weight = t_func(tt_name, start_index, end_index);

@@ -67,7 +67,7 @@ std::shared_ptr<BatchTransactionInfo> ProcessorTransactionHelpers::PrepareBatchI
         auto iter = tt_name_to_weight.find(tt_name);
         tt_weight = (iter == tt_name_to_weight.end()) ? 0.0f : iter->second;
       }
-      
+
       float transaction_weight = 0.0f;
       auto it = p_wt.GetTransactionTypes().find(tt_name);
       if (it != p_wt.GetTransactionTypes().end()) {

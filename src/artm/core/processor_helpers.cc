@@ -211,7 +211,7 @@ std::shared_ptr<CsrMatrix<float>> ProcessorHelpers::InitializeSparseNdw(const Ba
 
     for (int token_index = 0; token_index < item.token_id_size(); ++token_index) {
       int token_id = item.token_id(token_index);
- 
+
       float class_weight = 1.0f;
       if (use_weights) {
         ClassId class_id = batch.class_id(token_id);

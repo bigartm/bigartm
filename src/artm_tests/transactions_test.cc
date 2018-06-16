@@ -159,18 +159,14 @@ TEST(Transactions, BasicTest) {
           }
           if (d != 7) {
             ASSERT_TRUE(std::abs(p_xd - 1.0f) < 0.01);
-          }
-          else {
+          } else {
             if (x == 0) {
               ASSERT_TRUE(std::abs(p_xd - 0.66f) < 0.01);
-            }
-            else if (x == 1) {
+            } else if (x == 1) {
               ASSERT_TRUE(std::abs(p_xd - 0.33f) < 0.01);
-            }
-            else if (x == 2) {
+            } else if (x == 2) {
               ASSERT_TRUE(std::abs(p_xd - 0.66f) < 0.01);
-            }
-            else {
+            } else {
               ASSERT_TRUE(false);
             }
           }
