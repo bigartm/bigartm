@@ -535,6 +535,8 @@ void PhiMatrixOperations::ConvertTopicModelToPseudoBatch(::artm::TopicModel* top
 
   batch->mutable_token()->Swap(topic_model->mutable_token());
   batch->mutable_class_id()->Swap(topic_model->mutable_class_id());
+  batch->mutable_transaction_type()->Swap(topic_model->mutable_transaction_type());
+  batch->mutable_transaction_typename()->Swap(topic_model->mutable_transaction_typename());
   for (int topic_index = 0; topic_index < topic_model->topic_name_size(); topic_index++) {
     batch->add_item()->set_title(topic_model->topic_name(topic_index));
   }
@@ -546,6 +548,7 @@ void PhiMatrixOperations::ConvertTopicModelToPseudoBatch(::artm::TopicModel* top
       continue;
     }
 
+    const int transaction_typename_id = topic_model->transaction_typename_id(token_index);
     for (int value_index = 0; value_index < topic_indices.value_size(); ++value_index) {
       const float token_weight = token_weights.value(value_index);
       const int topic_index = topic_indices.value(value_index);
@@ -553,6 +556,8 @@ void PhiMatrixOperations::ConvertTopicModelToPseudoBatch(::artm::TopicModel* top
       Item* item = batch->mutable_item(item_index);
       item->add_token_id(token_index);
       item->add_token_weight(token_weight);
+      item->add_transaction_start_index(value_index);
+      item->add_transaction_typename_id(transaction_typename_id);
     }
   }
 }

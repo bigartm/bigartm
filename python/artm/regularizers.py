@@ -187,7 +187,7 @@ class BaseRegularizer(object):
 
 
 class BaseRegularizerPhi(BaseRegularizer):
-    def __init__(self, name, tau, gamma, config, topic_names, class_ids, transaction_types, dictionary):
+    def __init__(self, name, tau, gamma, config, topic_names, class_ids, transaction_typenames, dictionary):
         BaseRegularizer.__init__(self,
                                  name=name,
                                  tau=tau,
@@ -209,18 +209,18 @@ class BaseRegularizerPhi(BaseRegularizer):
             except AttributeError:
                 pass
 
-        self._transaction_types = []
-        if transaction_types is not None:
-            self._config.ClearField('transaction_type')
-            if isinstance(transaction_types, string_types):
-                transaction_types = [transaction_types]
-            for transaction_type in transaction_types:
-                self._config.transaction_type.append(transaction_type)
-                self._transaction_types.append(transaction_type)
+        self._transaction_typenames = []
+        if transaction_typenames is not None:
+            self._config.ClearField('transaction_typename')
+            if isinstance(transaction_typenames, string_types):
+                transaction_typenames = [transaction_typenames]
+            for transaction_typename in transaction_typenames:
+                self._config.transaction_typename.append(transaction_typename)
+                self._transaction_typenames.append(transaction_typename)
         elif config is not None:
             try:
-                if len(config.transaction_type):
-                    self._transaction_types = [tt for tt in config.transaction_type]
+                if len(config.transaction_typename):
+                    self._transaction_typenames = [tt for tt in config.transaction_typename]
             except AttributeError:
                 pass
 
@@ -255,8 +255,8 @@ class BaseRegularizerPhi(BaseRegularizer):
         return self._class_ids
 
     @property
-    def transaction_types(self):
-        return self._transaction_types
+    def transaction_typenames(self):
+        return self._transaction_typenames
 
     @property
     def topic_names(self):
@@ -270,9 +270,9 @@ class BaseRegularizerPhi(BaseRegularizer):
     def class_ids(self, class_ids):
         _reconfigure_field(self, class_ids, 'class_id')
 
-    @transaction_types.setter
-    def transaction_types(self, transaction_types):
-        _reconfigure_field(self, transaction_types, 'transaction_type')
+    @transaction_typenames.setter
+    def transaction_typenames(self, transaction_typenames):
+        _reconfigure_field(self, transaction_typenames, 'transaction_typename')
 
     @dictionary.setter
     def dictionary(self, dictionary):
@@ -343,7 +343,7 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.SmoothSparsePhiConfig
     _type = const.RegularizerType_SmoothSparsePhi
 
-    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, transaction_types=None,
+    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, transaction_typenames=None,
                  topic_names=None, dictionary=None, kl_function_info=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
@@ -361,9 +361,9 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
         :param class_ids: list of class_ids or single class_id to regularize, will\
                           regularize all classes if empty or None
         :type class_ids: list of str or str or None
-        :param transaction_types: list of transaction types or single transaction type to regularize, will\
+        :param transaction_typenames: list of transaction types or single transaction type to regularize, will\
                           regularize all transaction types if empty or None
-        :type transaction_types: list of str or str or None
+        :type transaction_typenames: list of str or str or None
         :param topic_names: list of names or single name of topic to regularize,\
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
@@ -383,7 +383,7 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
-                                    transaction_types=transaction_types,
+                                    transaction_typenames=transaction_typenames,
                                     dictionary=dictionary)
 
         self._kl_function_info = KlFunctionInfo()
@@ -541,7 +541,7 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
         if self._topic_pairs == {}:
             self._topic_pairs = None
 
-    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, transaction_types=None,
+    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, transaction_typenames=None,
                  topic_names=None, topic_pairs=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
@@ -552,9 +552,9 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
         :param class_ids: list of class_ids or single class_id to regularize, will\
                           regularize all classes if empty or None
         :type class_ids: list of str or str or None
-        :param transaction_types: list of transaction types or single transaction type to regularize, will\
+        :param transaction_typenames: list of transaction types or single transaction type to regularize, will\
                           regularize all transaction types if empty or None
-        :type transaction_types: list of str or str or None
+        :type transaction_typenames: list of str or str or None
         :param topic_names: list of names or single name of topic to regularize,\
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
@@ -572,7 +572,7 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
-                                    transaction_types=transaction_types,
+                                    transaction_typenames=transaction_typenames,
                                     dictionary=None)
 
         self._topic_pairs = None
@@ -606,7 +606,7 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.LabelRegularizationPhiConfig
     _type = const.RegularizerType_LabelRegularizationPhi
 
-    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, transaction_types=None,
+    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, transaction_typenames=None,
                  topic_names=None, dictionary=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
@@ -617,9 +617,9 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
         :param class_ids: list of class_ids or single class_id to regularize, will\
                           regularize all classes if empty or None
         :type class_ids: list of str or str or None
-        :param transaction_types: list of transaction types or single transaction type to regularize, will\
+        :param transaction_typenames: list of transaction types or single transaction type to regularize, will\
                           regularize all transaction types if empty or None
-        :type transaction_types: list of str or str or None
+        :type transaction_typenames: list of str or str or None
         :param topic_names: list of names or single name of topic to regularize,\
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
@@ -636,7 +636,7 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
-                                    transaction_types=transaction_types,
+                                    transaction_typenames=transaction_typenames,
                                     dictionary=dictionary)
 
 
@@ -644,7 +644,7 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.SpecifiedSparsePhiConfig
     _type = const.RegularizerType_SpecifiedSparsePhi
 
-    def __init__(self, name=None, tau=1.0, gamma=None, topic_names=None, class_id=None, transaction_type=None,
+    def __init__(self, name=None, tau=1.0, gamma=None, topic_names=None, class_id=None, transaction_typename=None,
                  num_max_elements=None, probability_threshold=None, sparse_by_columns=True, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
@@ -653,7 +653,7 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         :param float gamma: coefficient of topics individualization.\
                             See SmoothSparsePhiRegularizer documentation for further details.
         :param str class_id: class_id to regularize
-        :param str transaction_type: transaction type to regularize
+        :param str transaction_typename: transaction type to regularize, None means @default_transaction type
         :param topic_names: list of names or single name of topic to regularize,\
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
@@ -673,7 +673,7 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
                                     topic_names=topic_names,
                                     dictionary=None,
                                     class_ids=None,
-                                    transaction_types=None)
+                                    transaction_typenames=None)
 
         self._class_id = '@default_class'
         if class_id is not None:
@@ -682,12 +682,12 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         elif config is not None and config.HasField('class_id'):
             self._class_id = config.class_id
 
-        self._transaction_type = self._class_id
-        if transaction_type is not None:
-            self._config.transaction_type = transaction_type
-            self._transaction_type = transaction_type
-        elif config is not None and config.HasField('transaction_type'):
-            self._transaction_type = config.transaction_type
+        self._transaction_type = '@default_transaction'
+        if transaction_typename is not None:
+            self._config.transaction_typename = transaction_typename
+            self._transaction_type = transaction_typename
+        elif config is not None and config.HasField('transaction_typename'):
+            self._transaction_type = config.transaction_typename
 
         self._num_max_elements = 20
         if num_max_elements is not None:
@@ -719,7 +719,7 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         return self._class_id
 
     @property
-    def transaction_type(self):
+    def transaction_typename(self):
         return self._transaction_type
 
     @property
@@ -739,8 +739,8 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         raise KeyError('No class_ids parameter')
 
     @property
-    def transaction_types(self):
-        raise KeyError('No transaction_types parameter')
+    def transaction_typenames(self):
+        raise KeyError('No transaction_typenames parameter')
 
     @property
     def dictionary(self):
@@ -750,9 +750,9 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
     def class_id(self, class_id):
         _reconfigure_field(self, class_id, 'class_id')
 
-    @transaction_type.setter
-    def transaction_type(self, transaction_type):
-        _reconfigure_field(self, transaction_type, 'transaction_type')
+    @transaction_typename.setter
+    def transaction_typename(self, transaction_typename):
+        _reconfigure_field(self, transaction_typename, 'transaction_typename')
 
     @num_max_elements.setter
     def num_max_elements(self, num_max_elements):
@@ -777,9 +777,9 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
     def class_ids(self, class_ids):
         raise KeyError('No class_ids parameter')
 
-    @transaction_types.setter
-    def transaction_types(self, transaction_types):
-        raise KeyError('No transaction_types parameter')
+    @transaction_typenames.setter
+    def transaction_typenames(self, transaction_typenames):
+        raise KeyError('No transaction_typenames parameter')
 
     @dictionary.setter
     def dictionary(self, dictionary):
@@ -790,7 +790,7 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.ImproveCoherencePhiConfig
     _type = const.RegularizerType_ImproveCoherencePhi
 
-    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, transaction_types=None,
+    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, transaction_typenames=None,
                  topic_names=None, dictionary=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
@@ -802,9 +802,9 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
                           regularize all classes if empty or None\
                           dictionary should contain pairwise tokens co-occurrence info
         :type class_ids: list of str or str or None
-        :param transaction_types: list of transaction types or single transaction type to regularize, will\
+        :param transaction_typenames: list of transaction types or single transaction type to regularize, will\
                           regularize all transaction types if empty or None
-        :type transaction_types: list of str or str or None
+        :type transaction_typenames: list of str or str or None
         :param topic_names: list of names or single name of topic to regularize,\
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
@@ -821,7 +821,7 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
-                                    transaction_types=transaction_types,
+                                    transaction_typenames=transaction_typenames,
                                     dictionary=dictionary)
 
 
@@ -873,7 +873,7 @@ class BitermsPhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.BitermsPhiConfig
     _type = const.RegularizerType_BitermsPhi
 
-    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, transaction_types=None,
+    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, transaction_typenames=None,
                  topic_names=None, dictionary=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
@@ -884,9 +884,9 @@ class BitermsPhiRegularizer(BaseRegularizerPhi):
         :param class_ids: list of class_ids or single class_id to regularize, will\
                           regularize all classes if empty or None
         :type class_ids: list of str or str or None
-        :param transaction_types: list of transaction types or single transaction type to regularize, will\
+        :param transaction_typenames: list of transaction types or single transaction type to regularize, will\
                           regularize all transaction types if empty or None
-        :type transaction_types: list of str or str or None
+        :type transaction_typenames: list of str or str or None
         :param topic_names: list of names or single name of topic to regularize,\
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
@@ -904,7 +904,7 @@ class BitermsPhiRegularizer(BaseRegularizerPhi):
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
-                                    transaction_types=transaction_types,
+                                    transaction_typenames=transaction_typenames,
                                     dictionary=dictionary)
 
 
@@ -1001,7 +1001,7 @@ class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.SmoothTimeInTopicsPhiConfig
     _type = const.RegularizerType_SmoothTimeInTopicsPhi
 
-    def __init__(self, name=None, tau=1.0, gamma=None, class_id=None, transaction_type=None,
+    def __init__(self, name=None, tau=1.0, gamma=None, class_id=None, transaction_typename=None,
                  topic_names=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
@@ -1010,7 +1010,7 @@ class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
         :param float gamma: coefficient of topics individualization.\
                             See SmoothSparsePhiRegularizer documentation for further details.
         :param str class_id: class_id to regularize
-        :param str transaction_type: class_id to transaction_type
+        :param str transaction_typename: class_id to transaction_typename, None means @default_transaction type
         :param topic_names: list of names or single name of topic to regularize,\
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
@@ -1024,7 +1024,7 @@ class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=None,
-                                    transaction_types=None,
+                                    transaction_typenames=None,
                                     dictionary=None)
 
         self._class_id = '@default_class'
@@ -1034,12 +1034,12 @@ class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
         elif config is not None and config.HasField('class_id'):
             self._class_id = config.class_id
 
-        self._transaction_type = self._class_id
-        if transaction_type is not None:
-            self._config.transaction_type = transaction_type
-            self._transaction_type = transaction_type
-        elif config is not None and config.HasField('transaction_type'):
-            self._transaction_type = config.transaction_type
+        self._transaction_type = '@default_transaction'
+        if transaction_typename is not None:
+            self._config.transaction_typename = transaction_typename
+            self._transaction_type = transaction_typename
+        elif config is not None and config.HasField('transaction_typename'):
+            self._transaction_type = config.transaction_typename
 
     @property
     def class_id(self):
@@ -1050,12 +1050,12 @@ class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
         raise KeyError('No class_ids parameter')
 
     @property
-    def transaction_type(self):
+    def transaction_typename(self):
         return self._transaction_type
 
     @property
-    def transaction_types(self):
-        raise KeyError('No transaction_types parameter')
+    def transaction_typenames(self):
+        raise KeyError('No transaction_typenames parameter')
 
     @property
     def dictionary(self):
@@ -1069,13 +1069,13 @@ class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
     def class_ids(self, class_ids):
         raise KeyError('No class_ids parameter')
 
-    @transaction_type.setter
-    def transaction_type(self, transaction_type):
-        _reconfigure_field(self, transaction_type, 'transaction_type')
+    @transaction_typename.setter
+    def transaction_typename(self, transaction_typename):
+        _reconfigure_field(self, transaction_typename, 'transaction_typename')
 
-    @transaction_types.setter
-    def transaction_types(self, transaction_types):
-        raise KeyError('No transaction_types parameter')
+    @transaction_typenames.setter
+    def transaction_typenames(self, transaction_typenames):
+        raise KeyError('No transaction_typenames parameter')
 
     @dictionary.setter
     def dictionary(self, dictionary):
@@ -1107,7 +1107,7 @@ class NetPlsaPhiRegularizer(BaseRegularizerPhi):
             self._edge_weights = None
 
     def __init__(self, name=None, tau=1.0, gamma=None, class_id=None, symmetric_edge_weights=None,
-                 transaction_type=None, topic_names=None, vertex_names=None,
+                 transaction_typename=None, topic_names=None, vertex_names=None,
                  vertex_weights=None, edge_weights=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
@@ -1116,7 +1116,7 @@ class NetPlsaPhiRegularizer(BaseRegularizerPhi):
         :param float gamma: coefficient of topics individualization.\
                             See SmoothSparsePhiRegularizer documentation for further details.
         :param str class_id: name of class_id of special tokens-vertices
-        :param str transaction_type: class_id to transaction_type
+        :param str transaction_typename: class_id to transaction_typename, None means @default_transaction type
         :param topic_names: list of names or single name of topic to regularize,\
                             will regularize all topics if empty or None
         :type topic_names: list of str or single str or None
@@ -1136,7 +1136,7 @@ class NetPlsaPhiRegularizer(BaseRegularizerPhi):
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=None,
-                                    transaction_types=None,
+                                    transaction_typenames=None,
                                     dictionary=None)
 
         self._class_id = None
@@ -1146,12 +1146,12 @@ class NetPlsaPhiRegularizer(BaseRegularizerPhi):
         elif config is not None and config.HasField('class_id'):
             self._class_id = config.class_id
 
-        self._transaction_type = self._class_id
-        if transaction_type is not None:
-            self._config.transaction_type = transaction_type
-            self._transaction_type = transaction_type
-        elif config is not None and config.HasField('transaction_type'):
-            self._transaction_type = config.transaction_type
+        self._transaction_type = '@default_transaction'
+        if transaction_typename is not None:
+            self._config.transaction_typename = transaction_typename
+            self._transaction_type = transaction_typename
+        elif config is not None and config.HasField('transaction_typename'):
+            self._transaction_type = config.transaction_typename
 
         self._symmetric_edge_weights = False
         if symmetric_edge_weights is not None:
@@ -1218,20 +1218,20 @@ class NetPlsaPhiRegularizer(BaseRegularizerPhi):
         raise KeyError('No class_ids parameter')
 
     @property
-    def transaction_type(self):
+    def transaction_typename(self):
         return self._transaction_type
 
     @property
-    def transaction_types(self):
-        raise KeyError('No transaction_types parameter')
+    def transaction_typenames(self):
+        raise KeyError('No transaction_typenames parameter')
 
-    @transaction_type.setter
-    def transaction_type(self, transaction_type):
-        _reconfigure_field(self, transaction_type, 'transaction_type')
+    @transaction_typename.setter
+    def transaction_typename(self, transaction_typename):
+        _reconfigure_field(self, transaction_typename, 'transaction_typename')
 
-    @transaction_types.setter
-    def transaction_types(self, transaction_types):
-        raise KeyError('No transaction_types parameter')
+    @transaction_typenames.setter
+    def transaction_typenames(self, transaction_typenames):
+        raise KeyError('No transaction_typenames parameter')
 
     @dictionary.setter
     def dictionary(self, dictionary):

@@ -265,7 +265,7 @@ class BatchVectorizer(object):
                     batch_vocab[token] = len(batch.token)
                     batch.token.append(token)
 
-                item.transaction_token_id.append(batch_vocab[token])
+                item.token_id.append(batch_vocab[token])
                 item.transaction_start_index.append(len(item.transaction_start_index))
                 item.token_weight.append(float(value))
 

@@ -349,6 +349,7 @@ void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
       // Get nwt matrix from parent master component
       ::artm::GetTopicModelArgs get_topic_model_args;
       get_topic_model_args.mutable_class_id()->CopyFrom(config->class_id());
+      get_topic_model_args.mutable_transaction_typename()->CopyFrom(config->transaction_typename());
       get_topic_model_args.set_matrix_layout(MatrixLayout_Sparse);
       get_topic_model_args.set_model_name(parent_master->config()->nwt_name());
       FixMessage(&get_topic_model_args);

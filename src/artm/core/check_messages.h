@@ -709,7 +709,9 @@ inline void FixMessage(::artm::Batch* message) {
   }
 
   // old-style batch should be filled with transaction info
-  if (message->transaction_type_size() == 0 && message->transaction_typename_size() == 0) {
+  if (message->transaction_type_size() == 0 &&
+      message->transaction_typename_size() == 0 &&
+      message->item_size() > 0) {
     message->add_transaction_typename(DefaultTransactionTypeName);
     std::unordered_set<ClassId> class_ids;
     for (const auto& c : message->class_id()) {
@@ -774,6 +776,7 @@ inline void FixMessage(::artm::ProcessBatchesArgs* message) {
   for (int i = 0; i < message->batch_size(); ++i) {
     FixMessage(message->mutable_batch(i));
   }
+
   if (message->class_weight_size() == 0) {
     for (int i = 0; i < message->class_id_size(); ++i) {
       message->add_class_weight(1.0f);

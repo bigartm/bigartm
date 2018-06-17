@@ -37,7 +37,7 @@ class TransactionType {
 
   const std::string& AsString() const { return str_data_; }
   const std::unordered_set<ClassId>& AsSet() const { return set_data_; }
-  
+
   size_t hash() const { return hash_; }
 
   TransactionType& operator=(const TransactionType &rhs) {
