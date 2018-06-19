@@ -149,7 +149,7 @@ TEST(Transactions, BasicTest) {
       for (int d = 0; d < nDocs; ++d) {
         const auto& transactions = doc_to_transactions[d];
         for (int x = 0; x < transactions.size(); ++x) {
-          float p_xd = 0;
+          float p_xd = 0.0f;
           for (int t = 0; t < nTopics; ++t) {
             float val = theta.item_weights(d).value(t);
             for (const auto& token : transactions[x]) {
@@ -160,12 +160,10 @@ TEST(Transactions, BasicTest) {
           if (d != 7) {
             ASSERT_TRUE(std::abs(p_xd - 1.0f) < 0.01);
           } else {
-            if (x == 0) {
+            if (x == 0 || x == 2) {
               ASSERT_TRUE(std::abs(p_xd - 0.66f) < 0.01);
             } else if (x == 1) {
               ASSERT_TRUE(std::abs(p_xd - 0.33f) < 0.01);
-            } else if (x == 2) {
-              ASSERT_TRUE(std::abs(p_xd - 0.66f) < 0.01);
             } else {
               ASSERT_TRUE(false);
             }

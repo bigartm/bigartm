@@ -120,7 +120,7 @@ class ARTM(object):
                                  all class_ids will be used.\
         :param dict transaction_typenames: list of transaction_typenames and their weights to be used in model,\
                                  key --- transaction_typename, value --- weight, if not specified then\
-                                 @default_transaction will be used.\
+                                 all transaction_typenames will be used.\
                                  Specify class_ids parameter when using custom transaction_typenames parameter.
         :param bool cache_theta: save or not the Theta matrix in model. Necessary if\
                                  ARTM.get_theta() usage expects
@@ -734,7 +734,7 @@ class ARTM(object):
         :param class_ids: list with class_ids or single class_id to extract, None means all class ids
         :type class_ids: list of str or str or None
         :param transaction_typenames: list with transaction_typenames or single transaction_typename to extract,\
-                                  None means @default_transaction type
+                                  None means extracting tokens of all transaction types
         :type transaction_typenames: list of str or str or None
         :param str model_name: self.model_pwt by default, self.model_nwt is also\
                       reasonable to extract unnormalized counters
@@ -768,8 +768,9 @@ class ARTM(object):
         for index, name in enumerate(info.transaction_typename):
             id_to_tt_name[index] = name
 
-        tokens = [token for token, class_id, tt_id in zip(info.token, info.class_id, info.transaction_typename_id)
-                  if (class_ids is None or class_id in class_ids) and
+        tokens = [(c, t, id_to_tt_name[tt_id])
+              for t, c, tt_id in zip(info.token, info.class_id, info.transaction_typename_id)  # noqa
+                  if (class_ids is None or c in class_ids) and
                      (transaction_typenames is None or tt_id in id_to_tt_name)]
         topic_names = [topic_name for topic_name in info.topic_name
                        if topic_names is None or topic_name in topic_names]
@@ -785,7 +786,7 @@ class ARTM(object):
         :param class_ids: list with class_ids or single class_id to extract, None means all class ids
         :type class_ids: list of str or str or None
         :param transaction_typenames: list with transaction_typenames or single transaction_typename to extract,\
-                                  None means @default_transaction type
+                                  None means extracting tokens of all transaction types
         :type transaction_typenames: list of str or str or None
         :param str model_name: self.model_pwt by default, self.model_nwt is also\
                       reasonable to extract unnormalized counters
@@ -815,7 +816,7 @@ class ARTM(object):
         :param class_ids: list with class_ids or single class_id to extract, None means all class ids
         :type class_ids: list of str or str or None
         :param transaction_typenames: list with transaction_typenames or single transaction_typename to extract,\
-                                  None means @default_transaction type
+                                  None means extracting tokens of all transaction types
         :type transaction_typenames: list of str or str or None
         :param str model_name: self.model_pwt by default, self.model_nwt is also\
                       reasonable to extract unnormalized counters
@@ -851,24 +852,31 @@ class ARTM(object):
         if transaction_typenames is not None:
             raise ValueError('Transaction models do not currently support sparse phi matrix extraction')
 
-        topic_model = self._lib.ArtmRequestTopicModelExternal(self.master.master_id, args)
+        tm = self._lib.ArtmRequestTopicModelExternal(self.master.master_id, args)
 
-        numpy_ndarray = numpy.zeros(shape=(3 * topic_model.num_values, 1), dtype=numpy.float32)
+        numpy_ndarray = numpy.zeros(shape=(3 * tm.num_values, 1), dtype=numpy.float32)
         self._lib.ArtmCopyRequestedObject(numpy_ndarray)
 
         row_ind = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.int32,
-                                   count=topic_model.num_values, offset=0)
+                                   count=tm.num_values, offset=0)
         col_ind = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.int32,
-                                   count=topic_model.num_values, offset=4*topic_model.num_values)
+                                   count=tm.num_values, offset=4*tm.num_values)
         data = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.float32,
-                                count=topic_model.num_values, offset=8*topic_model.num_values)
+                                count=tm.num_values, offset=8*tm.num_values)
 
-        # Rows correspond to tokens; get tokens from topic_model.token
-        # Columns correspond to topics; get topic names from topic_model.topic_name
+        # Rows correspond to tokens; get tokens from tm.token
+        # Columns correspond to topics; get topic names from tm.topic_name
         data = sparse.csr_matrix((data, (row_ind, col_ind)),
-                                 shape=(len(topic_model.token), len(topic_model.topic_name)))
-        columns = list(topic_model.topic_name)
-        rows = list(topic_model.token)
+                                 shape=(len(tm.token), len(tm.topic_name)))
+        columns = list(tm.topic_name)
+
+        def _func(transaction_index):
+            for i, name in enumerate(info.transaction_typename):
+                if i == transaction_index:
+                    return name
+            return None
+
+        rows = [(c, t, _func(tt_id)) in zip(tm.token, tm.class_id, tm.transaction_typename_id)]
         return data, rows, columns
 
     def get_theta(self, topic_names=None):
