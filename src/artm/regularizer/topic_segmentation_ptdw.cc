@@ -113,7 +113,7 @@ void TopicSegmentationPtdwAgent::Apply(int item_index, int inner_iter,
       }
       float sum = 0.0f;
       float non_backs = 1.0f;
-      
+
       for (int t = 0; t < num_topics; t++) {
         if (copy_ptdw(i, t) != 0 && norm_sum != 0) {
           if (is_background_topic[t]) {
@@ -147,7 +147,7 @@ void TopicSegmentationPtdwAgent::Apply(int item_index, int inner_iter,
         //   sen_subj_t = (1.0f - alpha) * sen_subj[t] + alpha * prev_sen_subject[t];
         // else if (!handling_first_sen && prev_seg_len < average_len / 2.0)
         //   prev_sen_subj_t = (1.0f - alpha) * prev_sen_subject[t] + alpha * sen_subj[t];
-        
+
         dot += prev_sen_subj_t * sen_subj_t;
         norm_cur += sen_subj_t * sen_subj_t;
         norm_prev += prev_sen_subj_t * prev_sen_subj_t;
@@ -264,20 +264,20 @@ void TopicSegmentationPtdwAgent::Apply(int item_index, int inner_iter,
 
 std::shared_ptr<RegularizePtdwAgent>
 TopicSegmentationPtdw::CreateRegularizePtdwAgent(const Batch& batch,
-                                                 const ProcessBatchesArgs& args, double tau) {
+                                                 const ProcessBatchesArgs& args, float tau) {
   std::vector< std::list<int> > dot_positions;
   int dot_count = 0;
   for (int item_index = 0; item_index < batch.item_size(); item_index++) {
     std::list<int> current_dots;
     const Item& item = batch.item(item_index);
-    for (int token_index = 0; token_index < item.token_id_size(); token_index++) {
-      int token_id = item.token_id(token_index);
+    for (int token_index = 0; token_index < item.transaction_token_id_size(); token_index++) {
+      int token_id = item.transaction_token_id(token_index);
       if (batch.token(token_id) == ".") {
         current_dots.push_back(token_index);
         dot_count += 1;
       }
     }
-    current_dots.push_back(item.token_id_size());
+    current_dots.push_back(item.transaction_token_id_size());
     dot_positions.push_back(current_dots);
   }
   LOG(INFO) << "Dot count: " << dot_count;

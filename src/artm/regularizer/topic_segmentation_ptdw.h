@@ -24,7 +24,7 @@ class TopicSegmentationPtdwAgent : public RegularizePtdwAgent {
   mutable std::vector< std::list<int> > dot_positions_;
 
  public:
-  TopicSegmentationPtdwAgent(const TopicSegmentationPtdwConfig& config, const ProcessBatchesArgs& args, 
+  TopicSegmentationPtdwAgent(const TopicSegmentationPtdwConfig& config, const ProcessBatchesArgs& args,
     double tau, std::vector< std::list<int> > dot_positions)
     : config_(config), args_(args), tau_(tau), dot_positions_(dot_positions) {}
 
@@ -37,7 +37,7 @@ class TopicSegmentationPtdw : public RegularizerInterface {
   : config_(config) {}
 
   virtual std::shared_ptr<RegularizePtdwAgent>
-  CreateRegularizePtdwAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau);
+  CreateRegularizePtdwAgent(const Batch& batch, const ProcessBatchesArgs& args, float tau);
 
   virtual bool Reconfigure(const RegularizerConfig& config);
 
