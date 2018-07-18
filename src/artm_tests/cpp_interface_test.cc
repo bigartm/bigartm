@@ -338,7 +338,7 @@ TEST(CppInterface, BasicTrasactionTest) {
         normalizer_keys[model_1.class_id(i)] += value;
       }
 
-      ASSERT_EQ(normalizer_keys.size(), 7);
+      ASSERT_EQ(normalizer_keys.size(), 4);
       for (const auto& nk : normalizer_keys) {
         ASSERT_FLOAT_EQ(nk.second, 1.0);
       }

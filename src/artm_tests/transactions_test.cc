@@ -28,7 +28,7 @@ namespace pb = google::protobuf;
 TEST(Transactions, BasicTest) {
   const int nTopics = 3;
   const int nDocs = 8;
-  const int nTokens = 17;
+  const int nTokens = 8;
 
   std::string target_folder = artm::test::Helpers::getUniqueString();
 
@@ -49,6 +49,24 @@ TEST(Transactions, BasicTest) {
   master_config.add_topic_name("topic_1");
   master_config.add_topic_name("topic_2");
   master_config.add_topic_name("topic_3");
+
+  master_config.add_transaction_typename("@default_transaction");
+  master_config.add_transaction_typename("trans1");
+  master_config.add_transaction_typename("trans2");
+
+  master_config.add_transaction_weight(1.0f);
+  master_config.add_transaction_weight(1.0f);
+  master_config.add_transaction_weight(1.0f);
+
+  master_config.add_class_id("class_1");
+  master_config.add_class_id("class_2");
+  master_config.add_class_id("class_3");
+  master_config.add_class_id("class_4");
+
+  master_config.add_class_weight(1.0f);
+  master_config.add_class_weight(1.0f);
+  master_config.add_class_weight(1.0f);
+  master_config.add_class_weight(1.0f);
 
   ::artm::ScoreConfig* score_config = master_config.add_score_config();
   score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
@@ -115,8 +133,6 @@ TEST(Transactions, BasicTest) {
   doc_to_transactions[7].push_back({ { "class_1", "token_1" } });
 
   int nIters = 5;
-  artm::TopicModel phi;
-  ::artm::ThetaMatrix theta;
   std::unordered_map<artm::core::Token, int, artm::core::TokenHasher> token_to_index;
   for (int iter = 0; iter < nIters; ++iter) {
     master_model.FitOfflineModel(offline_args);
@@ -130,9 +146,9 @@ TEST(Transactions, BasicTest) {
       artm::GetTopicModelArgs args;
       args.set_model_name(master_model.config().pwt_name());
       args.mutable_topic_name()->CopyFrom(master_model.config().topic_name());
-      phi = master_model.GetTopicModel();
+      artm::TopicModel phi = master_model.GetTopicModel();
 
-      theta = master_model.GetThetaMatrix();
+      ::artm::ThetaMatrix theta = master_model.GetThetaMatrix();
 
       ASSERT_EQ(phi.topic_name_size(), nTopics);
       ASSERT_EQ(phi.token_size(), nTokens);
@@ -156,16 +172,17 @@ TEST(Transactions, BasicTest) {
             }
             p_xd += val;
           }
-          if (d != 7) {
-            ASSERT_TRUE(std::abs(p_xd - 1.0f) < 0.01);
+
+          if (d == 0 || d == 3) {
+            ASSERT_TRUE(std::abs(p_xd - 0.66f) < 0.01f);
+          } else if (d == 1 || d == 2 || d == 4 || d == 5 || (d == 6 && x == 0)) {
+            ASSERT_TRUE(std::abs(p_xd - 1.0f) < 0.01f);
+          } else if ((d == 6 && x == 1) || (d == 7 && x == 1)) {
+            ASSERT_TRUE(std::abs(p_xd - 0.33f) < 0.01f);
+          } else if (d == 7) {
+            ASSERT_TRUE(std::abs(p_xd - 0.44f) < 0.01f);
           } else {
-            if (x == 0 || x == 2) {
-              ASSERT_TRUE(std::abs(p_xd - 0.66f) < 0.01);
-            } else if (x == 1) {
-              ASSERT_TRUE(std::abs(p_xd - 0.33f) < 0.01);
-            } else {
-              ASSERT_TRUE(false);
-            }
+            ASSERT_TRUE(false);
           }
         }
       }

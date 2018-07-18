@@ -24,21 +24,20 @@ void ProcessorHelpers::CreateThetaCacheEntry(ThetaMatrix* new_cache_entry_ptr,
     new_cache_entry_ptr->add_item_weights();
   }
 
-  const bool predict_class_id = args.has_predict_class_id();
-  new_cache_entry_ptr->clear_topic_name();
-  for (int token_index = 0; token_index < p_wt.token_size(); token_index++) {
-    const Token& token = p_wt.token(token_index);
-    if (predict_class_id && token.class_id != args.predict_class_id()) {
-      continue;
-    }
-
-    new_cache_entry_ptr->add_topic_name(token.keyword);
+  if (!args.has_predict_class_id()) {
     for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-      float weight = 0.0;
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-        weight += (*theta_matrix)(topic_index, item_index) * p_wt.get(token_index, topic_index);
+        new_cache_entry_ptr->mutable_item_weights(item_index)->add_value((*theta_matrix)(topic_index, item_index));
       }
-      new_cache_entry_ptr->mutable_item_weights(item_index)->add_value(weight);
+    }
+  } else {
+    const bool predict_class_id = args.has_predict_class_id();
+    new_cache_entry_ptr->clear_topic_name();
+    for (int token_index = 0; token_index < p_wt.token_size(); token_index++) {
+      const Token& token = p_wt.token(token_index);
+      if (predict_class_id && token.class_id != args.predict_class_id()) {
+        continue;
+      }
     }
   }
 }

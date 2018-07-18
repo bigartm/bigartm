@@ -119,7 +119,7 @@ void Perplexity::AppendScore(
 
   bool use_class_weight = !class_id_to_weight.empty();
 
-  auto t_func = [&](const artm::core::TransactionTypeName& name, int s_idx, int e_idx) -> float {  // NOLINT
+  auto t_func = [&](int s_idx, int e_idx) -> float {  // NOLINT
     float transaction_weight = 0.0f;
     for (int idx = s_idx; idx < e_idx; ++idx) {
       const int token_id = item.token_id(idx);
@@ -143,11 +143,10 @@ void Perplexity::AppendScore(
     const int end_index = (t_index + 1) < item.transaction_start_index_size() ?
                           item.transaction_start_index(t_index + 1) : item.token_id_size();
 
-    artm::core::TransactionTypeName tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
-
-    float transaction_weight = t_func(tt_name, start_index, end_index);
+    float transaction_weight = t_func(start_index, end_index);
     if (use_tt) {
       float tt_weight = 0.0f;
+      const auto& tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
       auto iter = transaction_weight_map.find(tt_name);
       if (iter != transaction_weight_map.end()) {
         tt_weight = iter->second;
@@ -166,8 +165,8 @@ void Perplexity::AppendScore(
     const int end_index = (t_index + 1) < item.transaction_start_index_size() ?
                           item.transaction_start_index(t_index + 1) : item.token_id_size();
 
-    artm::core::TransactionTypeName tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
-    float transaction_weight = t_func(tt_name, start_index, end_index);
+    const auto& tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
+    float transaction_weight = t_func(start_index, end_index);
 
     float tt_weight = 1.0f;
     if (use_tt) {
@@ -321,14 +320,18 @@ void Perplexity::AppendScore(const Score& score, Score* target) {
       }
     }
 
+    double raw = 0.0;
+    double normalizer = 0.0;
     for (size_t j = 0; j < perplexity_target->transaction_typename_info_size(); ++j) {
       auto score = perplexity_target->transaction_typename_info(j);
-      pre_value += score.raw() / score.normalizer();
+      raw += score.raw();
+      normalizer += score.normalizer();
       VLOG(1) << "transaction_type=" << score.transaction_typename()
               << ", normalizer=" << score.normalizer()
               << ", raw=" << score.raw()
               << ", zero_words=" << score.zero_words();
     }
+    pre_value = raw / normalizer;
   } else {
     auto src = perplexity_score;
     auto dst = perplexity_target;

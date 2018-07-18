@@ -295,7 +295,7 @@ message PerplexityScore {
   // general perplexity value for all cases
   optional float value = 1;
   
-  // fields for case of all class ids
+  // fields for case of all transaction typenames
   optional double raw = 2;
   optional double normalizer = 3;
   optional int64 zero_words = 4;
