@@ -15,33 +15,7 @@
 namespace artm {
 namespace core {
 
-struct NormalizerKey {
-  NormalizerKey(const ClassId& class_id, TransactionTypeName transaction_typename)
-      : token_(class_id, std::string(), transaction_typename) { }
-
-  bool operator==(const NormalizerKey& key) const {
-    return this->token_ == key.token_;
-  }
-
-  bool operator!=(const NormalizerKey& key) const {
-    return !(*this == key);
-  }
-
-  const ClassId& class_id() const { return token_.class_id; }
-  const TransactionTypeName& transaction_typename() const { return token_.transaction_typename; }
-
- private:
-  friend struct NormalizerKeyHasher;
-  Token token_;
-};
-
-struct NormalizerKeyHasher {
-  size_t operator()(const NormalizerKey& key) const {
-    return key.token_.hash();
-  }
-};
-
-typedef std::unordered_map<NormalizerKey, std::vector<float>, NormalizerKeyHasher> Normalizers;
+typedef std::unordered_map<ClassId, std::vector<float>> Normalizers;
 
 // PhiMatrixOperations contains helper methods to operate on PhiMatrix class.
 class PhiMatrixOperations {

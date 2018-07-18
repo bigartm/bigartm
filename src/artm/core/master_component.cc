@@ -349,7 +349,6 @@ void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
       // Get nwt matrix from parent master component
       ::artm::GetTopicModelArgs get_topic_model_args;
       get_topic_model_args.mutable_class_id()->CopyFrom(config->class_id());
-      get_topic_model_args.mutable_transaction_typename()->CopyFrom(config->transaction_typename());
       get_topic_model_args.set_matrix_layout(MatrixLayout_Sparse);
       get_topic_model_args.set_model_name(parent_master->config()->nwt_name());
       FixMessage(&get_topic_model_args);
@@ -405,20 +404,10 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
   const char version = 0;
   fout << version;
 
-  std::unordered_map<TransactionTypeName, int> tt_name_to_index;
   for (int token_id = 0; token_id < token_size; ++token_id) {
     Token token = n_wt.token(token_id);
     get_topic_model_args.add_token(token.keyword);
     get_topic_model_args.add_class_id(token.class_id);
-
-    auto it = tt_name_to_index.find(token.transaction_typename);
-    if (it != tt_name_to_index.end()) {
-      get_topic_model_args.add_transaction_typename_id(it->second);
-    } else {
-      tt_name_to_index.emplace(token.transaction_typename, tt_name_to_index.size());
-      get_topic_model_args.add_transaction_typename_id(tt_name_to_index.size() - 1);
-      get_topic_model_args.add_transaction_typename(token.transaction_typename);
-    }
 
     if (((token_id + 1) == token_size) || (get_topic_model_args.token_size() >= tokens_per_chunk)) {
       ::artm::TopicModel external_topic_model;
@@ -431,7 +420,6 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
       fout << str;
       get_topic_model_args.clear_class_id();
       get_topic_model_args.clear_token();
-      get_topic_model_args.clear_transaction_typename();
     }
   }
 
@@ -611,7 +599,7 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   }
 
   std::shared_ptr<PhiMatrix> new_ttm;
-  int included_tokens = 0;
+  int excluded_tokens = 0;
   if (args.has_dictionary_name()) {
     auto dict = instance_->dictionaries()->get(args.dictionary_name());
     if (dict == nullptr) {
@@ -626,50 +614,17 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
       BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
     }
 
-    std::unordered_set<TransactionTypeName> allowed_typenames;
-    for (const auto& name : config->transaction_typename()) {
-      allowed_typenames.emplace(name);
-    }
-
     new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), args.topic_name());
-
-    // in each transaction type tokens should have the same order, as in dictionary
-    std::unordered_map<TransactionTypeName, std::vector<Token>> tt_to_tokens;
     for (int index = 0; index < (int64_t) dict->size(); ++index) {
       ::artm::core::Token token = dict->entry(index)->token();
 
       if (config->class_id_size() > 0 && !is_member(token.class_id, config->class_id())) {
         continue;
       }
-
-      if (dict->GetTransactionTypes().size() > 0) {
-        bool used_token = false;
-        for (const auto& name : dict->GetTransactionTypeNamesForClassId(token.class_id)) {
-          if (allowed_typenames.size() == 0 || allowed_typenames.find(name) != allowed_typenames.end()) {
-            used_token = true;
-            tt_to_tokens[name].push_back(Token(token.class_id, token.keyword, name));
-          }
-        }
-        included_tokens += used_token ? 1.0 : 0.0;
-
-        for (const auto& tt_name_to_tt : dict->GetTransactionTypes()) {
-          new_ttm->AddTransactionType(tt_name_to_tt.first, tt_name_to_tt.second);
-        }
-      } else {
-        std::stringstream ss;
-        ss << "Dictionary '" << args.dictionary_name()
-           << "' is old-style one without transaction info. It should be re-gathered";
-        BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-      }
+      new_ttm->AddToken(token);
     }
 
-    for (const auto& tt_tokens : tt_to_tokens) {
-      for (const auto& token : tt_tokens.second) {
-        new_ttm->AddToken(token);
-      }
-    }
-
-    int excluded_tokens = dict->size() - included_tokens;
+    excluded_tokens = dict->size() - new_ttm->token_size();
     LOG_IF(INFO, excluded_tokens > 0)
       << excluded_tokens
       << " tokens were present in the dictionary, but excluded from the model";
@@ -686,10 +641,6 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
 
     new_ttm = ttm->Duplicate();
     PhiMatrixOperations::AssignValue(0.0f, new_ttm.get());
-
-    for (const auto& tt_name_to_tt : ttm->GetTransactionTypes()) {
-      new_ttm->AddTransactionType(tt_name_to_tt.first, tt_name_to_tt.second);
-    }
   }
 
   if (new_ttm->token_size() == 0) {
@@ -985,22 +936,7 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
     }
 
     for (int token_index = 0; token_index < (int64_t) dictionary->size(); ++token_index) {
-      Token token = dictionary->entry(token_index)->token();
-      if (dictionary->GetTransactionTypes().size() > 0) {  // new style dictionary
-        for (const auto& name : dictionary->GetTransactionTypeNamesForClassId(token.class_id)) {
-          nwt_target->AddToken(Token(token.class_id, token.keyword, name));
-        }
-      } else {  // old-style dictionary
-        std::stringstream ss;
-        ss << "Dictionary '" << merge_model_args.has_dictionary_name()
-           << "' is old-style one without transaction info. It should be re-gathered";
-        BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-      }
-    }
-
-    // As we have dictionary, we need to get transaction info from it
-    for (const auto& tt_name_to_tt : dictionary->GetTransactionTypes()) {
-      nwt_target->AddTransactionType(tt_name_to_tt.first, tt_name_to_tt.second);
+      nwt_target->AddToken(dictionary->entry(token_index)->token());
     }
   }
 
@@ -1189,9 +1125,6 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
   process_batches_args.set_theta_matrix_type(args.theta_matrix_type());
   if (args.has_predict_class_id()) {
     process_batches_args.set_predict_class_id(args.predict_class_id());
-  }
-  if (args.has_predict_transaction_typename()) {
-    process_batches_args.set_predict_transaction_typename(args.predict_transaction_typename());
   }
 
   FixMessage(&process_batches_args);

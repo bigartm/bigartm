@@ -328,38 +328,20 @@ TEST(CppInterface, BasicTrasactionTest) {
     master_component.InitializeModel(init_model_args);
 
     auto test_func = [](artm::MasterModel& master_component, const artm::InitializeModelArgs& init_model_args) {
-      auto func = [](const artm::TopicModel& model, int num_transactions) {
-        std::unordered_map<artm::core::NormalizerKey, float, artm::core::NormalizerKeyHasher> normalizer_keys;
-        for (int i = 0; i < model.token_size(); ++i) {
-          float value = model.token_weights(i).value(0);
-          artm::core::TransactionTypeName tt_name = model.transaction_typename(model.transaction_typename_id(i));
-          normalizer_keys[artm::core::NormalizerKey(model.class_id(i), tt_name)] += value;
-        }
-
-        ASSERT_EQ(normalizer_keys.size(), num_transactions);
-        for (const auto& nk : normalizer_keys) {
-          ASSERT_FLOAT_EQ(nk.second, 1.0);
-        }
-      };
-
       artm::GetTopicModelArgs args;
       args.set_model_name(init_model_args.model_name());
       auto model_1 = master_component.GetTopicModel(args);
 
-      ASSERT_EQ(model_1.transaction_typename_size(), model_1.transaction_type_size());
-      ASSERT_EQ(model_1.transaction_typename_id_size(), model_1.token_size());
-      func(model_1, 7);
+      std::unordered_map<artm::core::ClassId, float> normalizer_keys;
+      for (int i = 0; i < model_1.token_size(); ++i) {
+        float value = model_1.token_weights(i).value(0);
+        normalizer_keys[model_1.class_id(i)] += value;
+      }
 
-      args.set_model_name(init_model_args.model_name());
-      args.add_transaction_typename("trans1");
-      auto model_2 = master_component.GetTopicModel(args);
-      func(model_2, 2);
-
-      args.set_model_name(init_model_args.model_name());
-      args.add_transaction_typename("trans1");
-      args.add_class_id("class_1");
-      auto model_3 = master_component.GetTopicModel(args);
-      func(model_3, 1);
+      ASSERT_EQ(normalizer_keys.size(), 7);
+      for (const auto& nk : normalizer_keys) {
+        ASSERT_FLOAT_EQ(nk.second, 1.0);
+      }
     };
 
     test_func(master_component, init_model_args);
@@ -381,16 +363,11 @@ TEST(CppInterface, BasicTrasactionTest) {
     new_topic_model.set_name("model2_name");
     new_topic_model.mutable_topic_name()->CopyFrom(master_component.config().topic_name());
 
-    new_topic_model.add_transaction_type("class_5");
-    new_topic_model.add_transaction_typename("trans5");
-
     new_topic_model.add_token("token_x");
     new_topic_model.add_class_id("class_5");
-    new_topic_model.add_transaction_typename_id(0);
 
     new_topic_model.add_token("token_y");
     new_topic_model.add_class_id("class_5");
-    new_topic_model.add_transaction_typename_id(0);
 
     auto weights = new_topic_model.add_token_weights();
     auto weights2 = new_topic_model.add_token_weights();
@@ -410,11 +387,9 @@ TEST(CppInterface, BasicTrasactionTest) {
       args.set_model_name(new_topic_model.name());
       new_topic_model.add_token("token_x");
       new_topic_model.add_class_id("class_5");
-      new_topic_model.add_transaction_type("class_5");
 
       new_topic_model.add_token("token_y");
       new_topic_model.add_class_id("class_5");
-      new_topic_model.add_transaction_type("class_5");
 
       auto new_topic_model2 = master_component.GetTopicModel(args);
 
@@ -770,11 +745,6 @@ TEST(CppInterface, Dictionaries) {
   ASSERT_GT(dictionary.token_tf(0), 0);
   ASSERT_GT(dictionary.token_value(0), 0);
 
-
-  // gather dictionary should contain any class_id as
-  // transaction type if token_id field was used in batches
-  ASSERT_EQ(dictionary.transaction_type_size(), 1);
-
   // Filter
   artm::FilterDictionaryArgs filter_args;
   filter_args.set_dictionary_name("gathered_dictionary");
@@ -843,35 +813,6 @@ TEST(CppInterface, TransactionDictionaries) {
   artm::MasterModelConfig master_config;
   artm::MasterModel master(master_config);
 
-  auto checker = [](const artm::DictionaryData& dict) {
-    ASSERT_EQ(dict.token_size(), 8);
-    ASSERT_EQ(dict.transaction_type_size(), 3);
-    ASSERT_EQ(dict.transaction_typename_size(), 3);
-
-    for (int i = 0; i < dict.transaction_type_size(); ++i) {
-      auto s = artm::core::TransactionType(dict.transaction_type(i)).AsSet();
-      if (s.size() == 2) {
-        if (dict.transaction_typename(i) != "trans1" &&
-            dict.transaction_typename(i) != artm::core::DefaultTransactionTypeName) {
-          ASSERT_TRUE(false);
-        }
-        if (dict.transaction_typename(i) == "trans1") {
-          std::unordered_set<artm::core::ClassId> temp = { "class_1", "class_2" };
-          ASSERT_EQ(s, temp);
-        } else {
-          std::unordered_set<artm::core::ClassId> temp = { "class_1", "class_3" };
-          ASSERT_EQ(s, temp);
-        }
-      } else if (s.size() == 3) {
-        ASSERT_EQ(dict.transaction_typename(i), "trans2");
-        std::unordered_set<artm::core::ClassId> temp = { "class_1", "class_2", "class_4" };
-        ASSERT_EQ(s, temp);
-      } else {
-        ASSERT_TRUE(false);
-      }
-    }
-  };
-
   // Gather
   artm::GatherDictionaryArgs gather_args;
   gather_args.set_data_path(target_folder);
@@ -880,7 +821,7 @@ TEST(CppInterface, TransactionDictionaries) {
 
   ::artm::GetDictionaryArgs get_dict;
   get_dict.set_dictionary_name("gathered_dictionary");
-  checker(master.GetDictionary(get_dict));
+  ASSERT_EQ(master.GetDictionary(get_dict).token_size(), 8);
 
   // Export & Import
   artm::ExportDictionaryArgs export_args;
@@ -894,20 +835,20 @@ TEST(CppInterface, TransactionDictionaries) {
   master.ImportDictionary(import_args);
 
   get_dict.set_dictionary_name("imported_dictionary");
-  checker(master.GetDictionary(get_dict));
+  ASSERT_EQ(master.GetDictionary(get_dict).token_size(), 8);
 
   // Get and Create
   artm::GetDictionaryArgs get_args;
   get_args.set_dictionary_name("imported_dictionary");
   auto data = master.GetDictionary(get_args);
-  checker(data);
+  ASSERT_EQ(data.token_size(), 8);
 
   data.set_name("created_dictionary");
   master.CreateDictionary(data);
 
   get_args.set_dictionary_name("created_dictionary");
   data = master.GetDictionary(get_args);
-  checker(data);
+  ASSERT_EQ(data.token_size(), 8);
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}

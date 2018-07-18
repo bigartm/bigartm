@@ -78,39 +78,39 @@ TEST(Transactions, BasicTest) {
     doc_to_transactions.emplace(std::make_pair(d, std::vector<std::vector<artm::core::Token>>()));
   }
   doc_to_transactions[0].push_back({ { "class_1", "token_1" } });
-  doc_to_transactions[0].push_back({ { "class_1", "token_1", "trans1" },
-                                     { "class_2", "token_2", "trans1" }
+  doc_to_transactions[0].push_back({ { "class_1", "token_1" },
+                                     { "class_2", "token_2" }
   });
   doc_to_transactions[1].push_back({ { "class_1", "token_2" } });
-  doc_to_transactions[1].push_back({ { "class_1", "token_2", "trans1" },
-                                     { "class_2", "token_3", "trans1" }
+  doc_to_transactions[1].push_back({ { "class_1", "token_2" },
+                                     { "class_2", "token_3" }
   });
   doc_to_transactions[2].push_back({ { "class_1", "token_3" } });
-  doc_to_transactions[2].push_back({ { "class_1", "token_3", "trans1" },
-                                     { "class_2", "token_4", "trans1" }
+  doc_to_transactions[2].push_back({ { "class_1", "token_3" },
+                                     { "class_2", "token_4" }
   });
   doc_to_transactions[3].push_back({ { "class_1", "token_1" } });
-  doc_to_transactions[3].push_back({ { "class_1", "token_1", "trans1" },
-                                     { "class_2", "token_2", "trans1" }
+  doc_to_transactions[3].push_back({ { "class_1", "token_1" },
+                                     { "class_2", "token_2" }
   });
   doc_to_transactions[4].push_back({ { "class_1", "token_2" } });
-  doc_to_transactions[4].push_back({ { "class_1", "token_2", "trans1" },
-                                     { "class_2", "token_3", "trans1" }
+  doc_to_transactions[4].push_back({ { "class_1", "token_2" },
+                                     { "class_2", "token_3" }
   });
   doc_to_transactions[5].push_back({ { "class_1", "token_3" } });
-  doc_to_transactions[5].push_back({ { "class_1", "token_3", "trans1" },
-                                     { "class_2", "token_4", "trans1" }
+  doc_to_transactions[5].push_back({ { "class_1", "token_3" },
+                                     { "class_2", "token_4" }
   });
   doc_to_transactions[6].push_back({ { "class_3", "token_5" } });
-  doc_to_transactions[6].push_back({ { "class_4", "token_5", "trans2" },
-                                     { "class_2", "token_2", "trans2" },
-                                     { "class_1", "token_2", "trans2" },
+  doc_to_transactions[6].push_back({ { "class_4", "token_5" },
+                                     { "class_2", "token_2" },
+                                     { "class_1", "token_2" },
   });
-  doc_to_transactions[7].push_back({ { "class_1", "token_1", "trans1" },
-                                     { "class_2", "token_2", "trans1" }
+  doc_to_transactions[7].push_back({ { "class_1", "token_1" },
+                                     { "class_2", "token_2" }
   });
-  doc_to_transactions[7].push_back({ { "class_1", "token_2", "trans1" },
-                                     { "class_2", "token_3", "trans1" }
+  doc_to_transactions[7].push_back({ { "class_1", "token_2" },
+                                     { "class_2", "token_3" }
   });
   doc_to_transactions[7].push_back({ { "class_1", "token_1" } });
 
@@ -142,8 +142,7 @@ TEST(Transactions, BasicTest) {
       token_to_index.clear();
       for (int i = 0; i < phi.token_size(); ++i) {
         token_to_index.emplace(
-            artm::core::Token(phi.class_id(i), phi.token(i),
-            phi.transaction_typename(phi.transaction_typename_id(i))), i);
+            artm::core::Token(phi.class_id(i), phi.token(i)), i);
       }
 
       for (int d = 0; d < nDocs; ++d) {
@@ -152,8 +151,8 @@ TEST(Transactions, BasicTest) {
           float p_xd = 0.0f;
           for (int t = 0; t < nTopics; ++t) {
             float val = theta.item_weights(d).value(t);
-            for (const auto& token : transactions[x]) {
-              val *= phi.token_weights(token_to_index[token]).value(t);
+            for (const auto& transaction : transactions[x]) {
+              val *= phi.token_weights(token_to_index[transaction]).value(t);
             }
             p_xd += val;
           }

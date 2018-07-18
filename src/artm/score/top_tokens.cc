@@ -47,12 +47,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
     class_id = config_.class_id();
   }
 
-  auto tt = ::artm::core::DefaultTransactionTypeName;
-  if (config_.has_transaction_typename()) {
-    tt = config_.transaction_typename();
-  }
-
-  if (count_coherence && tt != artm::core::DefaultTransactionTypeName) {
+  if (count_coherence) {
     LOG(ERROR) << "Coherence computation in TopTokens score does not support transactions!";
     return false;
   }
@@ -60,7 +55,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
   std::vector<artm::core::Token> tokens;
   for (int token_index = 0; token_index < token_size; token_index++) {
     auto token = p_wt.token(token_index);
-    if (token.class_id == class_id && token.transaction_typename == tt) {
+    if (token.class_id == class_id) {
       tokens.push_back(token);
     }
   }
@@ -77,7 +72,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
 
     for (int token_index = 0; token_index < token_size; token_index++) {
       const auto& token = p_wt.token(token_index);
-      if (token.class_id != class_id || token.transaction_typename != tt) {
+      if (token.class_id != class_id) {
         continue;
       }
 

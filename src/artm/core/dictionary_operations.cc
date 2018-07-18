@@ -28,24 +28,6 @@ using ::artm::utility::ifstream_or_cin;
 namespace artm {
 namespace core {
 
-void DictionaryOperations::TransactionsFromDataToDict(const DictionaryData& data, std::shared_ptr<Dictionary> dict) {
-  for (int i = 0; i < data.transaction_type_size(); ++i) {
-    const auto tt = TransactionType(data.transaction_type(i));
-    dict->AddTransactionType(data.transaction_typename(i), tt);
-
-    for (const auto& class_id : tt.AsSet()) {
-      dict->AddTransactionTypeNameForClassId(class_id, data.transaction_typename(i));
-    }
-  }
-}
-
-void DictionaryOperations::TransactionsFromDictToData(const Dictionary& dict, DictionaryData* data) {
-  for (const auto& tt : dict.GetTransactionTypes()) {
-    data->add_transaction_typename(tt.first);
-    data->add_transaction_type(tt.second.AsString());
-  }
-}
-
 std::shared_ptr<Dictionary> DictionaryOperations::Create(const DictionaryData& data) {
   auto dictionary = std::make_shared<Dictionary>(Dictionary(data.name()));
 
@@ -61,7 +43,6 @@ std::shared_ptr<Dictionary> DictionaryOperations::Create(const DictionaryData& d
         has_token_tf ? data.token_tf(index) : 0.0f,
         has_token_df ? data.token_df(index) : 0.0f));
     }
-    TransactionsFromDataToDict(data, dictionary);
   } else {
     LOG(ERROR) << "Can't create Dictionary using the cooc part of DictionaryData";
   }
@@ -115,8 +96,6 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, const Dictio
     token_dict_data.add_token_tf(entry->token_tf());
     token_dict_data.add_token_df(entry->token_df());
   }
-
-  TransactionsFromDictToData(dict, &token_dict_data);
 
   std::string str = token_dict_data.SerializeAsString();
   if (str.size() >= kProtobufCodedStreamTotalBytesLimit) {
@@ -240,8 +219,6 @@ std::shared_ptr<Dictionary> DictionaryOperations::Import(const ImportDictionaryA
       }
     }
 
-    TransactionsFromDataToDict(dict_data, dictionary);
-
     // part with cooc dictionary
     if (dict_data.cooc_value_size() > 0) {
       for (int index = 0; index < dict_data.cooc_first_index_size(); ++index) {
@@ -294,7 +271,6 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 
   int total_items_count = 0;
   std::unordered_map<ClassId, float> sum_w_tf;
-  std::unordered_map<TransactionTypeName, std::unordered_set<ClassId>> transaction_types;
   for (const std::string& batch_file : batches) {
     std::shared_ptr<Batch> batch_ptr = mem_batches.get(batch_file);
     try {
@@ -344,26 +320,6 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
       token_info.token_df += token_df[index];
 
       sum_w_tf[token_class_id] += token_n_w[index];
-    }
-
-    for (int i = 0; i < batch.transaction_type_size(); ++i) {
-      TransactionTypeName tt_name = batch.transaction_typename(i);
-      auto tt_set = TransactionType(batch.transaction_type(i)).AsSet();
-
-      auto iter = transaction_types.find(tt_name);
-      if (iter == transaction_types.end()) {
-        transaction_types.emplace(tt_name, tt_set);
-      } else {
-        tt_set.insert(iter->second.begin(), iter->second.end());
-        iter->second = tt_set;
-      }
-    }
-  }
-
-  for (const auto& tt : transaction_types) {
-    dictionary->AddTransactionType(tt.first, TransactionType(tt.second));
-    for (const auto& class_id : tt.second) {
-      dictionary->AddTransactionTypeNameForClassId(class_id, tt.first);
     }
   }
 
@@ -527,10 +483,6 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
 std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryArgs& args, const Dictionary& dict) {
   auto dictionary = std::make_shared<Dictionary>(Dictionary(args.dictionary_target_name()));
   dictionary->SetNumItems(dict.num_items());
-  for (const auto& tt : dict.GetTransactionTypes()) {
-    dictionary->AddTransactionType(tt.first, tt.second);
-  }
-  dictionary->SetClassIdToTransactionTypeNames(dict.GetClassIdToTransactionTypeNames());
 
   auto& src_entries = dict.entries();
   auto& dictionary_token_index = dict.token_index();
@@ -642,8 +594,6 @@ void DictionaryOperations::StoreIntoDictionaryData(const Dictionary& dict, Dicti
     data->add_token_tf(entries[i].token_tf());
     data->add_token_df(entries[i].token_df());
   }
-
-  TransactionsFromDictToData(dict, data);
 }
 
 void DictionaryOperations::WriteDictionarySummaryToLog(const Dictionary& dict) {

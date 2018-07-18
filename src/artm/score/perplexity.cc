@@ -121,25 +121,18 @@ void Perplexity::AppendScore(
 
   auto t_func = [&](const artm::core::TransactionTypeName& name, int s_idx, int e_idx) -> float {  // NOLINT
     float transaction_weight = 0.0f;
-    auto it = p_wt.GetTransactionTypes().find(name);
-    if (it != p_wt.GetTransactionTypes().end()) {
-      for (int idx = s_idx; idx < e_idx; ++idx) {
-        const int token_id = item.token_id(idx);
-        const float token_weight = item.token_weight(idx);
+    for (int idx = s_idx; idx < e_idx; ++idx) {
+      const int token_id = item.token_id(idx);
+      const float token_weight = item.token_weight(idx);
 
+      float class_weight = 1.0f;
+      if (use_class_weight) {
         artm::core::ClassId class_id = batch.class_id(token_id);
-        if (it->second.AsSet().find(class_id) == it->second.AsSet().end()) {
-          continue;  // transaction contains token of invalid class_id, ignore this token
-        }
-
-        float class_weight = 1.0f;
-        if (use_class_weight) {
-          auto iter = class_id_to_weight.find(class_id);
-          class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
-        }
-
-        transaction_weight += (token_weight * class_weight);
+        auto iter = class_id_to_weight.find(class_id);
+        class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
       }
+
+      transaction_weight += (token_weight * class_weight);
     }
     return transaction_weight;
   };
@@ -192,7 +185,7 @@ void Perplexity::AppendScore(
     std::vector<float> phi_values(topic_size, 1.0f);
     for (int token_id = start_index; token_id < end_index; ++token_id) {
       const auto& temp_token = token_dict[item.token_id(token_id)];
-      const auto token = artm::core::Token(temp_token.class_id, temp_token.keyword, tt_name);
+      const auto token = artm::core::Token(temp_token.class_id, temp_token.keyword);
 
       int p_wt_token_index = p_wt.token_index(token);
       if (p_wt_token_index == ::artm::core::PhiMatrix::kUndefIndex) {
@@ -219,7 +212,7 @@ void Perplexity::AppendScore(
         const artm::core::Token* err_token;
         for (int token_id = start_index; token_id < end_index; ++token_id) {
           const auto& temp_token = token_dict[item.token_id(token_id)];
-          const auto token = artm::core::Token(temp_token.class_id, temp_token.keyword, tt_name);
+          const auto token = artm::core::Token(temp_token.class_id, temp_token.keyword);
 
           auto entry_ptr = dictionary_ptr->entry(token);
           if (entry_ptr != nullptr && entry_ptr->token_value()) {
@@ -304,10 +297,8 @@ void Perplexity::AppendScore(const Score& score, Score* target) {
 
       bool was_added = false;
       for (size_t j = 0; j < perplexity_target->transaction_typename_info_size(); ++j) {
-        auto tt1 = ::artm::core::TransactionType(
-          perplexity_score->transaction_typename_info(i).transaction_typename());
-        auto tt2 = ::artm::core::TransactionType(
-          perplexity_target->transaction_typename_info(j).transaction_typename());
+        auto tt1 = perplexity_score->transaction_typename_info(i).transaction_typename();
+        auto tt2 = perplexity_target->transaction_typename_info(j).transaction_typename();
         if (tt1 == tt2) {
           // update existing transaction_type info
           auto dst = perplexity_target->mutable_transaction_typename_info(j);

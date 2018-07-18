@@ -38,7 +38,7 @@ void ItemsProcessed::AppendScore(const Batch& batch,
 
         // Check whether token is in effect,
         // e.g. present in the model, and belongs to relevant modality and tt)
-        if (p_wt.has_token(::artm::core::Token(batch.class_id(token_id), batch.token(token_id), tt_name))) {
+        if (p_wt.has_token(::artm::core::Token(batch.class_id(token_id), batch.token(token_id)))) {
           token_weight += item.token_weight(idx);
           token_weight_in_effect += item.token_weight(idx);
         }

@@ -21,29 +21,20 @@ const ClassId DefaultClass = "@default_class";
 const ClassId DocumentsClass = "@documents_class";
 const TransactionTypeName DefaultTransactionTypeName = "@default_transaction";
 
-// Token is a triple of keyword, its class_id (also known as tokens' modality) and typename of the transaction.
+// Token is a tuple of keyword and its class_id (also known as tokens' modality).
 // Pay attention to the order of the arguments in the constructor.
-// For historical reasons ClassId goes first, followed by the keyword and transaction typename.
+// For historical reasons ClassId goes first, followed by the keyword.
 struct Token {
  public:
-  Token(const ClassId& _class_id, const std::string& _keyword,
-        const TransactionTypeName& _transaction_typename)
-    : keyword(_keyword)
-    , class_id(_class_id)
-    , transaction_typename(_transaction_typename)
-    , hash_(calcHash(_class_id, _keyword, _transaction_typename)) { }
-
   Token(const ClassId& _class_id, const std::string& _keyword)
     : keyword(_keyword)
     , class_id(_class_id)
-    , transaction_typename(DefaultTransactionTypeName)
-    , hash_(calcHash(_class_id, _keyword, DefaultTransactionTypeName)) { }
+    , hash_(calcHash(_class_id, _keyword)) { }
 
   Token& operator=(const Token &token) {
     if (this != &token) {
       const_cast<std::string&>(keyword) = token.keyword;
       const_cast<ClassId&>(class_id) = token.class_id;
-      const_cast<TransactionTypeName&>(transaction_typename) = token.transaction_typename;
       const_cast<size_t&>(hash_) = token.hash_;
     }
 
@@ -55,16 +46,11 @@ struct Token {
       return keyword < token.keyword;
     }
 
-    if (class_id != token.class_id) {
-      return class_id < token.class_id;
-    }
-
-    return transaction_typename < token.transaction_typename;
+    return class_id < token.class_id;
   }
 
   bool operator==(const Token& token) const {
-    if (keyword == token.keyword && class_id == token.class_id &&
-      transaction_typename == token.transaction_typename) {
+    if (keyword == token.keyword && class_id == token.class_id) {
       return true;
     }
     return false;
@@ -78,17 +64,14 @@ struct Token {
 
   const std::string keyword;
   const ClassId class_id;
-  const TransactionTypeName transaction_typename;
 
  private:
   const size_t hash_;
 
-  static size_t calcHash(const ClassId& class_id, const std::string& keyword,
-                         const TransactionTypeName& transaction_typename) {
+  static size_t calcHash(const ClassId& class_id, const std::string& keyword) {
     size_t hash = 0;
     boost::hash_combine<std::string>(hash, keyword);
     boost::hash_combine<std::string>(hash, class_id);
-    boost::hash_combine<std::string>(hash, transaction_typename);
     return hash;
   }
 };

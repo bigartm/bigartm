@@ -40,14 +40,8 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
 
   const bool has_topic_data = (message.num_topics() != 0 || message.topic_name_size() != 0);
   const bool has_token_data = (message.class_id_size() != 0 || message.token_size() != 0);
-  const bool has_transaction_data = (message.transaction_typename_id_size() != 0);
-  const bool has_transaction_types = (message.transaction_type_size() != 0);
   const bool has_bulk_data = (message.token_weights_size() != 0);
   const bool has_sparse_format = has_bulk_data && (message.topic_indices_size() != 0);
-
-  if (has_transaction_data && !has_transaction_types) {
-    ss << "Model has transaction ids without transaction types list";
-  }
 
   if (has_topic_data) {
     if (message.num_topics() != message.topic_name_size()) {
@@ -59,20 +53,6 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
     if (message.class_id_size() != message.token_size()) {
       ss << "Inconsistent fields size in TopicModel.token and TopicModel.class_id: "
          << message.token_size() << " vs " << message.class_id_size();
-    }
-
-    if (has_transaction_data) {
-      if (message.transaction_typename_id_size() != message.token_size()) {
-        ss << "Inconsistent fields size in TopicModel.transaction_typename_id_size and TopicModel.token_size: "
-          << message.transaction_typename_id_size() << " vs " << message.token_size();
-      }
-    }
-  }
-
-  if (has_transaction_types) {
-    if (message.transaction_type_size() != message.transaction_typename_size()) {
-      ss << "Inconsistent fields size in TopicModel.transaction_type and TopicModel.transaction_typename: "
-        << message.transaction_type_size() << " vs " << message.transaction_typename_size();
     }
   }
 
@@ -222,11 +202,6 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
     ss << DescribeErrors(message.item(item_id));
   }
 
-  if (message.transaction_typename_size() != message.transaction_type_size()) {
-    ss << "Batch with id = " << message.id() << " has incocnsistent transaction_typename_size ("
-      << message.transaction_typename_size() << ") and transaction_type_size ("
-      << message.transaction_type_size() << ")\n";
-  }
   return ss.str();
 }
 
@@ -642,29 +617,6 @@ inline void FixMessage(::artm::TopicModel* message) {
     }
   }
 
-  if (message->transaction_typename_size() == 1 && message->transaction_typename_id_size() == 0
-      && token_size > 0 && message->transaction_typename(0) == DefaultTransactionTypeName) {
-    message->mutable_transaction_typename_id()->Reserve(token_size);
-    for (int i = 0; i < token_size; ++i) {
-      message->add_transaction_typename_id(0);
-    }
-  }
-
-  // fix old-style models
-  if (message->transaction_typename_size() == 0
-    && message->transaction_typename_id_size() == 0 && token_size > 0) {
-    message->mutable_transaction_typename_id()->Reserve(token_size);
-    for (int i = 0; i < token_size; ++i) {
-      message->add_transaction_typename_id(0);
-    }
-    message->add_transaction_typename(DefaultTransactionTypeName);
-    std::unordered_set<ClassId> class_ids;
-    for (const auto& class_id : message->class_id()) {
-      class_ids.emplace(class_id);
-    }
-    message->add_transaction_type(TransactionType(class_ids).AsString());
-  }
-
   if (message->topic_name_size() > 0) {
     message->set_num_topics(message->topic_name_size());
   }
@@ -709,15 +661,8 @@ inline void FixMessage(::artm::Batch* message) {
   }
 
   // old-style batch should be filled with transaction info
-  if (message->transaction_type_size() == 0 &&
-      message->transaction_typename_size() == 0 &&
-      message->item_size() > 0) {
+  if (message->transaction_typename_size() == 0 && message->item_size() > 0) {
     message->add_transaction_typename(DefaultTransactionTypeName);
-    std::unordered_set<ClassId> class_ids;
-    for (const auto& c : message->class_id()) {
-      class_ids.emplace(c);
-    }
-    message->add_transaction_type(TransactionType(class_ids).AsString());
 
     for (auto& item : *message->mutable_item()) {
       item.clear_transaction_start_index();
@@ -751,16 +696,6 @@ inline void FixMessage(::artm::DictionaryData* message) {
     for (int i = 0; i < message->token_size(); ++i) {
       message->add_class_id(DefaultClass);
     }
-  }
-
-  // fix old-style dictionary
-  if (message->transaction_type_size() == 0 && message->transaction_typename_size() == 0) {
-    std::unordered_set<ClassId> class_ids;
-    for (const auto& c : message->class_id()) {
-      class_ids.emplace(c);
-    }
-    message->add_transaction_typename(DefaultTransactionTypeName);
-    message->add_transaction_type(TransactionType(class_ids).AsString());
   }
 }
 
@@ -1007,7 +942,6 @@ inline std::string DescribeMessage(const ::artm::ProcessBatchesArgs& message) {
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
   ss << ", predict_class_id=" << (message.predict_class_id());
-  ss << ", predict_transaction_typename=" << (message.predict_transaction_typename());
   for (int i = 0; i < message.transaction_typename_size(); ++i) {
     ss << ", transaction_typename=(" << message.transaction_typename(i)
        << ":" << message.transaction_weight(i) << ")";
@@ -1121,7 +1055,6 @@ inline std::string DescribeMessage(const ::artm::TransformMasterModelArgs& messa
   ss << ", batch_size=" << message.batch_size();
   ss << ", theta_matrix_type=" << message.theta_matrix_type();
   ss << ", predict_class_id=" << (message.predict_class_id());
-  ss << ", predict_transaction_type=" << message.predict_transaction_typename();
   return ss.str();
 }
 

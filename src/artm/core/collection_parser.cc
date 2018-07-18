@@ -216,7 +216,6 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
       prev_item_id = item_id;
       if (batch.item_size() >= config_.num_items_per_batch()) {
         batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
-        batch.add_transaction_type(TransactionType(batch_class_ids).AsString());
         batch.add_transaction_typename(DefaultTransactionTypeName);
         ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
         num_batches++;
@@ -263,7 +262,6 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
 
   if (batch.item_size() > 0) {
     batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
-    batch.add_transaction_type(TransactionType(batch_class_ids).AsString());
     batch.add_transaction_typename(DefaultTransactionTypeName);
     ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
     num_batches++;
@@ -374,7 +372,6 @@ class CollectionParser::BatchCollector {
   int64_t total_items_count_;
   int64_t total_tokens_count_;
   std::unordered_map<TransactionTypeName, int> tt_name_to_id_;
-  std::unordered_map<TransactionTypeName, std::unordered_set<ClassId>> tt_name_to_tt_;
 
   void StartNewItem() {
     item_ = batch_.add_item();
@@ -394,22 +391,18 @@ class CollectionParser::BatchCollector {
     }
 
     auto id_iter = tt_name_to_id_.find(transaction_typename);
-    auto tt_iter = tt_name_to_tt_.find(transaction_typename);
     if (id_iter == tt_name_to_id_.end()) {
       tt_name_to_id_.emplace(transaction_typename, tt_name_to_id_.size());
-      tt_name_to_tt_.emplace(transaction_typename, std::unordered_set<ClassId>());
 
       id_iter = tt_name_to_id_.find(transaction_typename);
-      tt_iter = tt_name_to_tt_.find(transaction_typename);
     }
 
     item_->add_transaction_start_index(item_->token_id_size());
     item_->add_transaction_typename_id(id_iter->second);
 
     for (int i = 0; i < class_ids.size(); ++i) {
-      tt_iter->second.emplace(class_ids[i]);
-
       Token token(class_ids[i], tokens[i]);
+
       if (global_map_.find(token) == global_map_.end()) {
         global_map_.insert(std::make_pair(token, CollectionParserTokenInfo(token.keyword, token.class_id)));
       }
@@ -459,14 +452,12 @@ class CollectionParser::BatchCollector {
 
     for (const auto& v : vec) {
       batch_.add_transaction_typename(v);
-      batch_.add_transaction_type(TransactionType(tt_name_to_tt_.find(v)->second).AsString());
     }
 
     Batch batch;
     batch.Swap(&batch_);
     local_map_.clear();
     tt_name_to_id_.clear();
-    tt_name_to_tt_.clear();
     return batch;
   }
 

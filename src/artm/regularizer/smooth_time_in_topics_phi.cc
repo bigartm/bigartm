@@ -32,10 +32,6 @@ bool SmoothTimeInTopicsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
 
   const auto& class_id = config_.class_id();
-  auto tt = ::artm::core::DefaultTransactionTypeName;
-  if (config_.has_transaction_typename()) {
-    tt = config_.transaction_typename();
-  }
 
   // proceed the regularization
   // will update only tokens of given modality, that have prev and post tokens of this modality
@@ -44,7 +40,7 @@ bool SmoothTimeInTopicsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   for (int token_id = 0; token_id < token_size; ++token_id) {
     const auto& token = p_wt.token(token_id);
 
-    if (token.class_id != class_id || token.transaction_typename != tt) {
+    if (token.class_id != class_id) {
       continue;
     }
 
@@ -83,13 +79,6 @@ google::protobuf::RepeatedPtrField<std::string> SmoothTimeInTopicsPhi::class_ids
   google::protobuf::RepeatedPtrField<std::string> retval;
   std::string* ptr = retval.Add();
   *ptr = config_.class_id();
-  return retval;
-}
-
-google::protobuf::RepeatedPtrField<std::string> SmoothTimeInTopicsPhi::transaction_types_to_regularize() {
-  google::protobuf::RepeatedPtrField<std::string> retval;
-  std::string* ptr = retval.Add();
-  *ptr = config_.has_transaction_typename() ? config_.transaction_typename() : artm::core::DefaultTransactionTypeName;
   return retval;
 }
 

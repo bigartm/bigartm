@@ -46,7 +46,6 @@ class DecorrelatorPhi : public RegularizerInterface {
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
   virtual google::protobuf::RepeatedPtrField<std::string> class_ids_to_regularize();
-  virtual google::protobuf::RepeatedPtrField<std::string> transaction_types_to_regularize();
 
   virtual bool Reconfigure(const RegularizerConfig& config);
 

@@ -118,12 +118,6 @@ std::vector<float> Helpers::GenerateRandomVector(int size, const Token& token, i
     h = 31 * h + seed;
   }
 
-  if (token.transaction_typename != DefaultTransactionTypeName) {
-    for (unsigned i = 0; i < token.transaction_typename.size(); i++) {
-      h = 31 * h + token.transaction_typename[i];
-    }
-  }
-
   return GenerateRandomVector(size, h);
 }
 

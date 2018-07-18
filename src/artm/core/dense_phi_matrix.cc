@@ -87,8 +87,7 @@ PhiMatrixFrame::PhiMatrixFrame(const ModelName& model_name,
     : model_name_(model_name)
     , topic_name_()
     , token_collection_()
-    , spin_locks_()
-    , transaction_typename_to_type_() {
+    , spin_locks_() {
   if (topic_name.size() == 0) {
     BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("Can not create model " + model_name + " with 0 topics"));
   }
@@ -99,11 +98,10 @@ PhiMatrixFrame::PhiMatrixFrame(const ModelName& model_name,
 }
 
 PhiMatrixFrame::PhiMatrixFrame(const PhiMatrixFrame& rhs)
-    : model_name_(rhs.model_name_),
-      topic_name_(rhs.topic_name_),
-      token_collection_(rhs.token_collection_),
-      spin_locks_(),
-      transaction_typename_to_type_(rhs.transaction_typename_to_type_) {
+    : model_name_(rhs.model_name_)
+    , topic_name_(rhs.topic_name_)
+    , token_collection_(rhs.token_collection_)
+    , spin_locks_() {
   spin_locks_.reserve(rhs.spin_locks_.size());
   for (unsigned i = 0; i < rhs.spin_locks_.size(); ++i) {
     spin_locks_.push_back(std::make_shared<SpinLock>());
@@ -163,21 +161,10 @@ void PhiMatrixFrame::Swap(PhiMatrixFrame* rhs) {
   topic_name_.swap(rhs->topic_name_);
   token_collection_.Swap(&rhs->token_collection_);
   spin_locks_.swap(rhs->spin_locks_);
-  transaction_typename_to_type_.swap(rhs->transaction_typename_to_type_);
 }
 
 int64_t PhiMatrixFrame::ByteSize() const {
   return token_collection_.ByteSize();
-}
-
-const std::unordered_map<TransactionTypeName, TransactionType>&
-PhiMatrixFrame::GetTransactionTypes() const {
-  return transaction_typename_to_type_;
-}
-
-void PhiMatrixFrame::AddTransactionType(
-  const TransactionTypeName& name, const TransactionType& ttype) {
-  transaction_typename_to_type_.emplace(name, ttype);
 }
 
 // =======================================================
@@ -403,9 +390,6 @@ void DensePhiMatrix::Reshape(const PhiMatrix& phi_matrix) {
   Clear();
   for (int token_id = 0; token_id < phi_matrix.token_size(); ++token_id) {
     this->AddToken(phi_matrix.token(token_id));
-  }
-  for (const auto& tt_name_to_tt : phi_matrix.GetTransactionTypes()) {
-    this->AddTransactionType(tt_name_to_tt.first, tt_name_to_tt.second);
   }
 }
 

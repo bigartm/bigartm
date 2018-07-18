@@ -140,8 +140,6 @@ set(SRC_LIST
 	core/thread_safe_holder.h
 	core/token.cc
 	core/token.h
-	core/transaction_type.cc
-	core/transaction_type.h
 	core/transform_function.h
 	core/transform_function.cc
 	regularizer/decorrelator_phi.cc

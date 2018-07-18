@@ -69,25 +69,19 @@ std::shared_ptr<BatchTransactionInfo> ProcessorTransactionHelpers::PrepareBatchI
       }
 
       float transaction_weight = 0.0f;
-      auto it = p_wt.GetTransactionTypes().find(tt_name);
-      if (it != p_wt.GetTransactionTypes().end()) {
-        for (int idx = start_index; idx < end_index; ++idx) {
-          const int token_id = item.token_id(idx);
-          const float token_weight = item.token_weight(idx);
+      for (int idx = start_index; idx < end_index; ++idx) {
+        const int token_id = item.token_id(idx);
+        const float token_weight = item.token_weight(idx);
 
-          ClassId class_id = batch.class_id(token_id);
-          if (it->second.AsSet().find(class_id) == it->second.AsSet().end()) {
-            continue;  // transaction contains token of invalid class_id, ignore this token
-          }
+        ClassId class_id = batch.class_id(token_id);
 
-          float class_weight = 1.0f;
-          if (use_class_weight) {
-            auto iter = class_id_to_weight.find(class_id);
-            class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
-          }
-
-          transaction_weight += (token_weight * class_weight);
+        float class_weight = 1.0f;
+        if (use_class_weight) {
+          auto iter = class_id_to_weight.find(class_id);
+          class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
         }
+
+        transaction_weight += (token_weight * class_weight);
       }
 
       n_dw_val.push_back(transaction_weight * tt_weight);
@@ -106,7 +100,7 @@ std::shared_ptr<BatchTransactionInfo> ProcessorTransactionHelpers::PrepareBatchI
 
         for (int idx = start_index; idx < end_index; ++idx) {
           const int token_id = item.token_id(idx);
-          auto token = Token(batch.class_id(token_id), batch.token(token_id), tt_name);
+          auto token = Token(batch.class_id(token_id), batch.token(token_id));
           token_to_index.emplace(token, token_to_index.size());
 
           local_indices.push_back(token_to_index.size() - 1);

@@ -11,7 +11,6 @@
 
 #include "artm/core/common.h"
 #include "artm/core/thread_safe_holder.h"
-#include "artm/core/transaction_type.h"
 #include "artm/core/token.h"
 
 namespace artm {
@@ -68,17 +67,6 @@ class Dictionary {
 
   void SetNumItems(int num_items) { num_items_in_collection_ = num_items; }
 
-  void AddTransactionType(const TransactionTypeName& name, const TransactionType& ttype) {
-    transaction_name_to_type_.emplace(name, ttype);
-  }
-
-  void AddTransactionTypeNameForClassId(const ClassId& class_id, const TransactionTypeName& name);
-
-  void SetClassIdToTransactionTypeNames(
-      const std::unordered_map<ClassId, std::unordered_set<TransactionTypeName>>& mapping) {
-    class_id_to_type_name_ = mapping;
-  }
-
   // SECTION OF GETTERS
   bool HasToken(const Token& token) const { return token_index_.find(token) != token_index_.end(); }
 
@@ -103,17 +91,6 @@ class Dictionary {
   const std::unordered_map<int, std::unordered_map<int, float> >& cooc_tfs() const { return cooc_tfs_; }
   const std::unordered_map<int, std::unordered_map<int, float> >& cooc_dfs() const { return cooc_dfs_; }
 
-  const std::unordered_map<TransactionTypeName, TransactionType>& GetTransactionTypes() const {
-    return transaction_name_to_type_;
-  }
-
-  std::unordered_set<TransactionTypeName> GetTransactionTypeNamesForClassId(const ClassId& class_id) const;
-
-  const std::unordered_map<ClassId, std::unordered_set<TransactionTypeName>>&
-  GetClassIdToTransactionTypeNames() const {
-    return class_id_to_type_name_;
-  }
-
   // SECTION OF OPERATIONS
   float CountTopicCoherence(const std::vector<core::Token>& tokens_to_score);
 
@@ -130,8 +107,6 @@ class Dictionary {
   CoocMap cooc_tfs_;
   CoocMap cooc_dfs_;
   size_t num_items_in_collection_;
-  std::unordered_map<TransactionTypeName, TransactionType> transaction_name_to_type_;
-  std::unordered_map<ClassId, std::unordered_set<TransactionTypeName>> class_id_to_type_name_;
 
   void AddCoocImpl(const Token& token_1, const Token& token_2, float value, CoocMap* cooc_map);
   void AddCoocImpl(int index_1, int index_2, float value, CoocMap* cooc_map);
