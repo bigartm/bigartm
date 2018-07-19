@@ -2,23 +2,22 @@
 
 #pragma once
 
-#include <unordered_map>
-#include <string>
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <map>
-#include <vector>
-#include <sstream>
-#include <iomanip>
 #include <memory>
 #include <mutex>  // NOLINT
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
 #include "boost/utility.hpp"
 
 #include "artm/core/collection_parser.h"
-
 #include "artm/core/common.h"
 
 namespace artm {

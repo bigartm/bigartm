@@ -1,19 +1,19 @@
-// Copyright 2017, Additive Regularization of Topic Models.
+// Copyright 2018, Additive Regularization of Topic Models.
 
 #include "artm/core/collection_parser.h"
 
 #include <algorithm>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <map>
-#include <memory>
-#include <utility>
-#include <unordered_set>
-#include <unordered_map>
+#include <atomic>
 #include <iostream>  // NOLINT
 #include <future>  // NOLINT
-#include <atomic>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <unordered_set>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/predicate.hpp"
@@ -26,11 +26,11 @@
 #include "artm/utility/ifstream_or_cin.h"
 #include "artm/utility/progress_printer.h"
 
+#include "artm/core/cooccurrence_collector.h"
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/core/protobuf_helpers.h"
-#include "artm/core/cooccurrence_collector.h"
 
 using ::artm::utility::ifstream_or_cin;
 
@@ -465,9 +465,9 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
   // During parsing it gathers co-occurrence counters for pairs of tokens (if the correspondent flag == true)
   // Steps 1-4 are repeated in a while loop until there is no content left in docword file.
   // Multiple copies of the function can work in parallel.
-  auto func = [&docword, &global_line_no, &progress, &batch_name_generator, &read_access, &cooc_config_access,
-               &token_map_access, &token_statistics_access, &parser_info, &token_map, &total_num_of_pairs,
-               &cooc_collector, &gather_transaction_cooc, config]() {
+  auto func = [&docword, &global_line_no, &progress, &batch_name_generator, &read_access,
+               &cooc_config_access, &token_map_access, &token_statistics_access, &parser_info,
+               &token_map, &total_num_of_pairs, &cooc_collector, &gather_transaction_cooc, config]() {
     int64_t local_num_of_pairs = 0;  // statistics for future ppmi calculation
     while (true) {
       // The following variable remembers at which line the batch has started.
@@ -510,7 +510,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
       // and then this storage is destroyed
       CooccurrenceStatisticsHolder cooc_stat_holder;
       // For every token from vocab keep the information about the last document this token occured in
-      // std::unordered_map<int> num_of_last_document_token_occured;  // ToDo: think how to add elements here
+
       // ToDo (MichaelSolotky): consider the case if there is no vocab
       std::vector<int> num_of_last_document_token_occured(cooc_collector.vocab_.token_map_.size(), -1);
 
@@ -530,6 +530,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
 
         std::string item_title = strs[0];
 
+        // ToDo: calcualte cross-modality co-occurrurrence (window width is doc length)
         std::vector<ClassId> class_ids = { DefaultClass };
         for (unsigned elem_index = 1; elem_index < strs.size(); ++elem_index) {
           std::string elem = strs[elem_index];
