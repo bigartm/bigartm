@@ -15,6 +15,7 @@ where `p(u, v)` is joint probability of tokens `u` and `v` in corpora acording t
 
 Some models of tokens co-occurrence are implemented in BigARTM, you can automatically calculate them or use your own model to provide pairwise information to calculate coherence.
 
+
 * **Tokens Co-occurrence Dictionary**
 
 BigARTM provides automatic gathering of co-occurrence statistics and coherence computation. Co-occurrence gathering tool is available from :doc:`../bigartm_cli`. Probabilities in PPMI formula can be estimated by frequencies in corpora:
@@ -34,6 +35,8 @@ All depends of the way to calculate joint frequencies (i.e. co-occurrences). Her
 * Cooc DF: :math:`n_(u, v) = \sum\limits_{d = 1}^{|D|} [\, \exists \, i, j : w_{di} = u, w_{dj} = v, 0 < |i - j| \leq k]`,
 
 where k is parameter of window width which can be specified by user, D is collection, :math:`N_{d}` is length of document d. In brief cooc TF measures how many times the given pair occurred in the collection in a window and cooc DF measures in how many documents the given pair occurred at least once in a window of a given width.
+
+This document should be enough to gather co-occurrence statistics, but also you can look at launchable examples and common mistakes in `bigartm-book <http://nbviewer.jupyter.org/github/bigartm/bigartm-book/blob/master/junk/cooc_dictionary/example_of_gathering.ipynb>`_ (in russian).
 
 * **Coherence Computation**
 

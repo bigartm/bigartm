@@ -30,7 +30,8 @@ Here is a combination of comand line keys that allows you to build co-occurrence
 
 Numbers and names of files can be changed, it's just an example.
 To know the description of each key, see below in table of all available keys.
-Also you can look at launchable examples and common mistakes in `bigartm-book <http://nbviewer.jupyter.org/github/MichaelSolotky/bigartm-book/blob/cooc_dict/junk/cooc_dictionary/Example_of_gathering.ipynb>`_ (in russian)
+
+Also you can look at launchable examples and common mistakes in `bigartm-book <http://nbviewer.jupyter.org/github/bigartm/bigartm-book/blob/master/junk/cooc_dictionary/example_of_gathering.ipynb>`_ (in russian).
 
 
 * **BigARTM CLI keys**
