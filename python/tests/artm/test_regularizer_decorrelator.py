@@ -35,7 +35,7 @@ def test_func():
         model.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=1)
 
         def _f(w):
-            return ('@default_class', w, '@default_transaction')
+            return ('@default_class', w)
 
         phi = model.get_phi()
         real_topics = pd.DataFrame(columns=['topic_0', 'topic_1', 'topic_2', 'topic_3', 'topic_4'],

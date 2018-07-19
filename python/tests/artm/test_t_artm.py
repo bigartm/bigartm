@@ -16,30 +16,30 @@ def test_func():
         for i in range(num_docs):
             doc_to_transactions[i] = []
 
-        doc_to_transactions[0].append([('class_1', 'token_1', '@default_transaction')])
-        doc_to_transactions[0].append([('class_1', 'token_1', 'trans1'), ('class_2', 'token_2', 'trans1' )])
+        doc_to_transactions[0].append([('class_1', 'token_1')])
+        doc_to_transactions[0].append([('class_1', 'token_1'), ('class_2', 'token_2')])
 
-        doc_to_transactions[1].append([('class_1', 'token_2', '@default_transaction')])
-        doc_to_transactions[1].append([('class_1', 'token_2', 'trans1' ), ('class_2', 'token_3', 'trans1')])
+        doc_to_transactions[1].append([('class_1', 'token_2')])
+        doc_to_transactions[1].append([('class_1', 'token_2' ), ('class_2', 'token_3')])
 
-        doc_to_transactions[2].append([('class_1', 'token_3', '@default_transaction')])
-        doc_to_transactions[2].append([('class_1', 'token_3', 'trans1'), ('class_2', 'token_4', 'trans1' )])
+        doc_to_transactions[2].append([('class_1', 'token_3')])
+        doc_to_transactions[2].append([('class_1', 'token_3'), ('class_2', 'token_4')])
 
-        doc_to_transactions[3].append([('class_1', 'token_1', '@default_transaction')])
-        doc_to_transactions[3].append([('class_1', 'token_1', 'trans1'), ('class_2', 'token_2', 'trans1' )])
+        doc_to_transactions[3].append([('class_1', 'token_1')])
+        doc_to_transactions[3].append([('class_1', 'token_1'), ('class_2', 'token_2')])
 
-        doc_to_transactions[4].append([('class_1', 'token_2', '@default_transaction')])
-        doc_to_transactions[4].append([('class_1', 'token_2', 'trans1'), ('class_2', 'token_3', 'trans1')])
+        doc_to_transactions[4].append([('class_1', 'token_2')])
+        doc_to_transactions[4].append([('class_1', 'token_2'), ('class_2', 'token_3')])
 
-        doc_to_transactions[5].append([('class_1', 'token_3', '@default_transaction')])
-        doc_to_transactions[5].append([('class_1', 'token_3', 'trans1'), ('class_2', 'token_4', 'trans1')])
+        doc_to_transactions[5].append([('class_1', 'token_3')])
+        doc_to_transactions[5].append([('class_1', 'token_3'), ('class_2', 'token_4')])
   
-        doc_to_transactions[6].append([('class_3', 'token_5', '@default_transaction')])
-        doc_to_transactions[6].append([('class_4', 'token_5', 'trans2'), ('class_2', 'token_2', 'trans2'), ('class_1', 'token_2', 'trans2')])
+        doc_to_transactions[6].append([('class_3', 'token_5')])
+        doc_to_transactions[6].append([('class_4', 'token_5'), ('class_2', 'token_2'), ('class_1', 'token_2')])
 
-        doc_to_transactions[7].append([('class_1', 'token_1', 'trans1'), ('class_2', 'token_2', 'trans1')])
-        doc_to_transactions[7].append([('class_1', 'token_2', 'trans1'), ('class_2', 'token_3', 'trans1')])
-        doc_to_transactions[7].append([('class_1', 'token_1', '@default_transaction')])
+        doc_to_transactions[7].append([('class_1', 'token_1'), ('class_2', 'token_2')])
+        doc_to_transactions[7].append([('class_1', 'token_2'), ('class_2', 'token_3')])
+        doc_to_transactions[7].append([('class_1', 'token_1')])
 
         return doc_to_transactions
 
@@ -49,7 +49,7 @@ def test_func():
 
     num_topics = 3
     num_docs = 8
-    num_tokens = 17
+    num_tokens = 8
 
     try:
         bv = artm.BatchVectorizer(data_path=os.path.join(data_path,
@@ -90,14 +90,16 @@ def test_func():
                         val *= phi[t][tok]
                     p_xd += val
 
-                if i_d != 7:
-                    assert abs(p_xd - 1.0) < 0.01
-                elif i_x == 0 or i_x == 2:
-                    assert abs(p_xd - 0.66) < 0.01
-                elif i_x == 1:
-                    assert abs(p_xd - 0.33) < 0.01
-                else:
-                   raise RuntimeError("Invalid i_x or i_d: {}, {}".format(i_x, i_d))
+        if i_d == 0 or i_d == 3:
+            assert abs(p_xd - 0.66) < 0.01
+        elif i_d == 1 or i_d == 2 or i_d == 4 or i_d == 5 or (i_d == 6 and i_x == 0):
+            assert abs(p_xd - 1.0) < 0.01
+        elif (i_d == 6 and i_x == 1) or (i_d == 7 and i_x == 1):
+            assert abs(p_xd - 0.33) < 0.01
+        elif i_d == 7:
+            assert abs(p_xd - 0.44) < 0.01
+        else:
+            raise RuntimeError("Invalid i_x or i_d: {}, {}".format(i_x, i_d))
     finally:
         shutil.rmtree(batches_folder)
 

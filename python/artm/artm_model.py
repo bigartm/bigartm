@@ -725,7 +725,7 @@ class ARTM(object):
         self._num_online_processed_batches = 0
         self._phi_cached = None
 
-    def get_phi_dense(self, topic_names=None, class_ids=None, transaction_typenames=None, model_name=None):
+    def get_phi_dense(self, topic_names=None, class_ids=None, model_name=None):
         """
         :Description: get phi matrix in dense format
 
@@ -733,9 +733,6 @@ class ARTM(object):
         :type topic_names: list of str or str or None
         :param class_ids: list with class_ids or single class_id to extract, None means all class ids
         :type class_ids: list of str or str or None
-        :param transaction_typenames: list with transaction_typenames or single transaction_typename to extract,\
-                                  None means extracting tokens of all transaction types
-        :type transaction_typenames: list of str or str or None
         :param str model_name: self.model_pwt by default, self.model_nwt is also\
                       reasonable to extract unnormalized counters
 
@@ -756,27 +753,17 @@ class ARTM(object):
             topic_names = [topic_names]
         if isinstance(class_ids, string_types):
             class_ids = [class_ids]
-        if isinstance(transaction_typenames, string_types):
-            transaction_typenames = [transaction_typenames]
 
         _, nd_array = self.master.get_phi_matrix(model=valid_model_name,
                                                  topic_names=topic_names,
-                                                 class_ids=class_ids,
-                                                 transaction_typenames=transaction_typenames)
+                                                 class_ids=class_ids)
 
-        id_to_tt_name = {}
-        for index, name in enumerate(info.transaction_typename):
-            id_to_tt_name[index] = name
-
-        tokens = [(c, t, id_to_tt_name[tt_id])
-              for t, c, tt_id in zip(info.token, info.class_id, info.transaction_typename_id)  # noqa
-                  if (class_ids is None or c in class_ids) and
-                     (transaction_typenames is None or tt_id in id_to_tt_name)]
+        tokens = [(c, t) for t, c in zip(info.token, info.class_id) if (class_ids is None or c in class_ids)]
         topic_names = [topic_name for topic_name in info.topic_name
                        if topic_names is None or topic_name in topic_names]
         return nd_array, tokens, topic_names
 
-    def get_phi(self, topic_names=None, class_ids=None, transaction_typenames=None, model_name=None):
+    def get_phi(self, topic_names=None, class_ids=None, model_name=None):
         """
         :Description: get custom Phi matrix of model. The extraction of the\
                       whole Phi matrix expects ARTM.phi_ call.
@@ -785,9 +772,6 @@ class ARTM(object):
         :type topic_names: list of str or str or None
         :param class_ids: list with class_ids or single class_id to extract, None means all class ids
         :type class_ids: list of str or str or None
-        :param transaction_typenames: list with transaction_typenames or single transaction_typename to extract,\
-                                  None means extracting tokens of all transaction types
-        :type transaction_typenames: list of str or str or None
         :param str model_name: self.model_pwt by default, self.model_nwt is also\
                       reasonable to extract unnormalized counters
 
@@ -799,7 +783,6 @@ class ARTM(object):
         """
         (nd_array, tokens, topic_names) = self.get_phi_dense(topic_names=topic_names,
                                                              class_ids=class_ids,
-                                                             transaction_typenames=transaction_typenames,
                                                              model_name=model_name)
         phi_data_frame = DataFrame(data=nd_array,
                                    columns=topic_names,
@@ -815,9 +798,6 @@ class ARTM(object):
         :type topic_names: list of str or str or None
         :param class_ids: list with class_ids or single class_id to extract, None means all class ids
         :type class_ids: list of str or str or None
-        :param transaction_typenames: list with transaction_typenames or single transaction_typename to extract,\
-                                  None means extracting tokens of all transaction types
-        :type transaction_typenames: list of str or str or None
         :param str model_name: self.model_pwt by default, self.model_nwt is also\
                       reasonable to extract unnormalized counters
         :param float eps: threshold to consider values as zero
@@ -849,8 +829,6 @@ class ARTM(object):
                 class_ids = [class_ids]
             for class_id in class_ids:
                 args.class_id.append(class_id)
-        if transaction_typenames is not None:
-            raise ValueError('Transaction models do not currently support sparse phi matrix extraction')
 
         tm = self._lib.ArtmRequestTopicModelExternal(self.master.master_id, args)
 
@@ -870,13 +848,7 @@ class ARTM(object):
                                  shape=(len(tm.token), len(tm.topic_name)))
         columns = list(tm.topic_name)
 
-        def _func(transaction_index):
-            for i, name in enumerate(info.transaction_typename):
-                if i == transaction_index:
-                    return name
-            return None
-
-        rows = [(c, t, _func(tt_id)) in zip(tm.token, tm.class_id, tm.transaction_typename_id)]
+        rows = [(c, t) in zip(tm.token, tm.class_id)]
         return data, rows, columns
 
     def get_theta(self, topic_names=None):
@@ -980,8 +952,7 @@ class ARTM(object):
         """
         return self.master.get_score(score_name)
 
-    def transform(self, batch_vectorizer=None, theta_matrix_type='dense_theta',
-                  predict_class_id=None, predict_transaction_type=None):
+    def transform(self, batch_vectorizer=None, theta_matrix_type='dense_theta', predict_class_id=None):
         """
         :Description: find Theta matrix for new documents
 
@@ -992,9 +963,6 @@ class ARTM(object):
                 When this option is enabled the resulting columns of theta matrix will\
                 correspond to unique labels of a target modality. The values will represent\
                 p(c|d), which give the probability of class label c for document d.
-        :param str predict_transaction_type: should be used in case of transaction model to\
-                                             specify the transaction of predict_class_id,\
-                                             should be used only with predict_class_id parameter.
 
         :return:
           * pandas.DataFrame: (data, columns, rows), where:
@@ -1032,8 +1000,7 @@ class ARTM(object):
 
         theta_info, numpy_ndarray = self._wait_for_batches_processed(
             self._pool.apply_async(func=self.master.transform,
-                                   args=(None, batch_vectorizer.batches_ids, theta_matrix_type_real,
-                                         predict_class_id, predict_transaction_type)),
+                                   args=(None, batch_vectorizer.batches_ids, theta_matrix_type_real, predict_class_id)),
             batch_vectorizer.num_batches)
 
         if theta_matrix_type is not None and theta_matrix_type != 'cache':

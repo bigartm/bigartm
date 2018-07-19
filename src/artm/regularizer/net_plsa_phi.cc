@@ -123,8 +123,10 @@ void NetPlsaPhi::UpdateNetInfo(const NetPlsaPhiConfig& config) {
   int num_edges = config.first_vertex_index_size();
   if (num_edges) {
     if (num_edges != config.second_vertex_index_size() || num_edges != config.edge_weight_size()) {
-      BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(
-          "Both vertex indices and value arrays should have the same length"));
+      std::stringstream ss;
+      ss << "Both vertex indices and value arrays should have the same length " << num_edges << ", now: "
+         << config.second_vertex_index_size() << " and " << config.edge_weight_size();
+      BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(ss.str()));
     }
 
     for (int i = 0; i < num_edges; ++i) {

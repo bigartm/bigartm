@@ -66,10 +66,10 @@ def test_func():
         assert phi.equals(phi_3)
 
         def _f(w):
-            return ('@default_class', w, '@default_transaction')
+            return ('@default_class', w)
 
         def _t(w):
-            return ('@time_class', w, '@default_transaction')
+            return ('@time_class', w)
 
         real_topics = pd.DataFrame(columns=['topic_0', 'topic_1', 'topic_2', 'topic_3', 'topic_4'],
                                    index=[_f('ccc'), _f('bbb'), _f('aaa'), _t('time_1'), _t('time_2')],

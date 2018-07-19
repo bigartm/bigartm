@@ -480,15 +480,13 @@ class MasterComponent(object):
         :type regularizer_name: list of str
         :param regularizer_tau: list of tau coefficients for Theta regularizers
         :type regularizer_tau: list of float
-        :param class_ids: list of class ids to use during processing.\
-                                    Use either transaction_typenames or class_ids parameter-weight pairs
+        :param class_ids: list of class ids to use during processing.
         :type class_ids: list of str
         :param class_weights: list of corresponding weights of class ids.
         :type class_weights: list of float
         :param transaction_typenames: list of transaction types to use during processing.
         :type transaction_typenames: list of str
-        :param transaction_weights: list of corresponding weights of transaction types.\
-                                    Use either transaction_typenames or class_ids parameter-weight pairs
+        :param transaction_weights: list of corresponding weights of transaction types.
         :type transaction_weights: list of float
         :param bool find_theta: find theta matrix for 'batches' (if alternative 2)
         :param bool reuse_theta: initialize by theta from previous collection pass
@@ -496,11 +494,6 @@ class MasterComponent(object):
                 (works if find_theta == False)
         :param predict_class_id: class_id of a target modality to predict
         :type predict_class_id: str, default None
-        :param predict_transaction_type: transaction type to predict (in case of None class_id\
-                                         parameter all class_ids in transaction will be predicted,\
-                                         it is invalid behavior, so predict_transaction_type should\
-                                         always be used with predict_class_id
-        :type predict_transaction_type: str, default None
         :return:
             * tuple (messages.ThetaMatrix, numpy.ndarray) --- the info about Theta\
                     (if find_theta == True)
@@ -539,9 +532,6 @@ class MasterComponent(object):
 
         if predict_class_id is not None:
             args.predict_class_id = predict_class_id
-
-        if predict_transaction_type is not None:
-            args.predict_transaction_type = predict_transaction_type
 
         func = None
         if find_theta or find_ptdw:
@@ -791,17 +781,13 @@ class MasterComponent(object):
 
         return phi_matrix_info
 
-    def get_phi_matrix(self, model, topic_names=None, class_ids=None,
-                       transaction_typenames=None, use_sparse_format=None):
+    def get_phi_matrix(self, model, topic_names=None, class_ids=None, use_sparse_format=None):
         """
         :param str model: name of matrix in BigARTM
         :param topic_names: list of topics to retrieve (None means all topics)
         :type topic_names: list of str or None
         :param class_ids: list of class ids to retrieve (None means all class ids)
         :type class_ids: list of str or None
-        :param transaction_typenames: list of transaction types to retrieve\
-                                  (None means @default_transaction type)
-        :type transaction_typenames: list of str or None
         :param bool use_sparse_format: use sparse\dense layout
         :return: numpy.ndarray with Phi data (i.e., p(w|t) values)
         """
@@ -814,10 +800,6 @@ class MasterComponent(object):
             args.ClearField('class_id')
             for class_id in class_ids:
                 args.class_id.append(class_id)
-        if transaction_typenames is not None:
-            args.ClearField('transaction_typename')
-            for transaction_typename in transaction_typenames:
-                args.transaction_typename.append(transaction_typename)
         if use_sparse_format is not None:
             args.matrix_layout = constants.MatrixLayout_Sparse
 
@@ -938,7 +920,7 @@ class MasterComponent(object):
         self._lib.ArtmFitOnlineMasterModel(self.master_id, args)
 
     def transform(self, batches=None, batch_filenames=None, theta_matrix_type=None,
-                  predict_class_id=None, predict_transaction_type=None):
+                  predict_class_id=None):
         """
         :param batches: list of Batch instances
         :param batch_weights: weights of batches to transform
@@ -946,11 +928,6 @@ class MasterComponent(object):
         :param int theta_matrix_type: type of matrix to be returned
         :param predict_class_id: class_id of a target modality to predict
         :type predict_class_id: str, default None
-        :param predict_transaction_type: transaction type to predict (in case of None class_id\
-                                         parameter all class_ids in transaction will be predicted,\
-                                         it is invalid behavior, so predict_transaction_type should\
-                                         always be used with predict_class_id
-        :type predict_transaction_type: str, default None
         :return: messages.ThetaMatrix object
         """
         args = messages.TransformMasterModelArgs()
@@ -970,9 +947,6 @@ class MasterComponent(object):
 
         if predict_class_id is not None:
             args.predict_class_id = predict_class_id
-
-        if predict_transaction_type is not None:
-            args.predict_transaction_type = predict_transaction_type
 
         if theta_matrix_type not in [constants.ThetaMatrixType_None, constants.ThetaMatrixType_Cache]:
             theta_matrix_info = self._lib.ArtmRequestTransformMasterModelExternal(self.master_id, args)
