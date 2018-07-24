@@ -2,12 +2,9 @@
 
 #include <stdlib.h>
 
-#include <cstring>
-#include <ctime>
-#include <cmath>
-
 #include <algorithm>
 #include <chrono>
+#include <cstring>
 #include <fstream>
 #include <future>
 #include <iostream>
@@ -272,7 +269,6 @@ struct artm_options {
   std::string dictionary_max_df;
   int dictionary_size;
   int cooc_window;
-  int doc_per_cooc_batch;
   int cooc_min_df;
   int cooc_min_tf;
 
@@ -1766,7 +1762,6 @@ int main(int argc, char * argv[]) {
       ("cooc-min-tf", po::value(&options.cooc_min_tf)->default_value(0), "minimal value of cooccurrences of a pair of tokens that are saved in dictionary of cooccurrences")
       ("cooc-min-df", po::value(&options.cooc_min_df)->default_value(0), "minimal value of documents in which a specific pair of tokens occurred together closely")
       ("cooc-window", po::value(&options.cooc_window)->default_value(5), "number of tokens around specific token, which are used in calculation of cooccurrences")
-      ("doc-per-cooc-batch", po::value(&options.doc_per_cooc_batch)->default_value(10000), "number of documents which will be processed and written in 1 cooc batch")
       ("dictionary-min-df", po::value(&options.dictionary_min_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary-max-df", po::value(&options.dictionary_max_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary-size", po::value(&options.dictionary_size)->default_value(0), "limit dictionary size by filtering out tokens with high document frequency")

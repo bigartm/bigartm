@@ -14,18 +14,27 @@ Then you can use ``bigartm`` as described by ``bigartm --help``.
 You may also get more information about builtin regularizers by typing ``bigartm --help --regularizer``.
 
 
+* **Gathering of Co-occurrence Statistics File**
+
+In order to gather co-ooccurrence statistics files you need to have 2 files: collection in Vowpal Wabbit format and file of tokens (so called `"vocab"`) in UCI format. Vocab is needed to filter tokens of collection, which means that co-occurrence won't be calculated if some pair isn't presented in vocab. There are 2 types of co-occurrences available now: tf and df (see description below). Also you may want to calculate Positive PMI of gathered co-occurrence values. This information can be usefull if you want to use co-occurrence dictionary in coherence computation. The utility produces files with pointwise information in as pseudocollection in Vowpal Wabbit format.
+
 .. note::
 
-   In order to gather co-ooccurrence dictionary you need to have 2 files: collection in Vowpal Wabbit format and file of tokens in UCI vocab format. If you want to use co-occurrence dictionary in coherence computation you'll need to form file with ppmi values and use that as co-occurrence dictionary (it matches the format of co-ooccurrence dictionary).
-   Here is a combination of comand line keys that allows you to build co-occurrence dictionaries:
+   If you want to compute co-occurrences of tokens of **non-default modality**, you should specify that modalities in vocab file. For more information about UCI files format, please visit :doc:`./datasets`.
 
-   .. code-block:: bash
+Here is a combination of comand line keys that allows you to build co-occurrence dictionaries:
+
+.. code-block:: bash
    
-      bigartm -c vw -v vocab --cooc-window 10 --cooc-min-tf 200 --write-cooc-tf cooc_tf_ --cooc-min-df 200 --write-cooc-df cooc_df_ --write-ppmi-tf ppmi_tf_ --write-ppmi-df ppmi_df_
+   bigartm -c vw -v vocab --cooc-window 10 --cooc-min-tf 200 --write-cooc-tf cooc_tf_ --cooc-min-df 200 --write-cooc-df cooc_df_ --write-ppmi-tf ppmi_tf_ --write-ppmi-df ppmi_df_
 
-   Numbers and names of files can be changed, it's just an example.
-   To know the description of each key, see below in table of all available keys.
+Numbers and names of files can be changed, it's just an example.
+To know the description of each key, see below in table of all available keys.
 
+Also you can look at launchable examples and common mistakes in `bigartm-book <http://nbviewer.jupyter.org/github/bigartm/bigartm-book/blob/master/junk/cooc_dictionary/example_of_gathering.ipynb>`_ (in russian).
+
+
+* **BigARTM CLI keys**
 
 .. code-block:: bash
 
