@@ -1,4 +1,18 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.3)
+
+# CMake Policy 0060 (CMP0060) controls how CMake
+# adds library dependencies to linker
+# When this policy is disabled (turned to OLD),
+# CMake uses weird linker options (e.g. -Wl,-Bstatic -lfoo -Wl,-dynamic),
+# which can mess up linkage types of libraries
+# When this policy is enabled (turned to NEW),
+# CMake uses full path when linking libraries,
+# and this helps to avoid aforementioned linker options
+# The complete description of this policy can be found here:
+# https://cmake.org/cmake/help/latest/policy/CMP0060.html
+IF (POLICY CMP0060)
+  cmake_policy(SET CMP0060 NEW)
+endif (POLICY CMP0060)
 
 project(BigARTM)
 

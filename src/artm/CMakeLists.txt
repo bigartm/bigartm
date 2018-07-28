@@ -226,8 +226,7 @@ source_group(""                    FILES ${SRC_LIST_OTHER}               )
 
 add_library(artm-static STATIC ${SRC_LIST})
 target_link_libraries(artm-static
-    PUBLIC messages_proto internals_proto glog
-    PRIVATE ${BOOST_IMPORTED_TARGETS})
+    PUBLIC messages_proto internals_proto glog)
 add_dependencies(artm-static messages_proto internals_proto)
 target_compile_definitions(artm-static PRIVATE ARTM_STATIC_DEFINE)
 
@@ -236,6 +235,7 @@ if (WIN32)
     target_link_libraries(artm-static PUBLIC psapi)
 endif (WIN32)
 
+target_include_directories(artm-static PRIVATE ${Boost_INCLUDE_DIRS})
 target_include_directories(artm-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>)
 
 # Shared 'artm' library
