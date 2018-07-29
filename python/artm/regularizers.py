@@ -980,21 +980,32 @@ class TopicSegmentationPtdwRegularizer(BaseRegularizer):
         if window is not None:
             self._config.window = window
             self._window = window
+        elif config is not None and config.HasField('window'):
+            self._window = config.window
 
         if threshold is not None:
             self._config.threshold = threshold
             self._threshold = threshold
+        elif config is not None and config.HasField('threshold'):
+            self._threshold = config.threshold
 
         if background_topic_names is not None:
             if isinstance(background_topic_names, string_types):
                 background_topic_names = [background_topic_names]
             for topic_name in background_topic_names:
                 self._config.background_topic_names.append(topic_name)
+        elif config is not None and len(config.background_topic_names):
+            self._background_topic_names = [name for name in config.background_topic_names]
 
         self._config.merge_threshold = 0.0
+        self._merge_into_segments = False
         if merge_into_segments:
-            self._config.merge_into_segments=True
+            self._merge_into_segments = True
+            self._config.merge_into_segments = True
             self._config.merge_threshold = merge_threshold
+        elif config is not None and config.HasField('merge_into_segments'):
+            self._merge_into_segments = config.merge_into_segments
+            self._merge_threshold = config.merge_threshold
 
 
 class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):
