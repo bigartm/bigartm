@@ -2,34 +2,34 @@
 
 #include "artm/core/cooccurrence_collector.h"
 
-#include <unordered_map>
-#include <string>
+#include <algorithm>
+#include <cassert>
+#include <iomanip>
 #include <iostream>
 #include <fstream>
-#include <map>
-#include <vector>
 #include <future>  // NOLINT
-#include <mutex>  // NOLINT
-#include <thread>  // NOLINT
-#include <sstream>
-#include <iomanip>
+#include <map>
 #include <memory>
-#include <cassert>
-#include <stdexcept>
+#include <mutex>  // NOLINT
 #include <queue>
-#include <algorithm>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <thread>  // NOLINT
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
-#include "boost/utility.hpp"
 #include "boost/lexical_cast.hpp"
+#include "boost/utility.hpp"
 #include "boost/uuid/uuid_io.hpp"
 #include "boost/uuid/uuid_generators.hpp"
 
+#include "artm/core/collection_parser.h"
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
-#include "artm/core/collection_parser.h"
 
 namespace fs = boost::filesystem;
 

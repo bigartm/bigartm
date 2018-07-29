@@ -1,4 +1,4 @@
-# Copyright 2017, Additive Regularization of Topic Models.
+# Copyright 2018, Additive Regularization of Topic Models.
 
 import shutil
 import glob
@@ -102,7 +102,7 @@ def test_func():
         model.regularizers.add(artm.BitermsPhiRegularizer(name='Biterms', tau=biterms_tau, dictionary=dictionary))
 
         assert abs(model.phi_.as_matrix()[0][0] - phi_first_elem) < phi_eps
-    
+
         model.fit_offline(batch_vectorizer=batch_vectorizer)
         for i in range(len(phi_values)):
             for j in range(len(phi_values[0])):
