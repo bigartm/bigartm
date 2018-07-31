@@ -24,7 +24,6 @@ void TopicSegmentationPtdwAgent::Apply(int item_index, int inner_iter,
   //// if background topics are given, count probability for each word to be background
   std::vector<bool> is_background_topic = core::is_member(args_.topic_name(), config_.background_topic_names());
   if (config_.background_topic_names().size()) {
-    //std::vector<bool> is_background_topic = core::is_member(args_.topic_name(), config_.background_topic_names());
     for (int i = 0; i < local_token_size; ++i) {
       const float* local_ptdw_ptr = &(*ptdw)(i, 0);  // NOLINT
       for (int k = 0; k < num_topics; ++k) {
@@ -164,7 +163,7 @@ void TopicSegmentationPtdwAgent::Apply(int item_index, int inner_iter,
       if (i >= static_cast<int>(distances.size())) {
         break;
       }
-      if(distances[i] > mean_dist + alpha * sigma) {
+      if (distances[i] > mean_dist + alpha * sigma) {
         it = dot_positions.erase(it);
         count++;
         it--;
