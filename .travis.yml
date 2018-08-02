@@ -41,7 +41,7 @@ env:
 before_install:
   # we need latest pip to work with only-binary option
   - pip install -U pip
-  - pip install -U pytest pep8 wheel
+  - pip install -U pytest pep8 wheel pytest-forked
   - pip install -U numpy scipy pandas tqdm --only-binary numpy,scipy,pandas
   - pip install -U protobuf
   # configure ccache
