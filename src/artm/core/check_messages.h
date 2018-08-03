@@ -164,10 +164,10 @@ inline std::string DescribeErrors(const ::artm::Item& message) {
     ss << "Item " << id << " has empty token_id with non-empty token_weight\n";
   }
 
-  if (message.transaction_start_index_size() != message.transaction_typename_id_size()) {
+  if (message.transaction_start_index_size() != message.transaction_typename_id_size() + 1) {
     ss << "Item " << id << " has incocnsistent transaction_start_index_size ("
-       << message.transaction_start_index_size() << ") and transaction_typename_id_size ("
-       << message.transaction_typename_id_size() << ")\n";
+       << message.transaction_start_index_size() << ") and transaction_typename_id_size + 1 ("
+       << message.transaction_typename_id_size() + 1 << ")\n";
   }
   return ss.str();
 }
@@ -672,6 +672,7 @@ inline void FixMessage(::artm::Batch* message) {
         item.add_transaction_start_index(i);
         item.add_transaction_typename_id(0);
       }
+      item.add_transaction_start_index(item.token_id_size());
     }
   }
 }

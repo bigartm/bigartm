@@ -56,10 +56,9 @@ std::shared_ptr<BatchTransactionInfo> ProcessorTransactionHelpers::PrepareBatchI
     n_dw_row_ptr.push_back(static_cast<int>(n_dw_val.size()));
     const Item& item = batch.item(item_index);
 
-    for (int t_index = 0; t_index < item.transaction_start_index_size(); ++t_index) {
+    for (int t_index = 0; t_index < item.transaction_start_index_size() - 1; ++t_index) {
       const int start_index = item.transaction_start_index(t_index);
-      const int end_index = (t_index + 1) < item.transaction_start_index_size() ?
-          item.transaction_start_index(t_index + 1) : item.token_id_size();
+      const int end_index = item.transaction_start_index(t_index + 1);
 
       TransactionTypeName tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
       float tt_weight = 1.0f;

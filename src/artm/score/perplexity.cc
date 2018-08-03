@@ -138,10 +138,9 @@ void Perplexity::AppendScore(
   };
 
   // count perplexity normalizer n_d
-  for (int t_index = 0; t_index < item.transaction_start_index_size(); ++t_index) {
+  for (int t_index = 0; t_index < item.transaction_start_index_size() - 1; ++t_index) {
     const int start_index = item.transaction_start_index(t_index);
-    const int end_index = (t_index + 1) < item.transaction_start_index_size() ?
-                          item.transaction_start_index(t_index + 1) : item.token_id_size();
+    const int end_index = item.transaction_start_index(t_index + 1);
 
     float transaction_weight = t_func(start_index, end_index);
     if (use_tt) {
@@ -159,12 +158,11 @@ void Perplexity::AppendScore(
 
   // count raw values
   std::vector<float> helper_vector(topic_size, 0.0f);
-  for (int t_index = 0; t_index < item.transaction_start_index_size(); ++t_index) {
-    double sum = 0.0;
+  for (int t_index = 0; t_index < item.transaction_start_index_size() - 1; ++t_index) {
     const int start_index = item.transaction_start_index(t_index);
-    const int end_index = (t_index + 1) < item.transaction_start_index_size() ?
-                          item.transaction_start_index(t_index + 1) : item.token_id_size();
+    const int end_index = item.transaction_start_index(t_index + 1);
 
+    double sum = 0.0;
     const auto& tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
     float transaction_weight = t_func(start_index, end_index);
 

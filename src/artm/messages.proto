@@ -31,10 +31,11 @@ message Item {
   repeated float token_weight = 5;
 
   // Field contains start index of each transaction from token_id.
-  // In case of regular text will be 0, 1, 2, 3 ... etc.
+  // Last element contains total number of tokens
+  // In case of regular text will be 0, 1, 2, 3 ... , num_tokens
   repeated int32 transaction_start_index = 6;
 
-  // Field with length equal to transaction_start_index
+  // Field with length equal to transaction_start_index - 1
   // Contains id of transaction typename, transaction belongs to
   repeated int32 transaction_typename_id = 7;
 }

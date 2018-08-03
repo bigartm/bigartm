@@ -300,10 +300,10 @@ TEST(CollectionParser, TransactionVowpalWabbit) {
       ASSERT_EQ(batch.item_size(), 2);
 
       ASSERT_EQ(batch.item(0).token_id_size(), 6);
-      ASSERT_EQ(batch.item(0).transaction_start_index_size(), 4);
+      ASSERT_EQ(batch.item(0).transaction_start_index_size(), 5);
       ASSERT_EQ(batch.item(0).token_weight_size(), 6);
       ASSERT_EQ(batch.item(1).token_id_size(), 8);
-      ASSERT_EQ(batch.item(1).transaction_start_index_size(), 4);
+      ASSERT_EQ(batch.item(1).transaction_start_index_size(), 5);
       ASSERT_EQ(batch.item(1).token_weight_size(), 8);
 
       // check first item
@@ -319,6 +319,7 @@ TEST(CollectionParser, TransactionVowpalWabbit) {
       ASSERT_EQ(batch.item(0).transaction_start_index(1), 1);
       ASSERT_EQ(batch.item(0).transaction_start_index(2), 2);
       ASSERT_EQ(batch.item(0).transaction_start_index(3), 4);
+      ASSERT_EQ(batch.item(0).transaction_start_index(4), 6);
 
       // both are ids of "mel-lain" as "user"
       ASSERT_EQ(batch.item(0).token_id(2),
@@ -338,6 +339,7 @@ TEST(CollectionParser, TransactionVowpalWabbit) {
       ASSERT_EQ(batch.item(1).transaction_start_index(1), 1);
       ASSERT_EQ(batch.item(1).transaction_start_index(2), 4);
       ASSERT_EQ(batch.item(1).transaction_start_index(3), 7);
+      ASSERT_EQ(batch.item(1).transaction_start_index(4), 8);
 
       // both are ids of "wordl" as "@default_class"
       ASSERT_EQ(batch.item(1).token_id(4),

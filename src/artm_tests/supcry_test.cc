@@ -55,6 +55,7 @@ void GenerateBatches(std::vector< ::artm::Batch>* batches, ::artm::DictionaryDat
           item->add_token_weight(1.0);
         }
       }
+      item->add_transaction_start_index(item->transaction_start_index_size());
     }
 
     batches->push_back(batch);

@@ -19,10 +19,9 @@ void ItemsProcessed::AppendScore(const Batch& batch,
   float token_weight_in_effect = 0.0f;
 
   for (const auto& item : batch.item()) {
-    for (int t_index = 0; t_index < item.transaction_start_index_size(); ++t_index) {
+    for (int t_index = 0; t_index < item.transaction_start_index_size() - 1; ++t_index) {
       const int start_index = item.transaction_start_index(t_index);
-      const int end_index = (t_index + 1) < item.transaction_start_index_size() ?
-                            item.transaction_start_index(t_index + 1) : item.token_id_size();
+      const int end_index = item.transaction_start_index(t_index + 1);
 
       artm::core::TransactionTypeName tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
       if (args.transaction_typename_size() > 0 && !core::is_member(tt_name, args.transaction_typename())) {

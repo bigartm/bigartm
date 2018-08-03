@@ -118,6 +118,7 @@ void RunBasicTest(bool serialize_as_json) {
       item->add_transaction_start_index(item->transaction_start_index_size());
       item->add_token_weight(static_cast<float>(iDoc + iToken + 1));
     }
+    item->add_transaction_start_index(item->transaction_start_index_size());
   }
 
   EXPECT_EQ(batch.item().size(), nDocs);

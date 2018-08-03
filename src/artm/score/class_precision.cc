@@ -46,10 +46,10 @@ void ClassPrecision::AppendScore(
   }
 
   bool error = true;
-  for (int token_index = 0; token_index < item.transaction_start_index_size(); ++token_index) {
-    const int start_index = item.transaction_start_index(token_index);
-    const int end_index = (token_index + 1) < item.transaction_start_index_size() ?
-                          item.transaction_start_index(token_index + 1) : item.token_id_size();
+  for (int t_index = 0; t_index < item.transaction_start_index_size() - 1; ++t_index) {
+    const int start_index = item.transaction_start_index(t_index);
+    const int end_index = item.transaction_start_index(t_index + 1);
+
     for (int token_id = start_index; token_id < end_index; ++token_id) {
       const auto& token = token_dict[item.token_id(token_id)];
       if (token.class_id == args.predict_class_id() && token.keyword == keyword) {

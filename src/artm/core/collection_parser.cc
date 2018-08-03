@@ -214,6 +214,11 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
 
     if (item_id != prev_item_id) {
       prev_item_id = item_id;
+
+      if (item != nullptr) {
+        item->add_transaction_start_index(item->transaction_start_index_size());
+      }
+
       if (batch.item_size() >= config_.num_items_per_batch()) {
         batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
         batch.add_transaction_typename(DefaultTransactionTypeName);
@@ -261,6 +266,10 @@ CollectionParserInfo CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token
   }
 
   if (batch.item_size() > 0) {
+    if (item != nullptr) {
+      item->add_transaction_start_index(item->transaction_start_index_size());
+    }
+
     batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
     batch.add_transaction_typename(DefaultTransactionTypeName);
     ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
@@ -431,6 +440,7 @@ class CollectionParser::BatchCollector {
 
     item_->set_id(item_id);
     item_->set_title(item_title);
+    item_->add_transaction_start_index(item_->token_id_size());
 
     LOG_IF(INFO, total_items_count_ % 100000 == 0) << total_items_count_ << " documents parsed.";
 

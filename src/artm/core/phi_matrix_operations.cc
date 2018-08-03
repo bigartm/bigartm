@@ -478,6 +478,11 @@ void PhiMatrixOperations::ConvertTopicModelToPseudoBatch(::artm::TopicModel* top
       item->add_transaction_typename_id(0);
     }
   }
+
+  for (int topic_index = 0; topic_index < topic_model->topic_name_size(); topic_index++) {
+    Item* item = batch->mutable_item(topic_index);
+    item->add_transaction_start_index(item->transaction_start_index_size());
+  }
 }
 
 }  // namespace core

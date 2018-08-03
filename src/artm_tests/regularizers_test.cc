@@ -83,6 +83,7 @@ TEST(Regularizers, SmoothSparseTheta) {
       item->add_transaction_start_index(item->transaction_start_index_size());
       item->add_token_weight(1.0);
     }
+    item->add_transaction_start_index(item->transaction_start_index_size());
   }
 
   // part 1
@@ -272,6 +273,7 @@ TEST(Regularizers, NetPlsa) {
       int topical_count = ((iToken < 40) && ((iToken % 10) == (iDoc % 10))) ? 10 : 0;
       item->add_token_weight(static_cast<float>(background_count + topical_count));
     }
+
     if (iDoc < 2) {
       item->add_token_id(nTokens);
       item->add_transaction_start_index(item->transaction_start_index_size());
@@ -281,6 +283,8 @@ TEST(Regularizers, NetPlsa) {
       item->add_transaction_start_index(item->transaction_start_index_size());
       item->add_token_weight(1.0f);
     }
+
+    item->add_transaction_start_index(item->transaction_start_index_size());
   }
 
   // iterations
@@ -329,6 +333,7 @@ TEST(Regularizers, RelativeRegularization) {
       item->add_transaction_start_index(item->transaction_start_index_size());
       item->add_token_weight(1.0);
     }
+    item->add_transaction_start_index(item->transaction_start_index_size());
   }
 
   // part 1

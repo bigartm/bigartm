@@ -37,6 +37,7 @@ artm::Batch Helpers::GenerateBatch(int nTokens, int nDocs,
       int topical_count = ((iToken < 40) && ((iToken % 10) == (iDoc % 10))) ? 10 : 0;
       item->add_token_weight(static_cast<float>(background_count + topical_count));
     }
+    item->add_transaction_start_index(item->transaction_start_index_size());
   }
 
   return batch;
@@ -130,6 +131,7 @@ TestMother::GenerateBatches(int batches_size, int nTokens, ::artm::DictionaryDat
         item->add_token_weight(1.0);
       }
     }
+    item->add_transaction_start_index(item->transaction_start_index_size());
 
     retval.push_back(std::make_shared< ::artm::Batch>(batch));
     first_iter = false;

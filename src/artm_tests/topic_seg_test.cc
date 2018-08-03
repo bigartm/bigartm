@@ -42,6 +42,7 @@ TEST(Regularizer, TopicSegmentationPtdw) {
     item->add_transaction_start_index(item->transaction_start_index_size());
     item->add_token_weight(1.0);
   }
+  item->add_transaction_start_index(item->transaction_start_index_size());
 
   std::vector<std::shared_ptr< ::artm::Batch>> batches;
   batches.push_back(std::make_shared< ::artm::Batch>(batch));
