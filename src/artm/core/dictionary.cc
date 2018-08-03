@@ -191,10 +191,6 @@ float Dictionary::CountTopicCoherence(const std::vector<core::Token>& tokens_to_
   return 2.0f / (k * (k - 1)) * coherence_value;
 }
 
-std::shared_ptr<Dictionary> Dictionary::Duplicate() const {
-  return std::shared_ptr<Dictionary>(new Dictionary(*this));
-}
-
 void Dictionary::clear() {
   name_.clear();
   entries_.clear();
@@ -206,28 +202,6 @@ void Dictionary::clear_cooc() {
   cooc_values_.clear();
   cooc_tfs_.clear();
   cooc_dfs_.clear();
-}
-
-void Dictionary::AddTransactionType(const ClassId& class_id, const TransactionType& transaction_type) {
-  class_id_to_transaction_types_[class_id].insert(transaction_type);
-}
-
-const std::unordered_set<TransactionType, TransactionHasher>*
-Dictionary::GetTransactionTypes(const ClassId& class_id) const {
-  auto iter = class_id_to_transaction_types_.find(class_id);
-  if (iter != class_id_to_transaction_types_.end()) {
-    return &(iter->second);
-  }
-  return nullptr;
-}
-
-const std::unordered_set<TransactionType, TransactionHasher>
-Dictionary::GetAllTransactionTypes() const {
-  std::unordered_set<TransactionType, TransactionHasher> retval;
-  for (const auto& elem : class_id_to_transaction_types_) {
-    retval.insert(elem.second.begin(), elem.second.end());
-  }
-  return retval;
 }
 
 }  // namespace core

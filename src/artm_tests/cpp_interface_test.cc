@@ -114,15 +114,16 @@ void RunBasicTest(bool serialize_as_json) {
     item->set_title(str.str());
     item->set_id(666 + iDoc);
     for (int iToken = 0; iToken < nTokens; ++iToken) {
-      item->add_transaction_token_id(iToken);
+      item->add_token_id(iToken);
       item->add_transaction_start_index(item->transaction_start_index_size());
       item->add_token_weight(static_cast<float>(iDoc + iToken + 1));
     }
+    item->add_transaction_start_index(item->transaction_start_index_size());
   }
 
   EXPECT_EQ(batch.item().size(), nDocs);
   for (int i = 0; i < batch.item().size(); i++) {
-    EXPECT_EQ(batch.item(i).transaction_token_id_size(), nTokens);
+    EXPECT_EQ(batch.item(i).token_id_size(), nTokens);
   }
 
   // Index doc-token matrix
@@ -134,14 +135,6 @@ void RunBasicTest(bool serialize_as_json) {
   for (int iter = 0; iter < 5; ++iter) {
     master_component.FitOfflineModel(offline_args);
     {
-      artm::GetTopicModelArgs args;
-      args.set_model_name(master_component.config().pwt_name());
-      args.mutable_topic_name()->CopyFrom(master_component.config().topic_name());
-      for (int i = 0; i < nTokens; i++) {
-        args.add_token("token" + std::to_string(i));
-        args.add_class_id("@default_class");
-      }
-
       topic_model = master_component.GetTopicModel();
     }
 
@@ -336,37 +329,20 @@ TEST(CppInterface, BasicTrasactionTest) {
     master_component.InitializeModel(init_model_args);
 
     auto test_func = [](artm::MasterModel& master_component, const artm::InitializeModelArgs& init_model_args) {
-      auto func = [](const artm::TopicModel& model, int num_transactions) {
-        std::unordered_map<artm::core::NormalizerKey, float, artm::core::NormalizerKeyHasher> normalizer_keys;
-        for (int i = 0; i < model.token_size(); ++i) {
-          float value = model.token_weights(i).value(0);
-          normalizer_keys[artm::core::NormalizerKey(model.class_id(i),
-            artm::core::TransactionType(model.transaction_type(i)))] += value;
-        }
-
-        ASSERT_EQ(normalizer_keys.size(), num_transactions);
-        for (const auto& nk : normalizer_keys) {
-          ASSERT_FLOAT_EQ(nk.second, 1.0);
-        }
-      };
-
       artm::GetTopicModelArgs args;
       args.set_model_name(init_model_args.model_name());
       auto model_1 = master_component.GetTopicModel(args);
 
-      ASSERT_EQ(model_1.transaction_type_size(), model_1.token_size());
-      func(model_1, 7);
+      std::unordered_map<artm::core::ClassId, float> normalizer_keys;
+      for (int i = 0; i < model_1.token_size(); ++i) {
+        float value = model_1.token_weights(i).value(0);
+        normalizer_keys[model_1.class_id(i)] += value;
+      }
 
-      args.set_model_name(init_model_args.model_name());
-      args.add_transaction_type("class_1" + artm::core::TransactionSeparator + "class_2");
-      auto model_2 = master_component.GetTopicModel(args);
-      func(model_2, 2);
-
-      args.set_model_name(init_model_args.model_name());
-      args.add_transaction_type("class_1" + artm::core::TransactionSeparator + "class_2");
-      args.add_class_id("class_1");
-      auto model_3 = master_component.GetTopicModel(args);
-      func(model_3, 1);
+      ASSERT_EQ(normalizer_keys.size(), 4);
+      for (const auto& nk : normalizer_keys) {
+        ASSERT_FLOAT_EQ(nk.second, 1.0);
+      }
     };
 
     test_func(master_component, init_model_args);
@@ -390,11 +366,9 @@ TEST(CppInterface, BasicTrasactionTest) {
 
     new_topic_model.add_token("token_x");
     new_topic_model.add_class_id("class_5");
-    new_topic_model.add_transaction_type("class_5");
 
     new_topic_model.add_token("token_y");
     new_topic_model.add_class_id("class_5");
-    new_topic_model.add_transaction_type("class_5");
 
     auto weights = new_topic_model.add_token_weights();
     auto weights2 = new_topic_model.add_token_weights();
@@ -414,11 +388,9 @@ TEST(CppInterface, BasicTrasactionTest) {
       args.set_model_name(new_topic_model.name());
       new_topic_model.add_token("token_x");
       new_topic_model.add_class_id("class_5");
-      new_topic_model.add_transaction_type("class_5");
 
       new_topic_model.add_token("token_y");
       new_topic_model.add_class_id("class_5");
-      new_topic_model.add_transaction_type("class_5");
 
       auto new_topic_model2 = master_component.GetTopicModel(args);
 
@@ -774,11 +746,6 @@ TEST(CppInterface, Dictionaries) {
   ASSERT_GT(dictionary.token_tf(0), 0);
   ASSERT_GT(dictionary.token_value(0), 0);
 
-
-  // gather dictionary should contain any class_id as
-  // transaction type if token_id field was used in batches
-  ASSERT_EQ(dictionary.transaction_type_size(), 1);
-
   // Filter
   artm::FilterDictionaryArgs filter_args;
   filter_args.set_dictionary_name("gathered_dictionary");
@@ -847,34 +814,6 @@ TEST(CppInterface, TransactionDictionaries) {
   artm::MasterModelConfig master_config;
   artm::MasterModel master(master_config);
 
-  auto checker = [](const artm::DictionaryData& dict) {
-    ASSERT_EQ(dict.token_size(), 8);
-
-    ASSERT_EQ(dict.transaction_type_size(), 4);
-
-    for (int i = 0; i < dict.transaction_type_size(); ++i) {
-      auto vec = artm::core::TransactionType(dict.transaction_type(i)).AsVector();
-      artm::core::TransactionType tt(dict.transaction_type(i));
-      if (vec.size() == 1) {
-        std::string str = (dict.transaction_type(i) == "class_1") ? "class_1" : "class_3";
-        ASSERT_EQ(dict.transaction_type(i), str);
-        ASSERT_EQ(tt.AsString(), str);
-        ASSERT_EQ(vec[0], str);
-      } else if (vec.size() == 2) {
-        ASSERT_EQ(dict.transaction_type(i), "class_1" + artm::core::TransactionSeparator + "class_2");
-        ASSERT_EQ(tt.AsString(), "class_1" + artm::core::TransactionSeparator + "class_2");
-        ASSERT_EQ(vec[0], "class_1");
-        ASSERT_EQ(vec[1], "class_2");
-      } else if (vec.size() == 3) {
-        ASSERT_EQ(vec[0], "class_4");
-        ASSERT_EQ(vec[1], "class_2");
-        ASSERT_EQ(vec[2], "class_1");
-      } else {
-        ASSERT_TRUE(false);
-      }
-    }
-  };
-
   // Gather
   artm::GatherDictionaryArgs gather_args;
   gather_args.set_data_path(target_folder);
@@ -883,7 +822,7 @@ TEST(CppInterface, TransactionDictionaries) {
 
   ::artm::GetDictionaryArgs get_dict;
   get_dict.set_dictionary_name("gathered_dictionary");
-  checker(master.GetDictionary(get_dict));
+  ASSERT_EQ(master.GetDictionary(get_dict).token_size(), 8);
 
   // Export & Import
   artm::ExportDictionaryArgs export_args;
@@ -897,20 +836,20 @@ TEST(CppInterface, TransactionDictionaries) {
   master.ImportDictionary(import_args);
 
   get_dict.set_dictionary_name("imported_dictionary");
-  checker(master.GetDictionary(get_dict));
+  ASSERT_EQ(master.GetDictionary(get_dict).token_size(), 8);
 
   // Get and Create
   artm::GetDictionaryArgs get_args;
   get_args.set_dictionary_name("imported_dictionary");
   auto data = master.GetDictionary(get_args);
-  checker(data);
+  ASSERT_EQ(data.token_size(), 8);
 
   data.set_name("created_dictionary");
   master.CreateDictionary(data);
 
   get_args.set_dictionary_name("created_dictionary");
   data = master.GetDictionary(get_args);
-  checker(data);
+  ASSERT_EQ(data.token_size(), 8);
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}

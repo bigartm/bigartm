@@ -19,39 +19,28 @@ void ItemsProcessed::AppendScore(const Batch& batch,
   float token_weight_in_effect = 0.0f;
 
   for (const auto& item : batch.item()) {
-    for (int token_index = 0; token_index < item.transaction_start_index_size(); ++token_index) {
-      const int start_index = item.transaction_start_index(token_index);
-      const int end_index = (token_index + 1) < item.transaction_start_index_size() ?
-                            item.transaction_start_index(token_index + 1) :
-                            item.transaction_token_id_size();
-      std::string str;
-      for (int token_id = start_index; token_id < end_index; ++token_id) {
-        auto& tmp = batch.class_id(item.transaction_token_id(token_id));
-        str += (token_id == start_index) ? tmp : artm::core::TransactionSeparator + tmp;
-      }
+    for (int t_index = 0; t_index < item.transaction_start_index_size() - 1; ++t_index) {
+      const int start_index = item.transaction_start_index(t_index);
+      const int end_index = item.transaction_start_index(t_index + 1);
 
-      artm::core::TransactionType tt(str);
-      if (args.transaction_type_size() > 0 && !tt.ContainsIn(args.transaction_type())) {
+      artm::core::TransactionTypeName tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
+      if (args.transaction_typename_size() > 0 && !core::is_member(tt_name, args.transaction_typename())) {
         continue;
       }
 
-      bool all_transaction_tokens_exist = true;
       for (int idx = start_index; idx < end_index; ++idx) {
-        const int token_id = item.transaction_token_id(idx);
-        const std::string& token = batch.token(token_id);
-        const std::string& class_id = batch.class_id(token_id);
+        const int token_id = item.token_id(idx);
+
+        if (args.class_id_size() > 0 && !::artm::core::is_member(batch.class_id(token_id), args.class_id())) {
+          continue;
+        }
 
         // Check whether token is in effect,
         // e.g. present in the model, and belongs to relevant modality and tt)
-        if (!p_wt.has_token(::artm::core::Token(class_id, token, tt))) {
-          all_transaction_tokens_exist = false;
-          break;
+        if (p_wt.has_token(::artm::core::Token(batch.class_id(token_id), batch.token(token_id)))) {
+          token_weight += item.token_weight(idx);
+          token_weight_in_effect += item.token_weight(idx);
         }
-      }
-
-      if (all_transaction_tokens_exist) {
-        token_weight += item.token_weight(token_index);
-        token_weight_in_effect += item.token_weight(token_index);
       }
     }
   }

@@ -38,10 +38,11 @@ TEST(Regularizer, TopicSegmentationPtdw) {
   item->set_title("doc0");
   std::vector<int> token_sequence = {0, 1, 2, 0, 3, 2, 1, 4, 5};
   for (auto e : token_sequence) {
-    item->add_transaction_token_id(e);
+    item->add_token_id(e);
     item->add_transaction_start_index(item->transaction_start_index_size());
     item->add_token_weight(1.0);
   }
+  item->add_transaction_start_index(item->transaction_start_index_size());
 
   std::vector<std::shared_ptr< ::artm::Batch>> batches;
   batches.push_back(std::make_shared< ::artm::Batch>(batch));

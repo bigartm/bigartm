@@ -118,12 +118,6 @@ std::vector<float> Helpers::GenerateRandomVector(int size, const Token& token, i
     h = 31 * h + seed;
   }
 
-  if (token.transaction_type.AsVector().size() > 1) {
-    std::string str = token.transaction_type.AsString();
-    for (unsigned i = 0; i < str.size(); i++)
-    h = 31 * h + str[i];
-  }
-
   return GenerateRandomVector(size, h);
 }
 
@@ -245,6 +239,10 @@ void Helpers::SaveMessage(const std::string& full_filename,
 }
 
 bool isZero(float value, float tol) {
+  return std::fabs(value) < tol;
+}
+
+bool isZero(double value, double tol) {
   return std::fabs(value) < tol;
 }
 

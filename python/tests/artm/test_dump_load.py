@@ -24,7 +24,8 @@ def _assert_json_params(params):
     params['model_nwt'] == 'nwt'
     len(params['scores']) == 5
     len(params['regularizers']) == 4
-    params['transaction_types'] == {u'@default_class': 1.0}
+    params['transaction_typenames'] == {u'@default_class': 1.0}
+    params['class_ids'] == {u'@default_transaction': 1.0}
 
 
 def _assert_params_equality(model_1, model_2):
@@ -36,7 +37,8 @@ def _assert_params_equality(model_1, model_2):
     assert model_1.seed == model_2.seed
     assert model_1.show_progress_bars == model_2.show_progress_bars
     assert model_1.topic_names == model_2.topic_names
-    assert model_1.transaction_types == model_2.transaction_types
+    assert model_1.class_ids == model_2.class_ids
+    assert model_1.transaction_typenames == model_2.transaction_typenames
     assert model_1.model_pwt == model_2.model_pwt
     assert model_1.model_nwt == model_2.model_nwt
     assert model_1.theta_name == model_2.theta_name
@@ -142,7 +144,8 @@ def test_func():
                             reuse_theta=False,
                             seed=10,
                             num_topics=15,
-                            transaction_types={'@default_class': 1.0},
+                            class_ids={'@default_class': 1.0},
+                            transaction_typenames={'@default_transaction': 1.0},
                             dictionary=batch_vectorizer.dictionary)
 
         for model in [model_1, model_2]:

@@ -40,11 +40,6 @@ bool SmoothSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     use_all_classes = true;
   }
 
-  bool use_all_tts = false;
-  if (config_.transaction_type_size() == 0) {
-    use_all_tts = true;
-  }
-
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
   if (config_.has_dictionary_name()) {
     dictionary_ptr = dictionary(config_.dictionary_name());
@@ -55,8 +50,7 @@ bool SmoothSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     float coefficient = 1.0f;
     const auto& token = p_wt.token(token_pwt_id);
 
-    if ((!use_all_classes && !core::is_member(token.class_id, config_.class_id())) ||
-        (!use_all_tts && !token.transaction_type.ContainsIn(config_.transaction_type()))) {
+    if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) {
       continue;
     }
 
@@ -93,10 +87,6 @@ google::protobuf::RepeatedPtrField<std::string> SmoothSparsePhi::topics_to_regul
 
 google::protobuf::RepeatedPtrField<std::string> SmoothSparsePhi::class_ids_to_regularize() {
   return config_.class_id();
-}
-
-google::protobuf::RepeatedPtrField<std::string> SmoothSparsePhi::transaction_types_to_regularize() {
-  return config_.transaction_type();
 }
 
 bool SmoothSparsePhi::Reconfigure(const RegularizerConfig& config) {

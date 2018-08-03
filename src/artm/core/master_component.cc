@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <fstream>  // NOLINT
 #include <vector>
-#include <set>
 #include <unordered_set>
 #include <sstream>
 #include <utility>
@@ -404,11 +403,11 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
 
   const char version = 0;
   fout << version;
+
   for (int token_id = 0; token_id < token_size; ++token_id) {
     Token token = n_wt.token(token_id);
     get_topic_model_args.add_token(token.keyword);
     get_topic_model_args.add_class_id(token.class_id);
-    get_topic_model_args.add_transaction_type(token.transaction_type.AsString());
 
     if (((token_id + 1) == token_size) || (get_topic_model_args.token_size() >= tokens_per_chunk)) {
       ::artm::TopicModel external_topic_model;
@@ -421,7 +420,6 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
       fout << str;
       get_topic_model_args.clear_class_id();
       get_topic_model_args.clear_token();
-      get_topic_model_args.clear_transaction_type();
     }
   }
 
@@ -601,7 +599,7 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   }
 
   std::shared_ptr<PhiMatrix> new_ttm;
-  int included_tokens = 0;
+  int excluded_tokens = 0;
   if (args.has_dictionary_name()) {
     auto dict = instance_->dictionaries()->get(args.dictionary_name());
     if (dict == nullptr) {
@@ -616,40 +614,17 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
       BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
     }
 
-    std::unordered_set<TransactionType, TransactionHasher> mm_tt;
-    for (const auto& ptt : config->transaction_type()) {
-      mm_tt.insert(TransactionType(ptt));
-    }
-
-    // in each transaction type tokens should have the same order, as in dictionary
-    std::unordered_map<TransactionType, std::vector<Token>, TransactionHasher> tt_to_tokens;
+    new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), args.topic_name());
     for (int index = 0; index < (int64_t) dict->size(); ++index) {
       ::artm::core::Token token = dict->entry(index)->token();
 
-      if (dict->HasTransactions()) {
-        bool used_token = false;
-        for (const auto& tt : *(dict->GetTransactionTypes(token.class_id))) {
-          if (mm_tt.size() == 0 || mm_tt.find(tt) != mm_tt.end()) {
-            used_token = true;
-            tt_to_tokens[tt].push_back(Token(token.class_id, token.keyword, tt));
-          }
-        }
-        included_tokens += used_token ? 1.0 : 0.0;
-      } else {
-        std::stringstream ss;
-        ss << "Dictionary '" << args.dictionary_name()
-           << "' is old-style one without transaction info. It should be re-gathered";
-        BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+      if (config->class_id_size() > 0 && !is_member(token.class_id, config->class_id())) {
+        continue;
       }
-    }
-    new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), args.topic_name());
-    for (const auto& tt_tokens : tt_to_tokens) {
-      for (const auto& token : tt_tokens.second) {
-        new_ttm->AddToken(token);
-      }
+      new_ttm->AddToken(token);
     }
 
-    int excluded_tokens = dict->size() - included_tokens;
+    excluded_tokens = dict->size() - new_ttm->token_size();
     LOG_IF(INFO, excluded_tokens > 0)
       << excluded_tokens
       << " tokens were present in the dictionary, but excluded from the model";
@@ -961,17 +936,7 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
     }
 
     for (int token_index = 0; token_index < (int64_t) dictionary->size(); ++token_index) {
-      Token token = dictionary->entry(token_index)->token();
-      if (dictionary->HasTransactions()) {  // new style dictionary
-        for (const auto& tt : *(dictionary->GetTransactionTypes(token.class_id))) {
-          nwt_target->AddToken(Token(token.class_id, token.keyword, tt));
-        }
-      } else {  // old-style dictionary
-        std::stringstream ss;
-        ss << "Dictionary '" << merge_model_args.has_dictionary_name()
-           << "' is old-style one without transaction info. It should be re-gathered";
-        BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-      }
+      nwt_target->AddToken(dictionary->entry(token_index)->token());
     }
   }
 
@@ -1151,14 +1116,15 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
     process_batches_args.set_reuse_theta(config->reuse_theta());
   }
 
-  process_batches_args.mutable_transaction_type()->CopyFrom(config->transaction_type());
+  process_batches_args.mutable_class_id()->CopyFrom(config->class_id());
+  process_batches_args.mutable_class_weight()->CopyFrom(config->class_weight());
+
+  process_batches_args.mutable_transaction_typename()->CopyFrom(config->transaction_typename());
   process_batches_args.mutable_transaction_weight()->CopyFrom(config->transaction_weight());
+
   process_batches_args.set_theta_matrix_type(args.theta_matrix_type());
   if (args.has_predict_class_id()) {
     process_batches_args.set_predict_class_id(args.predict_class_id());
-  }
-  if (args.has_predict_transaction_type()) {
-    process_batches_args.set_predict_transaction_type(args.predict_transaction_type());
   }
 
   FixMessage(&process_batches_args);
@@ -1296,7 +1262,10 @@ class ArtmExecutor {
       process_batches_args_.set_num_document_passes(master_model_config.num_document_passes());
     }
 
-    process_batches_args_.mutable_transaction_type()->CopyFrom(master_model_config.transaction_type());
+    process_batches_args_.mutable_class_id()->CopyFrom(master_model_config.class_id());
+    process_batches_args_.mutable_class_weight()->CopyFrom(master_model_config.class_weight());
+
+    process_batches_args_.mutable_transaction_typename()->CopyFrom(master_model_config.transaction_typename());
     process_batches_args_.mutable_transaction_weight()->CopyFrom(master_model_config.transaction_weight());
 
     for (const auto& regularizer : master_model_config.regularizer_config()) {

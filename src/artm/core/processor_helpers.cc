@@ -24,30 +24,19 @@ void ProcessorHelpers::CreateThetaCacheEntry(ThetaMatrix* new_cache_entry_ptr,
     new_cache_entry_ptr->add_item_weights();
   }
 
-  if (!args.has_predict_transaction_type() && !args.has_predict_class_id()) {
+  if (!args.has_predict_class_id()) {
     for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
         new_cache_entry_ptr->mutable_item_weights(item_index)->add_value((*theta_matrix)(topic_index, item_index));
       }
     }
   } else {
-    const bool predict_tt = args.has_predict_transaction_type();
     const bool predict_class_id = args.has_predict_class_id();
     new_cache_entry_ptr->clear_topic_name();
     for (int token_index = 0; token_index < p_wt.token_size(); token_index++) {
       const Token& token = p_wt.token(token_index);
-      if ((predict_class_id && token.class_id != args.predict_class_id() ||
-          (predict_tt && token.transaction_type != TransactionType(args.predict_transaction_type())))) {
+      if (predict_class_id && token.class_id != args.predict_class_id()) {
         continue;
-      }
-
-      new_cache_entry_ptr->add_topic_name(token.keyword);
-      for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-        float weight = 0.0;
-        for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-          weight += (*theta_matrix)(topic_index, item_index) * p_wt.get(token_index, topic_index);
-        }
-        new_cache_entry_ptr->mutable_item_weights(item_index)->add_value(weight);
       }
     }
   }
@@ -189,12 +178,18 @@ std::shared_ptr<CsrMatrix<float>> ProcessorHelpers::InitializeSparseNdw(const Ba
   std::vector<int> n_dw_col_ind;
 
   bool use_weights = false;
-  std::unordered_map<TransactionType, float, TransactionHasher> tt_to_weight;
-  if (args.transaction_type_size() != 0) {
+  std::unordered_map<ClassId, float> class_id_to_weight;
+  if (args.class_id_size() != 0) {
     use_weights = true;
-    for (int i = 0; i < args.transaction_type_size(); ++i) {
-      tt_to_weight.insert(std::make_pair(TransactionType(args.transaction_type(i)),
-                                         args.transaction_weight(i)));
+    for (int i = 0; i < args.class_id_size(); ++i) {
+      class_id_to_weight.emplace(args.class_id(i), args.class_weight(i));
+    }
+  }
+
+  float default_tt_weight = (args.transaction_typename_size() > 0) ? 0.0f : 1.0f;
+  for (int i = 0; i < args.transaction_typename_size(); ++i) {
+    if (args.transaction_typename(i) == DefaultTransactionTypeName) {
+      default_tt_weight = args.transaction_weight(i);
     }
   }
 
@@ -203,26 +198,22 @@ std::shared_ptr<CsrMatrix<float>> ProcessorHelpers::InitializeSparseNdw(const Ba
     n_dw_row_ptr.push_back(static_cast<int>(n_dw_val.size()));
     const Item& item = batch.item(item_index);
 
-    for (int token_index = 0; token_index < item.transaction_start_index_size(); ++token_index) {
-      const int start_index = item.transaction_start_index(token_index);
-      const int end_index = (token_index + 1) < item.transaction_start_index_size() ?
-        item.transaction_start_index(token_index + 1) :
-        item.transaction_token_id_size();
+    for (int token_index = 0; token_index < item.token_id_size(); ++token_index) {
+      int token_id = item.token_id(token_index);
 
-      for (int idx = start_index; idx < end_index; ++idx) {
-        const int token_id = item.transaction_token_id(idx);
-        float tt_weight = 1.0f;
-        if (use_weights) {
-          ClassId class_id = batch.class_id(token_id);
-          auto iter = tt_to_weight.find(TransactionType(class_id));
-          tt_weight = (iter == tt_to_weight.end()) ? 0.0f : iter->second;
-        }
-        const float token_weight = item.token_weight(token_index);
-        n_dw_val.push_back(tt_weight * token_weight);
-        n_dw_col_ind.push_back(token_id);
+      float class_weight = 1.0f;
+      if (use_weights) {
+        ClassId class_id = batch.class_id(token_id);
+        auto iter = class_id_to_weight.find(class_id);
+        class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
       }
+
+      const float token_weight = item.token_weight(token_index);
+      n_dw_val.push_back(default_tt_weight * class_weight * token_weight);
+      n_dw_col_ind.push_back(token_id);
     }
   }
+
   n_dw_row_ptr.push_back(static_cast<int>(n_dw_val.size()));
   return std::make_shared<CsrMatrix<float>>(batch.token_size(), &n_dw_val, &n_dw_row_ptr, &n_dw_col_ind);
 }
@@ -259,7 +250,7 @@ std::shared_ptr<Score> ProcessorHelpers::CalcScores(ScoreCalculatorInterface* sc
       theta_vec.push_back(theta_matrix(topic_index, item_index));
     }
 
-    score_calc->AppendScore(item, batch_token_dict, p_wt, args, theta_vec, score.get());
+    score_calc->AppendScore(item, batch, batch_token_dict, p_wt, args, theta_vec, score.get());
   }
 
   score_calc->AppendScore(batch, p_wt, args, score.get());
@@ -330,7 +321,7 @@ void ProcessorHelpers::InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& arg
           p_dw_val += p_tdw_val;
         }
 
-        if (p_dw_val == 0) {
+        if (isZero(p_dw_val)) {
           continue;
         }
         const float Z = 1.0f / p_dw_val;
@@ -461,11 +452,11 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
         for (int i = begin_index; i < end_index; ++i) {
           const float* phi_ptr = &local_phi(i - begin_index, 0);
 
-          float p_dw_val = 0;
+          float p_dw_val = 0.0f;
           for (int k = 0; k < num_topics; ++k) {
             p_dw_val += phi_ptr[k] * theta_ptr[k];
           }
-          if (p_dw_val == 0) {
+          if (isZero(p_dw_val)) {
             continue;
           }
 
@@ -498,7 +489,7 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
         for (int i = sparse_ndw.row_ptr()[d]; i < sparse_ndw.row_ptr()[d + 1]; ++i) {
           int w = sparse_ndw.col_ind()[i];
           float p_dw_val = blas->sdot(num_topics, &phi_matrix(w, 0), 1, &(*theta_matrix)(0, d), 1);  // NOLINT
-          if (p_dw_val == 0) {
+          if (isZero(p_dw_val)) {
             continue;
           }
           blas->saxpy(num_topics, sparse_ndw.val()[i] / p_dw_val, &phi_matrix(w, 0), 1, &helper_td(0, d), 1);
@@ -540,7 +531,7 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
     for (int i = sparse_nwd.row_ptr()[w]; i < sparse_nwd.row_ptr()[w + 1]; ++i) {
       int d = sparse_nwd.col_ind()[i];
       float p_wd_val = blas->sdot(num_topics, &p_wt_local[0], 1, &(*theta_matrix)(0, d), 1);  // NOLINT
-      if (p_wd_val == 0) {
+      if (isZero(p_wd_val)) {
         continue;
       }
       blas->saxpy(num_topics, sparse_nwd.val()[i] / p_wd_val,

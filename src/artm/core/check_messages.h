@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include<unordered_set>
 
 #include "boost/lexical_cast.hpp"
 #include "boost/uuid/uuid_io.hpp"
@@ -14,6 +15,7 @@
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/token.h"
+#include "artm/core/transaction_type.h"
 #include "artm/core/protobuf_serialization.h"
 
 namespace artm {
@@ -38,7 +40,6 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
 
   const bool has_topic_data = (message.num_topics() != 0 || message.topic_name_size() != 0);
   const bool has_token_data = (message.class_id_size() != 0 || message.token_size() != 0);
-  const bool has_transaction_data = (message.transaction_type_size() != 0);
   const bool has_bulk_data = (message.token_weights_size() != 0);
   const bool has_sparse_format = has_bulk_data && (message.topic_indices_size() != 0);
 
@@ -52,13 +53,6 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
     if (message.class_id_size() != message.token_size()) {
       ss << "Inconsistent fields size in TopicModel.token and TopicModel.class_id: "
          << message.token_size() << " vs " << message.class_id_size();
-    }
-
-    if (has_transaction_data) {
-      if (message.transaction_type_size() != message.token_size()) {
-        ss << "Inconsistent fields size in TopicModel.token and TopicModel.transaction_type: "
-          << message.token_size() << " vs " << message.transaction_type_size();
-      }
     }
   }
 
@@ -166,14 +160,14 @@ inline std::string DescribeErrors(const ::artm::Item& message) {
   id = message.has_id() ? std::to_string(message.id()) : id;
   id = message.has_title() ? message.title() : id;
 
-  if (message.transaction_token_id_size() == 0 && message.token_weight_size() > 0) {
-    ss << "Item " << id << " has empty transaction_token_id with non-empty token_weight\n";
+  if (message.token_id_size() == 0 && message.token_weight_size() > 0) {
+    ss << "Item " << id << " has empty token_id with non-empty token_weight\n";
   }
 
-  if (message.transaction_start_index_size() != message.token_weight_size()) {
+  if (message.transaction_start_index_size() != message.transaction_typename_id_size() + 1) {
     ss << "Item " << id << " has incocnsistent transaction_start_index_size ("
-       << message.transaction_start_index_size() << ") and token_weight_size ("
-       << message.token_weight_size() << ")\n";
+       << message.transaction_start_index_size() << ") and transaction_typename_id_size + 1 ("
+       << message.transaction_typename_id_size() + 1 << ")\n";
   }
   return ss.str();
 }
@@ -207,6 +201,7 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
   for (int item_id = 0; item_id < message.item_size(); ++item_id) {
     ss << DescribeErrors(message.item(item_id));
   }
+
   return ss.str();
 }
 
@@ -322,11 +317,6 @@ inline std::string DescribeErrors(const ::artm::TransformMasterModelArgs& messag
   if (message.batch_filename_size() != 0 && message.batch_size() != 0) {
     ss << "Only one of TransformMasterModelArgs.batch_filename, "
        << "TransformMasterModelArgs.batch must be specified; ";
-  }
-
-  if (message.has_predict_class_id()) {
-    ss << "TransformMasterModelArgs.predict_class_id field is deprecated, use"
-      << " only TransformMasterModelArgs.predict_transaction_type instead; ";
   }
 
   return ss.str();
@@ -487,11 +477,6 @@ inline std::string DescribeErrors(const ::artm::ProcessBatchesArgs& message) {
     ss << "Length mismatch in fields ProcessBatchesArgs.batch_filename and ProcessBatchesArgs.batch_weight";
   }
 
-  if (message.has_predict_class_id()) {
-    ss << "ProcessBatchesArgs.predict_class_id field is deprecated, use"
-       << " only ProcessBatchesArgs.predict_transaction_type instead; ";
-  }
-
   return ss.str();
 }
 
@@ -632,14 +617,6 @@ inline void FixMessage(::artm::TopicModel* message) {
     }
   }
 
-  const int class_id_size = message->class_id_size();
-  if ((message->transaction_type_size() == 0) && (class_id_size > 0)) {
-    message->mutable_transaction_type()->Reserve(class_id_size);
-    for (int i = 0; i < class_id_size; ++i) {
-      message->add_transaction_type(message->class_id(i));
-    }
-  }
-
   if (message->topic_name_size() > 0) {
     message->set_num_topics(message->topic_name_size());
   }
@@ -676,27 +653,6 @@ inline void FixMessage(::artm::Batch* message) {
     item.clear_field();
   }
 
-  // Upgrade away from token_id
-  for (auto& item : *message->mutable_item()) {
-    if (item.transaction_token_id_size() == 0) {
-      item.clear_transaction_start_index();
-      for (const int val : item.token_id()) {
-        item.add_transaction_token_id(val);
-        item.transaction_start_index(item.transaction_start_index_size());
-      }
-      item.clear_token_id();
-    }
-  }
-
-  for (auto& item : *message->mutable_item()) {
-    if (item.transaction_start_index_size() != item.token_weight_size()) {
-      item.clear_transaction_start_index();
-      for (int i = 0; i < item.token_weight_size(); ++i) {
-        item.add_transaction_start_index(i);
-      }
-    }
-  }
-
   // For items without title set title to item id
   for (auto& item : *message->mutable_item()) {
     if (!item.has_title() && item.has_id()) {
@@ -704,36 +660,19 @@ inline void FixMessage(::artm::Batch* message) {
     }
   }
 
-  // Fill internal transaction_type field if it is not defined
-  if (message->transaction_type_size() == 0) {
-    LOG(INFO) << "Batch " << message->id() << " is old and should be re-generated for processing speed-up";
-    std::set<TransactionType> batch_tt;
-    for (int item_id = 0; item_id < message->item_size(); ++item_id) {
-      const Item& item = message->item(item_id);
-      for (int token_index = 0; token_index < item.transaction_start_index_size(); ++token_index) {
-        const int start_index = item.transaction_start_index(token_index);
-        const int end_index = (token_index + 1) < item.transaction_start_index_size() ?
-                              item.transaction_start_index(token_index + 1) :
-                              item.transaction_token_id_size();
+  // old-style batch should be filled with transaction info
+  if (message->transaction_typename_size() == 0 && message->item_size() > 0) {
+    message->add_transaction_typename(DefaultTransactionTypeName);
 
-        std::string str;
-        for (int token_id = start_index; token_id < end_index; ++token_id) {
-          auto& tmp = message->class_id(item.transaction_token_id(token_id));
-          str += (token_id == start_index) ? tmp : TransactionSeparator + tmp;
-        }
+    for (auto& item : *message->mutable_item()) {
+      item.clear_transaction_start_index();
+      item.clear_transaction_typename_id();
 
-        if (!str.empty()) {
-          batch_tt.insert(TransactionType(str));
-        } else {
-          LOG(WARNING) << "Item " << item_id << " in batch " << message->id()
-            << " has empty transaction_token_id in position " << token_index;
-          continue;
-        }
+      for (int i = 0; i < item.token_id_size(); ++i) {
+        item.add_transaction_start_index(i);
+        item.add_transaction_typename_id(0);
       }
-    }
-
-    for (const auto& tt : batch_tt) {
-      message->add_transaction_type(tt.AsString());
+      item.add_transaction_start_index(item.token_id_size());
     }
   }
 }
@@ -759,16 +698,6 @@ inline void FixMessage(::artm::DictionaryData* message) {
       message->add_class_id(DefaultClass);
     }
   }
-
-  if (message->transaction_type_size() == 0) {
-    std::set<ClassId> class_ids;
-    for (int i = 0; i < message->token_size(); ++i) {
-      class_ids.emplace(message->class_id(i));
-    }
-    for (const ClassId& class_id : class_ids) {
-      message->add_transaction_type(class_id);
-    }
-  }
 }
 
 template<>
@@ -784,43 +713,15 @@ inline void FixMessage(::artm::ProcessBatchesArgs* message) {
     FixMessage(message->mutable_batch(i));
   }
 
-  const int class_id_size = message->class_id_size();
-  int class_weight_size = message->class_weight_size();
-  int tt_size = message->transaction_type_size();
-  int tt_weight_size = message->transaction_weight_size();
-
-  if (class_id_size > 0) {
-    if (class_weight_size == 0) {
-      for (int i = 0; i < class_id_size; ++i) {
-        message->add_class_weight(1.0f);
-      }
-      class_weight_size = class_id_size;
-    }
-
-    if (tt_size == 0) {
-      for (int i = 0; i < class_id_size; ++i) {
-        message->add_transaction_type(message->class_id(i));
-      }
-      tt_size = class_id_size;
+  if (message->class_weight_size() == 0) {
+    for (int i = 0; i < message->class_id_size(); ++i) {
+      message->add_class_weight(1.0f);
     }
   }
 
-  if (tt_size > 0 && tt_weight_size == 0) {
-    if (tt_size == class_id_size && class_weight_size == class_id_size) {
-      for (int i = 0; i < class_id_size; ++i) {
-        message->add_transaction_weight(message->class_weight(i));
-      }
-    } else {
-      message->add_transaction_weight(1.0);
-    }
-  }
-
-  message->clear_class_id();
-  message->clear_class_weight();
-
-  if (!message->has_predict_transaction_type()) {
-    if (message->has_predict_class_id()) {
-      message->set_predict_transaction_type(message->predict_class_id());
+  if (message->transaction_weight_size() == 0) {
+    for (int i = 0; i < message->transaction_typename_size(); ++i) {
+      message->add_transaction_weight(1.0f);
     }
   }
 }
@@ -834,39 +735,17 @@ inline void FixMessage(::artm::TopTokensScoreConfig* message) {
 
 template<>
 inline void FixMessage(::artm::MasterModelConfig* message) {
-  const int class_id_size = message->class_id_size();
-  int class_weight_size = message->class_weight_size();
-  int tt_size = message->transaction_type_size();
-  int tt_weight_size = message->transaction_weight_size();
-
-  if (class_id_size > 0) {
-    if (class_weight_size == 0) {
-      for (int i = 0; i < class_id_size; ++i) {
-        message->add_class_weight(1.0f);
-      }
-      class_weight_size = class_id_size;
-    }
-
-    if (tt_size == 0) {
-      for (int i = 0; i < class_id_size; ++i) {
-        message->add_transaction_type(message->class_id(i));
-      }
-      tt_size = class_id_size;
+  if (message->class_weight_size() == 0) {
+    for (int i = 0; i < message->class_id_size(); ++i) {
+      message->add_class_weight(1.0f);
     }
   }
 
-  if (tt_size > 0 && tt_weight_size == 0) {
-    if (tt_size == class_id_size && class_weight_size == class_id_size) {
-      for (int i = 0; i < class_id_size; ++i) {
-        message->add_transaction_weight(message->class_weight(i));
-      }
-    } else {
-      message->add_transaction_weight(1.0);
+  if (message->transaction_weight_size() == 0) {
+    for (int i = 0; i < message->transaction_typename_size(); ++i) {
+      message->add_transaction_weight(1.0f);
     }
   }
-
-  message->clear_class_id();
-  message->clear_class_weight();
 
   if (message->reuse_theta()) {
     message->set_cache_theta(true);
@@ -929,12 +808,6 @@ template<>
 inline void FixMessage(::artm::TransformMasterModelArgs* message) {
   for (int i = 0; i < message->batch_size(); ++i) {
     FixMessage(message->mutable_batch(i));
-  }
-
-  if (!message->has_predict_transaction_type()) {
-    if (message->has_predict_class_id()) {
-      message->set_predict_transaction_type(message->predict_class_id());
-    }
   }
 }
 
@@ -1070,9 +943,8 @@ inline std::string DescribeMessage(const ::artm::ProcessBatchesArgs& message) {
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
   ss << ", predict_class_id=" << (message.predict_class_id());
-  ss << ", predict_transaction_type=" << (message.predict_transaction_type());
-  for (int i = 0; i < message.transaction_type_size(); ++i) {
-    ss << ", transaction_type=(" << message.transaction_type(i)
+  for (int i = 0; i < message.transaction_typename_size(); ++i) {
+    ss << ", transaction_typename=(" << message.transaction_typename(i)
        << ":" << message.transaction_weight(i) << ")";
   }
   ss << ", reset_nwt=" << (message.reset_nwt() ? "yes" : "no");
@@ -1133,8 +1005,8 @@ inline std::string DescribeMessage(const ::artm::MasterModelConfig& message) {
   ss << ", cache_theta=" << (message.cache_theta() ? "yes" : "no");
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
   ss << ", disk_cache_path=" << message.disk_cache_path();
-  for (int i = 0; i < message.transaction_type_size(); ++i) {
-    ss << ", transaction_type=(" << message.transaction_type(i)
+  for (int i = 0; i < message.transaction_typename_size(); ++i) {
+    ss << ", transaction_type=(" << message.transaction_typename(i)
       << ":" << message.transaction_weight(i) << ")";
   }
   if (message.has_parent_master_model_id()) {
@@ -1184,7 +1056,6 @@ inline std::string DescribeMessage(const ::artm::TransformMasterModelArgs& messa
   ss << ", batch_size=" << message.batch_size();
   ss << ", theta_matrix_type=" << message.theta_matrix_type();
   ss << ", predict_class_id=" << (message.predict_class_id());
-  ss << ", predict_transaction_type=" << message.predict_transaction_type();
   return ss.str();
 }
 

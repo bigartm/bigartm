@@ -1,8 +1,8 @@
-doc1 |class_1 token_1:1 |class_1^class_2 token_1^token_2:2
-doc2 |class_1 token_2:2 |class_1^class_2 token_2^token_3:3
-doc3 |class_1 token_3:3 |class_1^class_2 token_3^token_4:4
-doc4 |class_1 token_1:4 |class_1^class_2 token_1^token_2:5
-doc5 |class_1 token_2:5 |class_1^class_2 token_2^token_3:6
-doc6 |class_1 token_3:6 |class_1^class_2 token_3^token_4:7
-doc7 |class_3 token_5:7 |class_4^class_2^class_1 token_5^token_2^token_2:8
-doc8 |class_1^class_2 token_1^token_2:1 token_2^token_3:2 |class_1 token_1:3
+doc1 |class_1 token_1:1 ||trans1 |class_1 token_1:1 |class_2 token_2:1 ||
+doc2 |class_1 token_2:2 ||trans1 |class_1 token_2:1.5 |class_2 token_3:1.5 ||
+doc3 ||@default_transaction |class_1 token_3:3 ||trans1 |class_1 token_3:2 |class_2 token_4:2 ||
+doc4 |class_1 token_1:4 ||trans1 |class_1 token_1:2.5 |class_2 token_2:2.5 ||
+doc5 ||@default_transaction |class_1 token_2:5 ||trans1 |class_1 token_2:3 |class_2 token_3:3  ||
+doc6 |class_1 token_3:6 ||trans1 |class_1 token_3:3.5 |class_2 token_4:3.5  ||
+doc7 |class_3 token_5:7 ||trans2 |class_4 token_5:2.66666667 |class_1 token_2:2.66666667 |class_2 token_2:2.66666667 ||
+doc8 ||trans1 |class_1 token_1:0.3 |class_2 token_2:0.7 || |class_1 token_2:1 |class_2 token_3:1 || ||@default_transaction |class_1 token_1:3

@@ -27,16 +27,17 @@ message Item {
   optional int32 id = 1;
   repeated Field field = 2;  // obsolete in BigARTM v0.8.0
   optional string title = 3;
-  repeated int32 token_id = 4;  // obsolete
+  repeated int32 token_id = 4;
   repeated float token_weight = 5;
 
-  // new alternative to token_id field, containa ids of transaction tokens
-  repeated int32 transaction_token_id = 6;
+  // Field contains start index of each transaction from token_id.
+  // Last element contains total number of tokens
+  // In case of regular text will be 0, 1, 2, 3 ... , num_tokens
+  repeated int32 transaction_start_index = 6;
 
-  // Field with lenght equal to token_weight, contains strat index
-  // of each transaction from transaction_token_id.
-  // In case of regular batch will be 0, 1, 2, 3 ... etc.
-  repeated int32 transaction_start_index = 7;
+  // Field with length equal to transaction_start_index - 1
+  // Contains id of transaction typename, transaction belongs to
+  repeated int32 transaction_typename_id = 7;
 }
 
 // Represents a field withing an item.
@@ -68,8 +69,8 @@ message Batch {
   optional string description = 4;
   optional string id = 5;
 
-  // should be consistent with all batch items or empty
-  repeated string transaction_type = 6;
+  // string identifiers of each transaction_type
+  repeated string transaction_typename = 6;
 }
 
 message RegularizerSettings {
@@ -121,7 +122,6 @@ message SmoothSparsePhiConfig {
   repeated string class_id = 2;
   optional string dictionary_name = 3;
   optional TransformConfig transform_config = 4;
-  repeated string transaction_type = 5;
 }
 
 // Represents a configuration of a Decorrelator Phi regularizer
@@ -131,7 +131,6 @@ message DecorrelatorPhiConfig {
   repeated string first_topic_name = 3;
   repeated string second_topic_name = 4;
   repeated float value = 5;
-  repeated string transaction_type = 6;
 }
 
 // Represents a configuration of a MultiLanguage Phi regularizer
@@ -142,7 +141,6 @@ message LabelRegularizationPhiConfig {
   repeated string topic_name = 1;
   repeated string class_id = 2;
   optional string dictionary_name = 3;
-  repeated string transaction_type = 4;
 }
 
 message SpecifiedSparsePhiConfig {
@@ -156,7 +154,6 @@ message SpecifiedSparsePhiConfig {
   optional int32 max_elements_count = 3 [default = 20];
   optional float probability_threshold = 4 [default = 0.99];
   optional SparseMode mode = 5 [default = SparseTopics];
-  optional string transaction_type = 6;
 }
 
 // Represents a configuration of a ImproveCoherence Phi regularizer
@@ -164,7 +161,6 @@ message ImproveCoherencePhiConfig {
   repeated string topic_name = 1;
   repeated string class_id = 2;
   optional string dictionary_name = 3;
-  repeated string transaction_type = 4;
 }
 
 // Represents a configuration of a Smooth Ptdw regularizer
@@ -191,7 +187,6 @@ message BitermsPhiConfig {
   repeated string topic_name = 1;
   repeated string class_id = 2;
   optional string dictionary_name = 3;
-  repeated string transaction_type = 4;
 }
 
 // Represents a configuration of a HierarchySparsing Theta regularizer
@@ -212,19 +207,17 @@ message TopicSegmentationPtdwConfig {
 message SmoothTimeInTopicsPhiConfig {
   repeated string topic_name = 1;
   optional string class_id = 2 [default = "@default_class"];
-  optional string transaction_type = 3;
 }
 
 message NetPlsaPhiConfig {
   optional string class_id = 1;
-  optional string transaction_type = 2;
-  repeated string topic_name = 3;
-  repeated string vertex_name = 4;
-  repeated float vertex_weight = 5;
-  repeated int32 first_vertex_index = 6;
-  repeated int32 second_vertex_index = 7;
-  repeated float edge_weight = 8;
-  optional bool symmetric_edge_weights = 9 [default = false];
+  repeated string topic_name = 2;
+  repeated string vertex_name = 3;
+  repeated float vertex_weight = 4;
+  repeated int32 first_vertex_index = 5;
+  repeated int32 second_vertex_index = 6;
+  repeated float edge_weight = 7;
+  optional bool symmetric_edge_weights = 8 [default = false];
 }
 
 // Represents the transform functions
@@ -282,15 +275,16 @@ message PerplexityScoreConfig {
     UnigramDocumentModel = 0;
     UnigramCollectionModel = 1;
   }
-  optional Type model_type = 3 [default = UnigramDocumentModel];
-  optional string dictionary_name = 4;
-  repeated string transaction_type = 8;
+  optional Type model_type = 1 [default = UnigramDocumentModel];
+  optional string dictionary_name = 2;
+  repeated string class_id = 3;
+  repeated string transaction_typename = 4;
 }
 
 // Represents a result of calculation of a perplexity score
 message PerplexityScore {
-  message TransactionTypeInfo {
-    optional string transaction_type = 1;
+  message TransactionNameInfo {
+    optional string transaction_typename = 1;
 
     // here and below we sum a lot of small values,
     // so double type is required
@@ -302,13 +296,13 @@ message PerplexityScore {
   // general perplexity value for all cases
   optional float value = 1;
   
-  // fields for case of all class ids
+  // fields for case of all transaction typenames
   optional double raw = 2;
   optional double normalizer = 3;
   optional int64 zero_words = 4;
 
   // field for case of custom transaction types
-  repeated TransactionTypeInfo transaction_type_info = 5;
+  repeated TransactionNameInfo transaction_typename_info = 5;
 }
 
 // Represents a configuration of a theta sparsity score
@@ -329,7 +323,6 @@ message SparsityPhiScoreConfig {
   optional float eps = 1 [default = 1e-37];
   optional string class_id = 2 [default = "@default_class"];
   repeated string topic_name = 3;
-  optional string transaction_type = 4;
 }
 
 // Represents a result of calculation of a phi sparsity score
@@ -358,7 +351,6 @@ message TopTokensScoreConfig {
   repeated string topic_name = 3;
   optional string cooccurrence_dictionary_name = 4;
   optional float eps = 5 [default = 1e-37];
-  optional string transaction_type = 6;
 }
 
 // Represents a result of calculation of a top tokens score
@@ -391,7 +383,6 @@ message TopicKernelScoreConfig {
   repeated string topic_name = 3;
   optional float probability_mass_threshold = 4 [default = 0.1];
   optional string cooccurrence_dictionary_name = 5;
-  optional string transaction_type = 6;
 }
 
 // Represents a result of calculation of a topic kernel score
@@ -413,7 +404,6 @@ message TopicMassPhiScoreConfig {
   optional float eps = 1 [default = 1e-37];
   repeated string class_id = 2;
   repeated string topic_name = 3;
-  repeated string transaction_type = 4;
 }
 
 // Represents a result of calculation of a topic part in nwt score
@@ -450,7 +440,6 @@ message BackgroundTokensRatioScoreConfig {
   optional bool save_tokens = 2 [default = true];
   optional bool direct_kl = 3 [default = true];
   optional string class_id = 4 [default = "@default_class"];
-  optional string transaction_type = 5;
 }
 
 // Represents a result of calculation of a background tokens part score
@@ -469,9 +458,6 @@ message TopicModel {
   repeated string class_id = 6;
   repeated IntArray topic_indices = 8;
   optional int64 num_values = 9;  // NNZ for sparse retrieval
-
-  // field with length equal to 'token'
-  repeated string transaction_type = 10;
 }
 
 // Represents a theta matrix.
@@ -576,9 +562,6 @@ message DictionaryData {
   optional int64 num_items_in_collection = 10;  // number of documents in the collection
   repeated float cooc_tf = 11; // these two arrays should be either empty or with size
   repeated float cooc_df = 12; // equal to cooc_value and consistent with cooc indices
-
-  // field with length equal to number of all unique transaction types
-  repeated string transaction_type = 13;
 }
 
 message FilterDictionaryArgs {
@@ -623,9 +606,6 @@ message GetTopicModelArgs {
   optional bool use_sparse_format = 5;  // deprecated, use matrix_layout
   optional float eps = 6 [default = 1e-37];
   optional MatrixLayout matrix_layout = 8 [default = MatrixLayout_Dense];
-  
-  // field with length equal to 'token' (if length of 'token' > 0)
-  repeated string transaction_type = 9;
 }
 
 message GetThetaMatrixArgs {
@@ -691,10 +671,9 @@ message ProcessBatchesArgs {
   repeated Batch batch = 18;
   optional bool use_random_theta = 19 [default = false];
   repeated string topic_name = 20;
-  repeated string transaction_type = 21;
+  repeated string transaction_typename = 21;
   repeated float transaction_weight = 22;
-  optional string predict_transaction_type = 23;
-  optional bool reset_nwt = 24 [default = true];
+  optional bool reset_nwt = 23 [default = true];
 }
 
 message ProcessBatchesResult {
@@ -810,7 +789,7 @@ message MasterModelConfig {
   optional string disk_cache_path = 13;
   optional bool cache_theta = 15 [default = false];
   optional string ptd_name = 16 [default = ""];
-  repeated string transaction_type = 17;
+  repeated string transaction_typename = 17;
   repeated float transaction_weight = 18;
   optional int32 parent_master_model_id = 19;
   optional float parent_master_model_weight = 20 [default = 1.0];
@@ -838,7 +817,6 @@ message TransformMasterModelArgs {
   repeated string batch_filename = 2;
   optional ThetaMatrixType theta_matrix_type = 3 [default = ThetaMatrixType_Dense];
   optional string predict_class_id = 4;
-  optional string predict_transaction_type = 5;
 }
 
 message ConfigureLoggingArgs {

@@ -6,6 +6,7 @@
    
    Parameters:
    - topic_name (names of topics to compute n_t)
+   - transaction_typename (transaction typename to score, empty -> DefaultTransactionTypeName)
    - class_id (class_id to use, empty == all modalities)
    - eps
 

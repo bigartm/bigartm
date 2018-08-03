@@ -36,10 +36,6 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     return false;
   }
   const auto& class_id = config_.class_id();
-  auto tt = ::artm::core::TransactionType(class_id);
-  if (config_.has_transaction_type()) {
-    tt = artm::core::TransactionType(config_.transaction_type());
-  }
 
   bool has_weights = config_.vertex_weight_size();
   if (has_weights && vertex_name_.size() != config_.vertex_weight_size()) {
@@ -49,10 +45,9 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   }
 
   auto normalizers = artm::core::PhiMatrixOperations::FindNormalizers(n_wt);
-  auto norm_iter = normalizers.find(artm::core::NormalizerKey(class_id, tt));
+  auto norm_iter = normalizers.find(class_id);
   if (norm_iter == normalizers.end()) {
     LOG(ERROR) << "NetPlsaPhiConfig.class_id " << class_id
-               << " with transaction type " << tt.AsString()
                << " does not exists in n_wt matrix. Cancel regularization.";
   }
   const auto& n_t = norm_iter->second;
@@ -63,7 +58,7 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
       continue;
     }
 
-    const int token_id = p_wt.token_index(::artm::core::Token(class_id, vertex_name_[vertex_id], tt));
+    const int token_id = p_wt.token_index(::artm::core::Token(class_id, vertex_name_[vertex_id]));
     if (token_id < 0) {
       continue;
     }
@@ -84,7 +79,7 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
           continue;
         }
 
-        const int index = p_wt.token_index(::artm::core::Token(class_id, vertex_name_[pair_id.first], tt));
+        const int index = p_wt.token_index(::artm::core::Token(class_id, vertex_name_[pair_id.first]));
         if (index < 0) {
           continue;
         }
@@ -112,13 +107,6 @@ google::protobuf::RepeatedPtrField<std::string> NetPlsaPhi::class_ids_to_regular
   return retval;
 }
 
-google::protobuf::RepeatedPtrField<std::string> NetPlsaPhi::transaction_types_to_regularize() {
-  google::protobuf::RepeatedPtrField<std::string> retval;
-  std::string* ptr = retval.Add();
-  *ptr = config_.has_transaction_type() ? config_.transaction_type() : config_.class_id();
-  return retval;
-}
-
 void NetPlsaPhi::UpdateNetInfo(const NetPlsaPhiConfig& config) {
   config_.clear_first_vertex_index();
   config_.clear_second_vertex_index();
@@ -135,8 +123,10 @@ void NetPlsaPhi::UpdateNetInfo(const NetPlsaPhiConfig& config) {
   int num_edges = config.first_vertex_index_size();
   if (num_edges) {
     if (num_edges != config.second_vertex_index_size() || num_edges != config.edge_weight_size()) {
-      BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(
-          "Both vertex indices and value arrays should have the same length"));
+      std::stringstream ss;
+      ss << "Both vertex indices and value arrays should have the same length " << num_edges << ", now: "
+         << config.second_vertex_index_size() << " and " << config.edge_weight_size();
+      BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(ss.str()));
     }
 
     for (int i = 0; i < num_edges; ++i) {

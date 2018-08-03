@@ -98,10 +98,10 @@ PhiMatrixFrame::PhiMatrixFrame(const ModelName& model_name,
 }
 
 PhiMatrixFrame::PhiMatrixFrame(const PhiMatrixFrame& rhs)
-    : model_name_(rhs.model_name_),
-      topic_name_(rhs.topic_name_),
-      token_collection_(rhs.token_collection_),
-      spin_locks_() {
+    : model_name_(rhs.model_name_)
+    , topic_name_(rhs.topic_name_)
+    , token_collection_(rhs.token_collection_)
+    , spin_locks_() {
   spin_locks_.reserve(rhs.spin_locks_.size());
   for (unsigned i = 0; i < rhs.spin_locks_.size(); ++i) {
     spin_locks_.push_back(std::make_shared<SpinLock>());
