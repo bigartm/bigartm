@@ -49,7 +49,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
 
   if (count_coherence) {
     LOG(ERROR) << "Coherence computation in TopTokens score does not support transactions!";
-    return false;
+    return nullptr;
   }
 
   std::vector<artm::core::Token> tokens;
