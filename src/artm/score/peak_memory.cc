@@ -1,4 +1,4 @@
-// Copyright 2017, Additive Regularization of Topic Models.
+// Copyright 2018, Additive Regularization of Topic Models.
 
 // Author: Alexander Frey (sashafrey@gmail.com)
 
@@ -9,6 +9,11 @@
 #include "psapi.h"    // NOLINT
 #endif
 #undef ERROR
+
+#if defined(__linux__)
+#include <sys/time.h>
+#include <sys/resource.h>
+#endif
 
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
@@ -27,8 +32,15 @@ std::shared_ptr<Score> PeakMemory::CalculateScore(const artm::core::PhiMatrix& p
   PROCESS_MEMORY_COUNTERS info;
   GetProcessMemoryInfo( GetCurrentProcess( ), &info, sizeof(info) );
   peak_memory_score->set_value((size_t)info.PeakWorkingSetSize);
+#elif defined(__linux__)
+  rusage info;
+  if (!getrusage(RUSAGE_SELF, &info)) {
+    peak_memory_score->set_value((size_t) info.ru_maxrss * (int64_t) 1024);
+  } else {
+    peak_memory_score->set_value(0);
+  }
 #else
-  // ToDo(ofrei): find and use some *nix tool for memory usage calculation
+  // ToDo(ofrei, JeanPaulShapo) need some research for other systems (e.g. MacOS)
   peak_memory_score->set_value(0);
 #endif
 
