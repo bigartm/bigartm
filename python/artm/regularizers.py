@@ -959,8 +959,9 @@ class TopicSegmentationPtdwRegularizer(BaseRegularizer):
     _config_message = messages.TopicSegmentationPtdwConfig
     _type = const.RegularizerType_TopicSegmentationPtdw
 
-    def __init__(self, name=None, tau=1.0, window=1, threshold=None, background_topic_names=None,
-        merge_into_segments=False, merge_threshold=0.5, config=None):
+    def __init__(self, name=None, tau=1.0, window=1, threshold=None,
+                 background_topic_names=None,
+                 merge_into_segments=False, merge_threshold=0.5, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param int window: a number of words to the one side over which smoothing will be performed
