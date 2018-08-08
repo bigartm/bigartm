@@ -1,2 +1,2 @@
-doc1 hello world:2 |user^action mel-lain^click:3 mel-lain^show
-doc2 |author mel-lain |@default_class^action^qualifier hello^show^twice:5 world^click^first |@default_class world
+doc1 hello world:2 ||trans1 |user mel-lain:3 |action click:3 || |user mel-lain |action show ||
+doc2 |author mel-lain ||trans1 hello:5 |action show:5 |qualifier twice:5 || world |action click |qualifier first || ||@default_transaction world

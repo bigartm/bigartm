@@ -777,8 +777,9 @@ class ScoreHelper {
      if (score_type == "perplexity") {
        PerplexityScoreConfig specific_config;
        for (const auto& class_id : class_ids) {
-         specific_config.add_transaction_type(class_id.first);
+         specific_config.add_class_id(class_id.first);
        }
+
        if (dictionary_name.empty()) {
          specific_config.set_model_type(PerplexityScoreConfig_Type_UnigramDocumentModel);
        } else {
@@ -1713,8 +1714,9 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     TransformMasterModelArgs transform_args;
     transform_args.set_theta_matrix_type(::artm::ThetaMatrixType_Dense);
     if (!options.predict_class.empty()) {
-      transform_args.set_predict_transaction_type(options.predict_class);
+      transform_args.set_predict_class_id(options.predict_class);
     }
+
     for (const auto& batch_filename : batch_file_names) {
       transform_args.add_batch_filename(batch_filename.string());
     }

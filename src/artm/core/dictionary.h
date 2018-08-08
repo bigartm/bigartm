@@ -67,11 +67,9 @@ class Dictionary {
 
   void SetNumItems(int num_items) { num_items_in_collection_ = num_items; }
 
+  // SECTION OF GETTERS
   bool HasToken(const Token& token) const { return token_index_.find(token) != token_index_.end(); }
 
-  void AddTransactionType(const ClassId& class_id, const TransactionType& transaction_type);
-
-  // SECTION OF GETTERS
   // general method to return all cooc tokens with their values for given token
   const std::unordered_map<int, float>* token_cooc_values(const Token& token) const;
   const std::unordered_map<int, float>* token_cooc_tfs(const Token& token) const;
@@ -93,11 +91,6 @@ class Dictionary {
   const std::unordered_map<int, std::unordered_map<int, float> >& cooc_tfs() const { return cooc_tfs_; }
   const std::unordered_map<int, std::unordered_map<int, float> >& cooc_dfs() const { return cooc_dfs_; }
 
-  const std::unordered_set<TransactionType, TransactionHasher>* GetTransactionTypes(const ClassId& class_id) const;
-  const std::unordered_set<TransactionType, TransactionHasher> GetAllTransactionTypes() const;
-
-  bool HasTransactions() const { return !class_id_to_transaction_types_.empty(); }
-
   // SECTION OF OPERATIONS
   float CountTopicCoherence(const std::vector<core::Token>& tokens_to_score);
 
@@ -114,7 +107,6 @@ class Dictionary {
   CoocMap cooc_tfs_;
   CoocMap cooc_dfs_;
   size_t num_items_in_collection_;
-  std::unordered_map<ClassId, std::unordered_set<TransactionType, TransactionHasher>> class_id_to_transaction_types_;
 
   void AddCoocImpl(const Token& token_1, const Token& token_2, float value, CoocMap* cooc_map);
   void AddCoocImpl(int index_1, int index_2, float value, CoocMap* cooc_map);

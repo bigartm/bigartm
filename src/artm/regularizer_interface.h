@@ -89,10 +89,6 @@ class RegularizerInterface {
     return google::protobuf::RepeatedPtrField<std::string>();
   }
 
-  virtual google::protobuf::RepeatedPtrField<std::string> transaction_types_to_regularize() {
-    return google::protobuf::RepeatedPtrField<std::string>();
-  }
-
   // Attempt to reconfigure an existing regularizer.
   // Returns true if succeeded, and false if the caller must recreate the regularizer from scratch
   // via constructor.

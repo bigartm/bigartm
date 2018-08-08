@@ -1,4 +1,18 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.3)
+
+# CMake Policy 0060 (CMP0060) controls how CMake
+# adds library dependencies to linker
+# When this policy is disabled (turned to OLD),
+# CMake uses weird linker options (e.g. -Wl,-Bstatic -lfoo -Wl,-dynamic),
+# which can mess up linkage types of libraries
+# When this policy is enabled (turned to NEW),
+# CMake uses full path when linking libraries,
+# and this helps to avoid aforementioned linker options
+# The complete description of this policy can be found here:
+# https://cmake.org/cmake/help/latest/policy/CMP0060.html
+IF (POLICY CMP0060)
+  cmake_policy(SET CMP0060 NEW)
+endif (POLICY CMP0060)
 
 project(BigARTM)
 
@@ -37,9 +51,47 @@ option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
 
 set(PYTHON python CACHE INTERNAL "Python command")
 
-if (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
-  option(BUILD_BIGARTM_CLI_STATIC "Request build of static executable bigartm (for Linux only)" ON)
-endif (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
+# Describe necessary options for static version of `bigartm` executable
+
+include(CMakeDependentOption)
+CMAKE_DEPENDENT_OPTION(
+  BUILD_BIGARTM_CLI_STATIC "[EXPERIMENTAL] Requests static version of executable `bigartm`" OFF
+  "BUILD_BIGARTM_CLI;UNIX;NOT APPLE" OFF)
+
+CMAKE_DEPENDENT_OPTION(
+  HAS_STATIC_LIBUNWIND "[EXPERIMENTAL] Indicates presence if static version of libunwind" OFF
+  "BUILD_BIGARTM_CLI_STATIC" OFF)
+
+if (BUILD_BIGARTM_CLI_STATIC AND NOT HAS_STATIC_LIBUNWIND)
+  message(WARNING
+    "You're requesting static version of CLI `bigartm`. "
+    "Some 3rdparty of library (namely, `glog`) uses `libunwind` library, which "
+    "provides convenient way of maniulating with call frames. "
+    "Here `glog` uses this library mostly for stacktrace generation. "
+    "Unfortunatley, not all Linux distributives provide static version of it "
+    "in official repositories, that's why we disable usage of this library by default.\n"
+
+    "If you certainly have static version of `libunwind` on your system "
+    "and want to use it in BigARTM project, just set option "
+    "'HAS_STATIC_LIBUNWIND' to 'ON'. For example, if you use CMake "
+    "as a command-line utility, you can add option '-DHAS_STATIC_LIBUNWIND=ON' "
+    "to argument list.")
+
+  # There is problem with some Linux distributions (e.g. Fedora),
+  # which currently doesn't provide convenient way to obtain
+  # static version of `libunwind` library (either via official or custom repos)
+  # This library is autodetected by 3rdparty `glog` module.
+  # That's why there may be some problems when user wants to build
+  # static CLI `bigartm` on system with only shared version of `libunwind`.
+  #
+  # It sounds reasonable to disable autodetection of `libunwind` library
+  # by `glog` while building static CLI executable.
+  # One possible way to do this is to "forge" `glog` module that
+  # there is no libunwind library (via CMake CACHE vairables).
+  # A nice candidate to do is variable "UNWIND_LIBRARY" which is directly
+  # related to autodetection in file 3rdparty/glog/CMakeLists.txt
+  set(UNWIND_LIBRARY CACHE INTERNAL "")
+endif (BUILD_BIGARTM_CLI_STATIC AND NOT HAS_STATIC_LIBUNWIND)
 
 if (APPLE)
   set(CMAKE_MACOSX_RPATH 1)

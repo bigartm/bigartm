@@ -31,17 +31,6 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     use_all_classes = true;
   }
 
-  bool use_all_tts = false;
-  if (config_.transaction_type_size() == 0) {
-    use_all_tts = true;
-  }
-
-  // ToDo(MelLain): refactor this regularizer for transaction model case
-  if (!use_all_tts) {
-    LOG(ERROR) << "ImproveCoherence regularizer does not support transactions!";
-    return false;
-  }
-
   if (!config_.has_dictionary_name()) {
     LOG(WARNING) << "There's no dictionary for ImproveCoherence regularizer. Cancel it's launch.";
     return false;
@@ -100,10 +89,6 @@ google::protobuf::RepeatedPtrField<std::string> ImproveCoherencePhi::topics_to_r
 
 google::protobuf::RepeatedPtrField<std::string> ImproveCoherencePhi::class_ids_to_regularize() {
   return config_.class_id();
-}
-
-google::protobuf::RepeatedPtrField<std::string> ImproveCoherencePhi::transaction_types_to_regularize() {
-  return config_.transaction_type();
 }
 
 bool ImproveCoherencePhi::Reconfigure(const RegularizerConfig& config) {

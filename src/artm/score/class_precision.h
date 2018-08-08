@@ -3,7 +3,8 @@
    Author: Alexander Frey (sashafrey@gmail.com)
    
    This class proceeds scoring of class precision. To use it
-   you need to set the 'predict_transaction_type' in ProcessBatchesArgs.
+   you need to set the 'predict_class_id' and
+   'predict_transaction_type' in ProcessBatchesArgs.
    In this case ProcessBatches will return the p(c|d) matrix, 
    where p(c|d)=sum_t p(c|t)*p(t|d). This score will count the
    precision of the classification, if each document has only one

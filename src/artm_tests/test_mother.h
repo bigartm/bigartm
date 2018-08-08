@@ -29,11 +29,12 @@ class Helpers {
   static void CompareTopicModels(const ::artm::TopicModel& tm1, const ::artm::TopicModel& tm2, bool* ok);
   static void CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm::ThetaMatrix& tm2, bool *ok);
 
-  static artm::Batch GenerateBatch(int nTokens, int nDocs, std::string class1, std::string class2);
-  static artm::DictionaryData GenerateDictionary(int nTokens, std::string class1, std::string class2);
-  static void ConfigurePerplexityScore(std::string score_name,
+  static artm::Batch GenerateBatch(int nTokens, int nDocs, const std::string& class1, const std::string& class2);
+  static artm::DictionaryData GenerateDictionary(int nTokens, const std::string& class1, const std::string& class2);
+  static void ConfigurePerplexityScore(const std::string& score_name,
                                        artm::MasterModelConfig* master_config,
-                                       std::vector<std::string> class_ids = { });
+                                       const std::vector<std::string>& class_ids = { },
+                                       const std::vector<std::string>& tt_names = { });
   static boost::filesystem::path getTestDataDir();
 };
 

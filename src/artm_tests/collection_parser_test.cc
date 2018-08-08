@@ -299,40 +299,51 @@ TEST(CollectionParser, TransactionVowpalWabbit) {
 
       ASSERT_EQ(batch.item_size(), 2);
 
-      ASSERT_EQ(batch.item(0).transaction_token_id_size(), 6);
-      ASSERT_EQ(batch.item(0).transaction_start_index_size(), 4);
-      ASSERT_EQ(batch.item(1).transaction_token_id_size(), 8);
-      ASSERT_EQ(batch.item(1).transaction_start_index_size(), 4);
+      ASSERT_EQ(batch.item(0).token_id_size(), 6);
+      ASSERT_EQ(batch.item(0).transaction_start_index_size(), 5);
+      ASSERT_EQ(batch.item(0).token_weight_size(), 6);
+      ASSERT_EQ(batch.item(1).token_id_size(), 8);
+      ASSERT_EQ(batch.item(1).transaction_start_index_size(), 5);
+      ASSERT_EQ(batch.item(1).token_weight_size(), 8);
 
       // check first item
       ASSERT_FLOAT_EQ(batch.item(0).token_weight(0), 1.0);
       ASSERT_FLOAT_EQ(batch.item(0).token_weight(1), 2.0);
       ASSERT_FLOAT_EQ(batch.item(0).token_weight(2), 3.0);
-      ASSERT_FLOAT_EQ(batch.item(0).token_weight(3), 1.0);
+      ASSERT_FLOAT_EQ(batch.item(0).token_weight(3), 3.0);
+      ASSERT_FLOAT_EQ(batch.item(0).token_weight(4), 1.0);
+      ASSERT_FLOAT_EQ(batch.item(0).token_weight(5), 1.0);
+
 
       ASSERT_EQ(batch.item(0).transaction_start_index(0), 0);
       ASSERT_EQ(batch.item(0).transaction_start_index(1), 1);
       ASSERT_EQ(batch.item(0).transaction_start_index(2), 2);
       ASSERT_EQ(batch.item(0).transaction_start_index(3), 4);
+      ASSERT_EQ(batch.item(0).transaction_start_index(4), 6);
 
       // both are ids of "mel-lain" as "user"
-      ASSERT_EQ(batch.item(0).transaction_token_id(2),
-                batch.item(0).transaction_token_id(4));
+      ASSERT_EQ(batch.item(0).token_id(2),
+                batch.item(0).token_id(4));
 
       // check second item
       ASSERT_FLOAT_EQ(batch.item(1).token_weight(0), 1.0);
       ASSERT_FLOAT_EQ(batch.item(1).token_weight(1), 5.0);
-      ASSERT_FLOAT_EQ(batch.item(1).token_weight(2), 1.0);
-      ASSERT_FLOAT_EQ(batch.item(1).token_weight(3), 1.0);
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(2), 5.0);
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(3), 5.0);
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(4), 1.0);
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(5), 1.0);
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(6), 1.0);
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(7), 1.0);
 
       ASSERT_EQ(batch.item(1).transaction_start_index(0), 0);
       ASSERT_EQ(batch.item(1).transaction_start_index(1), 1);
       ASSERT_EQ(batch.item(1).transaction_start_index(2), 4);
       ASSERT_EQ(batch.item(1).transaction_start_index(3), 7);
+      ASSERT_EQ(batch.item(1).transaction_start_index(4), 8);
 
       // both are ids of "wordl" as "@default_class"
-      ASSERT_EQ(batch.item(1).transaction_token_id(4),
-                batch.item(1).transaction_token_id(7));
+      ASSERT_EQ(batch.item(1).token_id(4),
+                batch.item(1).token_id(7));
     }
     ++it;
   }
