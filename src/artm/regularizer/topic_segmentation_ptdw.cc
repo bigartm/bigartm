@@ -182,14 +182,14 @@ TopicSegmentationPtdw::CreateRegularizePtdwAgent(const Batch& batch,
   for (int item_index = 0; item_index < batch.item_size(); item_index++) {
     std::list<int> current_dots;
     const Item& item = batch.item(item_index);
-    for (int token_index = 0; token_index < item.transaction_token_id_size(); token_index++) {
-      int token_id = item.transaction_token_id(token_index);
+    for (int token_index = 0; token_index < item.token_id_size(); token_index++) {
+      int token_id = item.token_id(token_index);
       if (batch.token(token_id) == ".") {
         current_dots.push_back(token_index);
         dot_count++;
       }
     }
-    current_dots.push_back(item.transaction_token_id_size());
+    current_dots.push_back(item.token_id_size());
     dot_positions.push_back(current_dots);
   }
   LOG(INFO) << "Dot count: " << dot_count;
