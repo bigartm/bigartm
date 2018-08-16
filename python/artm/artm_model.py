@@ -92,8 +92,8 @@ def _topic_selection_regularizer_func(self, regularizers):
 
 
 class ArtmThreadPool(object):
-    def __init__(self, async=True):
-        self._pool = ThreadPool(processes=1) if async else None
+    def __init__(self, asyncronous=True):
+        self._pool = ThreadPool(processes=1) if asyncronous else None
 
     def apply_async(self, func, args):
         return self._pool.apply_async(func, args) if self._pool else func(*args)
@@ -193,7 +193,7 @@ class ARTM(object):
         self._theta_columns_naming = 'id'
         self._seed = -1
         self._show_progress_bars = show_progress_bars
-        self._pool = ArtmThreadPool(async=show_progress_bars)
+        self._pool = ArtmThreadPool(asyncronous=show_progress_bars)
 
         if topic_names is not None:
             self._topic_names = topic_names
@@ -588,7 +588,7 @@ class ARTM(object):
         self._phi_cached = None
 
     def fit_online(self, batch_vectorizer=None, tau0=1024.0, kappa=0.7, update_every=1,
-                   apply_weight=None, decay_weight=None, update_after=None, async=False):
+                   apply_weight=None, decay_weight=None, update_after=None, asyncronous=False):
         """
         :Description: proceeds the learning of topic model in online mode
 
@@ -602,10 +602,10 @@ class ARTM(object):
         :type apply_weight: list of float
         :param decay_weight: weight of applying old counters
         :type decay_weight: list of float
-        :param bool async: use or not the async implementation of the EM-algorithm
+        :param bool asyncronous: use or not the async implementation of the EM-algorithm
 
         :Note:
-          async=True leads to impossibility of score extraction via score_tracker.\
+          asyncronous=True leads to impossibility of score extraction via score_tracker.\
           Use get_score() instead.
 
         :Update formulas:
@@ -648,7 +648,7 @@ class ARTM(object):
             self._pool.apply_async(func=self.master.fit_online,
                                    args=(batch_vectorizer.batches_ids, batch_vectorizer.weights,
                                          update_after_final, apply_weight_final,
-                                         decay_weight_final, async)),
+                                         decay_weight_final, asyncronous)),
             batch_vectorizer.num_batches)
 
         for name in self.scores.data.keys():

@@ -866,7 +866,7 @@ class MasterComponent(object):
         self._lib.ArtmFitOfflineMasterModel(self.master_id, args)
 
     def fit_online(self, batch_filenames=None, batch_weights=None, update_after=None,
-                   apply_weight=None, decay_weight=None, async=None):
+                   apply_weight=None, decay_weight=None, asyncronous=None):
         """
         :param batch_filenames: name of batches to process
         :type batch_filenames: list of str
@@ -880,7 +880,7 @@ class MasterComponent(object):
         :param decay_weight: weight of applying old counters\
                 (len == len of update_after)
         :type decay_weight: list of float
-        :param bool async: whether to use the async implementation\
+        :param bool asyncronous: whether to use the async implementation\
                 of the EM-algorithm or not
         """
         args = messages.FitOnlineMasterModelArgs()
@@ -914,8 +914,8 @@ class MasterComponent(object):
             for value in decay_weight:
                 args.decay_weight.append(value)
 
-        if async is not None:
-            args.async = async
+        if asyncronous is not None:
+            args.asyncronous = asyncronous
 
         self._lib.ArtmFitOnlineMasterModel(self.master_id, args)
 
