@@ -16,7 +16,7 @@ Let's make a simple model experiment with 'kos' collection in UCI format (see :d
    batch_vectorizer = artm.BatchVectorizer(data_path='.', data_format='bow_uci',
                                            collection_name='kos', target_folder='kos_batches')
 
-Now let's create the model by defining the number of topics, number of passes through each document, hyperparameters of smoothing of :math:`\Phi` and :math:`\Theta` and dictionary to use. Also let's ask thr model to store :math:`\Theta` matrix to have an ability to look at it in the future.
+Now let's create the model by defining the number of topics, number of passes through each document, hyperparameters of smoothing of :math:`\Phi` and :math:`\Theta` and dictionary to use. Also let's ask the model to store :math:`\Theta` matrix to have an ability to look at it in the future.
 Also you can set here the num_processors parameter, which defines the number of threads to be used on your machine for parallelizing the computing:
 
 .. code-block:: python
@@ -44,7 +44,7 @@ Or at all values of perplexity (e.g. on each collection pass):
 
    lda.perplexity_value
 
-You can see the most probable tokens in each topic, at last. The are returned as list of lists of strings (each internal list correspondes to on topic by order). Let's output them with pre-formatting:
+You can see the most probable tokens in each topic, at last. They are returned as list of lists of strings (each internal list corresponds to topic by order). Let's output them with pre-formatting:
 
 .. code-block:: python
 
@@ -52,7 +52,7 @@ You can see the most probable tokens in each topic, at last. The are returned as
    for i, token_list in enumerate(top_tokens):
         print 'Topic #{0}: {1}'.format(i, token_list)
 
-To get the matrices you can use th following calls:
+To get the matrices you can use the following calls:
 
 .. code-block:: python
 
@@ -68,7 +68,7 @@ At first, it is the ability to create :math:`\Theta` matrix for new documents af
    batch_vectorizer = artm.BatchVectorizer(data_path='kos_batches_test')
    theta_test = lda.transform(batch_vectorizer=test_batch_vectorizer)
 
-Secondly, in the case, when you need a custom regularization of each topic in :math:`\Phi` matrix, you need to set beta a list instead of scalar value. The list should have th length equal to the number of topics, and then each topic will be regularized with corresponding coefficient:
+Secondly, in the case, when you need a custom regularization of each topic in :math:`\Phi` matrix, you need to set beta a list instead of scalar value. The list should have the length equal to the number of topics, and then each topic will be regularized with corresponding coefficient:
 
 .. code-block:: python
 
@@ -80,11 +80,11 @@ Secondly, in the case, when you need a custom regularization of each topic in :m
 
 This is a simple example of usage of ``artm.ARTM``, a full-power Python API for BigARTM library. Let's learn two topic models of text collections, ARTM and PLSA, and compare them.
 
-One of the important measures is the perplexity. Nevertheless it's not the only way to chech the quality of the model learning. The list of implemented scores can be found in :doc:`scores_descr` and there interfaces are described in :doc:`../api_references/python_interface/scores`. We'll use perplexity, sparsities of :math:`\Phi` and :math:`\Theta`, topic kernel scores (the higher values of sparsities and average purity and contrast means the more interpretable model).
+One of the important measures is the perplexity. Nevertheless it's not the only way to check the quality of the model learning. The list of implemented scores can be found in :doc:`scores_descr` and there interfaces are described in :doc:`../api_references/python_interface/scores`. We'll use perplexity, sparsities of :math:`\Phi` and :math:`\Theta`, topic kernel scores (the higher values of sparsities and average purity and contrast means the more interpretable model).
 
 The goal of the experiment is to learn the ARTM model in the way to obtain better values of sparsities and kernel characteristics, than in PLSA, without significant decline of the perplexity.
 
-The main tool to control the learning process is the regularization. The list of currently implemented regularizers can be found in :doc:`regularizers_descr` and there interfaces are described in :doc:`../api_references/python_interface/regularizers`. We will use SmoothSparsePhi, SmoothSparseTheta and DecorrelationPhi regularizers. ARTM without the regularization corresponds the PLSA model.
+The main tool to control the learning process is the regularization. The list of currently implemented regularizers can be found in :doc:`regularizers_descr` and their interfaces are described in :doc:`../api_references/python_interface/regularizers`. We will use SmoothSparsePhi, SmoothSparseTheta and DecorrelationPhi regularizers. ARTM without the regularization corresponds to the PLSA model.
 
 Let's use the same 'kos' collection, that was described above. At first let's import all necessary modules (make sure you have the BigARTM Python API in your PATH variable):
 
@@ -104,17 +104,28 @@ So let's create the object of ``artm.BatchVectorizer``:
 .. code-block:: python
 
    batch_vectorizer = None
-   if len(glob.glob(os.path.join('kos', '*.batch'))) < 1:
+   if len(glob.glob(os.path.join('kos_batches', '*.batch'))) < 1:
        batch_vectorizer = artm.BatchVectorizer(data_path='', data_format='bow_uci',
-                                               collection_name='kos', target_folder='kos')
+                                               collection_name='kos', target_folder='kos_batches')
+	   dictionary = batch_vectorizer.dictionary
    else:
-       batch_vectorizer = artm.BatchVectorizer(data_path='kos', data_format='batches')
+       batch_vectorizer = artm.BatchVectorizer(data_path='kos_batches', data_format='batches')
+       dictionary = artm.Dictionary('dictionary')
+       dictionary.gather(batch_vectorizer.data_path)
 
-ARTM is a class, that represents BigARTM Python API. Allows to use almost all library abilities in scikit-learn style. Let's create two topic models for our experiments. The most important parameter of the model is the number of topics. Optionally the user can define the list of regularizers and quality measures (scores) to be used in this model. This step can be done later. Note, that each model defines its own namespace for names of regularizers and scores.
+``ARTM`` is a class, that represents BigARTM Python API. Allows to use almost all library abilities in scikit-learn style. Let's create two topic models for our experiments. The most important parameter of the model is the number of topics. Optionally the user can define the list of regularizers and quality measures (scores) to be used in this model. This step can be done later. Note, that each model defines its own namespace for names of regularizers and scores.
+
+``Dictionary`` is the object of BigARTM, containing the information about the collection (vocabulary, different counters and values, linked to tokens). ``BatchVectorizer`` doesn't keep its dictionary while using ``data_format='batches'``, so it has to be gathered explicitly. Provided dictionary will be used for :math:`\Phi` matrix initialization. It means:
+
+- the :math:`\Phi` matrix with the name 'pwt' will be created with numbers of rows and columns corresponding the numbers of tokens in the dictionary and topics in the model;
+- this matrix will be filled with random values from (0, 1) and normalized.
+
+Matrix will be initialized during first call of ``ARTM.fit_offline()`` or ``ARTM.fit_online()``.
+
+Now we will create our ARTM and PLSA models.
 
 .. code-block:: python
-
-   dictionary = batch_vectorizer.dictionary
+ 
    topic_names = ['topic_{}'.format(i) for i in xrange(15)]
 
    model_plsa = artm.ARTM(topic_names=topic_names, cache_theta=True,
@@ -126,13 +137,6 @@ ARTM is a class, that represents BigARTM Python API. Allows to use almost all li
                                                        dictionary=dictionary)],
                           regularizers=[artm.SmoothSparseThetaRegularizer(name='SparseTheta',
                                                                           tau=-0.15)])
-
-Dictionary is the object of BigARTM, containing the information about the collection (vocabulary, different counters and values, linked to tokens). Provided dictionary will be used for :math:`\Phi` matrix initialization. It means:
-
-- the :math:`\Phi` matrix with the name 'pwt' will be created with numbers of rows and columns corresponding the numbers of tokens in the dictionary and topics in the model;
-- this matrix will be filled with random values from (0, 1) and normalized.
-
-Matrix will be initialized during first call of ``ARTM.fit_offline()`` or ``ARTM.fit_online()``.
 
 As it was said earlier, ARTM provides the ability to use all the scores of BigARTM. Once the score was included into model, the model will save all its values, obtained at the time of each :math:`\Phi` matrix update. Let's add the scores we need for our experiment (only ones, missed in the constructors):
 
@@ -146,9 +150,9 @@ As it was said earlier, ARTM provides the ability to use all the scores of BigAR
    model_artm.scores.add(artm.SparsityPhiScore(name='SparsityPhiScore'))
    model_artm.scores.add(artm.SparsityThetaScore(name='SparsityThetaScore'))
    model_artm.scores.add(artm.TopicKernelScore(name='TopicKernelScore',
-                                                     probability_mass_threshold=0.3))
+                                               probability_mass_threshold=0.3))
 
-Now we'll do the same thing with the regularizers for artm_model (let's set their start coefficients of the regularization, these values can be changed later):
+Now we'll do the same thing with the regularizers for ARTM model (let's set their start coefficients of the regularization, these values can be changed later):
 
 .. code-block:: python
 
@@ -162,8 +166,13 @@ Now we'll try to learn the model in offline mode (e.g. with one :math:`\Phi` mat
    model_plsa.num_document_passes = 1
    model_artm.num_document_passes = 1
 
+   model_plsa.initialize(dictionary=dictionary)
+   model_artm.initialize(dictionary=dictionary)
+
    model_plsa.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=15)
    model_artm.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=15)
+
+Before fitting the model, it has to be initialized with dictionary or its name (which is ``'dictionary'`` in our case) as an argument.
 
 Let's check the results of first part of learning process by comparing the values of scores of both models:
 
@@ -373,8 +382,7 @@ You can additionally extract :math:`\Theta` matrix and print it:
 
 .. code-block:: python
 
-   theta_matrix = model_artm.get_theta()
-   print theta_matrix
+   print model_artm.get_theta()
 
 The model can be used to find :math:`\theta_d` vectors for new documents via ``ARTM.transform()`` method:
 
@@ -385,8 +393,8 @@ The model can be used to find :math:`\theta_d` vectors for new documents via ``A
                                                 batches=['test_docs.batch'])
    test_theta_matrix = model_artm.transform(batch_vectorizer=test_batch_vectorizer)
 
-Topic modeling task has an infinite set of solutions. It gives us a freedom in our choice. Regularizers give an opportunity to get the result, that satisfacts several criteria (such as sparsity, interpretability) at the same time.
+Topic modeling task has an infinite set of solutions. It gives us a freedom in our choice. Regularizers give an opportunity to get the result satisfying several criteria (such as sparsity, interpretability) at the same time.
 
-Showen example is a demonstrative one, one can choose more flexible strategies of regularization to get better result. The experiments with other, bigger collection can be proceeded in the same way as it was described above.
+Shown example is just a demonstration, one can choose more flexible strategies of regularization to get better result. The experiments with other, bigger collection can be proceeded in the same way as it was described above.
 
 See :doc:`python_userguide/index` for further reading, as it was mentioned above.
