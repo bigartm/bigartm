@@ -43,7 +43,8 @@ class BatchVectorizer(object):
         :param str collection_name: the name of text collection (required if data_format == 'bow_uci')
         :param str data_path: 
 
-                              * if ``data_format == 'bow_uci'`` => folder containing *docword.collection_name.txt* and *vocab.collection_name.txt* files;
+                              * if ``data_format == 'bow_uci'`` => folder containing *docword.collection_name.txt* and\
+                              *vocab.collection_name.txt* files;
 
                               * if ``data_format == 'vowpal_wabbit'`` => file in Vowpal Wabbit format;
 
@@ -66,11 +67,11 @@ class BatchVectorizer(object):
                                   if not set, no batches will be produced for further work
         :param batches: 
 
-                            * if ``process_in_memory_model is None`` => list with non-full file names of\
+                              * if ``process_in_memory_model is None`` => list with non-full file names of\
                               batches (necessary parameters are ``batches`` + ``data_path`` +\
-                              ``data_fromat == 'batches'`` in this case)\
+                              ``data_format == 'batches'`` in this case)\
 
-                            * else => list of batches (``messages.Batch`` objects), loaded in memory
+                              * else => list of batches (``messages.Batch`` objects), loaded in memory
         :type batches: list of str
         :param str batch_name_type: name batches in natural order ('code') or using random guids (guid)
         :param float data_weight: weight for a group of batches from data_path;\
@@ -83,7 +84,8 @@ class BatchVectorizer(object):
         :param bool gather_dictionary: create or not the default dictionary in vectorizer;
 
                                 * if ``data_format == 'bow_n_wd'`` --- automatically set to ``True``;
-                                * if ``data_format == 'batches'`` or data_weight is list --- automatically set to ``False``.
+                                * if ``data_format == 'batches'`` or data_weight is list --- automatically set to\
+                                ``False``.
 
         :param class_ids: list of class_ids or single class_id to parse and include in batches
         :type class_ids: list of str or str

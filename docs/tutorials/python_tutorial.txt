@@ -59,7 +59,7 @@ To get the matrices you can use the following calls:
    phi = lda.phi_
    theta = lda.get_theta()
 
-Here's two more abilities of artm.LDA.
+Here's two more abilities of ``artm.LDA``.
 
 At first, it is the ability to create :math:`\Theta` matrix for new documents after the model was fitted:
 
@@ -84,7 +84,7 @@ One of the important measures is the perplexity. Nevertheless it's not the only 
 
 The goal of the experiment is to learn the ARTM model in the way to obtain better values of sparsities and kernel characteristics, than in PLSA, without significant decline of the perplexity.
 
-The main tool to control the learning process is the regularization. The list of currently implemented regularizers can be found in :doc:`regularizers_descr` and their interfaces are described in :doc:`../api_references/python_interface/regularizers`. We will use SmoothSparsePhi, SmoothSparseTheta and DecorrelationPhi regularizers. ARTM without the regularization corresponds to the PLSA model.
+The main tool to control the learning process is the regularization. The list of currently implemented regularizers can be found in :doc:`regularizers_descr` and their interfaces are described in :doc:`../api_references/python_interface/regularizers`. We will use ``SmoothSparsePhi``, ``SmoothSparseTheta`` and ``DecorrelationPhi`` regularizers. ARTM without the regularization corresponds to the PLSA model.
 
 Let's use the same 'kos' collection, that was described above. At first let's import all necessary modules (make sure you have the BigARTM Python API in your PATH variable):
 
@@ -107,7 +107,7 @@ So let's create the object of ``artm.BatchVectorizer``:
    if len(glob.glob(os.path.join('kos_batches', '*.batch'))) < 1:
        batch_vectorizer = artm.BatchVectorizer(data_path='', data_format='bow_uci',
                                                collection_name='kos', target_folder='kos_batches')
-	   dictionary = batch_vectorizer.dictionary
+       dictionary = batch_vectorizer.dictionary
    else:
        batch_vectorizer = artm.BatchVectorizer(data_path='kos_batches', data_format='batches')
        dictionary = artm.Dictionary('dictionary')
@@ -159,7 +159,7 @@ Now we'll do the same thing with the regularizers for ARTM model (let's set thei
    model_artm.regularizers.add(artm.SmoothSparsePhiRegularizer(name='SparsePhi', tau=-0.1))
    model_artm.regularizers.add(artm.DecorrelatorPhiRegularizer(name='DecorrelatorPhi', tau=1.5e+5))
 
-Now we'll try to learn the model in offline mode (e.g. with one :math:`\Phi` matrix update during one path through the whole collection). Let's start with 15 passes:
+Let's learn the model in offline mode (e.g. with one :math:`\Phi` matrix update during one path through the whole collection) starting with 15 passes:
 
 .. code-block:: python
 
