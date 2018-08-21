@@ -78,7 +78,7 @@ List of all methods with corresponding protobuf types
                               ArtmOverwriteTopicModel        (master_id, artm.TopicModel);
 
                               ArtmFitOfflineMasterModel      (master_id, artm.FitOfflineMasterModelArgs);
-                              ArtmFitOnlineMasterModel       (master_id, attm.FitOnlineMasterModelArgs);
+                              ArtmFitOnlineMasterModel       (master_id, artm.FitOnlineMasterModelArgs);
   artm.ThetaMatrix          = ArtmRequestTransformMasterModel(master_id, artm.TransformMasterModelArgs);
   artm.ThetaMatrix          = ArtmRequestTransformMasterModelExternal(master_id, artm.TransformMasterModelArgs);
 
