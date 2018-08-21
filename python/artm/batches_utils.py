@@ -41,37 +41,36 @@ class BatchVectorizer(object):
                  vocabulary=None, gather_dictionary=True, class_ids=None, process_in_memory_model=None):
         """
         :param str collection_name: the name of text collection (required if data_format == 'bow_uci')
-        :param str data_path: 
+        :param str data_path:
 
-                              * if ``data_format == 'bow_uci'`` => folder containing *docword.collection_name.txt* and\
-                              *vocab.collection_name.txt* files;
+            * if ``data_format == 'bow_uci'`` => folder containing *docword.collection_name.txt* and\
+            *vocab.collection_name.txt* files;
 
-                              * if ``data_format == 'vowpal_wabbit'`` => file in Vowpal Wabbit format;
+            * if ``data_format == 'vowpal_wabbit'`` => file in Vowpal Wabbit format;
 
-                              * if ``data_format == 'bow_n_wd'`` => useless parameter;
+            * if ``data_format == 'bow_n_wd'`` => useless parameter;
 
-                              * if ``data_format == 'batches'`` => folder containing batches.
+            * if ``data_format == 'batches'`` => folder containing batches.
 
-        :param str data_format: the type of input data: 
+        :param str data_format: the type of input data:
+            * 'bow_uci' --- Bag-Of-Words in UCI format;
 
-                              * 'bow_uci' --- Bag-Of-Words in UCI format;
+            * 'vowpal_wabbit' --- Vowpal Wabbit format;
 
-                              * 'vowpal_wabbit' --- Vowpal Wabbit format;
+            * 'bow_n_wd' --- result of CountVectorizer or similar tool;
 
-                              * 'bow_n_wd' --- result of CountVectorizer or similar tool;
-
-                              * 'batches' --- the BigARTM data format.
+            * 'batches' --- the BigARTM data format.
 
         :param int batch_size: number of documents to be stored in each batch
         :param str target_folder: full path to folder for future batches storing;\
                                   if not set, no batches will be produced for further work
-        :param batches: 
+        :param batches:
 
-                              * if ``process_in_memory_model is None`` => list with non-full file names of\
-                              batches (necessary parameters are ``batches`` + ``data_path`` +\
-                              ``data_format == 'batches'`` in this case)\
+            * if ``process_in_memory_model is None`` => list with non-full file names of\
+            batches (necessary parameters are ``batches`` + ``data_path`` +\
+            ``data_format == 'batches'`` in this case)\
 
-                              * else => list of batches (``messages.Batch`` objects), loaded in memory
+            * else => list of batches (``messages.Batch`` objects), loaded in memory
         :type batches: list of str
         :param str batch_name_type: name batches in natural order ('code') or using random guids (guid)
         :param float data_weight: weight for a group of batches from data_path;\
