@@ -8,6 +8,8 @@ The state-of-the-art platform for topic modeling.
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/i18k840shuhr2jtk/branch/master?svg=true)](https://ci.appveyor.com/project/bigartm/bigartm)
 [![GitHub license](https://img.shields.io/badge/license-New%20BSD-blue.svg)](https://raw.github.com/bigartm/bigartm/master/LICENSE.txt)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.288960.svg)](https://doi.org/10.5281/zenodo.288960)
+[![Code Quality: Python](https://img.shields.io/lgtm/grade/python/g/bigartm/bigartm.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bigartm/bigartm/context:python)
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/bigartm/bigartm.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bigartm/bigartm/alerts)
 
   - [Full Documentation](http://docs.bigartm.org/)
   - [User Mailing List](https://groups.google.com/forum/#!forum/bigartm-users)
