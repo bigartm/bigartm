@@ -51,11 +51,11 @@ PARAMETERS_FILENAME_JSON = 'parameters.json'
 PARAMETERS_FILENAME_BIN = 'parameters.bin'
 
 
-def _run_from_ipython():
+def _run_from_notebook():
     try:
-        get_ipython().config
-        return True
-    except:
+        shell = get_ipython().__class__.__name__
+        return shell == 'ZMQInteractiveShell'
+    except:  # noqa
         return False
 
 
@@ -511,7 +511,7 @@ class ARTM(object):
         import warnings
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=DeprecationWarning)
-            progress = tqdm.tqdm_notebook if _run_from_ipython() else tqdm.tqdm
+            progress = tqdm.tqdm_notebook if _run_from_notebook() else tqdm.tqdm
             with progress(total=num_batches, desc='Batch', leave=False,
                           disable=not self._show_progress_bars) as batch_tqdm:
                 previous_num_batches = 0
@@ -544,7 +544,7 @@ class ARTM(object):
         import warnings
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=DeprecationWarning)
-            progress = tqdm.tnrange if _run_from_ipython() else tqdm.trange
+            progress = tqdm.tnrange if _run_from_notebook() else tqdm.trange
             for _ in progress(num_collection_passes, desc='Pass',
                               disable=not self._show_progress_bars):
                 # temp code for easy using of TopicSelectionThetaRegularizer from Python
