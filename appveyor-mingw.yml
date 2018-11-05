@@ -32,10 +32,9 @@ cache:
     - C:\Miniconda-x64\Lib\site-packages
 
 install:
-    - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;C:\\msys64\\mingw64\\bin;C:\\Program Files\\7-Zip;%SystemRoot%\\system32;%SystemRoot%;%SystemRoot%\\System32\\Wbem;%SYSTEMROOT%\\System32\\WindowsPowerShell\\v1.0\\
-"
-    - c:\msys64\usr\bin\pacman -Sy --noconfirm
-    - c:\msys64\usr\bin\pacman -S --noconfirm --needed mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-make
+    - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;C:\\msys64\\mingw64\\bin;C:\\Program Files\\7-Zip;%SystemRoot%\\system32;%SystemRoot%;%SystemRoot%\\System32\\Wbem;%SYSTEMROOT%\\System32\\WindowsPowerShell\\v1.0\\"
+    - c:\msys64\usr\bin\pacman -Sy --noconfirm --noprogressbar
+    - c:\msys64\usr\bin\pacman -S --noconfirm --noprogressbar --needed mingw-w64-x86_64-cmake mingw-w64-x86_64-toolchain
     - c:\msys64\usr\bin\pacman -U --noconfirm http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-boost-1.64.0-3-any.pkg.tar.xz
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q -c conda-forge conda

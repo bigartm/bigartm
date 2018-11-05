@@ -101,8 +101,6 @@ set(BUILD_STATIC_LIBS ON)
 set(BUILD_SHARED_LIBS OFF)
 set(BUILD_gflags_LIB ON)
 set(BUILD_gflags_nothreads_LIB OFF)
-set(rpcz_build_static ON)
-set(rpcz_build_shared ON)
 set(protobuf_BUILD_TESTS OFF)
 
 include(CheckIncludeFiles)
@@ -121,7 +119,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   include(InstallRequiredSystemLibraries)
 else (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
       ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
-  message("-- Warning: BigARTM has not been tested with '${CMAKE_CXX_COMPILER_ID}' compiler.")
+  message(WARNING "BigARTM has not been tested with '${CMAKE_CXX_COMPILER_ID}' compiler.")
 endif (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
        ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
 
