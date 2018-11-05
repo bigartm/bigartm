@@ -678,7 +678,7 @@ class MasterComponent(object):
     def create_score(self, name, config, model_name=None):
         """
         :param str name: the name of the future score
-        :param config: an instance of \*\*\*ScoreConfig
+        :param config: an instance of \\*\\*\\*ScoreConfig
         :param model_name: pwt or nwt model name
         """
         master_config = messages.MasterModelConfig()
@@ -788,7 +788,7 @@ class MasterComponent(object):
         :type topic_names: list of str or None
         :param class_ids: list of class ids to retrieve (None means all class ids)
         :type class_ids: list of str or None
-        :param bool use_sparse_format: use sparse\dense layout
+        :param bool use_sparse_format: use sparse/dense layout
         :return: numpy.ndarray with Phi data (i.e., p(w|t) values)
         """
         args = messages.GetTopicModelArgs(model_name=model)

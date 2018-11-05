@@ -110,6 +110,7 @@ class SparsityPhiScoreTracker(BaseScoreTracker):
         """
         BaseScoreTracker.__init__(self, score)
 
+
 _set_properties(SparsityPhiScoreTracker, {'value': {}, 'zero_tokens': {}, 'total_tokens': {}})
 
 
@@ -126,6 +127,7 @@ class SparsityThetaScoreTracker(BaseScoreTracker):
         """
         BaseScoreTracker.__init__(self, score)
 
+
 _set_properties(SparsityThetaScoreTracker, {'value': {}, 'zero_topics': {}, 'total_topics': {}})
 
 
@@ -140,12 +142,13 @@ class PerplexityScoreTracker(BaseScoreTracker):
         * zero_tokens - number of zero p(w|d) = sum_t p(w|t) p(t|d)  (in case of one class id).
         * transaction_typename_info - array of structures, each structure contains raw, normalizer\
                                       zero_tokens and transaction_typename name\
-                                      (in case of several transaction types)\ Note, that in the case\
+                                      (in case of several transaction types). Note, that in the case\
                                       of non-transaction model transaction type is equal @default_transaction.
         * Note: every field has a version with prefix 'last_', means retrieving only\
           info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
+
 
 _set_properties(PerplexityScoreTracker, {'value': {}, 'raw': {}, 'normalizer': {},
                                          'zero_tokens': {'proto_name': 'zero_words'},
@@ -164,6 +167,7 @@ class ItemsProcessedScoreTracker(BaseScoreTracker):
           info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
+
 
 _set_properties(ItemsProcessedScoreTracker, {'value': {}})
 
@@ -184,6 +188,7 @@ class TopTokensScoreTracker(BaseScoreTracker):
           info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
+
 
 _set_properties(TopTokensScoreTracker, {'num_tokens': {'proto_name': 'num_entries'},
                                         'tokens': {'proto_name': 'token',
@@ -214,6 +219,7 @@ class TopicKernelScoreTracker(BaseScoreTracker):
         """
         BaseScoreTracker.__init__(self, score)
 
+
 _set_properties(TopicKernelScoreTracker, {'tokens': {'proto_name': 'kernel_tokens',
                                                      'proto_qualifier': 'repeated',
                                                      'proto_type': 'array'},
@@ -243,6 +249,7 @@ class ThetaSnippetScoreTracker(BaseScoreTracker):
         """
         BaseScoreTracker.__init__(self, score)
 
+
 _set_properties(ThetaSnippetScoreTracker, {'snippet': {'proto_name': 'values',
                                                        'proto_qualifier': 'repeated',
                                                        'proto_type': 'array',
@@ -265,6 +272,7 @@ class TopicMassPhiScoreTracker(BaseScoreTracker):
         """
         BaseScoreTracker.__init__(self, score)
 
+
 _set_properties(TopicMassPhiScoreTracker, {'value': {},
                                            'topic_mass': {'proto_qualifier': 'repeated'},
                                            'topic_ratio': {'proto_qualifier': 'repeated'}})
@@ -283,6 +291,7 @@ class ClassPrecisionScoreTracker(BaseScoreTracker):
         """
         BaseScoreTracker.__init__(self, score)
 
+
 _set_properties(ClassPrecisionScoreTracker, {'value': {}, 'error': {}, 'total': {}})
 
 
@@ -298,5 +307,6 @@ class BackgroundTokensRatioScoreTracker(BaseScoreTracker):
           info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
+
 
 _set_properties(BackgroundTokensRatioScoreTracker, {'value': {}, 'tokens': {'proto_name': 'token'}})
