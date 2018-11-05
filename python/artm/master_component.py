@@ -678,7 +678,7 @@ class MasterComponent(object):
     def create_score(self, name, config, model_name=None):
         """
         :param str name: the name of the future score
-        :param config: an instance of \*\*\*ScoreConfig
+        :param config: an instance of \\*\\*\\*ScoreConfig
         :param model_name: pwt or nwt model name
         """
         master_config = messages.MasterModelConfig()
@@ -788,7 +788,7 @@ class MasterComponent(object):
         :type topic_names: list of str or None
         :param class_ids: list of class ids to retrieve (None means all class ids)
         :type class_ids: list of str or None
-        :param bool use_sparse_format: use sparse\dense layout
+        :param bool use_sparse_format: use sparse/dense layout
         :return: numpy.ndarray with Phi data (i.e., p(w|t) values)
         """
         args = messages.GetTopicModelArgs(model_name=model)
@@ -866,7 +866,7 @@ class MasterComponent(object):
         self._lib.ArtmFitOfflineMasterModel(self.master_id, args)
 
     def fit_online(self, batch_filenames=None, batch_weights=None, update_after=None,
-                   apply_weight=None, decay_weight=None, async=None):
+                   apply_weight=None, decay_weight=None, asynchronous=None):
         """
         :param batch_filenames: name of batches to process
         :type batch_filenames: list of str
@@ -880,7 +880,7 @@ class MasterComponent(object):
         :param decay_weight: weight of applying old counters\
                 (len == len of update_after)
         :type decay_weight: list of float
-        :param bool async: whether to use the async implementation\
+        :param bool asynchronous: whether to use the asynchronous implementation\
                 of the EM-algorithm or not
         """
         args = messages.FitOnlineMasterModelArgs()
@@ -914,8 +914,8 @@ class MasterComponent(object):
             for value in decay_weight:
                 args.decay_weight.append(value)
 
-        if async is not None:
-            args.async = async
+        if asynchronous is not None:
+            args.asynchronous = asynchronous
 
         self._lib.ArtmFitOnlineMasterModel(self.master_id, args)
 

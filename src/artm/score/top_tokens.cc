@@ -47,11 +47,6 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
     class_id = config_.class_id();
   }
 
-  if (count_coherence) {
-    LOG(ERROR) << "Coherence computation in TopTokens score does not support transactions!";
-    return nullptr;
-  }
-
   std::vector<artm::core::Token> tokens;
   for (int token_index = 0; token_index < token_size; token_index++) {
     auto token = p_wt.token(token_index);

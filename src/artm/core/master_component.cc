@@ -727,7 +727,7 @@ void MasterComponent::Request(const GetMasterComponentInfoArgs& /*args*/, Master
 
 void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result) {
   BatchManager batch_manager;
-  RequestProcessBatchesImpl(args, &batch_manager, /* async =*/ false, nullptr, result->mutable_theta_matrix());
+  RequestProcessBatchesImpl(args, &batch_manager, /* asynchronous =*/ false, nullptr, result->mutable_theta_matrix());
   instance_->score_manager()->RequestAllScores(result->mutable_score_data());
 }
 
@@ -750,12 +750,12 @@ void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResu
 
 void MasterComponent::AsyncRequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                                                  BatchManager *batch_manager) {
-  RequestProcessBatchesImpl(process_batches_args, batch_manager, /* async =*/ true,
+  RequestProcessBatchesImpl(process_batches_args, batch_manager, /* asynchronous =*/ true,
                             /*score_manager=*/ nullptr, /* theta_matrix=*/ nullptr);
 }
 
 void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
-                                                BatchManager* batch_manager, bool async,
+                                                BatchManager* batch_manager, bool asynchronous,
                                                 ScoreManager* score_manager,
                                                 ::artm::ThetaMatrix* theta_matrix) {
   const ProcessBatchesArgs& args = process_batches_args;  // short notation
@@ -789,12 +789,12 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     }
   }
 
-  if (async && args.theta_matrix_type() != ThetaMatrixType_None) {
+  if (asynchronous && args.theta_matrix_type() != ThetaMatrixType_None) {
     BOOST_THROW_EXCEPTION(InvalidOperation(
         "ArtmAsyncProcessBatches require ProcessBatchesArgs.theta_matrix_type to be set to None"));
   }
 
-  // The code below must not use cache_manger in async mode.
+  // The code below must not use cache_manger in asynchronous mode.
   // Since cache_manager lives on stack it will be destroyed once we return from this function.
   // Therefore, no pointers to cache_manager should exist upon return from RequestProcessBatchesImpl.
   CacheManager cache_manager("", nullptr);
@@ -868,7 +868,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     instance_->processor_queue()->push(pi);
   }
 
-  if (async) {
+  if (asynchronous) {
     return;
   }
 
@@ -1131,7 +1131,7 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
 
   BatchManager batch_manager;
   RequestProcessBatchesImpl(process_batches_args, &batch_manager,
-                            /* async =*/ false, /*score_manager =*/ nullptr, result);
+                            /* asynchronous =*/ false, /*score_manager =*/ nullptr, result);
   ValidateProcessedItems("Transform", this);
 }
 
@@ -1393,7 +1393,7 @@ class ArtmExecutor {
   MasterComponent* master_component_;
   ProcessBatchesArgs process_batches_args_;
   RegularizeModelArgs regularize_model_args_;
-  std::vector<std::shared_ptr<BatchManager>> async_;
+  std::vector<std::shared_ptr<BatchManager>> asynchronous_;
 
   void ProcessBatches(std::string pwt, std::string nwt, BatchesIterator* iter, ScoreManager* score_manager) {
     process_batches_args_.set_pwt_source_name(pwt);
@@ -1404,7 +1404,7 @@ class ArtmExecutor {
     LOG(INFO) << DescribeMessage(process_batches_args_);
     master_component_->RequestProcessBatchesImpl(process_batches_args_,
                                                  &batch_manager,
-                                                 /* async =*/ false,
+                                                 /* asynchronous =*/ false,
                                                  /* score_manager =*/ score_manager,
                                                  /* theta_matrix*/ nullptr);
     process_batches_args_.clear_batch_filename();
@@ -1416,12 +1416,12 @@ class ArtmExecutor {
     process_batches_args_.set_theta_matrix_type(ThetaMatrixType_None);
     iter->move(&process_batches_args_);
 
-    int operation_id = static_cast<int>(async_.size());
-    async_.push_back(std::make_shared<BatchManager>());
+    int operation_id = static_cast<int>(asynchronous_.size());
+    asynchronous_.push_back(std::make_shared<BatchManager>());
     LOG(INFO) << DescribeMessage(process_batches_args_);
     master_component_->RequestProcessBatchesImpl(process_batches_args_,
-                                                 async_.back().get(),
-                                                 /* async =*/ true,
+                                                 asynchronous_.back().get(),
+                                                 /* asynchronous =*/ true,
                                                  /* score_manager =*/ nullptr,
                                                  /* theta_matrix*/ nullptr);
     process_batches_args_.clear_batch_filename();
@@ -1429,7 +1429,7 @@ class ArtmExecutor {
   }
 
   void Await(int operation_id) {
-    while (!async_[operation_id]->IsEverythingProcessed()) {
+    while (!asynchronous_[operation_id]->IsEverythingProcessed()) {
       boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
     }
   }
@@ -1506,7 +1506,7 @@ void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
   ArtmExecutor artm_executor(*config, this);
   OnlineBatchesIterator iter(args.batch_filename(), args.batch_weight(), args.update_after(),
                              args.apply_weight(), args.decay_weight());
-  if (args.async()) {
+  if (args.asynchronous()) {
     artm_executor.ExecuteAsyncOnlineAlgorithm(&iter);
   } else {
     artm_executor.ExecuteOnlineAlgorithm(&iter);

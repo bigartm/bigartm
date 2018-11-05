@@ -51,11 +51,11 @@ class LibArtm(object):
         if env_lib_name is not None:
             lib_names.append(env_lib_name)
         
-        lib_names.append(default_lib_name)
         lib_names.append(os.path.join(os.path.dirname(__file__), "..", default_lib_name))
+        lib_names.append(default_lib_name)
         
-        # We look into 4 places: lib_name, ARTM_SHARED_LIBRARY, default_lib_name and
-        # default_lib_name in the python package root
+        # We look into 4 places: lib_name, ARTM_SHARED_LIBRARY, packaged default_lib_name
+        # and then default_lib_name
         cdll = None
         for ln in lib_names:
             try:
