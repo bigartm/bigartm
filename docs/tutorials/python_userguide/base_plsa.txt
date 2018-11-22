@@ -23,7 +23,7 @@ You can deal with scores using the ``scores`` field of the ``ARTM`` class. The s
 
 .. code-block:: python
 
-   model.scores.add(artm.PerplexityScore(name='my_fisrt_perplexity_score',
+   model.scores.add(artm.PerplexityScore(name='my_first_perplexity_score',
                                          dictionary=my_dictionary))
 
 Note, that perplexity should be enabled strongly in described way (you can change other parameters we didn't use here). You can read about it in :doc:`../scores_descr`.
@@ -38,7 +38,7 @@ Now let's start the main act, e.g. the learning of the model. We can do that in 
 
 - **Online algorithm**: single pass through the collection (optional), many passes through the single document, several updates of the :math:`\Phi` matrix during one pass through the collection. Use this one when you deal with large collections, and with collections with quickly changing topics.
 
-We will use the offline learning here and in all further examples in this page (because the correct usage of the online algorithm is big skill).
+We will use the offline learning here and in all further examples in this page (because the correct usage of the online algorithm require a deep knowledge).
 
 Well, let's start training:
 
