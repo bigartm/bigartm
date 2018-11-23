@@ -13,7 +13,7 @@ We assume that all the conditions from the head of the section :doc:`base_plsa` 
    model.scores.add(artm.PerplexityScore(name='perplexity_score',
                                          dictionary=my_dictionary))
 
-I should note the the cache_theta flag: it's allow you to save your :math:`\Theta` matrix in the memory or not. If you have large collection, it can be impossible to store it's :math:`\Theta` in the memory, and in case of short collection it can be useful to look at it. Default value is True. In the cases, when you need to use :math:`\Theta` matrix, but it is too big, you can use ``ARTM.transform()`` method (it will be discussed later).
+I should note the the cache_theta flag: it's allow you to save your :math:`\Theta` matrix in the memory or not. If you have large collection, it can be impossible to store it's :math:`\Theta` in the memory, and in case of short collection it can be useful to look at it. Default value is False. In the cases, when you need to use :math:`\Theta` matrix, but it is too big, you can use ``ARTM.transform()`` method (it will be discussed later).
 
 Now let's try to add other scores, because the perplexity is not the only one to be used.
 
