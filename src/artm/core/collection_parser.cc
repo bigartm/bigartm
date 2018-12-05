@@ -677,15 +677,15 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
             ClassId second_token_class_id = first_token_class_id;
             unsigned not_a_word_counter = 0;
             // Loop through tokens in the window
-            for (unsigned neigh_index = 1; neigh_index <= cooc_collector.config_.cooc_window_width() +
-                                                          not_a_word_counter &&
-                                                          elem_index + neigh_index < strs.size();
-                                                          ++neigh_index) {
-              if (strs[elem_index + neigh_index].empty()) {
+            for (unsigned neighbour_index = 1; neighbour_index <= cooc_collector.config_.cooc_window_width() +
+                                               not_a_word_counter &&
+                                               elem_index + neighbour_index < strs.size();
+                                               ++neighbour_index) {
+              if (strs[elem_index + neighbour_index].empty()) {
                 continue;
               }
-              if (strs[elem_index + neigh_index][0] == '|') {
-                second_token_class_id = strs[elem_index + neigh_index].substr(1);
+              if (strs[elem_index + neighbour_index][0] == '|') {
+                second_token_class_id = strs[elem_index + neighbour_index].substr(1);
                 ++not_a_word_counter;
                 continue;
               }
@@ -694,9 +694,9 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
                 continue;
               }
               int second_token_id = -1;
-              const std::string neigh = strs[elem_index + neigh_index];
+              const std::string neighbour = strs[elem_index + neighbour_index];
               if (config.has_vocab_file_path()) {
-                std::string second_token = DropWeightSuffix(neigh);
+                std::string second_token = DropWeightSuffix(neighbour);
                 second_token_id = cooc_collector.vocab_.FindTokenId(second_token, second_token_class_id);
                 if (second_token_id == TOKEN_NOT_FOUND) {
                   continue;
