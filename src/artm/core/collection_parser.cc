@@ -474,6 +474,11 @@ class CollectionParser::BatchCollector {
   const Batch& batch() { return batch_; }
 };
 
+std::string DropWeightSuffix(const std::string& token) {
+  size_t split_index = token.find(':');
+  return token.substr(0, split_index);
+}
+
 // ToDo (MichaelSolotky): split this func into several
 CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
   BatchNameGenerator batch_name_generator(kBatchNameLength,
@@ -496,7 +501,8 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
 
   ::artm::core::CooccurrenceCollector cooc_collector(config);
   int64_t total_num_of_pairs = 0;
-  std::atomic_bool gather_transaction_cooc(false);
+  std::atomic_bool gather_transaction_cooc(false);  // This flag will be needed for special
+  // gathering of co-occurrences on transaction data
 
   // The function defined below works as follows:
   // 1. Acquire lock for reading from docword file
@@ -646,16 +652,13 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
           class_ids.push_back(current_class_id);
           weights.push_back(token_weight);
 
-          if (config.gather_cooc()) {
-            if (class_ids.size() > 1) {
-              gather_transaction_cooc = true;
-              return;
-            }
+          if (config.gather_cooc()) {  // Co-occurence gathering starts here
             const ClassId first_token_class_id = class_ids[0];
 
             int first_token_id = -1;
             if (config.has_vocab_file_path()) {
-              first_token_id = cooc_collector.vocab_.FindTokenId(elem, first_token_class_id);
+              std::string first_token = DropWeightSuffix(elem);
+              first_token_id = cooc_collector.vocab_.FindTokenId(first_token, first_token_class_id);
               if (first_token_id == TOKEN_NOT_FOUND) {
                 continue;
               }
@@ -693,7 +696,8 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
               int second_token_id = -1;
               const std::string neigh = strs[elem_index + neigh_index];
               if (config.has_vocab_file_path()) {
-                second_token_id = cooc_collector.vocab_.FindTokenId(neigh, second_token_class_id);
+                std::string second_token = DropWeightSuffix(neigh);
+                second_token_id = cooc_collector.vocab_.FindTokenId(second_token, second_token_class_id);
                 if (second_token_id == TOKEN_NOT_FOUND) {
                   continue;
                 }
@@ -746,7 +750,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
       }
     }  // End of collection parsing
 
-{  // Save number of pairs (needed for ppmi)
+    {  // Save number of pairs (needed for ppmi)
       std::unique_lock<std::mutex> lock(cooc_config_access);
       total_num_of_pairs += local_num_of_pairs;
     }
