@@ -26,10 +26,10 @@ environment:
 
 cache:
     # Cache MSYS2 packages to speed up builds. If version in repo changes, pacman will update it
-    - c:\msys64\mingw64
-    - c:\msys64\var\lib\pacman
-    - C:\Miniconda36-x64\Lib\site-packages
-    - C:\Miniconda-x64\Lib\site-packages
+    #- c:\msys64\mingw64
+    #- c:\msys64\var\lib\pacman
+    #- C:\Miniconda36-x64\Lib\site-packages
+    #- C:\Miniconda-x64\Lib\site-packages
 
 install:
     - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;C:\\msys64\\mingw64\\bin;C:\\Program Files\\7-Zip;%SystemRoot%\\system32;%SystemRoot%;%SystemRoot%\\System32\\Wbem;%SYSTEMROOT%\\System32\\WindowsPowerShell\\v1.0\\
