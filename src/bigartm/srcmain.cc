@@ -1112,6 +1112,8 @@ class BatchVectorizer {
           collection_parser_config.set_vocab_file_path(options_.read_uci_vocab);
         }
 
+        collection_parser_config.set_num_threads(options_.threads);
+
         collection_parser_config.set_target_folder(batch_folder_);
         collection_parser_config.set_num_items_per_batch(options_.batch_size);
         collection_parser_config.set_name_type(options_.b_guid_batch_name ? CollectionParserConfig_BatchNameType_Guid : CollectionParserConfig_BatchNameType_Code);

@@ -36,7 +36,7 @@ namespace fs = boost::filesystem;
 namespace artm {
 namespace core {
 
-// ToDo (MichaelSolotky): add this input format to (batches, (optionally) Dictionary)
+// ToDo (MichaelSolotky): add this input format to batches, (optionally) Dictionary
 // 1. find a point in code after collection parsing where this code can be inserted
 // 2. take parser config from Parse method and find batch folder name
 // 3. use method ListAllBatches to have vector of filenames
@@ -44,12 +44,14 @@ namespace core {
 // 4.a understand how to extract text from batches
 // 5. think how to specify ppmi and cooc output files
 
-// ToDo (MichaelSolotky): write docs
 // ToDo (MichaelSolotky): search for all bad-written parts of code with CLion
 
-// ****************************** Methods of class CooccurrenceCollector ***********************************
+// ****************************** Methods of class CooccurrenceCollector ******************************
 
-CooccurrenceCollector::CooccurrenceCollector(const CollectionParserConfig& collection_parser_config) {
+CooccurrenceCollector::CooccurrenceCollector(
+      const CollectionParserConfig& collection_parser_config) : open_files_counter_(0),
+                                                                total_num_of_pairs_(0),
+                                                                total_num_of_documents_(0) {
   config_.set_gather_cooc(collection_parser_config.gather_cooc());
   if (config_.gather_cooc()) {
     config_.set_gather_cooc_tf(collection_parser_config.gather_cooc_tf());
@@ -94,20 +96,22 @@ CooccurrenceCollector::CooccurrenceCollector(const CollectionParserConfig& colle
     config_.set_cooc_window_width(collection_parser_config.cooc_window_width());
     config_.set_cooc_min_tf(collection_parser_config.cooc_min_tf());
     config_.set_cooc_min_df(collection_parser_config.cooc_min_df());
-    config_.set_max_num_of_open_files(500);
+    // This is the maximal allowable number. With larger values there are problems in Mac OS
+    // (experimentally found)
+    config_.set_max_num_of_open_files(245);
     config_.set_num_items_per_batch(collection_parser_config.num_items_per_batch());
 
     if (!collection_parser_config.has_num_threads() || collection_parser_config.num_threads() < 0) {
       unsigned int n = std::thread::hardware_concurrency();
       if (n == 0) {
         LOG(INFO) << "CollectionParserConfig.num_threads is set to 1 (default)";
-        config_.set_num_of_cpu(1);
+        config_.set_num_threads(1);
       } else {
         LOG(INFO) << "CollectionParserConfig.num_threads is automatically set to " << n;
-        config_.set_num_of_cpu(n);
+        config_.set_num_threads(n);
       }
     } else {
-      config_.set_num_of_cpu(collection_parser_config.num_threads());
+      config_.set_num_threads(collection_parser_config.num_threads());
     }
   }
 }
@@ -153,7 +157,8 @@ void CooccurrenceCollector::ReadVowpalWabbit() {
   // Statistics that refer to unique tokens is stored in vector called token_statistics_
   // 6. For each potion of documents create a batch (class CooccurrenceBatch) with co-occurrence statistics
   // Repeat 1-6 for all portions (can work in parallel for different portions)
-  std::shared_ptr<std::ifstream> vowpal_wabbit_doc_ptr(new std::ifstream(config_.vw_file_path(), std::ios::in));
+  std::shared_ptr<std::ifstream> vowpal_wabbit_doc_ptr(new std::ifstream(config_.vw_file_path(),
+                                                                         std::ios::in));
   if (!vowpal_wabbit_doc_ptr->is_open()) {
     BOOST_THROW_EXCEPTION(InvalidOperation("Failed to open vowpal wabbit file"));
   }
@@ -220,7 +225,8 @@ void CooccurrenceCollector::ReadVowpalWabbit() {
           std::string second_token_modality = first_token_modality;
           unsigned not_a_word_counter = 0;
           // Loop through tokens in the window
-          for (unsigned k = 1; k <= config_.cooc_window_width() + not_a_word_counter && j + k < doc.size(); ++k) {
+          for (unsigned k = 1; k <= config_.cooc_window_width() + not_a_word_counter &&
+                               j + k < doc.size(); ++k) {
             if (doc[j + k].empty()) {
               continue;
             }
@@ -237,7 +243,8 @@ void CooccurrenceCollector::ReadVowpalWabbit() {
               continue;
             }
             // 5.e) When it's known these 2 tokens are valid, remember their co-occurrence
-            // Here portion.size() is used to identify a document (it's unique id during one portion of documents)
+            // Here portion.size() is used to identify a document
+            // (it's unique id during one portion of documents)
             if (config_.use_symetric_cooc()) {
               if (first_token_id < second_token_id) {
                 cooc_stat_holder.SavePairOfTokens(first_token_id, second_token_id, portion.size());
@@ -257,7 +264,8 @@ void CooccurrenceCollector::ReadVowpalWabbit() {
       if (!cooc_stat_holder.storage_.empty()) {
         // This function saves gathered statistics on disk
         // After saving on disk statistics from all the batches needs to be merged
-        // This is implemented in ReadAndMergeCooccurrenceBatches(), so the next step is to call this method
+        // This is implemented in ReadAndMergeCooccurrenceBatches(),
+        // so the next step is to call this method
         // Sorting is needed before storing all pairs of tokens on disk (it's for future agregation)
         UploadOnDisk(cooc_stat_holder);
       }
@@ -269,10 +277,10 @@ void CooccurrenceCollector::ReadVowpalWabbit() {
   };
   // Launch reading and storing pairs of tokens in parallel
   std::vector<std::shared_future<void>> tasks;
-  for (int i = 0; i < config_.num_of_cpu(); ++i) {
+  for (int i = 0; i < config_.num_threads(); ++i) {
     tasks.emplace_back(std::async(std::launch::async, func));
   }
-  for (int i = 0; i < config_.num_of_cpu(); ++i) {
+  for (int i = 0; i < config_.num_threads(); ++i) {
     tasks[i].get();
   }
 }
@@ -322,15 +330,23 @@ CooccurrenceBatch* CooccurrenceCollector::CreateNewCooccurrenceBatch() const {
 void CooccurrenceCollector::OpenBatchOutputFile(std::shared_ptr<CooccurrenceBatch> batch) {
   if (!batch->out_batch_.is_open()) {
     assert(open_files_counter_ < config_.max_num_of_open_files());
-    ++open_files_counter_;
     batch->out_batch_.open(batch->filename_, std::ios::out);
+    if (!batch->out_batch_.is_open()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "Failed to open co-occurrence batch file for writing, path = " + batch->filename_));
+    }
+    ++open_files_counter_;
   }
 }
 
 void CooccurrenceCollector::CloseBatchOutputFile(std::shared_ptr<CooccurrenceBatch> batch) {
   if (batch->out_batch_.is_open()) {
-    --open_files_counter_;
     batch->out_batch_.close();
+    if (batch->out_batch_.is_open()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "Failed to close co-occurrence batch file, path = " + batch->filename_));
+    }
+    --open_files_counter_;
   }
 }
 
@@ -356,32 +372,36 @@ void CooccurrenceCollector::ReadAndMergeCooccurrenceBatches() {
   // If there would be a need to calculate ppmi or other values which depend on co-occurrences
   // this data can be read back from output file.
 
-  // std::cout << "Step 2: merging batches" << std::endl;
+  std::cerr << "\nMerging co-occurrence batches" << std::endl;
+  // This magic constant isn't the best and can be set to another value found in experiments
   const unsigned min_num_of_batches_to_be_merged_in_parallel = 32;
   while (vector_of_batches_.size() > min_num_of_batches_to_be_merged_in_parallel) {
-    FirstStageOfMerging();  // size is decreasing here
+    FirstStageOfMerging();  // number of files is decreasing here
   }
   ResultingBufferOfCooccurrences res(vocab_, num_of_documents_token_occurred_in_, config_);
   open_files_counter_ += res.open_files_in_buf_;
   SecondStageOfMerging(&res, &vector_of_batches_);
-  // std::cout << "Batches have been merged" << std::endl;
   res.CalculatePpmi();
 }
 
 void CooccurrenceCollector::FirstStageOfMerging() {
   // Stage 1: merging portions of batches into intermediate batches
   // Note: one thread should merge at least 2 files and have the third to write in
-  int tmp = std::min(static_cast<int>(vector_of_batches_.size() / 2), config_.num_of_cpu());
-  int num_of_threads = std::min(tmp, config_.max_num_of_open_files() / 3);
+  int num_of_threads = std::min(std::min(static_cast<int>(vector_of_batches_.size() / 2),
+                                         config_.max_num_of_open_files() / 3),
+                                config_.num_threads());
 
   int portion_size = std::min(static_cast<int>(vector_of_batches_.size() / num_of_threads),
                               (config_.max_num_of_open_files() - num_of_threads) / num_of_threads);
+
   std::shared_ptr<std::mutex> open_close_file_mutex_ptr(new std::mutex);
 
   auto func = [&open_close_file_mutex_ptr, portion_size, this](int i) {  // Wrapper around KWayMerge
     std::shared_ptr<CooccurrenceBatch> batch(CreateNewCooccurrenceBatch());
     OpenBatchOutputFile(batch);
-    ResultingBufferOfCooccurrences intermediate_buffer(vocab_, num_of_documents_token_occurred_in_, config_);
+    ResultingBufferOfCooccurrences intermediate_buffer(vocab_,
+                                                       num_of_documents_token_occurred_in_,
+                                                       config_);
     std::vector<std::shared_ptr<CooccurrenceBatch>> portion_of_batches;
     // Stage 1: take i-th portion from vector_of_batches_
     for (int j = i * portion_size; j < (i + 1) * portion_size &&
@@ -394,16 +414,16 @@ void CooccurrenceCollector::FirstStageOfMerging() {
   };
 
   std::vector<std::shared_ptr<CooccurrenceBatch>> intermediate_batches;
-  std::mutex worker_thread_mutex;
-  std::mutex intermediate_batches_access;
+  std::mutex intermediate_batches_access_mutex;
   std::queue<unsigned> queue_of_indices;
+  std::mutex queue_access_mutex;
 
-  auto worker_thread = [&intermediate_batches, &worker_thread_mutex,
-                        &intermediate_batches_access, &queue_of_indices, &func]() {
+  auto worker = [&intermediate_batches, &intermediate_batches_access_mutex,
+                 &queue_of_indices, &queue_access_mutex, &func]() {
     while (true) {
       unsigned index;
       {  // take one task from queue of tasks
-        std::unique_lock<std::mutex> worker_thread_lock(worker_thread_mutex);
+        std::unique_lock<std::mutex> queue_access_lock(queue_access_mutex);
         if (queue_of_indices.empty()) {
           break;
         } else {
@@ -413,19 +433,19 @@ void CooccurrenceCollector::FirstStageOfMerging() {
       }
       std::shared_ptr<CooccurrenceBatch> batch = func(index);
       {
-        std::unique_lock<std::mutex> intermediate_batches_access_lock(intermediate_batches_access);
+        std::unique_lock<std::mutex> intermediate_batches_access_lock(intermediate_batches_access_mutex);
         intermediate_batches.push_back(std::move(batch));
       }
     }
   };
-  // Stage 1: prepare indices for threads (each thread will take index and send in func)
+  // Prepare indices for threads (each thread will take index and send in func)
   for (int i = 0; i * portion_size < static_cast<int>(vector_of_batches_.size()); ++i) {
     queue_of_indices.push(i);
   }
-  // Stage 1: launch workers
+  // Launch workers
   std::vector<std::thread> workers;
   for (int i = 0; i < num_of_threads; ++i) {
-    workers.emplace_back(worker_thread);
+    workers.emplace_back(worker);
   }
   for (int i = 0; i < num_of_threads; ++i) {
     workers[i].join();
@@ -453,7 +473,7 @@ void CooccurrenceCollector::KWayMerge(ResultingBufferOfCooccurrences* res, const
                                       std::vector<std::shared_ptr<CooccurrenceBatch>>* vector_of_input_batches_ptr,
                                       std::shared_ptr<CooccurrenceBatch> out_batch,
                                       std::shared_ptr<std::mutex> open_close_file_mutex_ptr) {
-  // All cooc batches has it's local buffer in operating memory (look the CooccurrenceBatch class implementation)
+  // All cooc batches has it's local buffer in RAM (look the CooccurrenceBatch class implementation)
   // Information in batches is stored in cells.
   // There are 2 different output formats, which are set via mode parameter:
   // 1. Batches
@@ -474,7 +494,7 @@ void CooccurrenceCollector::KWayMerge(ResultingBufferOfCooccurrences* res, const
   // Step 1:
   std::vector<std::shared_ptr<CooccurrenceBatch>>& vector_of_input_batches = *vector_of_input_batches_ptr;
   auto iter = vector_of_input_batches.begin();
-  {
+  {  // Open all when it's possible
     std::unique_lock<std::mutex> open_close_file_lock(*open_close_file_mutex_ptr);
     for (; iter != vector_of_input_batches.end() &&
            open_files_counter_ < config_.max_num_of_open_files() - 1; ++iter) {
@@ -482,6 +502,7 @@ void CooccurrenceCollector::KWayMerge(ResultingBufferOfCooccurrences* res, const
       (*iter)->ReadCell();
     }
   }
+  // Open and close when it's imposible to hold open all the files
   for (; iter != vector_of_input_batches.end(); ++iter) {
     std::unique_lock<std::mutex> open_close_file_lock(*open_close_file_mutex_ptr);
     OpenBatchInputFile(*iter);
@@ -560,11 +581,16 @@ void CooccurrenceCollector::KWayMerge(ResultingBufferOfCooccurrences* res, const
 }
 
 void CooccurrenceCollector::OpenBatchInputFile(std::shared_ptr<CooccurrenceBatch> batch) {
-  assert(open_files_counter_ < config_.max_num_of_open_files());
   if (!batch->in_batch_.is_open()) {
-    ++open_files_counter_;
+    assert(open_files_counter_ < config_.max_num_of_open_files());
     batch->in_batch_.open(batch->filename_, std::ios::in);
+    if (!batch->in_batch_.is_open()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "Failed to open co-occurrence batch file for reading, path = " + batch->filename_));
+    }
+    // ToDo (MichaelSolotky): find the way to check correctness of the seekg procedure
     batch->in_batch_.seekg(batch->in_batch_offset_);
+    ++open_files_counter_;
   }
 }
 
@@ -574,13 +600,17 @@ bool CooccurrenceCollector::IsOpenBatchInputFile(const CooccurrenceBatch& batch)
 
 void CooccurrenceCollector::CloseBatchInputFile(std::shared_ptr<CooccurrenceBatch> batch) {
   if (batch->in_batch_.is_open()) {
-    --open_files_counter_;
     batch->in_batch_offset_ = batch->in_batch_.tellg();
     batch->in_batch_.close();
+    if (batch->in_batch_.is_open()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "Failed to close co-occurrence batch file, path = " + batch->filename_));
+    }
+    --open_files_counter_;
   }
 }
 
-// ********************************** Methods of class Vocab *****************************************
+// ********************************** Methods of class Vocab **********************************
 
 Vocab::Vocab() { }
 
@@ -595,13 +625,15 @@ Vocab::Vocab(const std::string& path_to_vocab) {
   for (unsigned last_token_id = 0; getline(vocab_ifile, str); ++last_token_id) {
     boost::algorithm::trim(str);
     std::vector<std::string> strs;
-    boost::split(strs, str, boost::is_any_of(" \t\r"));
+    boost::split(strs, str, boost::is_any_of(" ,\t\r"));
     if (!strs[0].empty()) {
       std::string modality;
       if (strs.size() == 1) {
         modality = "@default_class";  // Here is how modality is indicated in vocab file (without '|')
       } else {
-        modality = strs[1];
+        int pos_of_modality = 1;
+        for (; strs[pos_of_modality].empty(); ++pos_of_modality) { }
+        modality = strs[pos_of_modality];
       }
       std::string key = MakeKey(strs[0], modality);
       auto iter = token_map_.find(key);
@@ -636,10 +668,10 @@ Vocab::TokenModality Vocab::FindTokenStr(const int token_id) const {
   return token_ref->second;
 }
 
-// ****************************** Methods of class CooccurrenceStatisticsHolder *************************************
+// ****************************** Methods of class CooccurrenceStatisticsHolder ******************************
 
-// This class stores temporarily added statistics about pairs of tokens (how often these pairs occurred in documents
-// in a window and in how many documents they occurred together in a window).
+// This class stores temporarily added statistics about pairs of tokens (how often these pairs
+// occurred in documents in a window and in how many documents they occurred together in a window).
 // The data is stored in rb tree (std::map)
 void CooccurrenceStatisticsHolder::SavePairOfTokens(const int first_token_id, const int second_token_id,
                                                     const unsigned doc_id, const double weight) {
@@ -675,7 +707,7 @@ bool CooccurrenceStatisticsHolder::Empty() {
   return storage_.empty();
 }
 
-// ************************************** Methods of class CooccurrenceBatch ******************************************
+// ******************************** Methods of class CooccurrenceBatch ********************************
 
 CooccurrenceBatch::CooccurrenceBatch(const std::string& path_to_batches) : in_batch_offset_(0) {
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
@@ -761,12 +793,12 @@ void CooccurrenceBatch::ReadRecords() {
   }
 }
 
-// **************************** Methods of class ResultingBufferOfCooccurrences ********************************
+// **************************** Methods of class ResultingBufferOfCooccurrences ****************************
 
 // The main purpose of this class is to store statistics of co-occurrences and some
 // variables calculated on base of them, perform that calculations, write that in file
 // resulting file and read from it.
-// This class stores cells of data from batches before they are written in resulting files
+// This class stores data in cells (special structure) before they are written in resulting files
 // A cell can from a batch can come in this buffer and be merged with current stored
 // (in case first_token_ids of cells are equal) or the current cell can be pushed from buffer in file
 // (in case first_token_ids aren't equal) and new cell takes place of the old one
@@ -775,7 +807,7 @@ ResultingBufferOfCooccurrences::ResultingBufferOfCooccurrences(
     const std::vector<unsigned>& num_of_documents_token_occurred_in,
     const CooccurrenceCollectorConfig& config) : vocab_(vocab),
                       num_of_documents_token_occurred_in_(num_of_documents_token_occurred_in),
-                      config_(config) {
+                      open_files_in_buf_(0), config_(config) {
   num_of_pairs_token_occurred_in_.resize(vocab_.token_map_.size());
   // ToDo (MichaelSolotky): make it easier to read
   if (config_.has_gather_cooc_tf()) {  // It's important firstly to create file (open output file)
@@ -898,14 +930,13 @@ void ResultingBufferOfCooccurrences::WriteCoocFromCell(const std::string mode, c
 }
 
 void ResultingBufferOfCooccurrences::CalculatePpmi() {  // Wrapper around CalculateAndWritePpmi
-  // std::cout << "Step 3: start calculation ppmi" << std::endl;
+  std::cerr << "Calculating pPMI" << std::endl;
   if (config_.calculate_ppmi_tf()) {
     CalculateAndWritePpmi(TokenCoocFrequency, config_.total_num_of_pairs());
   }
   if (config_.calculate_ppmi_df()) {
     CalculateAndWritePpmi(DocumentCoocFrequency, config_.total_num_of_documents());
   }
-  // std::cout << "Ppmi's have been calculated" << std::endl;
 }
 
 void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mode, const long double n) {

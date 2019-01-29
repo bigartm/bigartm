@@ -534,7 +534,7 @@ message CooccurrenceCollectorConfig {
   optional int32 cooc_min_df = 16 [default = 1];
   optional int32 max_num_of_open_files = 17;
   optional int32 num_items_per_batch = 18 [default = 1000];
-  optional int32 num_of_cpu = 19;
+  optional int32 num_threads = 19;
   optional int64 total_num_of_pairs = 20;
   optional int32 total_num_of_documents = 21;
   repeated string class_id = 22;
