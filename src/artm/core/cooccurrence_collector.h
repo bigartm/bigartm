@@ -90,7 +90,7 @@ class CooccurrenceCollector {
   friend class CollectionParser;
  public:
   explicit CooccurrenceCollector(const CollectionParserConfig& config);
-  
+
   std::vector<std::string> ReadPortionOfDocuments(std::shared_ptr<std::mutex> read_lock,
                                                   std::shared_ptr<std::ifstream> vowpal_wabbit_doc_ptr);
   unsigned NumOfCooccurrenceBatches() const;

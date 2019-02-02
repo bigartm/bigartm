@@ -316,7 +316,7 @@ void CooccurrenceCollector::FirstStageOfMerging() {
                                              num_of_documents_token_occurred_in_,
                                              config_);
     std::vector<std::shared_ptr<CooccurrenceBatch>> portion_of_batches;
-    // Stage 1: take i-th portion from 
+    // Stage 1: take i-th portion from pull of batches
     {
       std::unique_lock<std::mutex> vector_of_batches_access_lock(vector_of_batches_access_mutex_);
       for (int j = i * portion_size; j < (i + 1) * portion_size &&
