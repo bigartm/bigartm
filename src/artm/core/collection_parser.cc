@@ -656,8 +656,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
           weights.push_back(token_weight);
 
           if (collection_parser_config.gather_cooc()) {  // Co-occurence gathering starts here
-            //const ClassId first_token_class_id = class_ids[0];
-            const ClassId first_token_class_id = current_class_id;  // ToDo:
+            const ClassId first_token_class_id = current_class_id;
 
             int first_token_id = -1;
             if (collection_parser_config.has_vocab_file_path()) {
@@ -666,7 +665,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
               if (first_token_id == TOKEN_NOT_FOUND) {
                 continue;
               }
-            } else {  // ToDo (MichaelSolotky): continue the case if there is no vocab
+            } else {  // ToDo (MichaelSolotky): consider the case if there is no vocab
               BOOST_THROW_EXCEPTION(InvalidOperation("No vocab file specified. Can't gather co-occurrences"));
             }
 
