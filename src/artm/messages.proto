@@ -532,12 +532,13 @@ message CooccurrenceCollectorConfig {
   optional int32 cooc_window_width = 14 [default = 10];
   optional int32 cooc_min_tf = 15 [default = 1];
   optional int32 cooc_min_df = 16 [default = 1];
-  optional int32 max_num_of_open_files = 17;
+  optional int32 max_num_of_open_files_in_a_thread = 17;
   optional int32 num_items_per_batch = 18 [default = 1000];
   optional int32 num_threads = 19;
   optional int64 total_num_of_pairs = 20;
   optional int32 total_num_of_documents = 21;
   repeated string class_id = 22;
+  optional int32 max_num_of_open_files_in_a_process = 23;
 }
 
 // Represents an argument of 'initialize model' operation

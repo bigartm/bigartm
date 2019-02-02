@@ -499,11 +499,6 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
   std::unordered_map<Token, bool, TokenHasher> token_map;
   CollectionParserInfo parser_info;
 
-  // ToDo (MichaelSolotky): co-occurrences can't be gathered in parallel now
-  if (collection_parser_config.gather_cooc()) {
-    collection_parser_config.set_num_threads(1);
-  }
-  // ToDo (MichaelSolotky): this object is common for many threads, which leads to bugs in concurrent mode
   ::artm::core::CooccurrenceCollector cooc_collector(collection_parser_config);
   int64_t total_num_of_pairs = 0;
   std::atomic_bool gather_transaction_cooc(false);  // This flag will be needed for special
@@ -513,7 +508,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
   // 1. Acquire lock for reading from docword file
   // 2. Read num_items_per_batch lines from docword file, and store them in a local buffer (vector<string>)
   // 3. Release the lock
-  // 4. Parse strings, form a batch, and save it to disk
+  // 4. Parse strings, form a batch, and save it to the external storage
   // During parsing it gathers co-occurrence counters for pairs of tokens (if the correspondent flag == true)
   // Steps 1-4 are repeated in a while loop until there is no content left in docword file.
   // Multiple copies of the function can work in parallel.
@@ -558,13 +553,13 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
 
       // This container holds tf and df of pairs of tokens
       // Every pair of valid tokens (e.g. both exist in vocab) is saved in this storage
-      // After walking through a batch of documents all the statistics will be dumped on disk
+      // After walking through a batch of documents all the statistics will be dumped to the external storage
       // and then this storage will be destroyed
       CooccurrenceStatisticsHolder cooc_stat_holder;
       // For every token from vocab keep the information about the last document this token occured in
 
       // ToDo (MichaelSolotky): consider the case if there is no vocab
-      std::vector<int> num_of_last_document_token_occured(cooc_collector.vocab_.token_map_.size(), -1);
+      std::vector<int> num_of_the_last_document_token_occurred_in(cooc_collector.VocabSize(), -1);
 
       // Loop through documents
       for (int str_index = 0; str_index < (int64_t) all_strs_for_batch.size(); ++str_index) {
@@ -667,7 +662,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
             int first_token_id = -1;
             if (collection_parser_config.has_vocab_file_path()) {
               std::string first_token = DropWeightSuffix(elem);
-              first_token_id = cooc_collector.vocab_.FindTokenId(first_token, first_token_class_id);
+              first_token_id = cooc_collector.FindTokenIdInVocab(first_token, first_token_class_id);
               if (first_token_id == TOKEN_NOT_FOUND) {
                 continue;
               }
@@ -675,13 +670,13 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
               BOOST_THROW_EXCEPTION(InvalidOperation("No vocab file specified. Can't gather co-occurrences"));
             }
 
-            if (num_of_last_document_token_occured[first_token_id] != str_index) {
-              num_of_last_document_token_occured[first_token_id] = str_index;
+            if (num_of_the_last_document_token_occurred_in[first_token_id] != str_index) {
+              num_of_the_last_document_token_occurred_in[first_token_id] = str_index;
               std::unique_lock<std::mutex> lock(token_statistics_access);
               ++cooc_collector.num_of_documents_token_occurred_in_[first_token_id];
             }
             // Take window_width tokens (parameter) to the right of the current one
-            // If there are some words beginnig on '|' in the text the window should be extended
+            // If there are some words beginnig with '|' in the text the window should be extended
             // and it's extended using not_a_word_counter
             ClassId second_token_class_id = first_token_class_id;
             unsigned not_a_word_counter = 0;
@@ -706,7 +701,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
               const std::string neighbour = strs[elem_index + neighbour_index];
               if (collection_parser_config.has_vocab_file_path()) {
                 std::string second_token = DropWeightSuffix(neighbour);
-                second_token_id = cooc_collector.vocab_.FindTokenId(second_token, second_token_class_id);
+                second_token_id = cooc_collector.FindTokenIdInVocab(second_token, second_token_class_id);
                 if (second_token_id == TOKEN_NOT_FOUND) {
                   continue;
                 }
@@ -739,10 +734,11 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
         batch_collector.FinishItem(line_no, item_title);
       }  // End of parsing the items of 1 batch
       if (collection_parser_config.gather_cooc() && !cooc_stat_holder.Empty()) {
-        // This function saves gathered statistics on disk
-        // After saving on disk statistics from all the batches needs to be merged
+        // This function saves gathered statistics to the external storage
+        // After saving to the wxternal storage statistics from all the batches needs to be merged
         // This is implemented in ReadAndMergeCooccurrenceBatches(), so the next step is to call this method
-        // Sorting is needed before storing all pairs of tokens on disk (it's for future agregation)
+        // Sorting is needed before storing all pairs of tokens to the external storage
+        // (it's for the future aggregation)
         cooc_collector.UploadOnDisk(cooc_stat_holder);
       }
 
@@ -767,13 +763,16 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
 
   int num_threads = collection_parser_config.num_threads();
   if (!collection_parser_config.has_num_threads() || collection_parser_config.num_threads() < 0) {
-    unsigned int n = std::thread::hardware_concurrency();
+    int n = std::thread::hardware_concurrency();
     if (n == 0) {
       LOG(INFO) << "CollectionParserConfig.num_threads is set to 1 (default)";
       num_threads = 1;
     } else {
       LOG(INFO) << "CollectionParserConfig.num_threads is automatically set to " << n;
-      num_threads = n;
+      // number of threads shouldn't be higher than maximal allowable number of open files in a process
+      // because else there could be a situation when all the threads are trying to dump it's own batch
+      // to the external storage
+      num_threads = std::min(n, cooc_collector.config_.max_num_of_open_files_in_a_thread());
     }
   }
 
@@ -799,7 +798,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
 
   // Launch merging of co-occurrence bathces and ppmi calculation
   if (collection_parser_config.gather_cooc() && cooc_collector.VocabSize() >= 2) {
-    if (cooc_collector.CooccurrenceBatchesQuantity() != 0) {
+    if (cooc_collector.NumOfCooccurrenceBatches() != 0) {
       cooc_collector.ReadAndMergeCooccurrenceBatches();
     }
   }
