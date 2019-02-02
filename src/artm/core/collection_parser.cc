@@ -760,19 +760,21 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
     }
   };
 
-  int num_threads = collection_parser_config.num_threads();
+  int num_threads = 0;
   if (!collection_parser_config.has_num_threads() || collection_parser_config.num_threads() < 0) {
     int n = std::thread::hardware_concurrency();
     if (n == 0) {
-      LOG(INFO) << "CollectionParserConfig.num_threads is set to 1 (default)";
       num_threads = 1;
+      LOG(INFO) << "CollectionParserConfig.num_threads is set to 1 (default)";
     } else {
-      LOG(INFO) << "CollectionParserConfig.num_threads is automatically set to " << n;
       // number of threads shouldn't be higher than maximal allowable number of open files in a process
       // because else there could be a situation when all the threads are trying to dump it's own batch
       // to the external storage
-      num_threads = std::min(n, cooc_collector.config_.max_num_of_open_files_in_a_thread());
+      num_threads = std::min(n, cooc_collector.config_.max_num_of_open_files_in_a_process());
+      LOG(INFO) << "CollectionParserConfig.num_threads is automatically set to " << num_threads;
     }
+  } else {
+    num_threads = collection_parser_config.num_threads();
   }
 
   Helpers::CreateFolderIfNotExists(collection_parser_config.target_folder());

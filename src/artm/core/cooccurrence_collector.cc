@@ -108,13 +108,14 @@ CooccurrenceCollector::CooccurrenceCollector(
     config_.set_max_num_of_open_files_in_a_process(max_num_of_open_files_in_a_process);
 
     if (!collection_parser_config.has_num_threads() || collection_parser_config.num_threads() < 0) {
-      unsigned int n = std::thread::hardware_concurrency();
+      int n = std::thread::hardware_concurrency();
       if (n == 0) {
-        LOG(INFO) << "CollectionParserConfig.num_threads is set to 1 (default)";
         config_.set_num_threads(1);
+        LOG(INFO) << "CooccurrenceCollectorConfig.num_threads is set to 1 (default)";
       } else {
-        LOG(INFO) << "CollectionParserConfig.num_threads is automatically set to " << n;
-        config_.set_num_threads(n);
+        // In agglomerative merge a larger number of threads would be suboptimal
+        config_.set_num_threads(std::min(n, max_num_of_open_files_in_a_process / 3));
+        LOG(INFO) << "CooccurrenceCollectorConfig.num_threads is automatically set to " << config_.num_threads();
       }
     } else {
       // In agglomerative merge a larger number of threads would be suboptimal
@@ -530,12 +531,12 @@ Vocab::Vocab(const std::string& path_to_vocab) {
     boost::split(strs, str, boost::is_any_of(" ,\t\r"));
     if (!strs[0].empty()) {
       std::string modality;
-      if (strs.size() == 1) {
-        modality = DefaultClass;  // Here is how modality is indicated in vocab file (without '|')
-      } else {
-        int pos_of_modality = 1;
-        for (; strs[pos_of_modality].empty(); ++pos_of_modality) { }
+      int pos_of_modality = 1;
+      for (; pos_of_modality < strs.size() && strs[pos_of_modality].empty(); ++pos_of_modality) { }
+      if (pos_of_modality != strs.size()) {
         modality = strs[pos_of_modality];
+      } else {
+        modality = DefaultClass;
       }
       std::string key = MakeKey(strs[0], modality);
       auto iter = token_map_.find(key);
