@@ -100,7 +100,11 @@ CooccurrenceCollector::CooccurrenceCollector(
 
     // This is the maximal allowable number. With larger values there are problems in Mac OS
     // (experimentally found)
-    const int max_num_of_open_files_in_a_process = 251;
+    int max_num_of_open_files_in_a_process = 251;
+    // The subtraction was done in order to run on all the machines
+    // Maybe in the other systems this limit is lower and without subtracion this code would crash
+    // (although it works on my MacOS Mojave 10.14.2)
+    max_num_of_open_files_in_a_process -= 10;
     config_.set_max_num_of_open_files_in_a_process(max_num_of_open_files_in_a_process);
 
     if (!collection_parser_config.has_num_threads() || collection_parser_config.num_threads() < 0) {

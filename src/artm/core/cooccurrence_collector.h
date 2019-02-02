@@ -26,7 +26,7 @@ namespace core {
 enum {
   TOKEN_NOT_FOUND = -1,
   BATCH = 0,
-  OUTPUT_FILE = 1,
+  OUTPUT_FILE = 1
 };
 
 struct CoocInfo {

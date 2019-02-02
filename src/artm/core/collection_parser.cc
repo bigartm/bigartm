@@ -734,7 +734,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
       }  // End of parsing the items of 1 batch
       if (collection_parser_config.gather_cooc() && !cooc_stat_holder.Empty()) {
         // This function saves gathered statistics to the external storage
-        // After saving to the wxternal storage statistics from all the batches needs to be merged
+        // After saving to the external storage statistics from all the batches needs to be merged
         // This is implemented in ReadAndMergeCooccurrenceBatches(), so the next step is to call this method
         // Sorting is needed before storing all pairs of tokens to the external storage
         // (it's for the future aggregation)
