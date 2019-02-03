@@ -279,8 +279,7 @@ void CooccurrenceCollector::ReadAndMergeCooccurrenceBatches() {
   open_files_counter_ -= buffer_for_output_files.open_files_counter_;
 }
 
-// ToDo (MichaelSolotky): find out why it doesn't use the whole power of all the cores
-// and sometimes runs a long time with a single thread
+// ToDo (MichaelSolotky): remove batches after merging
 void CooccurrenceCollector::FirstStageOfMerging() {
   // Stage 1: merging portions of batches into intermediate batches
   // The strategy is the folowing: divide the vector of batches into as much buckets as it's possible
