@@ -1,4 +1,4 @@
-// Copyright 2018, Additive Regularization of Topic Models.
+// Copyright 2019, Additive Regularization of Topic Models.
 
 #include "artm/core/collection_parser.h"
 

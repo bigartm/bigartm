@@ -1,4 +1,4 @@
-// Copyright 2018, Additive Regularization of Topic Models.
+// Copyright 2019, Additive Regularization of Topic Models.
 
 #include "artm/core/cooccurrence_collector.h"
 
@@ -270,10 +270,10 @@ void CooccurrenceCollector::ReadAndMergeCooccurrenceBatches() {
   while (NumOfCooccurrenceBatches() > min_num_of_batches_to_be_merged_in_parallel) {
     FirstStageOfMerging();  // number of files is decreasing here
   }
+  std::cerr << "Merging co-occurrence batches. Stage 2: sequential merge" << std::endl;
   // vocab will be coppyied here into buffer_for_output_files
   BufferOfCooccurrences buffer_for_output_files(OUTPUT_FILE, vocab_, num_of_documents_token_occurred_in_, config_);
   open_files_counter_ += buffer_for_output_files.open_files_counter_;
-  std::cerr << "Merging co-occurrence batches. Stage 2: sequential merge" << std::endl;
   SecondStageOfMerging(&buffer_for_output_files, &vector_of_batches_);
   buffer_for_output_files.CalculatePpmi();
   open_files_counter_ -= buffer_for_output_files.open_files_counter_;
@@ -307,7 +307,9 @@ void CooccurrenceCollector::FirstStageOfMerging() {
   // 1 is subtracted here because 1 file will be needed for writing in it
   const int optimal_portion_size = std::min(static_cast<int>(vector_of_batches_.size() / num_of_threads),
                                             config_.max_num_of_open_files_in_a_thread() - 1);
-  // Portion size < 2 would lead to cycling or an error, if it would be > 10, much RAM space would be needed
+  // Portion size < 2 would lead to cycling or an error,
+  // if it would be > 10, much RAM space would be needed and i/o operations would be to frequent that
+  // the merging would slow due to pauses for reading and writing
   const int portion_size = std::min(std::max(optimal_portion_size, 2), 10);
   std::shared_ptr<std::mutex> open_close_file_mutex_ptr(new std::mutex);
 
@@ -726,26 +728,26 @@ BufferOfCooccurrences::BufferOfCooccurrences(
                       open_files_counter_(0), config_(config) {
   num_of_pairs_token_occurred_in_.resize(vocab_.token_map_.size());
   if (target_ == OUTPUT_FILE) {  // Open that files only if planning to write in them
-    if (config_.has_gather_cooc_tf()) {  // It's important firstly to create file (open output file)
+    if (config_.gather_cooc_tf()) {  // It's important firstly to create file (open output file)
       cooc_tf_dict_out_.open(config_.cooc_tf_file_path(), std::ios::out);
       CheckOutputFile(cooc_tf_dict_out_, config_.cooc_tf_file_path());
       cooc_tf_dict_in_.open(config_.cooc_tf_file_path(), std::ios::in);
       CheckInputFile(cooc_tf_dict_in_, config_.cooc_tf_file_path());
       open_files_counter_ += 2;
     }
-    if (config_.has_gather_cooc_df()) {
+    if (config_.gather_cooc_df()) {
       cooc_df_dict_out_.open(config_.cooc_df_file_path(), std::ios::out);
       CheckOutputFile(cooc_df_dict_out_, config_.cooc_df_file_path());
       cooc_df_dict_in_.open(config_.cooc_df_file_path(), std::ios::in);
       CheckInputFile(cooc_df_dict_in_, config_.cooc_df_file_path());
       open_files_counter_ += 2;
     }
-    if (config_.has_calculate_ppmi_tf()) {
+    if (config_.calculate_ppmi_tf()) {
       ppmi_tf_dict_.open(config_.ppmi_tf_file_path(), std::ios::out);
       CheckOutputFile(ppmi_tf_dict_, config_.ppmi_tf_file_path());
       ++open_files_counter_;
     }
-    if (config_.has_calculate_ppmi_df()) {
+    if (config_.calculate_ppmi_df()) {
       ppmi_df_dict_.open(config_.ppmi_df_file_path(), std::ios::out);
       CheckOutputFile(ppmi_df_dict_, config_.ppmi_df_file_path());
       ++open_files_counter_;

@@ -1,4 +1,4 @@
-// Copyright 2018, Additive Regularization of Topic Models.
+// Copyright 2019, Additive Regularization of Topic Models.
 
 #include <stdlib.h>
 
