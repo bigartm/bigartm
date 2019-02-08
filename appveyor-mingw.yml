@@ -26,8 +26,10 @@ environment:
 
 cache:
     # Cache MSYS2 packages to speed up builds. If version in repo changes, pacman will update it
-    - c:\msys64\mingw64
-    - c:\msys64\var\lib\pacman
+    # These lines below are commented, because disable caching is hot fix,
+    # but generally it's a usefull function, and when we find solution, they can be uncommented
+    #- c:\msys64\mingw64
+    #- c:\msys64\var\lib\pacman
     - C:\Miniconda36-x64\Lib\site-packages
     - C:\Miniconda-x64\Lib\site-packages
 

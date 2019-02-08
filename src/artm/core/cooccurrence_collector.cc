@@ -1,4 +1,4 @@
-// Copyright 2018, Additive Regularization of Topic Models.
+// Copyright 2019, Additive Regularization of Topic Models.
 
 #include "artm/core/cooccurrence_collector.h"
 
@@ -30,26 +30,28 @@
 #include "artm/core/collection_parser.h"
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
+#include "artm/core/token.h"
 
 namespace fs = boost::filesystem;
 
 namespace artm {
 namespace core {
 
-// ToDo (MichaelSolotky): add this input format to (batches, (optionally) Dictionary)
+// ToDo (MichaelSolotky): add this input format to batches, (optionally) Dictionary
 // 1. find a point in code after collection parsing where this code can be inserted
 // 2. take parser config from Parse method and find batch folder name
 // 3. use method ListAllBatches to have vector of filenames
 // 4. read batches in some order and count co-occurrences (use method LoadBatches)
 // 4.a understand how to extract text from batches
 // 5. think how to specify ppmi and cooc output files
+// 6. remove mutexes somewhere and make the code faster (even with little mistakes in clalculations)
 
-// ToDo (MichaelSolotky): write docs
 // ToDo (MichaelSolotky): search for all bad-written parts of code with CLion
 
-// ****************************** Methods of class CooccurrenceCollector ***********************************
+// ************************************ Methods of class CooccurrenceCollector ************************************
 
-CooccurrenceCollector::CooccurrenceCollector(const CollectionParserConfig& collection_parser_config) {
+CooccurrenceCollector::CooccurrenceCollector(
+      const CollectionParserConfig& collection_parser_config) : open_files_counter_(0) {
   config_.set_gather_cooc(collection_parser_config.gather_cooc());
   if (config_.gather_cooc()) {
     config_.set_gather_cooc_tf(collection_parser_config.gather_cooc_tf());
@@ -94,24 +96,58 @@ CooccurrenceCollector::CooccurrenceCollector(const CollectionParserConfig& colle
     config_.set_cooc_window_width(collection_parser_config.cooc_window_width());
     config_.set_cooc_min_tf(collection_parser_config.cooc_min_tf());
     config_.set_cooc_min_df(collection_parser_config.cooc_min_df());
-    config_.set_max_num_of_open_files(500);
     config_.set_num_items_per_batch(collection_parser_config.num_items_per_batch());
 
+    // This is the maximal allowable number. With larger values there are problems in Mac OS
+    // (experimentally found)
+    int max_num_of_open_files_in_a_process = 251;
+    // The subtraction was done in order to run on all the machines
+    // Maybe in the other systems this limit is lower and without subtracion this code would crash
+    // (although it works on my MacOS Mojave 10.14.2)
+    max_num_of_open_files_in_a_process -= 10;
+    config_.set_max_num_of_open_files_in_a_process(max_num_of_open_files_in_a_process);
+
     if (!collection_parser_config.has_num_threads() || collection_parser_config.num_threads() < 0) {
-      unsigned int n = std::thread::hardware_concurrency();
+      int n = std::thread::hardware_concurrency();
       if (n == 0) {
-        LOG(INFO) << "CollectionParserConfig.num_threads is set to 1 (default)";
-        config_.set_num_of_cpu(1);
+        config_.set_num_threads(1);
+        LOG(INFO) << "CooccurrenceCollectorConfig.num_threads is set to 1 (default)";
       } else {
-        LOG(INFO) << "CollectionParserConfig.num_threads is automatically set to " << n;
-        config_.set_num_of_cpu(n);
+        // In agglomerative merge a larger number of threads would be suboptimal
+        config_.set_num_threads(std::min(n, max_num_of_open_files_in_a_process / 3));
+        LOG(INFO) << "CooccurrenceCollectorConfig.num_threads is automatically set to " << config_.num_threads();
       }
     } else {
-      config_.set_num_of_cpu(collection_parser_config.num_threads());
+      // In agglomerative merge a larger number of threads would be suboptimal
+      config_.set_num_threads(std::min(collection_parser_config.num_threads(),
+                                       max_num_of_open_files_in_a_process / 3));
     }
+
+    const int max_num_of_open_files_in_a_thread = max_num_of_open_files_in_a_process / config_.num_threads();
+    config_.set_max_num_of_open_files_in_a_thread(max_num_of_open_files_in_a_thread);
   }
 }
 
+std::string CooccurrenceCollector::MakeKeyForVocab(const std::string& token_str, const std::string& modality) const {
+  return vocab_.MakeKey(token_str, modality);
+}
+
+int CooccurrenceCollector::FindTokenIdInVocab(const std::string& token_str, const std::string& modality) {
+  std::unique_lock<std::mutex> vocab_access_lock(vocab_access_mutex_);
+  return vocab_.FindTokenId(token_str, modality);
+}
+
+Vocab::TokenModality CooccurrenceCollector::FindTokenStrInVocab(const int token_id) {
+  std::unique_lock<std::mutex> vocab_access_lock(vocab_access_mutex_);
+  return vocab_.FindTokenStr(token_id);
+}
+
+unsigned CooccurrenceCollector::VocabSize() {
+  std::unique_lock<std::mutex> vocab_access_lock(vocab_access_mutex_);
+  return vocab_.VocabSize();
+}
+
+// Note: the method is no longer used
 void CooccurrenceCollector::CreateAndSetTargetFolder() {
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
   fs::path dir(boost::lexical_cast<std::string>(uuid));
@@ -131,150 +167,6 @@ std::string CooccurrenceCollector::CreateFileInBatchDir() const {
   fs::path file_local_path(boost::lexical_cast<std::string>(uuid));
   fs::path full_filename = fs::path(config_.target_folder()) / file_local_path;
   return full_filename.string();
-}
-
-unsigned CooccurrenceCollector::VocabSize() const {
-  return vocab_.token_map_.size();
-}
-
-void CooccurrenceCollector::ReadVowpalWabbit() {
-  // This function works as follows:
-  // 1. Acquire lock for reading from vowpal wabbit file
-  // 2. Read a portion (doc_per_cooc_batch) of documents from file and save it
-  // in a local buffer (vector<string>)
-  // 3. Release the lock
-  // 4. Cut every document into tokens.
-  // 5. Search for each pair of tokens in vocab dictionary and if they're valid (were found),
-  // calculate their co-occurrences (absolute and documental) and othen statistics
-  // for future pmi calculation (in how many pairs and documents a specific token occured,
-  // total number of documents and pairs in collection).
-  // Co-occurrence counters are stored in map of maps (on external level of indexing are first_token_id's
-  // and on internal second_token_id's)
-  // Statistics that refer to unique tokens is stored in vector called token_statistics_
-  // 6. For each potion of documents create a batch (class CooccurrenceBatch) with co-occurrence statistics
-  // Repeat 1-6 for all portions (can work in parallel for different portions)
-  std::shared_ptr<std::ifstream> vowpal_wabbit_doc_ptr(new std::ifstream(config_.vw_file_path(), std::ios::in));
-  if (!vowpal_wabbit_doc_ptr->is_open()) {
-    BOOST_THROW_EXCEPTION(InvalidOperation("Failed to open vowpal wabbit file"));
-  }
-  std::shared_ptr<std::mutex> read_mutex_ptr(new std::mutex);
-  std::mutex token_statistics_access;
-  std::mutex total_num_of_documents_arg_access;
-  std::mutex total_num_of_pairs_arg_access;
-
-  auto func = [&read_mutex_ptr, &token_statistics_access, &total_num_of_documents_arg_access,
-               &total_num_of_pairs_arg_access, &vowpal_wabbit_doc_ptr, this]() {
-    int64_t local_num_of_pairs = 0;
-    while (true) {  // Loop throgh portions.
-      // Steps 1-3:
-      std::vector<std::string> portion = ReadPortionOfDocuments(read_mutex_ptr, vowpal_wabbit_doc_ptr);
-      if (portion.empty()) {
-        break;
-      }
-      {
-        std::unique_lock<std::mutex> lock(total_num_of_documents_arg_access);
-        total_num_of_documents_ += portion.size();  // statistics for ppmi
-      }
-      // It will hold tf and df of pairs of tokens
-      // Every pair of valid tokens (both exist in vocab) is saved in this storage
-      // After walking through portion of documents all the statistics is dumped on disk
-      // and then this storage is destroyed
-      CooccurrenceStatisticsHolder cooc_stat_holder;
-
-      // For every token from vocab keep the information about the last document this token occured in
-      std::vector<unsigned> num_of_last_document_token_occured(vocab_.token_map_.size());
-
-      // When the document is processed (element of portion vector),
-      // memory for it can be freed by calling pop_back() from vector
-      // (large string will be popped and destroyed)
-      // portion.size() can be used as doc_id (it will in method SavePairOfTokens)
-      for (; portion.size() != 0; portion.pop_back()) {  // Loop through documents. Step 4:
-        std::vector<std::string> doc;
-        boost::split(doc, portion.back(), boost::is_any_of(" \t\r"));
-        // Step 5.a) Start the loop through a document
-        // Loop from 1 because the zero-th element is document title
-        std::string first_token_modality = "|@default_class";  // That's how modalities are presented in vw
-        for (unsigned j = 1; j < doc.size(); ++j) {  // Loop through tokens in document
-          if (doc[j].empty()) {
-            continue;
-          }
-          if (doc[j][0] == '|') {
-            first_token_modality = doc[j];
-            continue;
-          }
-          // 5.b) Check if a token is valid
-          int first_token_id = vocab_.FindTokenId(doc[j], first_token_modality);
-          if (first_token_id == TOKEN_NOT_FOUND) {
-            continue;
-          }
-          // 5.c) Collect statistics for document ppmi (in how many documents every token occured)
-          // The array is initialized with zeros, so for every portion.size() it isn't equal to initial value
-          if (num_of_last_document_token_occured[first_token_id] != portion.size()) {
-            num_of_last_document_token_occured[first_token_id] = portion.size();
-            std::unique_lock<std::mutex> lock(token_statistics_access);
-            ++num_of_documents_token_occurred_in_[first_token_id];
-          }
-          // 5.d) Take windows_width tokens (parameter) to the right of the current one
-          // If there are some words beginnig on '|' in the text the window should be extended
-          // and it's extended using not_a_word_counter
-          std::string second_token_modality = first_token_modality;
-          unsigned not_a_word_counter = 0;
-          // Loop through tokens in the window
-          for (unsigned k = 1; k <= config_.cooc_window_width() + not_a_word_counter && j + k < doc.size(); ++k) {
-            if (doc[j + k].empty()) {
-              continue;
-            }
-            if (doc[j + k][0] == '|') {
-              second_token_modality = doc[j + k];
-              ++not_a_word_counter;
-              continue;
-            }
-            if (first_token_modality != second_token_modality) {
-              continue;
-            }
-            int second_token_id = vocab_.FindTokenId(doc[j + k], second_token_modality);
-            if (second_token_id == TOKEN_NOT_FOUND) {
-              continue;
-            }
-            // 5.e) When it's known these 2 tokens are valid, remember their co-occurrence
-            // Here portion.size() is used to identify a document (it's unique id during one portion of documents)
-            if (config_.use_symetric_cooc()) {
-              if (first_token_id < second_token_id) {
-                cooc_stat_holder.SavePairOfTokens(first_token_id, second_token_id, portion.size());
-              } else if (first_token_id > second_token_id) {
-                cooc_stat_holder.SavePairOfTokens(second_token_id, first_token_id, portion.size());
-              } else {
-                cooc_stat_holder.SavePairOfTokens(first_token_id, first_token_id, portion.size(), 2);
-              }
-            } else {
-              cooc_stat_holder.SavePairOfTokens(first_token_id, second_token_id, portion.size());
-              cooc_stat_holder.SavePairOfTokens(second_token_id, first_token_id, portion.size());
-            }
-            local_num_of_pairs += 2;  // statistics for ppmi
-          }
-        }
-      }
-      if (!cooc_stat_holder.storage_.empty()) {
-        // This function saves gathered statistics on disk
-        // After saving on disk statistics from all the batches needs to be merged
-        // This is implemented in ReadAndMergeCooccurrenceBatches(), so the next step is to call this method
-        // Sorting is needed before storing all pairs of tokens on disk (it's for future agregation)
-        UploadOnDisk(cooc_stat_holder);
-      }
-    }
-    {
-      std::unique_lock<std::mutex> lock(total_num_of_pairs_arg_access);
-      total_num_of_pairs_ += local_num_of_pairs;
-    }
-  };
-  // Launch reading and storing pairs of tokens in parallel
-  std::vector<std::shared_future<void>> tasks;
-  for (int i = 0; i < config_.num_of_cpu(); ++i) {
-    tasks.emplace_back(std::async(std::launch::async, func));
-  }
-  for (int i = 0; i < config_.num_of_cpu(); ++i) {
-    tasks[i].get();
-  }
 }
 
 std::vector<std::string> CooccurrenceCollector::ReadPortionOfDocuments(
@@ -312,29 +204,43 @@ void CooccurrenceCollector::UploadOnDisk(const CooccurrenceStatisticsHolder& coo
     batch->WriteCell();
   }
   CloseBatchOutputFile(batch);
-  vector_of_batches_.push_back(std::move(batch));
+  {
+    std::unique_lock<std::mutex> vector_of_batches_access_lock(vector_of_batches_access_mutex_);
+    vector_of_batches_.push_back(std::move(batch));
+  }
 }
 
-CooccurrenceBatch* CooccurrenceCollector::CreateNewCooccurrenceBatch() const {
+CooccurrenceBatch* CooccurrenceCollector::CreateNewCooccurrenceBatch() {
+  std::unique_lock<std::mutex> target_dir_access_lock(target_dir_access_mutex_);
   return new CooccurrenceBatch(config_.target_folder());
 }
 
 void CooccurrenceCollector::OpenBatchOutputFile(std::shared_ptr<CooccurrenceBatch> batch) {
   if (!batch->out_batch_.is_open()) {
-    assert(open_files_counter_ < config_.max_num_of_open_files());
-    ++open_files_counter_;
+    std::unique_lock<std::mutex> open_close_file_lock(open_close_file_mutex_);
+    assert(open_files_counter_ < config_.max_num_of_open_files_in_a_process());
     batch->out_batch_.open(batch->filename_, std::ios::out);
+    if (!batch->out_batch_.is_open()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "Failed to open co-occurrence batch file for writing, path = " + batch->filename_));
+    }
+    ++open_files_counter_;
   }
 }
 
 void CooccurrenceCollector::CloseBatchOutputFile(std::shared_ptr<CooccurrenceBatch> batch) {
   if (batch->out_batch_.is_open()) {
-    --open_files_counter_;
+    std::unique_lock<std::mutex> open_close_file_lock(open_close_file_mutex_);
     batch->out_batch_.close();
+    if (batch->out_batch_.is_open()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "Failed to close co-occurrence batch file, path = " + batch->filename_));
+    }
+    --open_files_counter_;
   }
 }
 
-unsigned CooccurrenceCollector::CooccurrenceBatchesQuantity() const {
+unsigned CooccurrenceCollector::NumOfCooccurrenceBatches() const {
   return vector_of_batches_.size();
 }
 
@@ -356,54 +262,91 @@ void CooccurrenceCollector::ReadAndMergeCooccurrenceBatches() {
   // If there would be a need to calculate ppmi or other values which depend on co-occurrences
   // this data can be read back from output file.
 
-  // std::cout << "Step 2: merging batches" << std::endl;
+  std::cerr << "\nMerging co-occurrence batches. Stage 1: parallel agglomerative merge" << std::endl;
+  // This magic constant isn't the best and can be set to another value found in experiments
+  // This value should be lower than maximal number of open files in a process to avoid frequent
+  // openning-closing of the files
   const unsigned min_num_of_batches_to_be_merged_in_parallel = 32;
-  while (vector_of_batches_.size() > min_num_of_batches_to_be_merged_in_parallel) {
-    FirstStageOfMerging();  // size is decreasing here
+  while (NumOfCooccurrenceBatches() > min_num_of_batches_to_be_merged_in_parallel) {
+    FirstStageOfMerging();  // number of files is decreasing here
   }
-  ResultingBufferOfCooccurrences res(vocab_, num_of_documents_token_occurred_in_, config_);
-  open_files_counter_ += res.open_files_in_buf_;
-  SecondStageOfMerging(&res, &vector_of_batches_);
-  // std::cout << "Batches have been merged" << std::endl;
-  res.CalculatePpmi();
+  std::cerr << "Merging co-occurrence batches. Stage 2: sequential merge" << std::endl;
+  // vocab will be coppyied here into buffer_for_output_files
+  BufferOfCooccurrences buffer_for_output_files(OUTPUT_FILE, vocab_, num_of_documents_token_occurred_in_, config_);
+  open_files_counter_ += buffer_for_output_files.open_files_counter_;
+  SecondStageOfMerging(&buffer_for_output_files, &vector_of_batches_);
+  buffer_for_output_files.CalculatePpmi();
+  open_files_counter_ -= buffer_for_output_files.open_files_counter_;
 }
 
+// ToDo (MichaelSolotky): remove batches after merging
 void CooccurrenceCollector::FirstStageOfMerging() {
   // Stage 1: merging portions of batches into intermediate batches
-  // Note: one thread should merge at least 2 files and have the third to write in
-  int tmp = std::min(static_cast<int>(vector_of_batches_.size() / 2), config_.num_of_cpu());
-  int num_of_threads = std::min(tmp, config_.max_num_of_open_files() / 3);
-
-  int portion_size = std::min(static_cast<int>(vector_of_batches_.size() / num_of_threads),
-                              (config_.max_num_of_open_files() - num_of_threads) / num_of_threads);
+  // The strategy is the folowing: divide the vector of batches into as much buckets as it's possible
+  // and gives advantages (the best case is 2 batches into each bucket, and all these batches are open
+  // simultaneously), then create several threads which will take a portion of batches, merge them,
+  // then a free thread will take another not-merged portion of batches and so on until
+  // there are no portions left. This procedure produces new batches, but their number is much lower
+  // then but their number is much smaller than those which were sent at the input,
+  // so it could be needed to run it again in order to make that number small enough
+  const int num_of_batches = static_cast<int>(vector_of_batches_.size());
+  // Let k be number of buckets in which all the batches will be divided
+  // Let n be total number of batches
+  // k ≤ upper bound of n / 2
+  const int upper_constraint_due_to_num_of_batches = num_of_batches / 2 + num_of_batches % 2;
+  // The procedure would be uneffective if there had been some buckets with at least 1 closed file,
+  // so there should be at least 3 open files in each bucket: 1 for writing and at least 2 merging files
+  const int upper_constraint_due_to_num_of_open_files = config_.max_num_of_open_files_in_a_thread() / 3;
+  const int optimal_num_of_threads = std::min(upper_constraint_due_to_num_of_batches,
+                                              upper_constraint_due_to_num_of_open_files);
+  int num_of_threads = optimal_num_of_threads;
+  // The real number of threads shouldn't be higher the than value set by the user of number of cores in computer
+  if (config_.has_num_threads() && config_.num_threads() > 0) {
+    num_of_threads = std::min(optimal_num_of_threads, config_.num_threads());
+  }
+  // 1 is subtracted here because 1 file will be needed for writing in it
+  const int optimal_portion_size = std::min(static_cast<int>(vector_of_batches_.size() / num_of_threads),
+                                            config_.max_num_of_open_files_in_a_thread() - 1);
+  // Portion size < 2 would lead to cycling or an error,
+  // if it would be > 10, much RAM space would be needed and i/o operations would be to frequent that
+  // the merging would slow due to pauses for reading and writing
+  const int portion_size = std::min(std::max(optimal_portion_size, 2), 10);
   std::shared_ptr<std::mutex> open_close_file_mutex_ptr(new std::mutex);
 
-  auto func = [&open_close_file_mutex_ptr, portion_size, this](int i) {  // Wrapper around KWayMerge
+  auto func = [&open_close_file_mutex_ptr, portion_size, this](int portion_index) {  // Wrapper around KWayMerge
+    const int total_num_of_batches = vector_of_batches_.size();
     std::shared_ptr<CooccurrenceBatch> batch(CreateNewCooccurrenceBatch());
     OpenBatchOutputFile(batch);
-    ResultingBufferOfCooccurrences intermediate_buffer(vocab_, num_of_documents_token_occurred_in_, config_);
+    // vocab will be coppied here into buffer_for_a_batch
+    BufferOfCooccurrences buffer_for_a_batch(BATCH, vocab_,
+                                             num_of_documents_token_occurred_in_,
+                                             config_);
     std::vector<std::shared_ptr<CooccurrenceBatch>> portion_of_batches;
-    // Stage 1: take i-th portion from vector_of_batches_
-    for (int j = i * portion_size; j < (i + 1) * portion_size &&
-                                   j < static_cast<int>(vector_of_batches_.size()); ++j) {
-      portion_of_batches.push_back(std::move(vector_of_batches_[j]));
+    // Stage 1: take i-th portion from pull of batches
+    {
+      std::unique_lock<std::mutex> vector_of_batches_access_lock(vector_of_batches_access_mutex_);
+      for (int batch_index = portion_index * portion_size;
+           batch_index < (portion_index + 1) * portion_size && batch_index < total_num_of_batches;
+           ++batch_index) {
+        portion_of_batches.push_back(std::move(vector_of_batches_[batch_index]));
+      }
     }
-    KWayMerge(&intermediate_buffer, BATCH, &portion_of_batches, batch, open_close_file_mutex_ptr);
+    KWayMerge(&buffer_for_a_batch, BATCH, &portion_of_batches, batch, open_close_file_mutex_ptr);
     CloseBatchOutputFile(batch);
     return batch;
   };
 
   std::vector<std::shared_ptr<CooccurrenceBatch>> intermediate_batches;
-  std::mutex worker_thread_mutex;
-  std::mutex intermediate_batches_access;
+  std::mutex intermediate_batches_access_mutex;
   std::queue<unsigned> queue_of_indices;
+  std::mutex queue_access_mutex;
 
-  auto worker_thread = [&intermediate_batches, &worker_thread_mutex,
-                        &intermediate_batches_access, &queue_of_indices, &func]() {
+  auto worker = [&intermediate_batches, &intermediate_batches_access_mutex,
+                 &queue_of_indices, &queue_access_mutex, &func]() {
     while (true) {
       unsigned index;
       {  // take one task from queue of tasks
-        std::unique_lock<std::mutex> worker_thread_lock(worker_thread_mutex);
+        std::unique_lock<std::mutex> queue_access_lock(queue_access_mutex);
         if (queue_of_indices.empty()) {
           break;
         } else {
@@ -413,19 +356,19 @@ void CooccurrenceCollector::FirstStageOfMerging() {
       }
       std::shared_ptr<CooccurrenceBatch> batch = func(index);
       {
-        std::unique_lock<std::mutex> intermediate_batches_access_lock(intermediate_batches_access);
+        std::unique_lock<std::mutex> intermediate_batches_access_lock(intermediate_batches_access_mutex);
         intermediate_batches.push_back(std::move(batch));
       }
     }
   };
-  // Stage 1: prepare indices for threads (each thread will take index and send in func)
+  // Prepare indices for threads (each thread will take index and send in func)
   for (int i = 0; i * portion_size < static_cast<int>(vector_of_batches_.size()); ++i) {
     queue_of_indices.push(i);
   }
-  // Stage 1: launch workers
+  // Launch workers
   std::vector<std::thread> workers;
   for (int i = 0; i < num_of_threads; ++i) {
-    workers.emplace_back(worker_thread);
+    workers.emplace_back(worker);
   }
   for (int i = 0; i < num_of_threads; ++i) {
     workers[i].join();
@@ -433,27 +376,29 @@ void CooccurrenceCollector::FirstStageOfMerging() {
   vector_of_batches_ = std::move(intermediate_batches);
 }
 
-void CooccurrenceCollector::SecondStageOfMerging(ResultingBufferOfCooccurrences* res,
+void CooccurrenceCollector::SecondStageOfMerging(BufferOfCooccurrences* buffer_for_output_files,
                                std::vector<std::shared_ptr<CooccurrenceBatch>>* intermediate_batches) {
   // Stage 2: merging of final batches (in single thread)
   std::shared_ptr<std::mutex> open_close_file_mutex_ptr(new std::mutex);
   // Note: the 4th arg is fake, it's not used later if mode == OUTPUT_FILE
-  KWayMerge(res, OUTPUT_FILE, intermediate_batches, (*intermediate_batches)[0], open_close_file_mutex_ptr);
+  KWayMerge(buffer_for_output_files, OUTPUT_FILE, intermediate_batches,
+            (*intermediate_batches)[0], open_close_file_mutex_ptr);
   // Files are explicitly closed here, because it's necesery to push the data in files on this step
   if (config_.gather_cooc_tf()) {
-    res->cooc_tf_dict_out_.close();
+    buffer_for_output_files->cooc_tf_dict_out_.close();
   }
   if (config_.gather_cooc_df()) {
-    res->cooc_df_dict_out_.close();
+    buffer_for_output_files->cooc_df_dict_out_.close();
   }
+  buffer_for_output_files->open_files_counter_ -= 2;
   open_files_counter_ -= 2;
 }
 
-void CooccurrenceCollector::KWayMerge(ResultingBufferOfCooccurrences* res, const int mode,
+void CooccurrenceCollector::KWayMerge(BufferOfCooccurrences* buffer, const int mode,
                                       std::vector<std::shared_ptr<CooccurrenceBatch>>* vector_of_input_batches_ptr,
                                       std::shared_ptr<CooccurrenceBatch> out_batch,
                                       std::shared_ptr<std::mutex> open_close_file_mutex_ptr) {
-  // All cooc batches has it's local buffer in operating memory (look the CooccurrenceBatch class implementation)
+  // All cooc batches has it's local buffer in RAM (look the CooccurrenceBatch class implementation)
   // Information in batches is stored in cells.
   // There are 2 different output formats, which are set via mode parameter:
   // 1. Batches
@@ -462,109 +407,98 @@ void CooccurrenceCollector::KWayMerge(ResultingBufferOfCooccurrences* res, const
   // 1. Initially first cells of all the batches are read in their buffers
   // 2. Then batches are sorted (std::make_heap) by first_token_id of the cell
   // 3. Then a cell with the lowest first_token_id is extaracted and put in
-  // resulting buffer and the next cell is read from corresponding batch
+  // buffer and the next cell is read from corresponding batch
   // 4. If the lowest first token id equals first token id of cell of this buffer, they are merged
   // else the current cell is written in file and the new one is loaded.
   // Writing and empting is done in order to keep low memory consumption
   // During execution of this function (if mode is OUTPUT_FILE) n_u is calculated and saved,
   // so after merge all the information needed to calculate ppmi will be gathered and
-  // available from class ResultingBufferOfCooccurrences
+  // available from class BufferOfCooccurrences
   // Note: here's only 1 way to communicate between threads - through open_files_counter
 
   // Step 1:
   std::vector<std::shared_ptr<CooccurrenceBatch>>& vector_of_input_batches = *vector_of_input_batches_ptr;
   auto iter = vector_of_input_batches.begin();
-  {
+  {  // Open all files and read the first cell
     std::unique_lock<std::mutex> open_close_file_lock(*open_close_file_mutex_ptr);
-    for (; iter != vector_of_input_batches.end() &&
-           open_files_counter_ < config_.max_num_of_open_files() - 1; ++iter) {
+    for (; iter != vector_of_input_batches.end(); ++iter) {
       OpenBatchInputFile(*iter);
       (*iter)->ReadCell();
     }
-  }
-  for (; iter != vector_of_input_batches.end(); ++iter) {
-    std::unique_lock<std::mutex> open_close_file_lock(*open_close_file_mutex_ptr);
-    OpenBatchInputFile(*iter);
-    (*iter)->ReadCell();
-    CloseBatchInputFile(*iter);
   }
   // Step 2:
   std::make_heap(vector_of_input_batches.begin(), vector_of_input_batches.end(),
                  CooccurrenceBatch::CoocBatchComparator());
   if (!vector_of_input_batches.empty()) {
-    res->cell_ = Cell();
-    res->cell_.first_token_id = (*vector_of_input_batches[0]).cell_.first_token_id;
+    buffer->cell_ = Cell();
+    buffer->cell_.first_token_id = (*vector_of_input_batches[0]).cell_.first_token_id;
   }
   while (!vector_of_input_batches.empty()) {
     // Step 4:
-    if (res->cell_.first_token_id == (*vector_of_input_batches[0]).cell_.first_token_id) {
-      res->MergeWithExistingCell(*vector_of_input_batches[0]);
+    if (buffer->cell_.first_token_id == (*vector_of_input_batches[0]).cell_.first_token_id) {
+      buffer->MergeWithExistingCell(*vector_of_input_batches[0]);
     } else {
       if (mode == BATCH) {
-        out_batch->cell_ = res->cell_;
+        out_batch->cell_ = buffer->cell_;
         out_batch->WriteCell();
       } else if (mode == OUTPUT_FILE) {
         if (config_.calculate_ppmi_tf()) {
-          res->CalculateTFStatistics();
+          buffer->CalculateTFStatistics();
         }
         if (config_.gather_cooc_tf()) {
-          res->WriteCoocFromCell(TokenCoocFrequency, config_.cooc_min_tf());
+          buffer->WriteCoocFromCell(TokenCoocFrequency, config_.cooc_min_tf());
         }
         if (config_.gather_cooc_df()) {
-          res->WriteCoocFromCell(DocumentCoocFrequency, config_.cooc_min_df());
+          buffer->WriteCoocFromCell(DocumentCoocFrequency, config_.cooc_min_df());
         }
         // It's importants to set size = 0 after popping, because this value will be checked later
-        res->cell_.records.resize(0);
+        buffer->cell_.records.resize(0);
       }
-      res->cell_ = (*vector_of_input_batches[0]).cell_;
+      buffer->cell_ = (*vector_of_input_batches[0]).cell_;
     }
     // Step 3:
     std::pop_heap(vector_of_input_batches.begin(), vector_of_input_batches.end(),
                   CooccurrenceBatch::CoocBatchComparator());
-    if (!vector_of_input_batches.back()->in_batch_.is_open()) {
-      std::unique_lock<std::mutex> open_close_file_lock(*open_close_file_mutex_ptr);
-      OpenBatchInputFile(vector_of_input_batches.back());
-    }
     // if there are some data to read ReadCell reads it and returns true, else returns false
     if (vector_of_input_batches.back()->ReadCell()) {
-      if (open_files_counter_ == config_.max_num_of_open_files()) {
-        std::unique_lock<std::mutex> open_close_file_lock(*open_close_file_mutex_ptr);
-        CloseBatchInputFile(vector_of_input_batches.back());
-      }
       std::push_heap(vector_of_input_batches.begin(), vector_of_input_batches.end(),
                      CooccurrenceBatch::CoocBatchComparator());
     } else {
-      if (IsOpenBatchInputFile(*vector_of_input_batches.back())) {
-        std::unique_lock<std::mutex> open_close_file_lock(*open_close_file_mutex_ptr);
-        CloseBatchInputFile(vector_of_input_batches.back());
-      }
+      std::unique_lock<std::mutex> open_close_file_lock(*open_close_file_mutex_ptr);
+      CloseBatchInputFile(vector_of_input_batches.back());
       vector_of_input_batches.pop_back();
     }
   }
-  if (!res->cell_.records.empty()) {
+  if (!buffer->cell_.records.empty()) {
     if (mode == BATCH) {
-      out_batch->cell_ = res->cell_;
+      out_batch->cell_ = buffer->cell_;
       out_batch->WriteCell();
     } else if (mode == OUTPUT_FILE) {
       if (config_.calculate_ppmi_tf()) {
-        res->CalculateTFStatistics();
+        buffer->CalculateTFStatistics();
       }
       if (config_.gather_cooc_tf()) {
-        res->WriteCoocFromCell(TokenCoocFrequency, config_.cooc_min_tf());
+        buffer->WriteCoocFromCell(TokenCoocFrequency, config_.cooc_min_tf());
       }
       if (config_.gather_cooc_df()) {
-        res->WriteCoocFromCell(DocumentCoocFrequency, config_.cooc_min_df());
+        buffer->WriteCoocFromCell(DocumentCoocFrequency, config_.cooc_min_df());
       }
     }
   }
 }
 
 void CooccurrenceCollector::OpenBatchInputFile(std::shared_ptr<CooccurrenceBatch> batch) {
-  assert(open_files_counter_ < config_.max_num_of_open_files());
   if (!batch->in_batch_.is_open()) {
-    ++open_files_counter_;
+    std::unique_lock<std::mutex> open_close_file_lock(open_close_file_mutex_);
+    assert(open_files_counter_ < config_.max_num_of_open_files_in_a_process());
     batch->in_batch_.open(batch->filename_, std::ios::in);
+    if (!batch->in_batch_.is_open()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "Failed to open co-occurrence batch file for reading, path = " + batch->filename_));
+    }
+    // ToDo (MichaelSolotky): find the way to check correctness of the seekg procedure
     batch->in_batch_.seekg(batch->in_batch_offset_);
+    ++open_files_counter_;
   }
 }
 
@@ -574,13 +508,18 @@ bool CooccurrenceCollector::IsOpenBatchInputFile(const CooccurrenceBatch& batch)
 
 void CooccurrenceCollector::CloseBatchInputFile(std::shared_ptr<CooccurrenceBatch> batch) {
   if (batch->in_batch_.is_open()) {
-    --open_files_counter_;
+    std::unique_lock<std::mutex> open_close_file_lock(open_close_file_mutex_);
     batch->in_batch_offset_ = batch->in_batch_.tellg();
     batch->in_batch_.close();
+    if (batch->in_batch_.is_open()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "Failed to close co-occurrence batch file, path = " + batch->filename_));
+    }
+    --open_files_counter_;
   }
 }
 
-// ********************************** Methods of class Vocab *****************************************
+// ********************************** Methods of class Vocab **********************************
 
 Vocab::Vocab() { }
 
@@ -595,13 +534,15 @@ Vocab::Vocab(const std::string& path_to_vocab) {
   for (unsigned last_token_id = 0; getline(vocab_ifile, str); ++last_token_id) {
     boost::algorithm::trim(str);
     std::vector<std::string> strs;
-    boost::split(strs, str, boost::is_any_of(" \t\r"));
+    boost::split(strs, str, boost::is_any_of(" ,\t\r"));
     if (!strs[0].empty()) {
       std::string modality;
-      if (strs.size() == 1) {
-        modality = "@default_class";  // Here is how modality is indicated in vocab file (without '|')
+      int pos_of_modality = 1;
+      for (; pos_of_modality < strs.size() && strs[pos_of_modality].empty(); ++pos_of_modality) { }
+      if (pos_of_modality != strs.size()) {
+        modality = strs[pos_of_modality];
       } else {
-        modality = strs[1];
+        modality = DefaultClass;
       }
       std::string key = MakeKey(strs[0], modality);
       auto iter = token_map_.find(key);
@@ -636,10 +577,14 @@ Vocab::TokenModality Vocab::FindTokenStr(const int token_id) const {
   return token_ref->second;
 }
 
-// ****************************** Methods of class CooccurrenceStatisticsHolder *************************************
+unsigned Vocab::VocabSize() const {
+  return token_map_.size();
+}
 
-// This class stores temporarily added statistics about pairs of tokens (how often these pairs occurred in documents
-// in a window and in how many documents they occurred together in a window).
+// ****************************** Methods of class CooccurrenceStatisticsHolder ******************************
+
+// This class stores temporarily added statistics about pairs of tokens (how often these pairs
+// occurred in documents in a window and in how many documents they occurred together in a window).
 // The data is stored in rb tree (std::map)
 void CooccurrenceStatisticsHolder::SavePairOfTokens(const int first_token_id, const int second_token_id,
                                                     const unsigned doc_id, const double weight) {
@@ -675,7 +620,7 @@ bool CooccurrenceStatisticsHolder::Empty() {
   return storage_.empty();
 }
 
-// ************************************** Methods of class CooccurrenceBatch ******************************************
+// ******************************** Methods of class CooccurrenceBatch ********************************
 
 CooccurrenceBatch::CooccurrenceBatch(const std::string& path_to_batches) : in_batch_offset_(0) {
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
@@ -689,7 +634,6 @@ void CooccurrenceBatch::FormNewCell(const std::map<int, CooccurrenceStatisticsHo
   // Here is initialization of a new cell
   // A cell consists on first_token_id, number of records it includes
   // Then records go, every reord consists on second_token_id, cooc_tf, cooc_df
-
   cell_.first_token_id = cooc_stat_node->first;
   // while reading from file it's necessery to know how many records to read
   auto second_token_reference = cooc_stat_node->second.second_token_reference;
@@ -761,53 +705,64 @@ void CooccurrenceBatch::ReadRecords() {
   }
 }
 
-// **************************** Methods of class ResultingBufferOfCooccurrences ********************************
+// ********************************* Methods of class BufferOfCooccurrences *********************************
+
+// ToDo (MichaeSolotky): logic of this class isn't obvious, it would be cool to express thoughts clearer
+// ToDo (MichaeSolotky): don't copy vocab if there's no need (like in CooccurrenceCollector)
 
 // The main purpose of this class is to store statistics of co-occurrences and some
-// variables calculated on base of them, perform that calculations, write that in file
-// resulting file and read from it.
-// This class stores cells of data from batches before they are written in resulting files
+// variables calculated on base of them, perform that calculations, write that in
+// target file and read from it.
+// This class stores data in cells (special structure) before they are written in resulting files
 // A cell can from a batch can come in this buffer and be merged with current stored
 // (in case first_token_ids of cells are equal) or the current cell can be pushed from buffer in file
 // (in case first_token_ids aren't equal) and new cell takes place of the old one
-ResultingBufferOfCooccurrences::ResultingBufferOfCooccurrences(
-    const Vocab& vocab,
+// This buffer can be used for writing in a batch or in a target file (like file of co-occurrences
+// or file of pPMI), the target_ parameter is responsible for this, it can be either
+// OUTPUT_FILE or BATCH
+BufferOfCooccurrences::BufferOfCooccurrences(
+    const int target, const Vocab& vocab,
     const std::vector<unsigned>& num_of_documents_token_occurred_in,
-    const CooccurrenceCollectorConfig& config) : vocab_(vocab),
+    const CooccurrenceCollectorConfig& config) : target_(target), vocab_(vocab),
                       num_of_documents_token_occurred_in_(num_of_documents_token_occurred_in),
-                      config_(config) {
+                      open_files_counter_(0), config_(config) {
   num_of_pairs_token_occurred_in_.resize(vocab_.token_map_.size());
-  // ToDo (MichaelSolotky): make it easier to read
-  if (config_.has_gather_cooc_tf()) {  // It's important firstly to create file (open output file)
-    cooc_tf_dict_out_.open(config_.cooc_tf_file_path(), std::ios::out);
-    CheckOutputFile(cooc_tf_dict_out_, config_.cooc_tf_file_path());
-    cooc_tf_dict_in_.open(config_.cooc_tf_file_path(), std::ios::in);
-    CheckInputFile(cooc_tf_dict_in_, config_.cooc_tf_file_path());
-  }
-  if (config_.has_gather_cooc_df()) {
-    cooc_df_dict_out_.open(config_.cooc_df_file_path(), std::ios::out);
-    CheckOutputFile(cooc_df_dict_out_, config_.cooc_df_file_path());
-    cooc_df_dict_in_.open(config_.cooc_df_file_path(), std::ios::in);
-    CheckInputFile(cooc_df_dict_in_, config_.cooc_df_file_path());
-  }
-  if (config_.has_calculate_ppmi_tf()) {
-    ppmi_tf_dict_.open(config_.ppmi_tf_file_path(), std::ios::out);
-    CheckOutputFile(ppmi_tf_dict_, config_.ppmi_tf_file_path());
-  }
-  if (config_.has_calculate_ppmi_df()) {
-    ppmi_df_dict_.open(config_.ppmi_df_file_path(), std::ios::out);
-    CheckOutputFile(ppmi_df_dict_, config_.ppmi_df_file_path());
+  if (target_ == OUTPUT_FILE) {  // Open that files only if planning to write in them
+    if (config_.gather_cooc_tf()) {  // It's important firstly to create file (open output file)
+      cooc_tf_dict_out_.open(config_.cooc_tf_file_path(), std::ios::out);
+      CheckOutputFile(cooc_tf_dict_out_, config_.cooc_tf_file_path());
+      cooc_tf_dict_in_.open(config_.cooc_tf_file_path(), std::ios::in);
+      CheckInputFile(cooc_tf_dict_in_, config_.cooc_tf_file_path());
+      open_files_counter_ += 2;
+    }
+    if (config_.gather_cooc_df()) {
+      cooc_df_dict_out_.open(config_.cooc_df_file_path(), std::ios::out);
+      CheckOutputFile(cooc_df_dict_out_, config_.cooc_df_file_path());
+      cooc_df_dict_in_.open(config_.cooc_df_file_path(), std::ios::in);
+      CheckInputFile(cooc_df_dict_in_, config_.cooc_df_file_path());
+      open_files_counter_ += 2;
+    }
+    if (config_.calculate_ppmi_tf()) {
+      ppmi_tf_dict_.open(config_.ppmi_tf_file_path(), std::ios::out);
+      CheckOutputFile(ppmi_tf_dict_, config_.ppmi_tf_file_path());
+      ++open_files_counter_;
+    }
+    if (config_.calculate_ppmi_df()) {
+      ppmi_df_dict_.open(config_.ppmi_df_file_path(), std::ios::out);
+      CheckOutputFile(ppmi_df_dict_, config_.ppmi_df_file_path());
+      ++open_files_counter_;
+    }
   }
 }
 
-void ResultingBufferOfCooccurrences::CheckInputFile(const std::ifstream& file, const std::string& filename) {
+void BufferOfCooccurrences::CheckInputFile(const std::ifstream& file, const std::string& filename) {
   if (!file.good()) {
     BOOST_THROW_EXCEPTION(InvalidOperation("Failed to open input file " +
                                             filename + " in working directory"));
   }
 }
 
-void ResultingBufferOfCooccurrences::CheckOutputFile(const std::ofstream& file, const std::string& filename) {
+void BufferOfCooccurrences::CheckOutputFile(const std::ofstream& file, const std::string& filename) {
   if (!file.good()) {
     BOOST_THROW_EXCEPTION(InvalidOperation("Failed to open or create output file " +
                                             filename + " in working directory"));
@@ -815,15 +770,15 @@ void ResultingBufferOfCooccurrences::CheckOutputFile(const std::ofstream& file, 
 }
 
 // ToDo (MichaelSolotky): may be this can be implemented in more optimal way
-void ResultingBufferOfCooccurrences::MergeWithExistingCell(const CooccurrenceBatch& batch) {
+void BufferOfCooccurrences::MergeWithExistingCell(const CooccurrenceBatch& batch) {
   // All the data in buffer are stored in a cell, so here are rules of updating each cell
   // This function takes two vectors (one of the current cell and one which is stored in batch),
   // merges them in folowing way:
   // 1. If two elements of vector are different (different second token id),
   // stacks them one to another in ascending order
   // 2. It these two elemnts are equal, adds their cooc_tf and cooc_df and
-  // stores resulting cell with this parameters
-  // After merging resulting vector is sorted in ascending order
+  // stores fianl cell with this parameters
+  // After merging final vector is sorted in ascending order
   std::vector<CoocInfo> old_vector = cell_.records;
   cell_.records.resize(old_vector.size() + batch.cell_.records.size());
   auto fi_iter = old_vector.begin();
@@ -850,7 +805,7 @@ void ResultingBufferOfCooccurrences::MergeWithExistingCell(const CooccurrenceBat
   std::copy(se_iter, batch.cell_.records.end(), std::back_inserter(cell_.records));
 }
 
-void ResultingBufferOfCooccurrences::CalculateTFStatistics() {
+void BufferOfCooccurrences::CalculateTFStatistics() {
   // Calculate statistics of occurrence (of first token which is associated with current cell)
   int64_t n_u = 0;
   for (unsigned i = 0; i < cell_.records.size(); ++i) {
@@ -862,16 +817,16 @@ void ResultingBufferOfCooccurrences::CalculateTFStatistics() {
   num_of_pairs_token_occurred_in_[cell_.first_token_id] += n_u;
 }
 
-void ResultingBufferOfCooccurrences::WriteCoocFromCell(const std::string mode, const unsigned cooc_min) {
+void BufferOfCooccurrences::WriteCoocFromCell(const std::string mode, const unsigned cooc_min) {
   // This function takes a cell from buffer and writes data from cell in file
   // Output file format(s) are defined here
   // stringstream is used for fast bufferized i/o operations
   // Note: before writing in file all the information is stored in ram
   std::stringstream output_buf;
   bool no_cooc_found = true;
-  std::string prev_modality = "@default_class";
+  std::string prev_modality = DefaultClass;
   Vocab::TokenModality first_token = vocab_.FindTokenStr(cell_.first_token_id);
-  if (first_token.modality != "@default_class") {
+  if (first_token.modality != DefaultClass) {
     output_buf << '|' << first_token.modality << ' ';
     prev_modality = first_token.modality;
   }
@@ -897,18 +852,17 @@ void ResultingBufferOfCooccurrences::WriteCoocFromCell(const std::string mode, c
   }
 }
 
-void ResultingBufferOfCooccurrences::CalculatePpmi() {  // Wrapper around CalculateAndWritePpmi
-  // std::cout << "Step 3: start calculation ppmi" << std::endl;
+void BufferOfCooccurrences::CalculatePpmi() {  // Wrapper around CalculateAndWritePpmi
+  std::cerr << "Calculating pPMI" << std::endl;
   if (config_.calculate_ppmi_tf()) {
     CalculateAndWritePpmi(TokenCoocFrequency, config_.total_num_of_pairs());
   }
   if (config_.calculate_ppmi_df()) {
     CalculateAndWritePpmi(DocumentCoocFrequency, config_.total_num_of_documents());
   }
-  // std::cout << "Ppmi's have been calculated" << std::endl;
 }
 
-void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mode, const long double n) {
+void BufferOfCooccurrences::CalculateAndWritePpmi(const std::string mode, const long double n) {
   // This function reads cooc file line by line, calculates ppmi and saves them in external file of ppmi
   // stringstream is used for fast bufferized i/o operations
   // Note: before writing in file all the information is stored in ram
@@ -974,7 +928,7 @@ void ResultingBufferOfCooccurrences::CalculateAndWritePpmi(const std::string mod
   }
 }
 
-double ResultingBufferOfCooccurrences::GetTokenFreq(const std::string& mode, const int token_id) const {
+double BufferOfCooccurrences::GetTokenFreq(const std::string& mode, const int token_id) const {
   if (mode == TokenCoocFrequency) {
     return num_of_pairs_token_occurred_in_[token_id];
   } else {

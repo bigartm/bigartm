@@ -134,7 +134,7 @@ class BinaryDistribution(Distribution):
 
 setup_kwargs = dict(
     name='bigartm',
-    version='0.9.0',
+    version='0.10.0',
     packages=find_packages(),
     install_requires=[
         'pandas',
