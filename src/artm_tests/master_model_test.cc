@@ -1,4 +1,4 @@
-// Copyright 2017, Additive Regularization of Topic Models.
+// Copyright 2019, Additive Regularization of Topic Models.
 
 #include <vector>
 
@@ -278,6 +278,7 @@ void testReshapeTokens(bool with_ptdw, bool opt_for_avx) {
   for (int pass = 0; pass < 4; pass++) {
     master_model.FitOfflineModel(fit_offline_args);
     artm::PerplexityScore perplexity_score = master_model.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
+    // ToDo: uncommenting this check makes tests crash, it needs to be investigated
     // ASSERT_APPROX_EQ(perplexity_score.value(), expected[pass]);
   }
 
