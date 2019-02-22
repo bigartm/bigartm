@@ -532,27 +532,56 @@ Vocab::Vocab(const std::string& path_to_vocab) {
   }
   std::string str;
   for (unsigned last_token_id = 0; getline(vocab_ifile, str); ++last_token_id) {
-    boost::algorithm::trim(str);
     std::vector<std::string> strs;
-    boost::split(strs, str, boost::is_any_of(" ,\t\r"));
-    if (!strs[0].empty()) {
-      std::string modality;
-      int pos_of_modality = 1;
-      for (; pos_of_modality < strs.size() && strs[pos_of_modality].empty(); ++pos_of_modality) { }
-      if (pos_of_modality != strs.size()) {
-        modality = strs[pos_of_modality];
-      } else {
-        modality = DefaultClass;
+    boost::split(strs, str, boost::is_any_of(" \t\r"));
+    std::string token;
+    std::string modality;
+    for (unsigned i = 0; i < strs.size(); ++i) {  // Custom trimming
+      std::string curr_str = strs[i];
+      unsigned begin_ind = 0;
+      unsigned end_ind = curr_str.size() - 1;
+      for (; begin_ind <= end_ind; ++begin_ind) {  // Trim left
+        if (curr_str[begin_ind] == ',') {
+          continue;
+        } else {
+          break;
+        }
       }
-      std::string key = MakeKey(strs[0], modality);
-      auto iter = token_map_.find(key);
-      if (iter == token_map_.end()) {
-        token_map_.insert(std::make_pair(key, last_token_id));
-        inverse_token_map_.insert(std::make_pair(last_token_id, TokenModality(strs[0], modality)));
-      } else {
-        BOOST_THROW_EXCEPTION(InvalidOperation(
-          "There are repeated tokens in vocab file. Please remove all the duplications"));
+      if (begin_ind == curr_str.size()) {
+        strs[i] = "";
+        continue;
       }
+      for (; begin_ind < end_ind; --end_ind) {  // Trim right
+        if (curr_str[end_ind] == ',') {
+          continue;
+        } else {
+          break;
+        }
+      }
+      strs[i] = curr_str.substr(begin_ind, end_ind + 1 - begin_ind);
+      if (!curr_str.empty()) {
+        if (token.empty()) {
+          token = curr_str;
+        } else {
+          modality = curr_str;
+          break;
+        }
+      }
+    }
+    if (token.empty()) {  // Invalid line in vocab
+      continue;
+    }
+    if (modality.empty()) {  // No vocab mentioned
+      modality = DefaultClass;
+    }
+    std::string key = MakeKey(token, modality);
+    auto iter = token_map_.find(key);
+    if (iter == token_map_.end()) {
+      token_map_.insert(std::make_pair(key, last_token_id));
+      inverse_token_map_.insert(std::make_pair(last_token_id, TokenModality(token, modality)));
+    } else {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "There are repeated tokens in vocab file. Please remove all the duplications"));
     }
   }
 }
