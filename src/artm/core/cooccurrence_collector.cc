@@ -558,7 +558,8 @@ Vocab::Vocab(const std::string& path_to_vocab) {
           break;
         }
       }
-      strs[i] = curr_str.substr(begin_ind, end_ind + 1 - begin_ind);
+      curr_str = curr_str.substr(begin_ind, end_ind + 1 - begin_ind);
+      strs[i] = curr_str;
       if (!curr_str.empty()) {
         if (token.empty()) {
           token = curr_str;
