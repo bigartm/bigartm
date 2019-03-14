@@ -12,7 +12,7 @@ import json
 import pickle
 
 from pandas import DataFrame
-from packaging import version
+from packaging.version import parse
 from six import iteritems, string_types
 from six.moves import range, zip
 from multiprocessing.pool import ThreadPool, ApplyResult
@@ -1276,7 +1276,7 @@ def load_artm_model(data_path):
     with open(os.path.join(data_path, PARAMETERS_FILENAME_BIN), 'rb') as fin:
         params = pickle.load(fin)
 
-    if version.parse(params['version']) > version.parse(version()):
+    if parse(params['version']) > parse(version()):
         raise RuntimeError('File was generated with newer version of library ({}). '.format(params['version']) +
                            'Current library version is {}'.format(version()))
 
