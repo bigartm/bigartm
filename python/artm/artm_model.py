@@ -849,7 +849,7 @@ class ARTM(object):
                                  shape=(len(tm.token), len(tm.topic_name)))
         columns = list(tm.topic_name)
 
-        rows = [(c, t) in zip(tm.token, tm.class_id)]
+        rows = [(c, t) for (c, t) in zip(tm.token, tm.class_id)]
         return data, rows, columns
 
     def get_theta(self, topic_names=None):
