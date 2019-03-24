@@ -708,7 +708,7 @@ CollectionParserInfo CollectionParser::ParseVowpalWabbit() {
                 BOOST_THROW_EXCEPTION(InvalidOperation("No vocab file specified. Can't gather co-occurrences"));
               }
 
-              if (cooc_collector.config_.use_symetric_cooc()) {
+              if (cooc_collector.config_.store_symetric_cooc_values()) {
                 if (first_token_id < second_token_id) {
                   cooc_stat_holder.SavePairOfTokens(first_token_id, second_token_id, str_index);
                 } else if (first_token_id > second_token_id) {

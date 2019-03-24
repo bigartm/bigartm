@@ -56,7 +56,7 @@ CooccurrenceCollector::CooccurrenceCollector(
   if (config_.gather_cooc()) {
     config_.set_gather_cooc_tf(collection_parser_config.gather_cooc_tf());
     config_.set_gather_cooc_df(collection_parser_config.gather_cooc_df());
-    config_.set_use_symetric_cooc(true);
+    config_.set_store_symetric_cooc_values(collection_parser_config.store_symetric_cooc_values());
     config_.set_vw_file_path(collection_parser_config.docword_file_path());
 
     if (collection_parser_config.has_vocab_file_path()) {
@@ -809,7 +809,7 @@ void BufferOfCooccurrences::CalculateTFStatistics() {
   // Calculate statistics of occurrence (of first token which is associated with current cell)
   int64_t n_u = 0;
   for (unsigned i = 0; i < cell_.records.size(); ++i) {
-    if (config_.use_symetric_cooc() && cell_.first_token_id != cell_.records[i].second_token_id) {
+    if (config_.store_symetric_cooc_values() && cell_.first_token_id != cell_.records[i].second_token_id) {
       num_of_pairs_token_occurred_in_[cell_.records[i].second_token_id] += cell_.records[i].cooc_tf;
     }  // pairs <u u> have double weight so in symetric case they should be taken once
     n_u += cell_.records[i].cooc_tf;
