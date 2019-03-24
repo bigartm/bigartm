@@ -271,7 +271,7 @@ struct artm_options {
   int cooc_window;
   int cooc_min_df;
   int cooc_min_tf;
-  bool store_symetric_cooc_values;
+  bool store_symmetric_cooc_values;
 
   // Model
   std::string load_model;
@@ -1143,7 +1143,7 @@ class BatchVectorizer {
         collection_parser_config.set_cooc_window_width(options_.cooc_window);
         collection_parser_config.set_cooc_min_tf(options_.cooc_min_tf);
         collection_parser_config.set_cooc_min_df(options_.cooc_min_df);
-        collection_parser_config.set_store_symetric_cooc_values(options_.store_symetric_cooc_values);
+        collection_parser_config.set_store_symmetric_cooc_values(options_.store_symmetric_cooc_values);
 
         // If user specifies specific modalities "use_modality", pass it to collection parser to limit set of modalities available in batches
         std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options_.use_modality);
@@ -1770,7 +1770,7 @@ int main(int argc, char * argv[]) {
       ("cooc-window", po::value(&options.cooc_window)->default_value(5), "number of tokens around specific token, which are used in calculation of cooccurrences")
       ("dictionary-min-df", po::value(&options.dictionary_min_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary-max-df", po::value(&options.dictionary_max_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
-      ("store-symetric-cooc", po::bool_switch(&options.store_symetric_cooc_values)->default_value(false), "to not write repeating pairs in co-occurrence dictionary, like if the pair (token_a, token_b) is written, to not write the pair (token_b, token_a)")
+      ("store-symmetric-cooc", po::bool_switch(&options.store_symmetric_cooc_values)->default_value(false), "to not write repeating pairs in co-occurrence dictionary, like if the pair (token_a, token_b) is written, to not write the pair (token_b, token_a)")
       ("dictionary-size", po::value(&options.dictionary_size)->default_value(0), "limit dictionary size by filtering out tokens with high document frequency")
       ("use-dictionary", po::value(&options.use_dictionary)->default_value(""), "filename of binary dictionary file to use")
     ;
