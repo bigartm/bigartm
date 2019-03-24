@@ -503,6 +503,7 @@ message CollectionParserConfig {
   optional int32 cooc_window_width = 17 [default = 10];
   optional int32 cooc_min_tf = 18 [default = 1];
   optional int32 cooc_min_df = 19 [default = 1];
+  optional bool store_symetric_cooc_values = 20 [default = false];
 }
 
 // Misc statistics produced by collection parser
@@ -519,7 +520,7 @@ message CooccurrenceCollectorConfig {
   optional bool gather_cooc = 1;
   optional bool gather_cooc_tf = 2;
   optional bool gather_cooc_df = 3;
-  optional bool use_symetric_cooc = 4;
+  optional bool store_symetric_cooc_values = 4;
   optional bool calculate_ppmi_tf = 5;
   optional bool calculate_ppmi_df = 6;
   optional string vw_file_path = 7;
