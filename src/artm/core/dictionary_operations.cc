@@ -421,7 +421,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
                                                     strs[pos_of_first_token][0] == '|'); ++pos_of_first_token) {
           if (!strs[pos_of_first_token].empty()) {
             first_token_class_id = strs[pos_of_first_token];
-            first_token_class_id.erase(0);
+            first_token_class_id.erase(0, 1);
           }
         }
         if (pos_of_first_token >= strs.size()) {
@@ -443,7 +443,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
                                                           ++not_a_word_counter) {
             if (!strs[i + not_a_word_counter].empty()) {
               second_token_class_id = strs[i + not_a_word_counter];
-              second_token_class_id.erase(0);
+              second_token_class_id.erase(0, 1);
             }
           }
           if (i + not_a_word_counter + 1 >= strs.size()) {
