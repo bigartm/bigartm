@@ -10,7 +10,7 @@ ARTM_STILL_WORKING = -1
 # TODO: add docstrings
 
 
-class ArtmException(BaseException):
+class ArtmException(Exception):
     pass
 
 
