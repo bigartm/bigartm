@@ -162,8 +162,6 @@ class Dictionary(object):
         :Description: filters the BigARTM dictionary of the collection, which\
                       was already loaded into the lib
 
-        :param str dictionary_name: name of the dictionary in the lib to filter
-        :param str dictionary_target_name: name for the new filtered dictionary in the lib
         :param str class_id: class_id to filter
         :param float min_df: min df value to pass the filter
         :param float max_df: max df value to pass the filter
