@@ -14,7 +14,9 @@ from six.moves import zip
 from google import protobuf
 
 from . import utils
+from . import messages
 from .exceptions import ARTM_EXCEPTION_BY_CODE
+from .spec import ARTM_API
 from .spec import ARTM_API
 
 
@@ -30,6 +32,12 @@ class LibArtm(object):
 
         if logging_config is not None:
             self.ArtmConfigureLogging(logging_config)
+        else:
+            lc = messages.ConfigureLoggingArgs()
+            lc.minloglevel = 3
+            self.ArtmConfigureLogging(lc)
+
+
 
     def __deepcopy__(self, memo):
         return self
