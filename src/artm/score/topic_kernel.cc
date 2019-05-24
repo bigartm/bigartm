@@ -9,6 +9,7 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/phi_matrix_operations.h"
 #include "artm/core/protobuf_helpers.h"
+#include "artm/core/token.h"
 
 #include "artm/score/topic_kernel.h"
 
@@ -74,10 +75,12 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
 
   const auto& n_wt = GetPhiMatrix(instance_->config()->nwt_name());
   auto normalizers = artm::core::PhiMatrixOperations::FindNormalizers(*n_wt);
+
   auto norm_iter = normalizers.find(class_id);
   if (norm_iter == normalizers.end()) {
     BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(
-        "TopicKernelScoreConfig.class_id " + class_id + " does not exists in n_wt matrix"));
+        "TopicKernelScoreConfig.class_id " + class_id +
+        " does not exists in n_wt matrix"));
   }
 
   const auto& n_t = norm_iter->second;
@@ -85,7 +88,8 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
       topic_size, std::vector<core::Token>());
 
   for (int token_index = 0; token_index < token_size; ++token_index) {
-    if (p_wt.token(token_index).class_id == class_id) {
+    const auto& token = p_wt.token(token_index);
+    if (token.class_id == class_id) {
       float p_w = 0.0;
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
         if (topics_to_score[topic_index]) {

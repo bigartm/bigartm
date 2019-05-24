@@ -127,18 +127,19 @@ class BinaryDistribution(Distribution):
     """
     def has_ext_modules(self):
         return True
-        
+
     def is_pure(self):
         return False
 
 
 setup_kwargs = dict(
     name='bigartm',
-    version='0.8.3',
+    version='0.10.0',
     packages=find_packages(),
     install_requires=[
         'pandas',
-        'numpy'
+        'numpy',
+        'packaging',
     ],
     # this option must solve problem with installing
     # numpy as dependency during `setup.py install` execution

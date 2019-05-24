@@ -36,7 +36,7 @@ class ScoreManager : boost::noncopyable {
  private:
   Instance* instance_;
   mutable boost::mutex lock_;
-  std::map<ScoreName, std::shared_ptr<Score>> score_map_;
+  std::unordered_map<ScoreName, std::shared_ptr<Score>> score_map_;
 };
 
 // ScoreTracker class stores historical data for each score

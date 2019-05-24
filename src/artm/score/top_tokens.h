@@ -11,6 +11,7 @@
    - topic_name (names of topics from which top tokens need to be extracted)
    - cooccurrence_dictionary_name (dictionary with information about
      pairwise tokens cooccurrence, strongly required)
+   - transaction_typename (transaction typename to score, empty -> DefaultTransactionTypeName)
    - class_id (class_id to use, empty == DefaultClass)
 
 */

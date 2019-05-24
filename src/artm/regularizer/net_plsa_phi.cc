@@ -5,6 +5,8 @@
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/phi_matrix.h"
 #include "artm/core/phi_matrix_operations.h"
+#include "artm/core/token.h"
+
 #include "artm/regularizer/net_plsa_phi.h"
 
 namespace artm {
@@ -13,6 +15,11 @@ namespace regularizer {
 bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                const ::artm::core::PhiMatrix& n_wt,
                                ::artm::core::PhiMatrix* result) {
+  if (!::artm::core::PhiMatrixOperations::HasEqualShape(p_wt, n_wt)) {
+    LOG(ERROR) << "NetPlsaPhi does not support changes in p_wt and n_wt matrix. Cancel it's launch.";
+    return false;
+  }
+
   // read the parameters from config and control their correctness
   const int topic_size = p_wt.topic_size();
 
@@ -116,8 +123,10 @@ void NetPlsaPhi::UpdateNetInfo(const NetPlsaPhiConfig& config) {
   int num_edges = config.first_vertex_index_size();
   if (num_edges) {
     if (num_edges != config.second_vertex_index_size() || num_edges != config.edge_weight_size()) {
-      BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(
-          "Both vertex indices and value arrays should have the same length"));
+      std::stringstream ss;
+      ss << "Both vertex indices and value arrays should have the same length " << num_edges << ", now: "
+         << config.second_vertex_index_size() << " and " << config.edge_weight_size();
+      BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(ss.str()));
     }
 
     for (int i = 0; i < num_edges; ++i) {

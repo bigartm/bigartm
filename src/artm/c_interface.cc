@@ -125,6 +125,7 @@ static void EnableLogging(artm::ConfigureLoggingArgs* args) {
 
     logging_enabled = true;
     LOG(INFO) << "Logging enabled to " << log_dir.c_str();
+    LOG(INFO) << "BigARTM version: v" << ArtmGetVersion();
   }
 }
 
@@ -266,6 +267,8 @@ int64_t ArtmCreateMasterModel(int64_t length, const char* master_model_config) {
     artm::MasterModelConfig config;
     ParseFromArray(master_model_config, length, &config);
     ::artm::core::FixAndValidateMessage(&config, /* throw_error =*/ true);
+    std::string description = ::artm::core::DescribeMessage(config);
+    LOG_IF(INFO, !description.empty()) << "Pass " << description << " to ArtmCreateMasterModel";
     auto& mcm = MasterComponentManager::singleton();
     int retval = mcm.Store(std::make_shared< ::artm::core::MasterComponent>(config));
     LOG(INFO) << "Creating MasterModel (id=" << retval << ")...";
@@ -286,7 +289,7 @@ int64_t ArtmAsyncProcessBatches(int master_id, int64_t length, const char* proce
     master->AsyncRequestProcessBatches(args, batch_manager.get());
     int retval = AsyncProcessBatchesManager::singleton().Store(batch_manager);
 
-    LOG(INFO) << "Creating async operation (id=" << retval << ")...";
+    LOG(INFO) << "Creating asynchronous operation (id=" << retval << ")...";
     return retval;
   } CATCH_EXCEPTIONS;
 }

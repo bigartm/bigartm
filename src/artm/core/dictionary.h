@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 #include "artm/core/common.h"
@@ -66,9 +67,9 @@ class Dictionary {
 
   void SetNumItems(int num_items) { num_items_in_collection_ = num_items; }
 
+  // SECTION OF GETTERS
   bool HasToken(const Token& token) const { return token_index_.find(token) != token_index_.end(); }
 
-  // SECTION OF GETTERS
   // general method to return all cooc tokens with their values for given token
   const std::unordered_map<int, float>* token_cooc_values(const Token& token) const;
   const std::unordered_map<int, float>* token_cooc_tfs(const Token& token) const;

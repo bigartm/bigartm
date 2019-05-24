@@ -2,7 +2,10 @@
 
 #pragma once
 
+#include <set>
 #include <string>
+#include <vector>
+#include<unordered_set>
 
 #include "boost/lexical_cast.hpp"
 #include "boost/uuid/uuid_io.hpp"
@@ -12,6 +15,7 @@
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/token.h"
+#include "artm/core/transaction_type.h"
 #include "artm/core/protobuf_serialization.h"
 
 namespace artm {
@@ -150,6 +154,24 @@ inline std::string DescribeErrors(const ::artm::ThetaMatrix& message) {
   return ss.str();
 }
 
+inline std::string DescribeErrors(const ::artm::Item& message) {
+  std::stringstream ss;
+  std::string id = "NO_ID";
+  id = message.has_id() ? std::to_string(message.id()) : id;
+  id = message.has_title() ? message.title() : id;
+
+  if (message.token_id_size() == 0 && message.token_weight_size() > 0) {
+    ss << "Item " << id << " has empty token_id with non-empty token_weight\n";
+  }
+
+  if (message.transaction_start_index_size() != message.transaction_typename_id_size() + 1) {
+    ss << "Item " << id << " has incocnsistent transaction_start_index_size ("
+       << message.transaction_start_index_size() << ") and transaction_typename_id_size + 1 ("
+       << message.transaction_typename_id_size() + 1 << ")\n";
+  }
+  return ss.str();
+}
+
 inline std::string DescribeErrors(const ::artm::Batch& message) {
   std::stringstream ss;
   if (message.has_id()) {
@@ -166,8 +188,8 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
   }
 
   const bool has_tokens = (message.token_size() > 0);
-  if (!has_tokens && (message.class_id_size() > 0)) {
-    ss << "Empty Batch.token require that Batch.class_id must also be empty, batch.id = " << message.id();
+  if (!has_tokens) {
+    ss << "Empty Batch.token is no longer supported, batch.id = " << message.id();
     return ss.str();
   }
 
@@ -177,26 +199,7 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
   }
 
   for (int item_id = 0; item_id < message.item_size(); ++item_id) {
-    for (const auto& field : message.item(item_id).field()) {
-      if (field.token_count_size() != 0) {
-        ss << "Field.token_count field is deprecated. Use Field.token_weight instead; ";
-        break;
-      }
-
-      if (field.token_weight_size() != field.token_id_size()) {
-        ss << "Length mismatch in field Batch.item(" << item_id << ").token_weight and token_id; ";
-        break;
-      }
-
-      for (int token_index = 0; token_index < field.token_id_size(); token_index++) {
-        int token_id = field.token_id(token_index);
-        if ((token_id < 0) || (has_tokens && (token_id >= message.token_size()))) {
-          ss << "Value " << token_id << " in Batch.Item(" << item_id
-             << ").token_id is negative or exceeds Batch.token_size";
-          return ss.str();
-        }
-      }
-    }
+    ss << DescribeErrors(message.item(item_id));
   }
 
   return ss.str();
@@ -546,6 +549,12 @@ inline void FixMessage(::artm::RegularizerConfig* message) {
       BOOST_THROW_EXCEPTION(InternalError("Given RegularizerType is not supported for json serialization"));
     }
   }
+
+  if (message->has_gamma() && (message->gamma() < 0) || (message->gamma() > 1)) {
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      "Regularization parameter 'gamma' must be between 0 and 1. "
+      "Refer to documentation for more details. "));
+  }
 }
 
 template<>
@@ -650,6 +659,22 @@ inline void FixMessage(::artm::Batch* message) {
       item.set_title(boost::lexical_cast<std::string>(item.id()));
     }
   }
+
+  // old-style batch should be filled with transaction info
+  if (message->transaction_typename_size() == 0 && message->item_size() > 0) {
+    message->add_transaction_typename(DefaultTransactionTypeName);
+
+    for (auto& item : *message->mutable_item()) {
+      item.clear_transaction_start_index();
+      item.clear_transaction_typename_id();
+
+      for (int i = 0; i < item.token_id_size(); ++i) {
+        item.add_transaction_start_index(i);
+        item.add_transaction_typename_id(0);
+      }
+      item.add_transaction_start_index(item.token_id_size());
+    }
+  }
 }
 
 template<>
@@ -693,6 +718,12 @@ inline void FixMessage(::artm::ProcessBatchesArgs* message) {
       message->add_class_weight(1.0f);
     }
   }
+
+  if (message->transaction_weight_size() == 0) {
+    for (int i = 0; i < message->transaction_typename_size(); ++i) {
+      message->add_transaction_weight(1.0f);
+    }
+  }
 }
 
 template<>
@@ -707,6 +738,12 @@ inline void FixMessage(::artm::MasterModelConfig* message) {
   if (message->class_weight_size() == 0) {
     for (int i = 0; i < message->class_id_size(); ++i) {
       message->add_class_weight(1.0f);
+    }
+  }
+
+  if (message->transaction_weight_size() == 0) {
+    for (int i = 0; i < message->transaction_typename_size(); ++i) {
+      message->add_transaction_weight(1.0f);
     }
   }
 
@@ -834,6 +871,7 @@ inline std::string DescribeMessage(const ::artm::InitializeModelArgs& message) {
     ss << ", dictionary_name=" << message.dictionary_name();
   }
   ss << ", topic_name_size=" << message.topic_name_size();
+  ss << ", seed=" << message.seed();
   return ss.str();
 }
 
@@ -902,12 +940,14 @@ inline std::string DescribeMessage(const ::artm::ProcessBatchesArgs& message) {
   for (int i = 0; i < message.regularizer_name_size(); ++i) {
     ss << ", regularizer=(name:" << message.regularizer_name(i) << ", tau:" << message.regularizer_tau(i) << ")";
   }
-  for (int i = 0; i < message.class_id_size(); ++i) {
-    ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
-  }
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
   ss << ", predict_class_id=" << (message.predict_class_id());
+  for (int i = 0; i < message.transaction_typename_size(); ++i) {
+    ss << ", transaction_typename=(" << message.transaction_typename(i)
+       << ":" << message.transaction_weight(i) << ")";
+  }
+  ss << ", reset_nwt=" << (message.reset_nwt() ? "yes" : "no");
   return ss.str();
 }
 
@@ -951,9 +991,6 @@ inline std::string DescribeMessage(const ::artm::MasterModelConfig& message) {
   std::stringstream ss;
   ss << "MasterModelConfig";
   ss << ": topic_name_size=" << message.topic_name_size();
-  for (int i = 0; i < message.class_id_size(); ++i) {
-    ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
-  }
   ss << ", score_config_size=" << message.score_config_size();
   ss << ", num_processors=" << message.num_processors();
   ss << ", pwt_name=" << message.pwt_name();
@@ -967,7 +1004,15 @@ inline std::string DescribeMessage(const ::artm::MasterModelConfig& message) {
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
   ss << ", cache_theta=" << (message.cache_theta() ? "yes" : "no");
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
-  ss << ", disk_cache_path" << message.disk_cache_path();
+  ss << ", disk_cache_path=" << message.disk_cache_path();
+  for (int i = 0; i < message.transaction_typename_size(); ++i) {
+    ss << ", transaction_type=(" << message.transaction_typename(i)
+      << ":" << message.transaction_weight(i) << ")";
+  }
+  if (message.has_parent_master_model_id()) {
+    ss << ", parent_master_model_id=" << message.parent_master_model_id();
+    ss << ", parent_master_model_weight=" << message.parent_master_model_weight();
+  }
 
   return ss.str();
 }
@@ -979,6 +1024,7 @@ inline std::string DescribeMessage(const ::artm::FitOfflineMasterModelArgs& mess
   ss << ", batch_filename_size=" << message.batch_filename_size();
   ss << ", batch_weight_size=" << message.batch_weight_size();
   ss << ", num_collection_passes=" << message.num_collection_passes();
+  ss << ", reset_nwt=" << (message.reset_nwt() ? "yes" : "no");
   return ss.str();
 }
 
@@ -998,7 +1044,7 @@ inline std::string DescribeMessage(const ::artm::FitOnlineMasterModelArgs& messa
     ss << message.decay_weight(i);
   }
   ss << ")";
-  ss << ", async=" << (message.async() ? "yes" : "no");
+  ss << ", asynchronous=" << (message.asynchronous() ? "yes" : "no");
   return ss.str();
 }
 
@@ -1009,7 +1055,7 @@ inline std::string DescribeMessage(const ::artm::TransformMasterModelArgs& messa
   ss << ", batch_filename_size=" << message.batch_filename_size();
   ss << ", batch_size=" << message.batch_size();
   ss << ", theta_matrix_type=" << message.theta_matrix_type();
-  ss << ", predict_class_id=" << message.predict_class_id();
+  ss << ", predict_class_id=" << (message.predict_class_id());
   return ss.str();
 }
 

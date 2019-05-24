@@ -107,7 +107,7 @@ class MasterComponent : boost::noncopyable {
   MasterComponent& operator=(const MasterComponent&);
 
   void RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
-                                 BatchManager* batch_manager, bool async,
+                                 BatchManager* batch_manager, bool asynchronous,
                                  ScoreManager* score_manager,
                                  ::artm::ThetaMatrix* theta_matrix);
 

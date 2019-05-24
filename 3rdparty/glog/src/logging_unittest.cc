@@ -61,6 +61,7 @@ DECLARE_string(log_backtrace_at);  // logging.cc
 
 #ifdef HAVE_LIB_GFLAGS
 #include <gflags/gflags.h>
+using namespace GFLAGS_NAMESPACE;
 #endif
 
 #ifdef HAVE_LIB_GMOCK
@@ -627,14 +628,15 @@ static void GetFiles(const string& pattern, vector<string>* files) {
     LOG(FATAL) << "No directory separator.";
   }
   const string dirname = pattern.substr(0, index + 1);
-  if (FAILED(handle)) {
+  if (handle == INVALID_HANDLE_VALUE) {
     // Finding no files is OK.
     return;
   }
   do {
     files->push_back(dirname + data.cFileName);
   } while (FindNextFileA(handle, &data));
-  LOG_SYSRESULT(FindClose(handle));
+  BOOL result = FindClose(handle);
+  LOG_SYSRESULT(result);
 #else
 # error There is no way to do glob.
 #endif
@@ -1058,8 +1060,9 @@ TEST(Strerror, logging) {
   CHECK_STREQ(buf, "");
   CHECK_EQ(posix_strerror_r(errcode, buf, buf_size), 0);
   CHECK_STREQ(buf, msg);
-  free(msg);
   delete[] buf;
+  CHECK_EQ(msg, StrError(errcode));
+  free(msg);
 }
 
 // Simple routines to look at the sizes of generated code for LOG(FATAL) and

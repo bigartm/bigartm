@@ -41,14 +41,9 @@
 #endif
 #include <fcntl.h>                 // for open()
 #include <time.h>
-#include <glog-config.h>
-#if _WIN32
-# include "windows/glog/logging.h"
-# include "windows/glog/raw_logging.h"
-#else
-# include "glog/logging.h"
-# include "glog/raw_logging.h"
-#endif
+#include "config.h"
+#include "glog/logging.h"          // To pick up flag settings etc.
+#include "glog/raw_logging.h"
 #include "base/commandlineflags.h"
 
 #ifdef HAVE_STACKTRACE

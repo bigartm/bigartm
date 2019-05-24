@@ -10,13 +10,14 @@
    The parameters of the regularizer:
    - topic_names (the names of topics to regularize, empty == all)
    - class_id (class id to regularize, required)
+   - transaction_typename (transaction typename to regularize,
+                           if empty -> == DefaultTransactionTypeName)
    - mode (by rows or by columns, default == by colmns (e.g. toppics))
    - max_elements_count (the number of most probable elements to be saved
      in each row/column, other should be set to zero)
    - probability_threshold (if the sum of values of n elements,
      n < max_elements_count, have already reached this value, than stop
      and zero all others in this row/column)
-
 */
 
 #pragma once

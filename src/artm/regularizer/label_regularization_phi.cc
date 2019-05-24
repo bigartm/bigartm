@@ -37,24 +37,19 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   if (config_.has_dictionary_name()) {
     dictionary_ptr = dictionary(config_.dictionary_name());
   }
-  bool has_dictionary = dictionary_ptr != nullptr;
 
   // proceed the regularization
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    const auto& token = n_wt.token(token_id);
-
-    float coefficient = 1.0f;
-    if (has_dictionary) {
-      if (use_all_classes ||
-          core::is_member(token.class_id, config_.class_id())) {
-        auto entry_ptr = dictionary_ptr->entry(token);
-        // don't process tokens without value in the dictionary
-        coefficient = entry_ptr != nullptr ? entry_ptr->token_value() : 0.0f;
-      }
-    }
-
+    const auto& token = p_wt.token(token_id);
     if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) {
       continue;
+    }
+
+    float coefficient = 1.0f;
+    if (dictionary_ptr != nullptr) {
+      auto entry_ptr = dictionary_ptr->entry(token);
+      // don't process tokens without value in the dictionary
+      coefficient = entry_ptr != nullptr ? entry_ptr->token_value() : 0.0f;
     }
 
     // count sum of weights

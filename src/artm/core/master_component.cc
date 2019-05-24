@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <fstream>  // NOLINT
 #include <vector>
-#include <set>
+#include <unordered_set>
 #include <sstream>
 #include <utility>
 
@@ -14,6 +14,8 @@
 #include "boost/thread.hpp"
 #include "boost/uuid/uuid_io.hpp"
 #include "boost/uuid/uuid_generators.hpp"
+#include "boost/uuid/random_generator.hpp"
+#include "boost/lexical_cast.hpp"
 
 #include "glog/logging.h"
 
@@ -25,6 +27,7 @@
 #include "artm/core/helpers.h"
 #include "artm/core/batch_manager.h"
 #include "artm/core/cache_manager.h"
+#include "artm/core/call_on_destruction.h"
 #include "artm/core/check_messages.h"
 #include "artm/core/instance.h"
 #include "artm/core/processor.h"
@@ -33,6 +36,8 @@
 #include "artm/core/score_manager.h"
 #include "artm/core/dense_phi_matrix.h"
 #include "artm/core/template_manager.h"
+
+typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::MasterComponent>> MasterComponentManager;
 
 namespace artm {
 namespace core {
@@ -272,6 +277,7 @@ void MasterComponent::DisposeRegularizer(const std::string& name) {
 void MasterComponent::AddDictionary(std::shared_ptr<Dictionary> dictionary) {
   DisposeDictionary(dictionary->name());
   instance_->dictionaries()->set(dictionary->name(), dictionary);
+  DictionaryOperations::WriteDictionarySummaryToLog(*dictionary);
 }
 
 void MasterComponent::CreateDictionary(const DictionaryData& data) {
@@ -323,8 +329,34 @@ void MasterComponent::Request(const GetDictionaryArgs& args, DictionaryData* res
 }
 
 void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
+  if (config == nullptr) {
+    BOOST_THROW_EXCEPTION(InvalidOperation("Invalid master_id"));
+  }
+
   for (int i = 0; i < args.batch_size(); ++i) {
     std::shared_ptr<Batch> batch = std::make_shared<Batch>(args.batch(i));
+    if ((batch->description() == ::artm::core::kParentPhiMatrixBatch) && (batch->item_size() == 0)) {
+      LOG(INFO) << "Retrieving batch (id=" << batch->id()
+                << ") from parent master model (id = " << config->parent_master_model_id() << ")";
+      auto parent_master = MasterComponentManager::singleton().Get(config->parent_master_model_id());
+      if (parent_master == nullptr || parent_master->config() == nullptr) {
+        BOOST_THROW_EXCEPTION(InvalidOperation(
+          "Unable to access parent master component with given id "
+          "(MasterComponentConfig.parent_master_model_id)"));
+      }
+
+      // Get nwt matrix from parent master component
+      ::artm::GetTopicModelArgs get_topic_model_args;
+      get_topic_model_args.mutable_class_id()->CopyFrom(config->class_id());
+      get_topic_model_args.set_matrix_layout(MatrixLayout_Sparse);
+      get_topic_model_args.set_model_name(parent_master->config()->nwt_name());
+      FixMessage(&get_topic_model_args);
+      ::artm::TopicModel topic_model;
+      parent_master->Request(get_topic_model_args, &topic_model);
+
+      PhiMatrixOperations::ConvertTopicModelToPseudoBatch(&topic_model, batch.get());
+    }
     FixAndValidateMessage(batch.get(), /* throw_error =*/ true);
     instance_->batches()->set(batch->id(), batch);
   }
@@ -371,6 +403,7 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
 
   const char version = 0;
   fout << version;
+
   for (int token_id = 0; token_id < token_size; ++token_id) {
     Token token = n_wt.token(token_id);
     get_topic_model_args.add_token(token.keyword);
@@ -380,6 +413,9 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
       ::artm::TopicModel external_topic_model;
       PhiMatrixOperations::RetrieveExternalTopicModel(n_wt, get_topic_model_args, &external_topic_model);
       std::string str = external_topic_model.SerializeAsString();
+      if (str.size() >= kProtobufCodedStreamTotalBytesLimit) {
+        BOOST_THROW_EXCEPTION(InvalidOperation("TopicModel is too large to export"));
+      }
       fout << str.size();
       fout << str;
       get_topic_model_args.clear_class_id();
@@ -415,7 +451,7 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
     BOOST_THROW_EXCEPTION(DiskReadException(ss.str()));
   }
 
-  std::shared_ptr<DensePhiMatrix> target;
+  std::shared_ptr<DensePhiMatrix> target = nullptr;
   while (!fin.eof()) {
     int length;
     fin >> length;
@@ -437,10 +473,7 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
     }
 
     topic_model.set_name(args.model_name());
-
-    if (target == nullptr) {
-      target = std::make_shared<DensePhiMatrix>(args.model_name(), topic_model.topic_name());
-    }
+    target = std::make_shared<DensePhiMatrix>(args.model_name(), topic_model.topic_name());
 
     PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, /* add_missing_tokens = */ true, target.get());
   }
@@ -474,6 +507,9 @@ void MasterComponent::ExportScoreTracker(const ExportScoreTrackerArgs& args) {
   // We expect here that each ScoreData object has suitable size (< 2GB)
   for (auto& item : instance_->score_tracker()->GetDataUnsafe()) {
     auto str = item->SerializeAsString();
+    if (str.size() >= kProtobufCodedStreamTotalBytesLimit) {
+      BOOST_THROW_EXCEPTION(InvalidOperation("ScoreTracker is too large to export"));
+    }
     fout << str.size();
     fout << str;
   }
@@ -554,6 +590,12 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
       mutable_args->mutable_topic_name()->CopyFrom(config->topic_name());
     }
     FixMessage(mutable_args);
+
+    if (config->has_parent_master_model_id() && (!args.has_seed() || args.seed() == -1)) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "InitializeModelArgs.seed must be specified for hARTM. "
+        "This error happens because MasterModelConfig.parent_master_model_id is specified."));
+    }
   }
 
   std::shared_ptr<PhiMatrix> new_ttm;
@@ -575,6 +617,7 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
     new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), args.topic_name());
     for (int index = 0; index < (int64_t) dict->size(); ++index) {
       ::artm::core::Token token = dict->entry(index)->token();
+
       if (config->class_id_size() > 0 && !is_member(token.class_id, config->class_id())) {
         continue;
       }
@@ -627,6 +670,7 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
   if (src_dictionary_ptr == nullptr) {
     LOG(ERROR) << "Dictionary::Filter(): filter was requested for non-exists dictionary '"
                << args.dictionary_name() << "', operation was aborted";
+    return;
   }
 
   AddDictionary(DictionaryOperations::Filter(args, *src_dictionary_ptr));
@@ -683,7 +727,7 @@ void MasterComponent::Request(const GetMasterComponentInfoArgs& /*args*/, Master
 
 void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result) {
   BatchManager batch_manager;
-  RequestProcessBatchesImpl(args, &batch_manager, /* async =*/ false, nullptr, result->mutable_theta_matrix());
+  RequestProcessBatchesImpl(args, &batch_manager, /* asynchronous =*/ false, nullptr, result->mutable_theta_matrix());
   instance_->score_manager()->RequestAllScores(result->mutable_score_data());
 }
 
@@ -706,12 +750,12 @@ void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResu
 
 void MasterComponent::AsyncRequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                                                  BatchManager *batch_manager) {
-  RequestProcessBatchesImpl(process_batches_args, batch_manager, /* async =*/ true,
+  RequestProcessBatchesImpl(process_batches_args, batch_manager, /* asynchronous =*/ true,
                             /*score_manager=*/ nullptr, /* theta_matrix=*/ nullptr);
 }
 
 void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
-                                                BatchManager* batch_manager, bool async,
+                                                BatchManager* batch_manager, bool asynchronous,
                                                 ScoreManager* score_manager,
                                                 ::artm::ThetaMatrix* theta_matrix) {
   const ProcessBatchesArgs& args = process_batches_args;  // short notation
@@ -719,7 +763,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
   if (instance_->processor_size() <= 0) {
     BOOST_THROW_EXCEPTION(InvalidOperation(
-        "Can't process batches because there are no processors. Check  MasterModelConfig.num_processors setting."));
+        "Can't process batches because there are no processors. Check MasterModelConfig.num_processors setting."));
   }
 
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(model_name);
@@ -731,17 +775,26 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
           "ProcessBatchesArgs.pwt_source_name == ProcessBatchesArgs.nwt_target_name"));
     }
 
-    auto nwt_target(std::make_shared<DensePhiMatrix>(args.nwt_target_name(), p_wt.topic_name()));
-    nwt_target->Reshape(p_wt);
-    instance_->SetPhiMatrix(args.nwt_target_name(), nwt_target);
+    // If nwt_target_name already exists, assign all its elements to zero.
+    // Otherwise, create new n_wt matrix of the same shape as p_wt matrix.
+    auto current_nwt_target = instance_->GetPhiMatrix(args.nwt_target_name());
+    if (current_nwt_target != nullptr) {
+      if (process_batches_args.reset_nwt()) {
+        PhiMatrixOperations::AssignValue(0.0f, const_cast<::artm::core::PhiMatrix*>(current_nwt_target.get()));
+      }
+    } else {
+      auto nwt_target(std::make_shared<DensePhiMatrix>(args.nwt_target_name(), p_wt.topic_name()));
+      nwt_target->Reshape(p_wt);
+      instance_->SetPhiMatrix(args.nwt_target_name(), nwt_target);
+    }
   }
 
-  if (async && args.theta_matrix_type() != ThetaMatrixType_None) {
+  if (asynchronous && args.theta_matrix_type() != ThetaMatrixType_None) {
     BOOST_THROW_EXCEPTION(InvalidOperation(
         "ArtmAsyncProcessBatches require ProcessBatchesArgs.theta_matrix_type to be set to None"));
   }
 
-  // The code below must not use cache_manger in async mode.
+  // The code below must not use cache_manger in asynchronous mode.
   // Since cache_manager lives on stack it will be destroyed once we return from this function.
   // Therefore, no pointers to cache_manager should exist upon return from RequestProcessBatchesImpl.
   CacheManager cache_manager("", nullptr);
@@ -815,7 +868,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     instance_->processor_queue()->push(pi);
   }
 
-  if (async) {
+  if (asynchronous) {
     return;
   }
 
@@ -1065,6 +1118,10 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
 
   process_batches_args.mutable_class_id()->CopyFrom(config->class_id());
   process_batches_args.mutable_class_weight()->CopyFrom(config->class_weight());
+
+  process_batches_args.mutable_transaction_typename()->CopyFrom(config->transaction_typename());
+  process_batches_args.mutable_transaction_weight()->CopyFrom(config->transaction_weight());
+
   process_batches_args.set_theta_matrix_type(args.theta_matrix_type());
   if (args.has_predict_class_id()) {
     process_batches_args.set_predict_class_id(args.predict_class_id());
@@ -1074,7 +1131,7 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
 
   BatchManager batch_manager;
   RequestProcessBatchesImpl(process_batches_args, &batch_manager,
-                            /* async =*/ false, /*score_manager =*/ nullptr, result);
+                            /* asynchronous =*/ false, /*score_manager =*/ nullptr, result);
   ValidateProcessedItems("Transform", this);
 }
 
@@ -1208,6 +1265,9 @@ class ArtmExecutor {
     process_batches_args_.mutable_class_id()->CopyFrom(master_model_config.class_id());
     process_batches_args_.mutable_class_weight()->CopyFrom(master_model_config.class_weight());
 
+    process_batches_args_.mutable_transaction_typename()->CopyFrom(master_model_config.transaction_typename());
+    process_batches_args_.mutable_transaction_weight()->CopyFrom(master_model_config.transaction_weight());
+
     for (const auto& regularizer : master_model_config.regularizer_config()) {
       process_batches_args_.add_regularizer_name(regularizer.name());
       process_batches_args_.add_regularizer_tau(regularizer.tau());
@@ -1321,6 +1381,10 @@ class ArtmExecutor {
     iter->reset();
   }
 
+  ProcessBatchesArgs* mutable_process_batches_args() {
+    return &process_batches_args_;
+  }
+
  private:
   const MasterModelConfig& master_model_config_;
   const std::string& pwt_name_;
@@ -1329,7 +1393,7 @@ class ArtmExecutor {
   MasterComponent* master_component_;
   ProcessBatchesArgs process_batches_args_;
   RegularizeModelArgs regularize_model_args_;
-  std::vector<std::shared_ptr<BatchManager>> async_;
+  std::vector<std::shared_ptr<BatchManager>> asynchronous_;
 
   void ProcessBatches(std::string pwt, std::string nwt, BatchesIterator* iter, ScoreManager* score_manager) {
     process_batches_args_.set_pwt_source_name(pwt);
@@ -1340,7 +1404,7 @@ class ArtmExecutor {
     LOG(INFO) << DescribeMessage(process_batches_args_);
     master_component_->RequestProcessBatchesImpl(process_batches_args_,
                                                  &batch_manager,
-                                                 /* async =*/ false,
+                                                 /* asynchronous =*/ false,
                                                  /* score_manager =*/ score_manager,
                                                  /* theta_matrix*/ nullptr);
     process_batches_args_.clear_batch_filename();
@@ -1352,12 +1416,12 @@ class ArtmExecutor {
     process_batches_args_.set_theta_matrix_type(ThetaMatrixType_None);
     iter->move(&process_batches_args_);
 
-    int operation_id = static_cast<int>(async_.size());
-    async_.push_back(std::make_shared<BatchManager>());
+    int operation_id = static_cast<int>(asynchronous_.size());
+    asynchronous_.push_back(std::make_shared<BatchManager>());
     LOG(INFO) << DescribeMessage(process_batches_args_);
     master_component_->RequestProcessBatchesImpl(process_batches_args_,
-                                                 async_.back().get(),
-                                                 /* async =*/ true,
+                                                 asynchronous_.back().get(),
+                                                 /* asynchronous =*/ true,
                                                  /* score_manager =*/ nullptr,
                                                  /* theta_matrix*/ nullptr);
     process_batches_args_.clear_batch_filename();
@@ -1365,7 +1429,7 @@ class ArtmExecutor {
   }
 
   void Await(int operation_id) {
-    while (!async_[operation_id]->IsEverythingProcessed()) {
+    while (!asynchronous_[operation_id]->IsEverythingProcessed()) {
       boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
     }
   }
@@ -1424,10 +1488,25 @@ void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
         "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
   }
 
+  if (config->has_parent_master_model_id()) {
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      "Can not use FitOnline for hARTM, use FitOffline instead. "
+      "This error happens because MasterModelConfig.parent_master_model_id is specified."));
+  }
+
+  auto pwt_matrix = instance_->GetPhiMatrix(config->pwt_name());
+  auto nwt_matrix = instance_->GetPhiMatrix(config->nwt_name());
+  if (pwt_matrix != nullptr && nwt_matrix != nullptr) {
+    if (!PhiMatrixOperations::HasEqualShape(*pwt_matrix, *nwt_matrix)) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "FitOnline does not support reshape of n_wt matrix. Use FitOffline instead."));
+    }
+  }
+
   ArtmExecutor artm_executor(*config, this);
   OnlineBatchesIterator iter(args.batch_filename(), args.batch_weight(), args.update_after(),
                              args.apply_weight(), args.decay_weight());
-  if (args.async()) {
+  if (args.asynchronous()) {
     artm_executor.ExecuteAsyncOnlineAlgorithm(&iter);
   } else {
     artm_executor.ExecuteOnlineAlgorithm(&iter);
@@ -1443,6 +1522,7 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
         "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
   }
 
+  FitOfflineMasterModelArgs* mutable_args = const_cast<FitOfflineMasterModelArgs*>(&args);
   if (args.batch_filename_size() == 0) {
     std::vector<std::string> batch_names;
     if (!args.has_batch_folder()) {
@@ -1462,15 +1542,43 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
       }
     }
 
-    FitOfflineMasterModelArgs* mutable_args = const_cast<FitOfflineMasterModelArgs*>(&args);
     for (const auto& batch_name : batch_names) {
       mutable_args->add_batch_filename(batch_name);
     }
     FixMessage(mutable_args);
   }
 
+  std::string pseudo_batch_id;
+  call_on_destruction c([&]() {  // NOLINT
+    DisposeBatch(pseudo_batch_id);
+  });
+
+  if (config->has_parent_master_model_id()) {
+    // Import pseudo-batch from parent master model
+    ImportBatchesArgs import_batches_args;
+    Batch* batch = import_batches_args.add_batch();
+    batch->set_description(::artm::core::kParentPhiMatrixBatch);
+    batch->set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
+    pseudo_batch_id = batch->id();
+    ImportBatches(import_batches_args);
+
+    // To make processing more efficient we insert pseudo-batch at the beginning of processing list,
+    // in case pseudo-batch is very big. Unfortunately protobuf messages do not have
+    // an operation "insert at the beginning", so we create a separate array and swap back to mutable_args.
+    FitOfflineMasterModelArgs args2;
+    args2.add_batch_filename(pseudo_batch_id);
+    args2.add_batch_weight(config->parent_master_model_weight());
+    for (int batch_index = 0; batch_index < args.batch_filename_size(); batch_index++) {
+      args2.add_batch_filename(args.batch_filename(batch_index));
+      args2.add_batch_weight(args.batch_weight(batch_index));
+    }
+    mutable_args->mutable_batch_filename()->Swap(args2.mutable_batch_filename());
+    mutable_args->mutable_batch_weight()->Swap(args2.mutable_batch_weight());
+  }
+
   ArtmExecutor artm_executor(*config, this);
   OfflineBatchesIterator iter(args.batch_filename(), args.batch_weight());
+  artm_executor.mutable_process_batches_args()->set_reset_nwt(args.reset_nwt());
   artm_executor.ExecuteOfflineAlgorithm(args.num_collection_passes(), &iter);
 
   ValidateProcessedItems("FitOffline", this);

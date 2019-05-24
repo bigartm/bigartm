@@ -46,3 +46,21 @@ And this one to achieve :math:`p(c|d)`:
 In this way you have got the predictions of the model in ``pandas.DataFrame``. Now you can score the quality of the predictions of your model in all ways, you need.
 
 Method allows you to extract dense od sparse matrix. Also you can use for :math:`p_{tdw}` matrix (see :doc:`ptdw`).
+
+* **Held-out perplexity calculation**
+
+To compute perplexity for held-out sample you should use the following code sample
+
+.. code-block:: python
+
+   # create score if you haven't do so yet
+   model.scores.add(artm.PerplexityScore(name='perplexity'))
+
+   # apply `transform` to process the held-out sample;
+   # don't create theta matrix to save memory
+   model.transform(batch_vectorizer=your_heldout_sample, theta_matrix_type=None)
+
+   # retrieve score with get_score(score_name)
+   perplexity = model.get_score('perplexity')
+
+If the code above looks like magic, remember important facts about scores implementation, described in the :doc:`regularizers_and_scores`

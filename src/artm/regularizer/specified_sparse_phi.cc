@@ -38,6 +38,8 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   const int global_end = mode_topics ? topic_size : token_size;
   const int local_end = !mode_topics ? topic_size : token_size;
 
+  const auto& class_id = config_.class_id();
+
   // proceed the regularization
   for (int global_index = 0; global_index < global_end; ++global_index) {
     if (mode_topics) {
@@ -45,7 +47,8 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
         continue;
       }
     } else {
-      if (n_wt.token(global_index).class_id != config_.class_id()) {
+      const auto& token = n_wt.token(global_index);
+      if (token.class_id != class_id) {
         continue;
       }
     }
@@ -59,7 +62,8 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
 
     for (int local_index = 0; local_index < local_end; ++local_index) {
       if (mode_topics) {
-        if (n_wt.token(local_index).class_id != config_.class_id()) {
+        const auto& token = n_wt.token(local_index);
+        if (token.class_id != class_id) {
           continue;
         }
       } else {

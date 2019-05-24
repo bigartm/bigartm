@@ -78,12 +78,8 @@
 # include "port.h"
 #endif
 
-#include <glog-config.h>
-#if _WIN32
-# include "windows/glog/logging.h"
-#else
-# include "glog/logging.h"
-#endif
+#include "config.h"
+#include "glog/logging.h"
 
 // There are three different ways we can try to get the stack trace:
 //

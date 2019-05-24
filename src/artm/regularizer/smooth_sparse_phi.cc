@@ -27,7 +27,6 @@ bool SmoothSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                     ::artm::core::PhiMatrix* result) {
   // read the parameters from config and control their correctness
   const int topic_size = p_wt.topic_size();
-  const int token_size = p_wt.token_size();
 
   std::vector<bool> topics_to_regularize;
   if (config_.topic_name().size() == 0) {
@@ -45,29 +44,36 @@ bool SmoothSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   if (config_.has_dictionary_name()) {
     dictionary_ptr = dictionary(config_.dictionary_name());
   }
-  bool has_dictionary = dictionary_ptr != nullptr;
 
   // proceed the regularization
-  for (int token_id = 0; token_id < token_size; ++token_id) {
+  for (int token_pwt_id = 0; token_pwt_id < p_wt.token_size(); ++token_pwt_id) {
     float coefficient = 1.0f;
-    const auto& token = p_wt.token(token_id);
-    if (has_dictionary) {
-      if (use_all_classes ||
-          core::is_member(token.class_id, config_.class_id())) {
-        auto entry_ptr = dictionary_ptr->entry(token);
-        // don't process tokens without value in the dictionary
-        coefficient = entry_ptr != nullptr ? entry_ptr->token_value() : 0.0f;
-      }
-    }
+    const auto& token = p_wt.token(token_pwt_id);
 
     if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) {
       continue;
     }
 
+    if (dictionary_ptr != nullptr) {
+      auto entry_ptr = dictionary_ptr->entry(token);
+
+      // don't process tokens without value in the dictionary
+      if (entry_ptr == nullptr) {
+        continue;
+      }
+
+      coefficient = entry_ptr->token_value();
+    }
+
+    int token_nwt_id = n_wt.token_index(token);
+    if (token_nwt_id == -1) {
+      continue;
+    }
+
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
-        float value = transform_function_->apply(p_wt.get(token_id, topic_id));
-        result->set(token_id, topic_id, coefficient * value);
+        float value = transform_function_->apply(p_wt.get(token_pwt_id, topic_id));
+        result->set(token_nwt_id, topic_id, coefficient * value);
       }
     }
   }

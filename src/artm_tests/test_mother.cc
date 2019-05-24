@@ -2,6 +2,7 @@
 
 #include "artm_tests/test_mother.h"
 
+#include <cstdlib>
 #include <vector>
 
 #include "gtest/gtest.h"
@@ -12,7 +13,10 @@
 namespace artm {
 namespace test {
 
-artm::Batch Helpers::GenerateBatch(int nTokens, int nDocs, std::string class1, std::string class2) {
+namespace fs = boost::filesystem;
+
+artm::Batch Helpers::GenerateBatch(int nTokens, int nDocs,
+                                   const std::string& class1, const std::string& class2) {
   artm::Batch batch;
   batch.set_id("11972762-6a23-4524-b089-7122816aff72");
   for (int i = 0; i < nTokens; i++) {
@@ -28,16 +32,18 @@ artm::Batch Helpers::GenerateBatch(int nTokens, int nDocs, std::string class1, s
     item->set_id(iDoc);
     for (int iToken = 0; iToken < nTokens; ++iToken) {
       item->add_token_id(iToken);
+      item->add_transaction_start_index(item->transaction_start_index_size());
       int background_count = (iToken > 40) ? (1 + rand() % 5) : 0;  // NOLINT
       int topical_count = ((iToken < 40) && ((iToken % 10) == (iDoc % 10))) ? 10 : 0;
       item->add_token_weight(static_cast<float>(background_count + topical_count));
     }
+    item->add_transaction_start_index(item->transaction_start_index_size());
   }
 
   return batch;
 }
 
-artm::DictionaryData Helpers::GenerateDictionary(int nTokens, std::string class1, std::string class2) {
+artm::DictionaryData Helpers::GenerateDictionary(int nTokens, const std::string& class1, const std::string& class2) {
   ::artm::DictionaryData dictionary_data;
   for (int i = 0; i < nTokens; i++) {
     std::stringstream str;
@@ -52,13 +58,18 @@ artm::DictionaryData Helpers::GenerateDictionary(int nTokens, std::string class1
   return dictionary_data;
 }
 
-void Helpers::ConfigurePerplexityScore(std::string score_name,
+void Helpers::ConfigurePerplexityScore(const std::string& score_name,
                                        artm::MasterModelConfig* master_config,
-                                       std::vector<std::string> class_ids) {
+                                       const std::vector<std::string>& class_ids,
+                                       const std::vector<std::string>& tt_names) {
   ::artm::ScoreConfig score_config;
   ::artm::PerplexityScoreConfig perplexity_config;
-  for (const auto& s : class_ids) {
-    perplexity_config.add_class_id(s);
+  for (const auto& c : class_ids) {
+    perplexity_config.add_class_id(c);
+  }
+
+  for (const auto& s : tt_names) {
+    perplexity_config.add_transaction_typename(s);
   }
   score_config.set_config(perplexity_config.SerializeAsString());
   score_config.set_type(::artm::ScoreType_Perplexity);
@@ -116,9 +127,11 @@ TestMother::GenerateBatches(int batches_size, int nTokens, ::artm::DictionaryDat
       const int somewhat_random = iToken + iBatch + (iToken + 1)*(iBatch + 1);
       if (iToken == 0 || somewhat_random % 3 == 0) {  // NOLINT
         item->add_token_id(iToken);
+        item->add_transaction_start_index(item->transaction_start_index_size());
         item->add_token_weight(1.0);
       }
     }
+    item->add_transaction_start_index(item->transaction_start_index_size());
 
     retval.push_back(std::make_shared< ::artm::Batch>(batch));
     first_iter = false;
@@ -208,6 +221,14 @@ void Helpers::CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm:
     }
   }
   *ok = true;
+}
+
+fs::path Helpers::getTestDataDir() {
+  auto dir = std::getenv("BIGARTM_UNITTEST_DATA");
+  // Construct path object only once.
+  // Since C++11 local static variable initialization is thread-safe.
+  static const fs::path testDataDir = dir != nullptr ? fs::path(dir) : fs::path("../../../test_data");
+  return testDataDir;
 }
 
 void TestMother::GenerateBatches(int batches_size, int nTokens, const std::string& target_folder) {

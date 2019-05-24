@@ -12,6 +12,7 @@
 #include "artm/core/phi_matrix.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/token.h"
+#include "artm/artm_export.h"
 #include "artm/messages.pb.h"
 
 namespace artm {
@@ -51,6 +52,7 @@ class ScoreCalculatorInterface {
 
   virtual void AppendScore(
       const Item& item,
+      const Batch& batch,
       const std::vector<artm::core::Token>& token_dict_,
       const artm::core::PhiMatrix& p_wt,
       const artm::ProcessBatchesArgs& args,

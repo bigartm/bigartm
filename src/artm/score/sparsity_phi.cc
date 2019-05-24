@@ -34,7 +34,8 @@ std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::PhiMatrix& 
 
   ::google::protobuf::int64 class_tokens_count = 0;
   for (int token_index = 0; token_index < token_size; token_index++) {
-    if (p_wt.token(token_index).class_id == class_id) {
+    const auto& token = p_wt.token(token_index);
+    if (token.class_id == class_id) {
       class_tokens_count++;
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
         if ((fabs(p_wt.get(token_index, topic_index)) < config_.eps()) &&

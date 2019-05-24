@@ -74,10 +74,19 @@ after_build:
   - cmd: call C:\projects\bigartm\utils\create_windows_package.bat
 
 test_script:
-  - cmd: cd C:\projects\bigartm\build\bin\Release
-  - cmd: artm_tests.exe
-  - cmd: cd C:\projects\bigartm\python\tests
-  - cmd: py.test
+  - ps: |
+        cd C:\projects\bigartm\build
+        & msbuild .\RUN_TESTS.vcxproj
+        $testCode = $lastExitCode
+
+        $wc = New-Object 'System.Net.WebClient'
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\src\artm_tests\junit.xml))
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\python\tests\artm\junit.xml))
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\python\tests\wrapper\junit.xml))
+
+        if ($testCode -ne 0) {
+            exit $testCode
+        }
 
 artifacts:
   - path: BigARTM.7z
