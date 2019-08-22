@@ -1,4 +1,4 @@
-# Copyright 2017, Additive Regularization of Topic Models.
+# Copyright 2018, Additive Regularization of Topic Models.
 
 import shutil
 import glob
@@ -90,12 +90,9 @@ def test_func():
                 fout.write('{0}\n'.format(e))
 
         with open(cooc_file_name, 'w') as fout:
-            fout.write('0 3 5.0\n')
-            fout.write('0 1 4.0\n')
-            fout.write('0 2 5.0\n')
-            fout.write('1 3 2.0\n')
-            fout.write('1 2 2.0\n')
-            fout.write('2 3 2.0\n')
+            fout.write('A D:5.0 B:4.0 C:5.0\n')
+            fout.write('B D:2.0 C:2.0\n')
+            fout.write('C D 2.0\n')
 
         dictionary = artm.Dictionary()
         dictionary.gather(data_path=batches_folder, vocab_file_path=vocab_file_name, cooc_file_path=cooc_file_name)
@@ -105,7 +102,7 @@ def test_func():
         model.regularizers.add(artm.BitermsPhiRegularizer(name='Biterms', tau=biterms_tau, dictionary=dictionary))
 
         assert abs(model.phi_.as_matrix()[0][0] - phi_first_elem) < phi_eps
-    
+
         model.fit_offline(batch_vectorizer=batch_vectorizer)
         for i in range(len(phi_values)):
             for j in range(len(phi_values[0])):

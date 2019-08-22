@@ -30,7 +30,7 @@ Scroll further below for more OS-specific insructinos.
     apt-get --yes install git make cmake build-essential libboost-all-dev
 
     # Step 2. Insall python packages
-    apt-get --yes install python-numpy python-pandas
+    apt-get --yes install python-numpy python-pandas python-scipy
     wget https://bootstrap.pypa.io/get-pip.py
     python get-pip.py
     pip install protobuf tqdm wheel
@@ -111,7 +111,7 @@ Currently openSUSE require to install Boost from sources:
 
 Step 2. Python packages
 -----------------------
-BigARTM require Python packages ``numpy``, ``pandas``, ``protobuf`` and ``tqdm``.
+BigARTM require Python packages ``numpy``, ``scipy``, ``pandas``, ``protobuf`` and ``tqdm``.
 We recommend to install them with recent versino of ``pip``.
 
 If ``pip`` is not available, install system package ``python-pip`` or ``python3-pip``
@@ -129,8 +129,8 @@ Then install required python packages:
 
 .. code-block:: bash
 
-   sudo pip2 install -U numpy pandas protobuf==3.0.0 tqdm wheel # Python 2
-   sudo pip3 install -U numpy pandas protobuf==3.0.0 tqdm wheel # Python 3
+   sudo pip2 install -U numpy scipy pandas protobuf==3.0.0 tqdm wheel # Python 2
+   sudo pip3 install -U numpy scipy pandas protobuf==3.0.0 tqdm wheel # Python 3
 
 Step 3. Build and install BigARTM library
 -----------------------------------------
@@ -144,7 +144,9 @@ Next step is to run ``cmake``. The following options are available.
 
 * ``-DPYTHON=python3`` - to use Python 3 instead of Python 2;
 * ``-DCMAKE_INSTALL_PREFIX=xxx`` - for custom install location instead of default ``/usr/local``;
-* ``-DBoost_USE_STATIC_LIBS=ON`` — required on openSUSE.
+* ``-DBoost_USE_STATIC_LIBS=ON`` -- required on openSUSE;
+* ``-DBUILD_BIGARTM_CLI_STATIC=ON`` -- to use static versions of Boost, C and C++ libraries for ``bigartm`` executable.
+
 
 Example:
 

@@ -16,6 +16,7 @@
    The parameters of the regularizer:
    - topic_names (the names of topics to regularize, empty == all)
    - class_ids (class ids to regularize, empty == all)
+   - transaction_typenames (transaction type names to regularize, empty == all)
    - dictionary_name (strongly required parameter)
 
 */

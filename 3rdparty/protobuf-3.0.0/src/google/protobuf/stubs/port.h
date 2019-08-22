@@ -66,7 +66,7 @@
     #define PROTOBUF_LITTLE_ENDIAN 1
   #endif
 #endif
-#if defined(_MSC_VER) && defined(PROTOBUF_USE_DLLS)
+#if defined(WIN32) && defined(PROTOBUF_USE_DLLS)
   #ifdef LIBPROTOBUF_EXPORTS
     #define LIBPROTOBUF_EXPORT __declspec(dllexport)
   #else

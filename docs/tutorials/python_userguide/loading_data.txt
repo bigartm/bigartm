@@ -17,7 +17,7 @@ If you have archived described variables run following code:
                                            n_wd=n_wd,
                                            vocabulary=vocabulary)
 
-Well, if you have data in UCI format (e.g. ``vocab.my_collection.txt`` and ``docword.my_collection.txt`` files), that were put into the same directory with your script or notebook, you can create batches using next code:
+If you have data in UCI format (e.g. ``vocab.my_collection.txt`` and ``docword.my_collection.txt`` files), that were put into the same directory with your script or notebook, you can create batches using the following code:
 
 .. code-block:: python
 
@@ -64,9 +64,9 @@ In this case the token order in the dictionary (and in further :math:`\Phi` matr
    dictionary.gather(data_path='my_collection_batches',
                      vocab_file_path='vocab.txt')
 
-Take into consideration the fact that library will ignore any token from batches, that was not presented into vacab file, if you used it. ``Dictionary`` contains a lot of useful information about the collection. For example, each unique token in it has the corresponding variable - value. When BigARTM gathers the dictionary, it puts the relative frequency of this token in this variable. You can read about the use-cases of this variable in further sections.
+Take into consideration the fact that library will ignore any token from batches, that was not presented into vocab file, if you used it. ``Dictionary`` contains a lot of useful information about the collection. For example, each unique token in it has the corresponding variable - value. When BigARTM gathers the dictionary, it puts the relative frequency of this token in this variable. You can read about the use-cases of this variable in further sections.
 
-Well, now you have a dictionary. It can be saved on the disk to prevent it's re-creation. You can save it in the binary format:
+Now you have a dictionary. It can be saved on the disk to prevent it's re-creation. You can save it in the binary format:
 
 .. code-block:: python
 
@@ -78,13 +78,13 @@ Or in the textual one (if you'd like to see the gathered data, for example):
 
    dictionary.save_text(dictionary_path='my_collection_batches/my_dictionary.txt')
 
-Saved dictionary can be loaded back. The code for binary file looks like next one:
+Saved dictionary can be loaded back. The code for binary file looks as following:
 
 .. code-block:: python
 
    dictionary.load(dictionary_path='my_collection_batches/my_dictionary.dict')
 
-For textual dictionary you can run the next code:
+For textual dictionary you can run the following code:
 
 .. code-block:: python
 

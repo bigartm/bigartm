@@ -9,7 +9,8 @@
    - dictionary_name
    - theta_sparsity_topic_name (topic names to count Theta sparsity)
    - theta_sparsity_eps
-   - class_id (array of class_ids to count perplexity, empty == all)
+   - class_ids (class_ids to score within each transaction type, empty == all)
+   - transaction_typenames (transaction typenames to regularize, empty == all)
 
 */
 
@@ -35,6 +36,7 @@ class Perplexity : public ScoreCalculatorInterface {
 
   virtual void AppendScore(
       const Item& item,
+      const Batch& batch,
       const std::vector<artm::core::Token>& token_dict,
       const artm::core::PhiMatrix& p_wt,
       const artm::ProcessBatchesArgs& args,

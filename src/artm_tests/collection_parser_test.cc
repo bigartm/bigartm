@@ -22,8 +22,8 @@ TEST(CollectionParser, UciBagOfWords) {
   config.set_format(::artm::CollectionParserConfig_CollectionFormat_BagOfWordsUci);
   config.set_target_folder(target_folder);
   config.set_num_items_per_batch(1);
-  config.set_vocab_file_path("../../../test_data/vocab.parser_test.txt");
-  config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
+  config.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() / "vocab.parser_test.txt").string());
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "docword.parser_test.txt").string());
 
   ::artm::ParseCollection(config);
 
@@ -87,7 +87,8 @@ TEST(CollectionParser, UciBagOfWords) {
   };
 
   dictionary_checker(config.vocab_file_path(), "default_dictionary");
-  dictionary_checker("../../../test_data/vocab.parser_test_no_newline.txt", "no_newline_dictionary");
+  dictionary_checker((::artm::test::Helpers::getTestDataDir() / "vocab.parser_test_no_newline.txt").string(),
+                     "no_newline_dictionary");
 
   try { fs::remove_all(target_folder); }
   catch (...) { }
@@ -97,16 +98,16 @@ TEST(CollectionParser, ErrorHandling) {
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_CollectionFormat_BagOfWordsUci);
 
-  config.set_vocab_file_path("../../../test_data/vocab.parser_test_non_unique.txt");
-  config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
+  config.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() / "vocab.parser_test_non_unique.txt").string());
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "docword.parser_test.txt").string());
   ASSERT_THROW(::artm::ParseCollection(config), artm::InvalidOperationException);
 
-  config.set_vocab_file_path("../../../test_data/vocab.parser_test_empty_line.txt");
-  config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
+  config.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() / "vocab.parser_test_empty_line.txt").string());
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "docword.parser_test.txt").string());
   ASSERT_THROW(::artm::ParseCollection(config), artm::InvalidOperationException);
 
   config.set_vocab_file_path("no_such_file.txt");
-  config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "docword.parser_test.txt").string());
   ASSERT_THROW(::artm::ParseCollection(config), artm::DiskReadException);
 }
 
@@ -117,8 +118,8 @@ TEST(CollectionParser, MatrixMarket) {
   config.set_format(::artm::CollectionParserConfig_CollectionFormat_MatrixMarket);
   config.set_target_folder(target_folder);
   config.set_num_items_per_batch(10000);
-  config.set_vocab_file_path("../../../test_data/deerwestere.txt");
-  config.set_docword_file_path("../../../test_data/deerwestere.mm");
+  config.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() / "deerwestere.txt").string());
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "deerwestere.mm").string());
 
   ::artm::ParseCollection(config);
 
@@ -148,8 +149,8 @@ TEST(CollectionParser, Multiclass) {
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_CollectionFormat_BagOfWordsUci);
   config.set_target_folder(target_folder);
-  config.set_vocab_file_path("../../../test_data/vocab.parser_test_multiclass.txt");
-  config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
+  config.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() / "vocab.parser_test_multiclass.txt").string());
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "docword.parser_test.txt").string());
 
   ::artm::ParseCollection(config);
 
@@ -176,7 +177,8 @@ TEST(CollectionParser, Multiclass) {
   artm::GatherDictionaryArgs gather_args;
   gather_args.set_data_path(target_folder);
   gather_args.set_dictionary_target_name(dictionary_name);
-  gather_args.set_vocab_file_path("../../../test_data/vocab.parser_test_multiclass.txt");
+  gather_args.set_vocab_file_path((::artm::test::Helpers::getTestDataDir() /
+                                   "vocab.parser_test_multiclass.txt").string());
 
   ::artm::MasterModelConfig master_config;
   artm::MasterModel master(master_config);
@@ -223,7 +225,7 @@ TEST(CollectionParser, VowpalWabbit) {
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_CollectionFormat_VowpalWabbit);
   config.set_target_folder(target_folder);
-  config.set_docword_file_path("../../../test_data/vw_data.txt");
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "vw_data.txt").string());
   config.set_num_items_per_batch(1);
 
   ::artm::ParseCollection(config);
@@ -253,6 +255,101 @@ TEST(CollectionParser, VowpalWabbit) {
   ASSERT_EQ(batches_count, 2);
 
   try { fs::remove_all(target_folder); }
-  catch (...) { }
+  catch (...) {}
+}
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=CollectionParser.TransactionVowpalWabbit
+TEST(CollectionParser, TransactionVowpalWabbit) {
+  std::string target_folder = artm::test::Helpers::getUniqueString();
+
+  ::artm::CollectionParserConfig config;
+  config.set_format(::artm::CollectionParserConfig_CollectionFormat_VowpalWabbit);
+  config.set_target_folder(target_folder);
+  config.set_docword_file_path((::artm::test::Helpers::getTestDataDir() / "vw_transaction_data.txt").string());
+  config.set_num_items_per_batch(2);
+
+  ::artm::ParseCollection(config);
+
+  fs::recursive_directory_iterator it(target_folder);
+  fs::recursive_directory_iterator endit;
+  int batches_count = 0;
+  while (it != endit) {
+    if (fs::is_regular_file(*it) && it->path().extension() == ".batch") {
+      batches_count++;
+      ::artm::Batch batch;
+      ::artm::core::Helpers::LoadMessage(it->path().string(), &batch);
+
+      ASSERT_EQ(batch.class_id_size(), batch.token_size());
+      ASSERT_EQ(batch.class_id_size(), 8);
+
+      for (int i = 0; i < batch.token_size(); ++i) {
+        if (batch.token(i) == "hello" || batch.token(i) == "world") {
+          ASSERT_EQ(batch.class_id(i), "@default_class");
+        } else if (batch.token(i) == "click" || batch.token(i) == "show") {
+          ASSERT_EQ(batch.class_id(i), "action");
+        } else if (batch.token(i) == "twice" || batch.token(i) == "first") {
+          ASSERT_EQ(batch.class_id(i), "qualifier");
+        } else if (batch.token(i) == "mel-lain") {
+          ASSERT_TRUE(batch.class_id(i) == "user" || batch.class_id(i) == "author");
+        } else {
+          ASSERT_EQ(batch.token(i), "hello");  // we should not get here
+        }
+      }
+
+      ASSERT_EQ(batch.item_size(), 2);
+
+      ASSERT_EQ(batch.item(0).token_id_size(), 6);
+      ASSERT_EQ(batch.item(0).transaction_start_index_size(), 5);
+      ASSERT_EQ(batch.item(0).token_weight_size(), 6);
+      ASSERT_EQ(batch.item(1).token_id_size(), 8);
+      ASSERT_EQ(batch.item(1).transaction_start_index_size(), 5);
+      ASSERT_EQ(batch.item(1).token_weight_size(), 8);
+
+      // check first item
+      ASSERT_FLOAT_EQ(batch.item(0).token_weight(0), 1.0);
+      ASSERT_FLOAT_EQ(batch.item(0).token_weight(1), 2.0);
+      ASSERT_FLOAT_EQ(batch.item(0).token_weight(2), 3.0);
+      ASSERT_FLOAT_EQ(batch.item(0).token_weight(3), 3.0);
+      ASSERT_FLOAT_EQ(batch.item(0).token_weight(4), 1.0);
+      ASSERT_FLOAT_EQ(batch.item(0).token_weight(5), 1.0);
+
+
+      ASSERT_EQ(batch.item(0).transaction_start_index(0), 0);
+      ASSERT_EQ(batch.item(0).transaction_start_index(1), 1);
+      ASSERT_EQ(batch.item(0).transaction_start_index(2), 2);
+      ASSERT_EQ(batch.item(0).transaction_start_index(3), 4);
+      ASSERT_EQ(batch.item(0).transaction_start_index(4), 6);
+
+      // both are ids of "mel-lain" as "user"
+      ASSERT_EQ(batch.item(0).token_id(2),
+                batch.item(0).token_id(4));
+
+      // check second item
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(0), 1.0);
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(1), 5.0);
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(2), 5.0);
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(3), 5.0);
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(4), 1.0);
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(5), 1.0);
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(6), 1.0);
+      ASSERT_FLOAT_EQ(batch.item(1).token_weight(7), 1.0);
+
+      ASSERT_EQ(batch.item(1).transaction_start_index(0), 0);
+      ASSERT_EQ(batch.item(1).transaction_start_index(1), 1);
+      ASSERT_EQ(batch.item(1).transaction_start_index(2), 4);
+      ASSERT_EQ(batch.item(1).transaction_start_index(3), 7);
+      ASSERT_EQ(batch.item(1).transaction_start_index(4), 8);
+
+      // both are ids of "wordl" as "@default_class"
+      ASSERT_EQ(batch.item(1).token_id(4),
+                batch.item(1).token_id(7));
+    }
+    ++it;
+  }
+  ASSERT_EQ(batches_count, 1);
+
+  try { fs::remove_all(target_folder); }
+  catch (...) {}
 }
 // vim: set ts=2 sw=2 sts=2:

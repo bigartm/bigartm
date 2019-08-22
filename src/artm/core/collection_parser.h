@@ -1,4 +1,4 @@
-// Copyright 2017, Additive Regularization of Topic Models.
+// Copyright 2018, Additive Regularization of Topic Models.
 
 #pragma once
 
@@ -6,6 +6,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -13,6 +14,7 @@
 
 #include "artm/core/common.h"
 #include "artm/core/token.h"
+#include "artm/core/cooccurrence_collector.h"
 
 namespace artm {
 namespace core {
@@ -29,6 +31,8 @@ class BatchNameGenerator {
   std::string next_name_;
   bool use_guid_name_;
 };
+
+std::string DropWeightSuffix(const std::string& token);
 
 // CollectionParser class is responsible for parsing all text formats, available in BigARTM (UCI Bow and VW parser).
 class CollectionParser : boost::noncopyable {
@@ -51,7 +55,7 @@ class CollectionParser : boost::noncopyable {
     int items_count;
   };
 
-  typedef std::map<int, CollectionParserTokenInfo> TokenMap;
+  typedef std::unordered_map<int, CollectionParserTokenInfo> TokenMap;
 
   class BatchCollector;
 

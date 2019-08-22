@@ -20,7 +20,7 @@
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/token.h"
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_MSC_VER)
 #include <windows.h>  // NOLINT
 
 const DWORD MS_VC_EXCEPTION = 0x406D1388;
@@ -43,7 +43,7 @@ typedef struct tagTHREADNAME_INFO {
 namespace artm {
 namespace core {
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_MSC_VER)
 
 // How to: Set a Thread Name in Native Code:
 // http://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
@@ -54,11 +54,11 @@ void Helpers::SetThreadName(int thread_id, const char* thread_name) {
   info.dwThreadID = static_cast<DWORD>(thread_id);
   info.dwFlags = 0;
 
-  __try {
+  /*__try {
     RaiseException( MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(ULONG_PTR), (ULONG_PTR*)&info );  // NOLINT
   }
   __except(EXCEPTION_EXECUTE_HANDLER) {
-  }
+  }*/
 }
 
 #elif defined(__linux__)
@@ -236,6 +236,14 @@ void Helpers::SaveMessage(const std::string& full_filename,
   }
 
   fout.close();
+}
+
+bool isZero(float value, float tol) {
+  return std::fabs(value) < tol;
+}
+
+bool isZero(double value, double tol) {
+  return std::fabs(value) < tol;
 }
 
 }  // namespace core

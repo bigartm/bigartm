@@ -145,9 +145,11 @@ def _score_data_func(score_data_type):
             return mfunc
 
 
-def _prepare_config(topic_names=None, class_ids=None, scores=None, regularizers=None, num_processors=None,
-                    pwt_name=None, nwt_name=None, num_document_passes=None, reuse_theta=None, cache_theta=None,
-                    args=None):
+def _prepare_config(topic_names=None, class_ids=None, transaction_typenames=None,
+                    scores=None, regularizers=None, num_processors=None,
+                    pwt_name=None, nwt_name=None, num_document_passes=None,
+                    reuse_theta=None, cache_theta=None,
+                    parent_model_id=None, parent_model_weight=None, args=None):
         master_config = messages.MasterModelConfig()
 
         if args is not None:
@@ -157,6 +159,13 @@ def _prepare_config(topic_names=None, class_ids=None, scores=None, regularizers=
             master_config.ClearField('topic_name')
             for topic_name in topic_names:
                 master_config.topic_name.append(topic_name)
+
+        if transaction_typenames is not None:
+            master_config.ClearField('transaction_typename')
+            master_config.ClearField('transaction_weight')
+            for transaction_typename, transaction_weight in iteritems(transaction_typenames):
+                master_config.transaction_typename.append(transaction_typename)
+                master_config.transaction_weight.append(transaction_weight)
 
         if class_ids is not None:
             master_config.ClearField('class_id')
@@ -193,6 +202,13 @@ def _prepare_config(topic_names=None, class_ids=None, scores=None, regularizers=
         if cache_theta is not None:
             master_config.cache_theta = cache_theta
 
+        if parent_model_id is not None:
+            master_config.parent_master_model_id = parent_model_id
+            master_config.opt_for_avx = False
+
+        if parent_model_weight is not None:
+            master_config.parent_master_model_weight = parent_model_weight
+
         if pwt_name is not None:
             master_config.pwt_name = pwt_name
 
@@ -206,15 +222,19 @@ def _prepare_config(topic_names=None, class_ids=None, scores=None, regularizers=
 
 
 class MasterComponent(object):
-    def __init__(self, library=None, topic_names=None, class_ids=None, scores=None, regularizers=None,
-                 num_processors=None, pwt_name=None, nwt_name=None, num_document_passes=None,
-                 reuse_theta=None, cache_theta=False, config=None, master_id=None):
+    def __init__(self, library=None, topic_names=None, class_ids=None, transaction_typenames=None,
+                 scores=None, regularizers=None, num_processors=None, pwt_name=None,
+                 nwt_name=None, num_document_passes=None, reuse_theta=None,
+                 cache_theta=False, parent_model_id=None, parent_model_weight=None,
+                 config=None, master_id=None):
         """
 
         :param library: an instance of LibArtm
         :param topic_names: list of topic names to use in model
         :type topic_names: list of str
         :param dict class_ids: key - class_id, value - class_weight
+        :param dict transaction_typenames: key - transaction_typename, value - transaction_weight,\
+                                       specify class_ids when using custom transaction_typenames
         :param dict scores: key - score name, value - config
         :param dict regularizers: key - regularizer name, value - tuple (config, tau)\
                                   or triple (config, tau, gamma)
@@ -224,11 +244,15 @@ class MasterComponent(object):
         :param in num_document_passes: num passes through each document
         :param bool reuse_theta: reuse Theta from previous iteration or not
         :param bool cache_theta: save or not the Theta matrix
+        :param int parent_model_id: master_id of parent model (previous level of hierarchy)
+        :param float parent_model_weight: weight of parent model (plays role in fit_offline;
+                                          defines how much to respect parent model as compared to batches)
         """
         self._lib = library
 
         master_config = _prepare_config(topic_names=topic_names,
                                         class_ids=class_ids,
+                                        transaction_typenames=transaction_typenames,
                                         scores=scores,
                                         regularizers=regularizers,
                                         num_processors=num_processors,
@@ -237,6 +261,8 @@ class MasterComponent(object):
                                         num_document_passes=num_document_passes,
                                         reuse_theta=reuse_theta,
                                         cache_theta=cache_theta,
+                                        parent_model_id=parent_model_id,
+                                        parent_model_weight=parent_model_weight,
                                         args=config)
 
         self._config = master_config
@@ -247,11 +273,13 @@ class MasterComponent(object):
             self.master_id, messages.DuplicateMasterComponentArgs())
         return MasterComponent(self._lib, config=self._config, master_id=new_master_id)
 
-    def reconfigure(self, topic_names=None, class_ids=None, scores=None, regularizers=None,
-                    num_processors=None, pwt_name=None, nwt_name=None, num_document_passes=None,
-                    reuse_theta=None, cache_theta=None):
+    def reconfigure(self, topic_names=None, class_ids=None, transaction_typenames=None,
+                    scores=None, regularizers=None, num_processors=None, pwt_name=None,
+                    nwt_name=None, num_document_passes=None, reuse_theta=None, cache_theta=None,
+                    parent_model_id=None, parent_model_weight=None):
         master_config = _prepare_config(topic_names=topic_names,
                                         class_ids=class_ids,
+                                        transaction_typenames=transaction_typenames,
                                         scores=scores,
                                         regularizers=regularizers,
                                         num_processors=num_processors,
@@ -260,6 +288,8 @@ class MasterComponent(object):
                                         num_document_passes=num_document_passes,
                                         reuse_theta=reuse_theta,
                                         cache_theta=cache_theta,
+                                        parent_model_id=parent_model_id,
+                                        parent_model_weight=parent_model_weight,
                                         args=self._config)
 
         self._config = master_config
@@ -436,8 +466,9 @@ class MasterComponent(object):
     def process_batches(self, pwt, nwt=None, num_document_passes=None, batches_folder=None,
                         batches=None, regularizer_name=None, regularizer_tau=None,
                         class_ids=None, class_weights=None, find_theta=False,
+                        transaction_typenames=None, transaction_weights=None,
                         reuse_theta=False, find_ptdw=False,
-                        predict_class_id=None):
+                        predict_class_id=None, predict_transaction_type=None):
         """
         :param str pwt: name of pwt matrix in BigARTM
         :param str nwt: name of nwt matrix in BigARTM
@@ -449,10 +480,14 @@ class MasterComponent(object):
         :type regularizer_name: list of str
         :param regularizer_tau: list of tau coefficients for Theta regularizers
         :type regularizer_tau: list of float
-        :param class_ids: list of class ids to use during processing
+        :param class_ids: list of class ids to use during processing.
         :type class_ids: list of str
-        :param class_weights: list of corresponding weights of class ids
+        :param class_weights: list of corresponding weights of class ids.
         :type class_weights: list of float
+        :param transaction_typenames: list of transaction types to use during processing.
+        :type transaction_typenames: list of str
+        :param transaction_weights: list of corresponding weights of transaction types.
+        :type transaction_weights: list of float
         :param bool find_theta: find theta matrix for 'batches' (if alternative 2)
         :param bool reuse_theta: initialize by theta from previous collection pass
         :param bool find_ptdw: calculate and return Ptdw matrix or not\
@@ -484,6 +519,11 @@ class MasterComponent(object):
             for name, tau in zip(regularizer_name, regularizer_tau):
                 args.regularizer_name.append(name)
                 args.regularizer_tau.append(tau)
+
+        if transaction_typenames is not None and transaction_weights is not None:
+            for transaction_typename, weight in zip(transaction_typenames, transaction_weights):
+                args.transaction_typename.append(transaction_typename)
+                args.transaction_weight.append(weight)
 
         if class_ids is not None and class_weights is not None:
             for class_id, weight in zip(class_ids, class_weights):
@@ -584,7 +624,7 @@ class MasterComponent(object):
         """
         :param str model: name of matrix in BigARTM
         :return:
-            * messahes.TopicModel() object with info about Phi matrix
+            * messages.TopicModel() object with info about Phi matrix
             * numpy.ndarray with Phi data (i.e., p(w|t) values)
         """
         topic_model = self.get_phi_info(model)
@@ -794,7 +834,8 @@ class MasterComponent(object):
         return info
 
     def fit_offline(self, batch_filenames=None, batch_weights=None,
-                    num_collection_passes=None, batches_folder=None):
+                    num_collection_passes=None, batches_folder=None,
+                    reset_nwt=True):
         """
         :param batch_filenames: name of batches to process
         :type batch_filenames: list of str
@@ -802,8 +843,10 @@ class MasterComponent(object):
         :type batch_weights: list of float
         :param int num_collection_passes: number of outer iterations
         :param str batches_folder: folder containing batches to process
+        :param bool reset_nwt: a flag indicating whether to reset n_wt matrix to 0.
         """
         args = messages.FitOfflineMasterModelArgs()
+        args.reset_nwt = reset_nwt
         if batch_filenames is not None:
             args.ClearField('batch_filename')
             for filename in batch_filenames:
@@ -823,7 +866,7 @@ class MasterComponent(object):
         self._lib.ArtmFitOfflineMasterModel(self.master_id, args)
 
     def fit_online(self, batch_filenames=None, batch_weights=None, update_after=None,
-                   apply_weight=None, decay_weight=None, async=None):
+                   apply_weight=None, decay_weight=None, asynchronous=None):
         """
         :param batch_filenames: name of batches to process
         :type batch_filenames: list of str
@@ -837,7 +880,7 @@ class MasterComponent(object):
         :param decay_weight: weight of applying old counters\
                 (len == len of update_after)
         :type decay_weight: list of float
-        :param bool async: whether to use the async implementation\
+        :param bool asynchronous: whether to use the asynchronous implementation\
                 of the EM-algorithm or not
         """
         args = messages.FitOnlineMasterModelArgs()
@@ -871,19 +914,20 @@ class MasterComponent(object):
             for value in decay_weight:
                 args.decay_weight.append(value)
 
-        if async is not None:
-            args.async = async
+        if asynchronous is not None:
+            args.asynchronous = asynchronous
 
         self._lib.ArtmFitOnlineMasterModel(self.master_id, args)
 
-    def transform(self, batches=None, batch_filenames=None,
-                  theta_matrix_type=None, predict_class_id=None):
+    def transform(self, batches=None, batch_filenames=None, theta_matrix_type=None,
+                  predict_class_id=None):
         """
         :param batches: list of Batch instances
         :param batch_weights: weights of batches to transform
         :type batch_weights: list of float
         :param int theta_matrix_type: type of matrix to be returned
-        :param int predict_class_id: type of matrix to be returned
+        :param predict_class_id: class_id of a target modality to predict
+        :type predict_class_id: str, default None
         :return: messages.ThetaMatrix object
         """
         args = messages.TransformMasterModelArgs()

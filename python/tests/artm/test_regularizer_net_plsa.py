@@ -65,15 +65,19 @@ def test_func():
         phi_3 = model_3.get_phi()
         assert phi.equals(phi_3)
 
-        real_topics = pd.DataFrame(
-            data={
-               'topic_0': dict(ccc=0.098, bbb=0.145, aaa=0.757, time_1=0.06,  time_2=0.94),
-               'topic_1': dict(ccc=0.892, bbb=0.004, aaa=0.104, time_1=0.0,   time_2=1.0),
-               'topic_2': dict(ccc=0.099, bbb=0.618, aaa=0.283, time_1=0.092, time_2=0.908),
-               'topic_3': dict(ccc=0.389, bbb=0.334, aaa=0.277, time_1=0.0,   time_2=1.0),
-               'topic_4': dict(ccc=0.184, bbb=0.684, aaa=0.132, time_1=0.0,   time_2=1.0),
-            }
-        )
+        def _f(w):
+            return ('@default_class', w)
+
+        def _t(w):
+            return ('@time_class', w)
+
+        real_topics = pd.DataFrame(columns=['topic_0', 'topic_1', 'topic_2', 'topic_3', 'topic_4'],
+                                   index=[_f('ccc'), _f('bbb'), _f('aaa'), _t('time_1'), _t('time_2')],
+                                   data=[[0.098, 0.892, 0.099, 0.389, 0.184],
+                                         [0.145, 0.004, 0.618, 0.334, 0.684],
+                                         [0.757, 0.104, 0.283, 0.277, 0.132],
+                                         [0.06,  0.0,   0.092, 0.0,   0.0  ],
+                                         [0.94,  1.0,   0.908, 1.0,   1.0  ]])
 
         assert (phi - real_topics).abs().values.max() < tolerance 
     finally:

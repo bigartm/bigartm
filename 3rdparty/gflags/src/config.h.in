@@ -2,6 +2,10 @@
 
 // Note: This header file is only used internally. It is not part of public interface!
 
+#ifndef GFLAGS_CONFIG_H_
+#define GFLAGS_CONFIG_H_
+
+
 // ---------------------------------------------------------------------------
 // System checks
 
@@ -70,9 +74,6 @@
 // Define to the address where bug reports for this package should be sent.
 #define PACKAGE_BUGREPORT @PACKAGE_BUGREPORT@
 
-// Namespace of gflags library symbols.
-#define GFLAGS_NAMESPACE @GFLAGS_NAMESPACE@
-
 // ---------------------------------------------------------------------------
 // Path separator
 #ifndef PATH_SEPARATOR
@@ -85,11 +86,6 @@
 
 // ---------------------------------------------------------------------------
 // Windows
-
-// Whether gflags library is a DLL.
-#ifndef GFLAGS_IS_A_DLL
-#  define GFLAGS_IS_A_DLL 0
-#endif
 
 // Always export symbols when compiling a shared library as this file is only
 // included by internal modules when building the gflags library itself.
@@ -113,3 +109,6 @@
 #  endif
 #  include "windows_port.h"
 #endif
+
+
+#endif // GFLAGS_CONFIG_H_

@@ -73,6 +73,10 @@ class RegularizerInterface {
     return nullptr;
   }
 
+  // This is important to keep in mind when implementing new regularizers:
+  //    n_wt and result are guarantied to have the same shape (e.i. topics and tokens)
+  //    n_wt and p_wt are guarantied to share topics
+  //    p_wt may have another set of tokens than n_wt (!).
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,
                              ::artm::core::PhiMatrix* result) { return false; }

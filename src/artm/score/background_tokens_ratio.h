@@ -13,6 +13,7 @@
    - dictionary_name (dictionary contains original 'value' field
                       that will be used as p(w) instead of
                       calculating it)
+   - transaction_typename (transaction typename to score, empty -> DefaultTransactionTypeName)
    - direct_kl (true means KL(p(t) || p(t|w)), false - KL(p(t|w) || p(t)),
                 default true)
 */

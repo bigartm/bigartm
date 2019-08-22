@@ -1,8 +1,5 @@
 project(artm_tests)
 
-include_directories(${3RD_PARTY_DIR}/gtest/fused-src/)
-include_directories(${CMAKE_CURRENT_LIST_DIR}/../)
-
 set(SRC_LIST
 	api.cc
 	batch_manager_test.cc
@@ -21,19 +18,21 @@ set(SRC_LIST
 	test_mother.cc
 	thread_safe_holder_test.cc
 	topic_seg_test.cc
+	transactions_test.cc
 	${3RD_PARTY_DIR}/gtest/fused-src/gtest/gtest_main.cc
 	${3RD_PARTY_DIR}/gtest/fused-src/gtest/gtest-all.cc
-	${CMAKE_SOURCE_DIR}/src/artm/cpp_interface.cc
 )
 
 add_definitions("-Dartm_EXPORTS")
 add_executable(artm_tests ${SRC_LIST})
 add_dependencies(artm_tests messages_proto)
-target_link_libraries(artm_tests messages_proto
-                                 artm-static
-                                 ${Boost_LIBRARIES}
-                                 ${PROTOBUF_LIBRARIES}
-                                 ${GLOG_LIBRARIES})
+target_link_libraries(artm_tests artm-static ${BOOST_IMPORTED_TARGETS})
+target_include_directories(artm_tests PRIVATE
+    ${3RD_PARTY_DIR}/gtest/fused-src/
+    ${CMAKE_CURRENT_LIST_DIR}/../
+    )
 
 # add target for testing
-add_test(NAME core_tests COMMAND artm_tests)
+add_test(NAME core_tests
+    COMMAND artm_tests --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/junit.xml
+    )

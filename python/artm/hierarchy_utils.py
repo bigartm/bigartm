@@ -231,7 +231,7 @@ class hARTM(object):
     # ========== METHODS ==========
     def _get_seed(self, level_idx):
         np.random.seed(self._seed)
-        return np.random.randint(10000, size=level_idx + 1)[-1]
+        return int(np.random.randint(10000, size=level_idx + 1)[-1])
 
     def add_level(self, num_topics=None, topic_names=None, parent_level_weight=1):
         """
@@ -594,9 +594,9 @@ class ARTM_Level(artm.ARTM):
             item.title = topic_name
             field = item.field.add()
             indices = phi[topic_name] > 0
-            for token, weight in  \
+            for class_token_tt, weight in  \
                     zip(phi.index[indices], phi[topic_name][indices]):
-                field.token_id.append(batch_dict[token])
+                field.token_id.append(batch_dict[class_token_tt[1]])
                 field.token_weight.append(float(weight))
                 NNZ += weight
         self.parent_batch = batch
