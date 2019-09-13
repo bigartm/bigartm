@@ -1123,7 +1123,10 @@ class ARTM(object):
             return
 
     def __repr__(self):
-        num_tokens = next((x.num_tokens for x in self.info.model if x.name == self._model_pwt), None)
+        if self.master is not None:
+            num_tokens = next((x.num_tokens for x in self.info.model if x.name == self._model_pwt), None)
+        else:
+            num_tokens = "<UNKNOWN>"
         transaction_typenames = ', transaction_typenames={0}'.format(
             list(self.transaction_typenames.keys())) if self.transaction_typenames else ''
         return 'artm.ARTM(num_topics={0}, num_tokens={1}{2})'.format(
