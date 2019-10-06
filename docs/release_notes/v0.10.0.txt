@@ -18,8 +18,12 @@ We are announcing 0.10.0, which brings you the following changes:
 
 Transactions
 ----------------
-TODO
 
+From a certain point of view, the appearance of token is a relation `{t, d}` between two entities: token `t` and document `d`.  Transactions are a generalization of tokens. For example, financial transaction `{c, p, m}` could mean that a customer 'c' made a purchase 'p' from a merchant 'm'.
+
+With that change, BigARTM now supports topic modeling on transactional data.
+
+While the change of internals is extensive, the external APIs and interfaces are relaively unaffected. A lot of classes and methods (C as well as Python) gained new argument `transaction_typenames`. This argument is optional, so you do not have to use it. However, it should be noted that there are some users reporting broken backward compatibility (different results). We investigate this matter.
 
 Compatibility improvements
 --------------------------
