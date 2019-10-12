@@ -26,12 +26,18 @@ class PhiMatrix {
   virtual ModelName model_name() const = 0;
   virtual int64_t ByteSize() const = 0;
 
+  virtual bool is_packable() const = 0;
+
   virtual const Token& token(int index) const = 0;
   virtual bool has_token(const Token& token) const = 0;
   virtual int token_index(const Token& token) const = 0;
 
   virtual float get(int token_id, int topic_id) const = 0;
   virtual void get(int token_id, std::vector<float>* buffer) const = 0;
+
+  virtual int get_sparse_token_size(int token_id) const = 0;
+  virtual void get_sparse(int token_id, std::vector<float>* value_buffer, std::vector<int>* index_buffer) const = 0;
+
   virtual void set(int token_id, int topic_id, float value) = 0;
   virtual void increase(int token_id, int topic_id, float increment) = 0;
   virtual void increase(int token_id, const std::vector<float>& increment) = 0;  // must be thread-safe

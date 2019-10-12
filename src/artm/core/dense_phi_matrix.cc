@@ -196,6 +196,10 @@ PackedValues::PackedValues(const float* values, int size)
   pack();
 }
 
+int PackedValues::size() const {
+  return values_.size();
+}
+
 bool PackedValues::is_packed() const {
   return !bitmask_.empty();
 }
@@ -288,6 +292,18 @@ void PackedValues::reset(int size) {
   ptr_.clear();
 }
 
+void PackedValues::get_sparse(std::vector<float>* value_buffer, std::vector<int>* index_buffer) const {
+  for (int i = 0; i < values_.size(); ++i) {
+    (*value_buffer)[i] = values_[i];
+  }
+
+  if (is_packed()) {
+    for (int i = 0; i < ptr_.size(); ++i) {
+      (*index_buffer)[i] = ptr_[i];
+    }
+  }
+}
+
 int64_t PackedValues::ByteSize() const {
   return ::artm::utility::getMemoryUsage(values_) +
          ::artm::utility::getMemoryUsage(bitmask_) +
@@ -326,6 +342,15 @@ float DensePhiMatrix::get(int token_id, int topic_id) const {
 void DensePhiMatrix::get(int token_id, std::vector<float>* buffer) const {
   assert(topic_size() > 0 && buffer->size() == topic_size());
   values_[token_id].get(buffer);
+}
+
+int DensePhiMatrix::get_sparse_token_size(int token_id) const {
+  return values_[token_id].size();
+}
+
+void DensePhiMatrix::get_sparse(int token_id, std::vector<float>* value_buffer,
+                                std::vector<int>* index_buffer) const {
+  values_[token_id].get_sparse(value_buffer, index_buffer);
 }
 
 void DensePhiMatrix::set(int token_id, int topic_id, float value) {
