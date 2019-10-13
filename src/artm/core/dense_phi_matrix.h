@@ -135,13 +135,12 @@ class DensePhiMatrix : public PhiMatrixFrame {
 
   virtual bool is_packable() const { return true; }
 
-
   virtual std::shared_ptr<PhiMatrix> Duplicate() const;
 
   virtual float get(int token_id, int topic_id) const;
   virtual void get(int token_id, std::vector<float>* buffer) const;
 
-  virtual int get_sparse_token_size(int token_id) const;
+  virtual int get_non_zero_topic_size(int token_id) const;
   virtual void get_sparse(int token_id, std::vector<float>* value_buffer, std::vector<int>* index_buffer) const;
 
   virtual void set(int token_id, int topic_id, float value);
@@ -178,8 +177,8 @@ class AttachedPhiMatrix : boost::noncopyable, public PhiMatrixFrame {
   virtual float get(int token_id, int topic_id) const { return values_[token_id][topic_id]; }
   virtual void get(int token_id, std::vector<float>* buffer) const;
 
-  virtual int get_sparse_token_size(int token_id) const { return -1; };
-  virtual void get_sparse(int token_id, std::vector<float>* value_buffer, std::vector<int>* index_buffer) const { };
+  virtual int get_non_zero_topic_size(int token_id) const { return topic_size(); };
+  virtual void get_sparse(int token_id, std::vector<float>* value_buffer, std::vector<int>* index_buffer) const;
 
   virtual void set(int token_id, int topic_id, float value) { values_[token_id][topic_id] = value; }
   virtual void increase(int token_id, int topic_id, float increment) { values_[token_id][topic_id] += increment; }

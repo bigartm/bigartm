@@ -344,7 +344,7 @@ void DensePhiMatrix::get(int token_id, std::vector<float>* buffer) const {
   values_[token_id].get(buffer);
 }
 
-int DensePhiMatrix::get_sparse_token_size(int token_id) const {
+int DensePhiMatrix::get_non_zero_topic_size(int token_id) const {
   return values_[token_id].size();
 }
 
@@ -454,6 +454,11 @@ std::shared_ptr<PhiMatrix> AttachedPhiMatrix::Duplicate() const {
 void AttachedPhiMatrix::get(int token_id, std::vector<float>* buffer) const {
   assert(topic_size() > 0 && buffer->size() == topic_size());
   memcpy(&buffer->at(0), values_[token_id], sizeof(float) * topic_size());
+}
+
+void AttachedPhiMatrix::get_sparse(int token_id, std::vector<float>* value_buffer,
+                                   std::vector<int>* index_buffer) const {
+  get(token_id, value_buffer);
 }
 
 void AttachedPhiMatrix::increase(int token_id, const std::vector<float>& increment) {

@@ -35,7 +35,7 @@ class PhiMatrix {
   virtual float get(int token_id, int topic_id) const = 0;
   virtual void get(int token_id, std::vector<float>* buffer) const = 0;
 
-  virtual int get_sparse_token_size(int token_id) const = 0;
+  virtual int get_non_zero_topic_size(int token_id) const = 0;
   virtual void get_sparse(int token_id, std::vector<float>* value_buffer, std::vector<int>* index_buffer) const = 0;
 
   virtual void set(int token_id, int topic_id, float value) = 0;

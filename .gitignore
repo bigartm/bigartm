@@ -169,4 +169,5 @@ src/artm/version.h
 *bigartm.WARNING
 
 # test data
-kos/
+test_data/docword.kos.txt
+test_data/vocab.kos.txt

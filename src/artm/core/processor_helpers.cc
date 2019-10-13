@@ -405,23 +405,26 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
     // Speedup is due to several factors:
     // 1. explicit loops instead of blas->saxpy and blas->sdot
     //    makes compiler generate AVX instructions (vectorized 128-bit float-point operations)
-    // 2. better memory usage (reduced bandwith to DRAM and more sequential accesss)
+    // 2. better memory usage (reduced bandwith to DRAM and more sequential access)
 
     int max_local_token_size = 0;  // find the longest document from the batch
     for (int d = 0; d < docs_count; ++d) {
       const int begin_index = sparse_ndw.row_ptr()[d];
       const int end_index = sparse_ndw.row_ptr()[d + 1];
       const int local_token_size = end_index - begin_index;
+
       max_local_token_size = std::max(max_local_token_size, local_token_size);
     }
 
-    LocalPhiMatrix<float> local_phi(max_local_token_size, num_topics);
-    LocalPhiMatrix<int> local_phi_2(max_local_token_size, num_topics);
-    std::vector<int> row_lengths(max_local_token_size, num_topics);
+    LocalPhiMatrix<float> local_phi_values(max_local_token_size, num_topics);
+    LocalPhiMatrix<int> local_phi_ptrs(max_local_token_size, num_topics);
+
+    std::vector<int> num_non_zero_topics_for_token(max_local_token_size, num_topics);
 
     LocalThetaMatrix<float> r_td(num_topics, 1);
-    std::vector<float> helper_vector(num_topics, 0.0f);
-    std::vector<int> helper_vector_2(num_topics, 0.0f);
+
+    std::vector<float> helper_vector_values(num_topics, 0.0f);
+    std::vector<int> helper_vector_ptrs(num_topics, 0.0f);
 
     for (int d = 0; d < docs_count; ++d) {
       float* ntd_ptr = &n_td(0, d);
@@ -429,7 +432,7 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
 
       const int begin_index = sparse_ndw.row_ptr()[d];
       const int end_index = sparse_ndw.row_ptr()[d + 1];
-      local_phi.InitializeZeros();
+      local_phi_values.InitializeZeros();
       bool item_has_tokens = false;
 
       for (int i = begin_index; i < end_index; ++i) {
@@ -439,24 +442,24 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
         }
 
         item_has_tokens = true;
-        float* local_phi_ptr = &local_phi(i - begin_index, 0);
-        int* local_phi_ptr_2 = &local_phi_2(i - begin_index, 0);
+        float* local_phi_values_ptr = &local_phi_values(i - begin_index, 0);
+        int* local_phi_ptrs_ptr = &local_phi_ptrs(i - begin_index, 0);
 
         if (p_wt.is_packable()) {
-          row_lengths[i - begin_index] = p_wt.get_sparse_token_size(token_id[w]);
-          p_wt.get_sparse(token_id[w], &helper_vector, &helper_vector_2);
+          num_non_zero_topics_for_token[i - begin_index] = p_wt.get_non_zero_topic_size(token_id[w]);
+          p_wt.get_sparse(token_id[w], &helper_vector_values, &helper_vector_ptrs);
 
-          for (int k = 0; k < row_lengths[i - begin_index]; ++k) {
-            local_phi_ptr[k] = helper_vector[k];
-            local_phi_ptr_2[k] = helper_vector_2[k];
+          for (int k = 0; k < num_non_zero_topics_for_token[i - begin_index]; ++k) {
+            local_phi_values_ptr[k] = helper_vector_values[k];
+            local_phi_ptrs_ptr[k] = helper_vector_ptrs[k];
           }
         } else {
-          p_wt.get(token_id[w], &helper_vector);
+          num_non_zero_topics_for_token[i - begin_index] = num_topics;
+          p_wt.get(token_id[w], &helper_vector_values);
 
           for (int k = 0; k < num_topics; ++k) {
-            local_phi_ptr[k] = helper_vector[k];
+            local_phi_values_ptr[k] = helper_vector_values[k];
           }
-          row_lengths[i - begin_index] = num_topics;
         }
       }
 
@@ -471,17 +474,19 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
 
         for (int i = begin_index; i < end_index; ++i) {
           float p_dw_val = 0.0f;
-          const float *phi_ptr = &local_phi(i - begin_index, 0);
-          const int *phi_ptr_2 = &local_phi_2(i - begin_index, 0);
-          const int row_len = row_lengths[i - begin_index];
 
-          if (row_len < num_topics) {
-            for (int k = 0; k < row_len; ++k) {
-              p_dw_val += phi_ptr[k] * theta_ptr[phi_ptr_2[k]];
+          const float* phi_values_ptr = &local_phi_values(i - begin_index, 0);
+          const int* phi_ptrs_ptr = &local_phi_ptrs(i - begin_index, 0);
+
+          int num_non_zero_topics = num_non_zero_topics_for_token[i - begin_index];
+
+          if (num_non_zero_topics < num_topics) {
+            for (int k = 0; k < num_non_zero_topics; ++k) {
+              p_dw_val += phi_values_ptr[k] * theta_ptr[phi_ptrs_ptr[k]];
             }
           } else {
             for (int k = 0; k < num_topics; ++k) {
-              p_dw_val += phi_ptr[k] * theta_ptr[k];
+              p_dw_val += phi_values_ptr[k] * theta_ptr[k];
             }
           }
 
@@ -491,13 +496,13 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
 
           const float alpha = sparse_ndw.val()[i] / p_dw_val;
 
-          if (row_len < num_topics) {
-            for (int k = 0; k < row_len; ++k) {
-              ntd_ptr[phi_ptr_2[k]] += alpha * phi_ptr[k];
+          if (num_non_zero_topics < num_topics) {
+            for (int k = 0; k < num_non_zero_topics; ++k) {
+              ntd_ptr[phi_ptrs_ptr[k]] += alpha * phi_values_ptr[k];
             }
           } else {
             for (int k = 0; k < num_topics; ++k) {
-              ntd_ptr[k] += alpha * phi_ptr[k];
+              ntd_ptr[k] += alpha * phi_values_ptr[k];
             }
           }
         }

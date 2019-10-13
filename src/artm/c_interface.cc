@@ -172,7 +172,7 @@ const char* ArtmGetLastErrorMessage() {
 }
 
 const char* ArtmGetVersion() {
-  static std::string version = "9999.9.8";
+  static std::string version = "9999.9.7";
   //static std::string version(
     //boost::lexical_cast<std::string>(ARTM_VERSION_MAJOR)+"." +
     //boost::lexical_cast<std::string>(ARTM_VERSION_MINOR)+"." +
