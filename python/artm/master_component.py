@@ -123,6 +123,11 @@ SCORES = (
         messages.BackgroundTokensRatioScoreConfig,
         messages.BackgroundTokensRatioScore,
         scores.BackgroundTokensRatioScore,
+    ), (
+        constants.ScoreType_PeakMemory,
+        messages.PeakMemoryScoreConfig,
+        messages.PeakMemoryScore,
+        scores.PeakMemoryScore,
     ),
 )
 

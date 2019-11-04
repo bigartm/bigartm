@@ -21,7 +21,8 @@ __all__ = [
     'TopicKernelScore',
     'TopicMassPhiScore',
     'ClassPrecisionScore',
-    'BackgroundTokensRatioScore'
+    'BackgroundTokensRatioScore',
+    'PeakMemoryScore',
 ]
 
 
@@ -858,3 +859,44 @@ class BackgroundTokensRatioScore(BaseScore):
     @topic_names.setter
     def topic_names(self, topic_names):
         raise KeyError('No topic_names parameter')
+
+class PeakMemoryScore(BaseScore):
+    _config_message = messages.PeakMemoryScoreConfig
+    _type = const.ScoreType_PeakMemory
+
+    def __init__(self, name=None, config=None):
+        """
+        :param str name: the identifier of score, will be auto-generated if not specified
+        :param config: the low-level config of this score
+        :type config: protobuf object
+        """
+        BaseScore.__init__(self,
+                           name=name,
+                           class_id=None,
+                           topic_names=None,
+                           model_name=None,
+                           config=config)
+
+    @property
+    def topic_names(self):
+        raise KeyError('No topic_names parameter')
+
+    @property
+    def class_id(self):
+        raise KeyError('No class_id parameter')
+
+    @property
+    def model_name(self):
+        raise KeyError('No model_name parameter')
+
+    @topic_names.setter
+    def topic_names(self, topic_names):
+        raise KeyError('No topic_names parameter')
+
+    @class_id.setter
+    def class_id(self, class_id):
+        raise KeyError('No class_id parameter')
+
+    @model_name.setter
+    def model_name(self, model_name):
+        raise KeyError('No model_name parameter')

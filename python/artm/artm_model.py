@@ -42,6 +42,7 @@ SCORE_TRACKER = {
     const.ScoreType_TopicMassPhi: score_tracker.TopicMassPhiScoreTracker,
     const.ScoreType_ClassPrecision: score_tracker.ClassPrecisionScoreTracker,
     const.ScoreType_BackgroundTokensRatio: score_tracker.BackgroundTokensRatioScoreTracker,
+    const.ScoreType_PeakMemory: score_tracker.PeakMemoryScoreTracker,
 }
 
 SCORE_TRACKER_FILENAME = 'score_tracker.bin'

@@ -14,7 +14,8 @@ __all__ = [
     'TopicKernelScoreTracker',
     'TopicMassPhiScoreTracker',
     'ClassPrecisionScoreTracker',
-    'BackgroundTokensRatioScoreTracker'
+    'BackgroundTokensRatioScoreTracker',
+    'PeakMemoryScoreTracker',
 ]
 
 
@@ -300,3 +301,16 @@ class BackgroundTokensRatioScoreTracker(BaseScoreTracker):
         BaseScoreTracker.__init__(self, score)
 
 _set_properties(BackgroundTokensRatioScoreTracker, {'value': {}, 'tokens': {'proto_name': 'token'}})
+
+class PeakMemoryScoreTracker(BaseScoreTracker):
+    def __init__(self, score):
+        """
+        :Properties:
+        * Note: every field is a list of info about score on all synchronizations.
+        * value - numbers of processed documents.
+        * Note: every field has a version with prefix 'last_', means retrieving only\
+          info about the last synchronization.
+        """
+        BaseScoreTracker.__init__(self, score)
+
+_set_properties(PeakMemoryScoreTracker, {'value': {}})
