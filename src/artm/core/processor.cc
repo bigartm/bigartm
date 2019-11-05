@@ -32,6 +32,8 @@ namespace core {
 
 Processor::Processor(Instance* instance)
     : instance_(instance),
+      info_(),
+      prev_memory_value_(0),
       is_stopping(false),
       thread_() {
   // Keep this at the last action in constructor.
@@ -55,6 +57,7 @@ void Processor::ThreadFunction() {
     const int kTimeLoggingThreshold = 0;
 
     Helpers::SetThreadName(-1, "Processor thread");
+
     LOG(INFO) << "Processor thread started";
     int pop_retries = 0;
     const int pop_retries_max = 20;
@@ -69,6 +72,8 @@ void Processor::ThreadFunction() {
       }
 
       std::shared_ptr<ProcessorInput> part;
+
+
       if (!instance_->processor_queue()->try_pop(&part)) {
         pop_retries++;
         LOG_IF(INFO, pop_retries == pop_retries_max) << "No data in processing queue, waiting...";
@@ -77,6 +82,10 @@ void Processor::ThreadFunction() {
 
         continue;
       }
+
+      getrusage(RUSAGE_SELF, &info_);
+      LOG(ERROR) << "start diff:      " << (int) (info_.ru_maxrss / 1024.0 - prev_memory_value_) << " Mb";
+      prev_memory_value_ = info_.ru_maxrss / 1024.0;
 
       LOG_IF(INFO, pop_retries >= pop_retries_max) << "Processing queue has data, processing started";
       pop_retries = 0;
@@ -91,6 +100,10 @@ void Processor::ThreadFunction() {
           part->batch_manager()->Callback(part->task_id());
         }
       });
+
+      getrusage(RUSAGE_SELF, &info_);
+      LOG(ERROR) << "pre batch diff:  " << (int) (info_.ru_maxrss / 1024.0 - prev_memory_value_) << " Mb";
+      prev_memory_value_ = info_.ru_maxrss / 1024.0;
 
       Batch batch;
       {
@@ -111,6 +124,10 @@ void Processor::ThreadFunction() {
           batch.CopyFrom(part->batch());
         }
       }
+
+      getrusage(RUSAGE_SELF, &info_);
+      LOG(ERROR) << "post batch diff: " << (int) (info_.ru_maxrss / 1024.0 - prev_memory_value_) << " Mb";
+      prev_memory_value_ = info_.ru_maxrss / 1024.0;
 
       std::shared_ptr<MasterModelConfig> master_config = instance_->config();
 
@@ -149,6 +166,10 @@ void Processor::ThreadFunction() {
           }
         }
 
+        getrusage(RUSAGE_SELF, &info_);
+        LOG(ERROR) << "pre parts diff:  " << (int) (info_.ru_maxrss / 1024.0 - prev_memory_value_) << " Mb";
+        prev_memory_value_ = info_.ru_maxrss / 1024.0;
+
         std::stringstream model_description;
         if (part->has_nwt_target_name()) {
           model_description << part->nwt_target_name();
@@ -162,17 +183,31 @@ void Processor::ThreadFunction() {
           CuckooWatch cuckoo2("FindReuseThetaCacheEntry", &cuckoo, kTimeLoggingThreshold);
           cache = part->reuse_theta_cache_manager()->FindCacheEntry(batch);
         }
+
+        getrusage(RUSAGE_SELF, &info_);
+        LOG(ERROR) << "pre theta diff:  " << (int) (info_.ru_maxrss / 1024.0 - prev_memory_value_) << " Mb";
+        prev_memory_value_ = info_.ru_maxrss / 1024.0;
+
         std::shared_ptr<LocalThetaMatrix<float>> theta_matrix;
         {
           CuckooWatch cuckoo2("InitializeTheta", &cuckoo, kTimeLoggingThreshold);
           theta_matrix = ProcessorHelpers::InitializeTheta(p_wt.topic_size(), batch, args, cache.get());
         }
 
+        getrusage(RUSAGE_SELF, &info_);
+        LOG(ERROR) << "post theta diff: " << (int) (info_.ru_maxrss / 1024.0 - prev_memory_value_) << " Mb";
+        prev_memory_value_ = info_.ru_maxrss / 1024.0;
+
         if (p_wt.token_size() == 0) {
           LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
             "would not be processed on this iteration";
           continue;
         }
+
+        getrusage(RUSAGE_SELF, &info_);
+        LOG(ERROR) << "before batch diff: " << (int) (info_.ru_maxrss / 1024.0 - prev_memory_value_) << " Mb";
+        prev_memory_value_ = info_.ru_maxrss / 1024.0;
+
 
         std::shared_ptr<NwtWriteAdapter> nwt_writer;
         if (nwt_target != nullptr) {
@@ -196,6 +231,10 @@ void Processor::ThreadFunction() {
         if (new_ptdw_cache_entry_ptr != nullptr) {
           new_ptdw_cache_entry_ptr->mutable_topic_name()->CopyFrom(p_wt.topic_name());
         }
+
+        getrusage(RUSAGE_SELF, &info_);
+        LOG(ERROR) << "post write diff: " << (int) (info_.ru_maxrss / 1024.0 - prev_memory_value_) << " Mb";
+        prev_memory_value_ = info_.ru_maxrss / 1024.0;
 
         {
           RegularizeThetaAgentCollection theta_agents;
@@ -239,6 +278,10 @@ void Processor::ThreadFunction() {
               sparse_ndw = ProcessorHelpers::InitializeSparseNdw(batch, args);
             }
 
+            getrusage(RUSAGE_SELF, &info_);
+            LOG(ERROR) << "pre proc diff:   " << (int) (info_.ru_maxrss / 1024.0 - prev_memory_value_) << " Mb";
+            prev_memory_value_ = info_.ru_maxrss / 1024.0;
+
             if (ptdw_agents.empty() && !part->has_ptdw_cache_manager()) {
               CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
               ProcessorHelpers::InferThetaAndUpdateNwtSparse(args, batch, part->batch_weight(), *sparse_ndw, p_wt,
@@ -251,6 +294,10 @@ void Processor::ThreadFunction() {
                                                             nwt_writer.get(), blas, new_cache_entry_ptr.get(),
                                                             new_ptdw_cache_entry_ptr.get());
             }
+
+            getrusage(RUSAGE_SELF, &info_);
+            LOG(ERROR) << "post procc diff:  " << (int) (info_.ru_maxrss / 1024.0 - prev_memory_value_) << " Mb";
+            prev_memory_value_ = info_.ru_maxrss / 1024.0;
           }
         }
 
@@ -263,6 +310,11 @@ void Processor::ThreadFunction() {
           CuckooWatch cuckoo2("UpdatePtdwCacheEntry", &cuckoo, kTimeLoggingThreshold);
           part->ptdw_cache_manager()->UpdateCacheEntry(batch.id(), *new_ptdw_cache_entry_ptr);
         }
+
+        getrusage(RUSAGE_SELF, &info_);
+        LOG(ERROR) << "pre score diff: " << (int) (info_.ru_maxrss / 1024.0 - prev_memory_value_) << " Mb";
+        prev_memory_value_ = info_.ru_maxrss / 1024.0;
+
 
         for (int score_index = 0; score_index < master_config->score_config_size(); ++score_index) {
           const ScoreName& score_name = master_config->score_config(score_index).name();
@@ -288,6 +340,10 @@ void Processor::ThreadFunction() {
             }
           }
         }
+
+        getrusage(RUSAGE_SELF, &info_);
+        LOG(ERROR) << "post proc diff:  " << (int) (info_.ru_maxrss / 1024.0 - prev_memory_value_) << " Mb";
+        prev_memory_value_ = info_.ru_maxrss / 1024.0;
 
         VLOG(0) << "Processor: complete processing batch " << batch.id() << " into model " << model_description.str();
       }

@@ -7,6 +7,8 @@
 namespace artm {
 namespace core {
 
+rusage ProcessorHelpers::info_;
+
 void ProcessorHelpers::CreateThetaCacheEntry(ThetaMatrix* new_cache_entry_ptr,
                                              LocalThetaMatrix<float>* theta_matrix,
                                              const Batch& batch,
@@ -399,6 +401,9 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
   std::vector<int> token_id;
   ProcessorHelpers::FindBatchTokenIds(batch, p_wt, &token_id);
 
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "                   start mem value:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
+
   if (args.opt_for_avx()) {
     // This version is about 40% faster than the second alternative below.
     // Both versions return 100% equal results.
@@ -425,6 +430,9 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
 
     std::vector<float> helper_vector_values(num_topics, 0.0f);
     std::vector<int> helper_vector_ptrs(num_topics, 0.0f);
+
+    getrusage(RUSAGE_SELF, &info_);
+    LOG(ERROR) << "                       1 mem value:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
 
     for (int d = 0; d < docs_count; ++d) {
       float* ntd_ptr = &n_td(0, d);
@@ -544,7 +552,13 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
     }
   }
 
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "                       2 mem value:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
+
   CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, args);
+
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "                       3 mem value:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
 
   if (nwt_writer == nullptr) {
     return;
@@ -553,11 +567,20 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
   std::vector<int> token_nwt_id;
   ProcessorHelpers::FindBatchTokenIds(batch, *nwt_writer->n_wt(), &token_nwt_id);
 
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "                       3-1 mem value:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
+
   CsrMatrix<float> sparse_nwd(sparse_ndw);
   sparse_nwd.Transpose(blas);
 
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "                       3-2 mem value:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
+
   std::vector<float> p_wt_local(num_topics, 0.0f);
   std::vector<float> n_wt_local(num_topics, 0.0f);
+
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "                       4 mem value:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
   for (int w = 0; w < tokens_count; ++w) {
     if (token_nwt_id[w] == -1) {
       continue;
@@ -590,6 +613,9 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
     }
     nwt_writer->Store(token_nwt_id[w], values);
   }
+
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "                       5 mem value:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
 }
 
 }  // namespace core

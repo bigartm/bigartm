@@ -15,6 +15,11 @@
 #include "artm/core/dictionary.h"
 #include "artm/core/thread_safe_holder.h"
 
+#if defined(__linux__)
+#include <sys/time.h>
+#include <sys/resource.h>
+#endif
+
 namespace artm {
 
 class RegularizerInterface;
@@ -117,6 +122,7 @@ class MasterComponent : boost::noncopyable {
   void AddDictionary(std::shared_ptr<Dictionary> dictionary);
 
   std::shared_ptr<Instance> instance_;
+  rusage info_;
 };
 
 }  // namespace core

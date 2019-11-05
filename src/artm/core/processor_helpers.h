@@ -19,6 +19,11 @@
 
 #include "artm/utility/blas.h"
 
+#if defined(__linux__)
+#include <sys/time.h>
+#include <sys/resource.h>
+#endif
+
 namespace util = artm::utility;
 using ::util::CsrMatrix;
 using ::util::LocalThetaMatrix;
@@ -119,6 +124,8 @@ class NwtWriteAdapter {
 
 class ProcessorHelpers {
  public:
+  static rusage info_;
+
   static void CreateThetaCacheEntry(ThetaMatrix* new_cache_entry_ptr,
                                     LocalThetaMatrix<float>* theta_matrix,
                                     const Batch& batch,

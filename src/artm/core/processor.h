@@ -9,6 +9,11 @@
 #include "boost/thread/mutex.hpp"
 #include "boost/utility.hpp"
 
+#if defined(__linux__)
+#include <sys/time.h>
+#include <sys/resource.h>
+#endif
+
 namespace artm {
 namespace core {
 
@@ -27,6 +32,8 @@ class Processor : boost::noncopyable {
 
  private:
   Instance* instance_;
+  rusage info_;
+  double prev_memory_value_;
 
   mutable std::atomic<bool> is_stopping;
   boost::thread thread_;

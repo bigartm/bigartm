@@ -232,12 +232,14 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
 }
 
 MasterComponent::MasterComponent(const MasterModelConfig& config)
-    : instance_(nullptr) {
+    : instance_(nullptr)
+    , info_() {
   CreateOrReconfigureMasterComponent(config, /*reconfigure =*/ false, /*change_topic_name*/ false);
 }
 
 MasterComponent::MasterComponent(const MasterComponent& rhs)
-    : instance_(rhs.instance_->Duplicate()) {
+    : instance_(rhs.instance_->Duplicate())
+    , info_() {
 }
 
 MasterComponent::~MasterComponent() { }
@@ -580,6 +582,9 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
 }
 
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "Before model init:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
+
   std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr) {
     InitializeModelArgs* mutable_args = const_cast<InitializeModelArgs*>(&args);
@@ -663,6 +668,9 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   LOG(INFO) << "InitializeModel() created matrix " << new_ttm->model_name()
             << " with " << args.topic_name_size() << " topics and "
             << new_ttm->token_size() << " tokens; ";
+
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "After model init:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
 }
 
 void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
@@ -758,6 +766,9 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
                                                 BatchManager* batch_manager, bool asynchronous,
                                                 ScoreManager* score_manager,
                                                 ::artm::ThetaMatrix* theta_matrix) {
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "Before fit init:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
+
   const ProcessBatchesArgs& args = process_batches_args;  // short notation
   ModelName model_name = args.pwt_source_name();
 
@@ -891,9 +902,15 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   if (theta_matrix != nullptr && args.has_theta_matrix_type()) {
     cache_manager.RequestThetaMatrix(get_theta_matrix_args, theta_matrix);
   }
+
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "After fit init:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "Before merge init:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
+
   VLOG(0) << "MasterComponent: start merging models";
   if (merge_model_args.nwt_source_name_size() == 0) {
     BOOST_THROW_EXCEPTION(InvalidOperation("MergeModelArgs.nwt_source_name must not be empty"));
@@ -969,6 +986,9 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
   }
   instance_->SetPhiMatrix(merge_model_args.nwt_target_name(), nwt_target);
   VLOG(0) << "MasterComponent: complete merging models";
+
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "After merge init:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
 }
 
 void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_model_args) {
@@ -1002,6 +1022,9 @@ void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_mode
 }
 
 void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_args) {
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "Before norma init:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
+
   VLOG(0) << "MasterComponent: start normalizing model " << normalize_model_args.nwt_source_name();
   const std::string& pwt_target_name = normalize_model_args.pwt_target_name();
   const std::string& nwt_source_name = normalize_model_args.nwt_source_name();
@@ -1031,9 +1054,15 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
   }
   instance_->SetPhiMatrix(pwt_target_name, pwt_target);
   VLOG(0) << "MasterComponent: complete normalizing model " << normalize_model_args.nwt_source_name();
+
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "After norma init:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
 }
 
 void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& args) {
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "Before overwrite init:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
+
   std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr && !args.has_name()) {
     const_cast< ::artm::TopicModel*>(&args)->set_name(config->pwt_name());
@@ -1042,6 +1071,9 @@ void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& args) {
   auto target = std::make_shared<DensePhiMatrix>(args.name(), args.topic_name());
   PhiMatrixOperations::ApplyTopicModelOperation(args, 1.0f, /* add_missing_tokens = */ true, target.get());
   instance_->SetPhiMatrix(args.name(), target);
+
+  getrusage(RUSAGE_SELF, &info_);
+  LOG(ERROR) << "After overwrite init:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
 }
 
 void MasterComponent::Request(const GetThetaMatrixArgs& args, ::artm::ThetaMatrix* result) {
@@ -1291,6 +1323,10 @@ class ArtmExecutor {
   }
 
   void ExecuteOfflineAlgorithm(int num_collection_passes, OfflineBatchesIterator* iter) {
+    rusage info_;
+    getrusage(RUSAGE_SELF, &info_);
+    LOG(ERROR) << "Before offline init:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
+
     const std::string rwt_name = "rwt";
     master_component_->ClearScoreCache(ClearScoreCacheArgs());
     for (int pass = 0; pass < num_collection_passes; ++pass) {
@@ -1301,7 +1337,13 @@ class ArtmExecutor {
       StoreScores(&score_manager);
     }
 
+    getrusage(RUSAGE_SELF, &info_);
+    LOG(ERROR) << "After offline init:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
+
     Dispose(rwt_name);
+
+    getrusage(RUSAGE_SELF, &info_);
+    LOG(ERROR) << "After rwt disposal:   " << (int) (info_.ru_maxrss / 1024.0) << " Mb";
   }
 
   void ExecuteOnlineAlgorithm(OnlineBatchesIterator* iter) {
