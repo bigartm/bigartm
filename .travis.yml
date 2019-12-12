@@ -44,8 +44,8 @@ before_install:
   # configure ccache
   # code from https://github.com/urho3d/Urho3D/blob/master/.travis.yml
   - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
-  - export CXX=g++-$GCC_VER CC=gcc-$GCC_VER
-  - for compiler in gcc g++; do ln -s $(which ccache) $HOME/$compiler-$GCC_VER; done && export PATH=$HOME:$PATH
+  - export CXX=g++ CC=gcc
+  - for compiler in gcc g++; do ln -s $(which ccache) $HOME/$compiler; done && export PATH=$HOME:$PATH
 
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then ./codestyle_checks.sh; fi
