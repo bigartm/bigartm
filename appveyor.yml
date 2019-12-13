@@ -1,0 +1,97 @@
+# Specify version format
+version: "{build}"
+
+# Operating system (build VM template)
+os: Visual Studio 2015
+
+configuration:
+  - Release
+
+# build platform, i.e. Win32 (instead of x86), x64, Any CPU. This setting is optional.
+platform:
+  - x64
+
+# specify custom environment variables
+environment:
+  global:
+    MSVC_DEFAULT_OPTIONS: ON
+    BOOST_ROOT: C:\Libraries\boost_1_60_0
+    BOOST_LIBRARYDIR: C:\Libraries\boost_1_60_0\lib64-msvc-14.0
+    PROTOC: C:\projects\bigartm\build\bin\Release\protoc.exe
+    ARTM_SHARED_LIBRARY: C:\projects\bigartm\build\bin\Release\artm.dll
+    BIGARTM_UNITTEST_DATA: C:\projects\bigartm\test_data
+    INSTALL_FOLDER: '"C:\Program Files\BigARTM"'
+
+  matrix:
+
+    - PYTHON_VERSION: 3.6
+      MINICONDA: C:\Miniconda36-x64
+
+    - PYTHON_VERSION: 2.7
+      MINICONDA: C:\Miniconda-x64
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - cmd: cmake --version
+  - cmd: msbuild /version
+
+# https://www.appveyor.com/blog/2014/06/04/shallow-clone-for-git-repositories
+shallow_clone: true
+
+# clone directory
+clone_folder: C:\projects\bigartm
+
+install:
+  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q -c conda-forge conda
+  - conda info -a
+  - conda install -c conda-forge numpy scipy pandas pytest
+  - conda install -c conda-forge tqdm
+
+# scripts to run before build
+before_build:
+  - cmd: cd C:\projects\bigartm
+  - cmd: md build
+  - cmd: cd build
+  - cmd: if "%platform%"=="Win32" set CMAKE_GENERATOR_NAME=Visual Studio 14 2015
+  - cmd: if "%platform%"=="x64"   set CMAKE_GENERATOR_NAME=Visual Studio 14 2015 Win64
+  - cmd: cmake -DPYTHON=python -G "%CMAKE_GENERATOR_NAME%" -DCMAKE_BUILD_TYPE=%configuration% -DBOOST_ROOT:PATH="%BOOST_ROOT%" -DBOOST_LIBRARYDIR:PATH="%BOOST_LIBRARYDIR%" ..
+  - cmd: cd %BIGARTM_UNITTEST_DATA%
+  - ps: Start-FileDownload 'https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt'
+  - ps: Start-FileDownload 'https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt'
+
+build:
+  project: C:\projects\bigartm\build\INSTALL.vcxproj    # path to Visual Studio solution or project
+  parallel: false                                       # enable MSBuild parallel builds
+  verbosity: normal                                     # MSBuild verbosity level (quiet|minimal|normal|detailed)
+
+after_build:
+  - cmd: cd C:\projects\bigartm\3rdparty\protobuf-3.0.0\python
+  - cmd: python setup.py install
+  - cmd: cd C:\projects\bigartm\python
+  - cmd: python setup.py install
+  - cmd: call C:\projects\bigartm\utils\create_windows_package.bat
+
+test_script:
+  - ps: |
+        cd C:\projects\bigartm\build
+        & msbuild .\RUN_TESTS.vcxproj
+        $testCode = $lastExitCode
+
+        $wc = New-Object 'System.Net.WebClient'
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\src\artm_tests\junit.xml))
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\python\tests\artm\junit.xml))
+        $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\python\tests\wrapper\junit.xml))
+
+        if ($testCode -ne 0) {
+            exit $testCode
+        }
+
+artifacts:
+  - path: BigARTM.7z
+    name: BigARTM
+
+# Enable RDP connection to test server as described here: http://www.appveyor.com/docs/how-to/rdp-to-build-worker
+#on_finish:
+#- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
