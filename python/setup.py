@@ -168,7 +168,9 @@ setup_kwargs = dict(
     name='bigartm',
     version='0.9.0',
     packages=find_packages(),
-    package_dir={'': './python'},
+
+    # package_dir={'': './python'},
+
     # add shared library to package
     package_data={'artm.wrapper': [artm_library_name]},
 
