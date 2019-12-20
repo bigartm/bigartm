@@ -13,6 +13,29 @@ import subprocess
 import argparse
 
 
+# specify classifiers
+BIGARTM_CLASSIFIERS = [
+    'Development Status :: 4 - Beta',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved',
+    'Operating System :: POSIX',
+    'Operating System :: Unix',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Topic :: Scientific/Engineering',
+    'Topic :: Scientific/Engineering :: Information Analysis',
+    'Topic :: Software Development'
+]
+
+
 # Find the Protocol Buffer Compiler.
 def find_protoc_exec():
     # extract path to protobuf executable from command-line arguments
@@ -133,12 +156,20 @@ class BinaryDistribution(Distribution):
 
 
 setup_kwargs = dict(
+    # some common information
     name='bigartm',
     version='0.9.0',
     packages=find_packages(),
+    package_dir={'': './python'},
+    # add shared library to package
+    package_data={'artm.wrapper': [artm_library_name]},
+
+    # information about dependencies
     install_requires=[
         'pandas',
-        'numpy'
+        'numpy',
+        'tqdm',
+        'prtobuf>=3.0'
     ],
     # this option must solve problem with installing
     # numpy as dependency during `setup.py install` execution
@@ -149,6 +180,18 @@ setup_kwargs = dict(
         'numpy'
     ],
     cmdclass={'build': build},
+
+    # metadata for upload to PyPI
+    license='New BSD license',
+    url='https://github.com/bigartm/bigartm',
+    description='BigARTM: the state-of-the-art platform for topic modeling',
+    classifiers=BIGARTM_CLASSIFIERS,
+    # Who should referred as author and how?
+    # author = 'Somebody'
+    # author_email = 'Somebody\'s email'
+    # Now include `artm_dev` Google group as primary maintainer
+    maintainer='ARTM developers group',
+    maintainer_email='artm_dev+pypi_develop@googlegroups.com'
 )
 
 if sys.argv[1] == "bdist_wheel":
@@ -157,4 +200,3 @@ if sys.argv[1] == "bdist_wheel":
     setup_kwargs['cmdclass']['build_py'] = AddLibraryBuild
 
 setup(**setup_kwargs)
-
