@@ -890,7 +890,7 @@ class MasterComponent(object):
                 args.decay_weight.append(value)
 
         if asynchronous is not None:
-            args.async = asynchronous
+            args.asynchronous = asynchronous
 
         self._lib.ArtmFitOnlineMasterModel(self.master_id, args)
 

@@ -1005,7 +1005,7 @@ inline std::string DescribeMessage(const ::artm::FitOnlineMasterModelArgs& messa
     ss << message.decay_weight(i);
   }
   ss << ")";
-  ss << ", async=" << (message.async() ? "yes" : "no");
+  ss << ", asynchronous=" << (message.asynchronous() ? "yes" : "no");
   return ss.str();
 }
 

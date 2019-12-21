@@ -294,7 +294,7 @@ struct artm_options {
   std::vector<std::string> regularizer;
   bool b_reuse_theta;
   int threads;
-  bool async;
+  bool asynchronous;
 
   // Output
   bool force;
@@ -1564,7 +1564,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
 
     if (options.update_every > 0) {  // online algorithm
       FitOnlineMasterModelArgs fit_online_args;
-      fit_online_args.set_async(options.async);
+      fit_online_args.set_asynchronous(options.asynchronous);
 
       int update_after = 0;
       do {
@@ -1765,7 +1765,7 @@ int main(int argc, char * argv[]) {
       ("reuse-theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
       ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken()->zero_tokens(), "regularizers (SmoothPhi,SparsePhi,SmoothTheta,SparseTheta,Decorrelation)")
       ("threads", po::value(&options.threads)->default_value(-1), "number of concurrent processors (default: auto-detect)")
-      ("async", po::bool_switch(&options.async)->default_value(false), "invoke asynchronous version of the online algorithm")
+      ("asynchronous", po::bool_switch(&options.asynchronous)->default_value(false), "invoke asynchronous version of the online algorithm")
     ;
 
     po::options_description output_options("Output");

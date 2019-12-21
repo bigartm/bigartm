@@ -756,7 +756,7 @@ message FitOnlineMasterModelArgs {
   repeated int32 update_after = 3;
   repeated float apply_weight = 4;
   repeated float decay_weight = 5;
-  optional bool async = 6 [default = false];
+  optional bool asynchronous = 6 [default = false];
 }
 
 message TransformMasterModelArgs {

@@ -130,7 +130,7 @@ void runBasicTest(bool skip_batch_dict) {
     for (int pass = 0; pass < 4; pass++) {
       ::artm::FitOnlineMasterModelArgs fit_online_args;
       fit_online_args.mutable_batch_filename()->CopyFrom(fit_offline_args.batch_filename());
-      fit_online_args.set_async(is_async == 1);
+      fit_online_args.set_asynchronous(is_async == 1);
 
       // Populate update_after and apply_weight fields
       int update_after = 0;
@@ -145,7 +145,7 @@ void runBasicTest(bool skip_batch_dict) {
       artm::PerplexityScore perplexity_score = master_model.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
       ASSERT_APPROX_EQ(perplexity_score.value(), expected[pass]);
 
-      if (!fit_online_args.async()) {
+      if (!fit_online_args.asynchronous()) {
         auto perplexity_scores = master_model.GetScoreArrayAs< ::artm::PerplexityScore>(get_score_array_args);
         ASSERT_EQ(perplexity_scores.size(), (pass + 1) * nBatches / update_every);
 
