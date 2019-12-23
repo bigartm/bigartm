@@ -173,8 +173,8 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
 
         float* local_phi_ptr = &local_phi(it->second->local_pwt_token_index[k], 0);
         p_wt.get(global_index, &helper_vector);
-        for (int k = 0; k < num_topics; ++k) {
-          local_phi_ptr[k] = helper_vector[k];
+        for (int t = 0; t < num_topics; ++t) {
+          local_phi_ptr[t] = helper_vector[t];
         }
       }
     }
