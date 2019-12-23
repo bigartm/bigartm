@@ -4,12 +4,9 @@ Installation for Linux and Mac OS-X users
 
 BigARTM had been tested on several Linux and MAC distributions, and it is known to work well on
 
-* Ubuntu 16.04.1
-* Linux Mint 18
-* Ubuntu 14.04.5
-* Linux Mint 17.3
-* Arch Linux
-* Manjaro
+* Ubuntu 16.04.1, 14.04.5
+* Linux Mint 18, 17.3
+* Arch Linux, Manjaro
 * Fedora 24
 * openSUSE Leap 42.1
 

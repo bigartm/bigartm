@@ -1,5 +1,3 @@
-sudo: false
-
 language:
   - python
 # Currently Travis doesn't support multiple values for language variable
@@ -22,11 +20,6 @@ python:
   - "3.5"
   - "3.6"
 
-addons:
-  apt:
-    packages:
-      - libboost1.54-all-dev
-
 env:
   global:
     # variables for caching
@@ -44,11 +37,14 @@ before_install:
   - pip install -U pytest pep8 wheel pytest-forked
   - pip install -U numpy scipy pandas tqdm --only-binary numpy,scipy,pandas
   - pip install -U protobuf
+  # install boost
+  - sudo add-apt-repository universe
+  - sudo apt-get update
+  - sudo apt-get install libboost-all-dev
   # configure ccache
   # code from https://github.com/urho3d/Urho3D/blob/master/.travis.yml
   - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
-  - export CXX=g++-$GCC_VER CC=gcc-$GCC_VER
-  - for compiler in gcc g++; do ln -s $(which ccache) $HOME/$compiler-$GCC_VER; done && export PATH=$HOME:$PATH
+  - export CXX=g++ CC=gcc PATH=$HOME:$PATH
 
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then ./codestyle_checks.sh; fi

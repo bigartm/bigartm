@@ -27,9 +27,6 @@ environment:
     - PYTHON_VERSION: 3.6
       MINICONDA: C:\Miniconda36-x64
 
-    - PYTHON_VERSION: 2.7
-      MINICONDA: C:\Miniconda-x64
-
 # scripts that are called at very beginning, before repo cloning
 init:
   - cmd: cmake --version

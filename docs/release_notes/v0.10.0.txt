@@ -1,0 +1,47 @@
+BigARTM v0.10.0 Release notes
+
+============================
+
+
+
+We are announcing 0.10.0, which brings you the following changes:
+
+
+
+* Support for transactions
+
+* Compatibility improvements
+
+* expanded information in get_phi methods
+
+
+
+Transactions
+----------------
+
+From a certain point of view, the appearance of token is a relation ``{t, d}`` between two entities: token ``t`` and document ``d``.  Transactions are a generalization of tokens. For example, financial transaction ``{c, p, m}`` could mean that a customer 'c' made a purchase 'p' from a merchant 'm'.
+
+With that change, BigARTM now supports topic modeling on transactional data.
+
+While the change of internals is extensive, the external APIs and interfaces are relaively unaffected. A lot of classes and methods (C as well as Python) gained new argument `transaction_typenames`. This argument is optional, so you do not have to use it. However, it should be noted that there are some users reporting broken backward compatibility (different results). We investigate this matter.
+
+Compatibility improvements
+--------------------------
+The toolchain around BigARTM evolves, and we need to adapt accordingly.
+
+* When trying to find artm shared library (``libartm.so`` or ``artm.dll``), we now prefer packaged libartm over system libartm. That makes certain use cases easier (see #921).
+* 3rd party dependencies (glog and gflag) are updated
+* Progress-bar logic became more sophisticated (previously BigArtm was assuming that everything from ipython/jupyter was an interactive notebook: see #928)
+* Since ``async`` became a reserved keyword in python 3.7, we renamed some variables to ``asynchronous`` (see #931).
+
+
+Get Phi
+-------
+Now ``get_phi()``, ``get_phi_sparse()`` and ``get_phi_dense()`` methods retrieve tokens together with their ``class_ids``.
+
+(For ``get_phi()`` that means an additional column in dataframe. For ``get_phi_dense()`` and ``get_phi_sparse()`` that means that the second element of tuple now consists of ``(token, class_id)`` pairs)
+
+That removes long-standing "gotcha" of BigARTM: the inability to operate on Phi matrices from multimodal models without ambiguity. Imagine there are the same words in different modalities: you cannot be sure which object the particular row of dataframe refers to (for example, ``smith`` token could be a member of ``@word`` modality or ``@author`` modality). 
+
+While there was a number of workarounds for this, it just makes more sense to provide the required information "natively".
+
