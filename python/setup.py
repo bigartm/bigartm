@@ -154,6 +154,15 @@ class BinaryDistribution(Distribution):
     def is_pure(self):
         return False
 
+
+# name of artm shared library
+artm_library_name = 'libartm.so'
+if sys.platform.startswith('win'):
+    artm_library_name = 'artm.dll'
+elif sys.platform.startswith('darwin'):
+    artm_library_name = 'libartm.dylib'
+
+
 setup_kwargs = dict(
     name='bigartm',
     version='0.10.0',
