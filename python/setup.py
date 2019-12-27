@@ -164,7 +164,7 @@ elif sys.platform.startswith('darwin'):
 
 
 setup_kwargs = dict(
-    name='bigartm',
+    name='bigartm10',
     version='0.10.1',
     packages=find_packages(),
 
