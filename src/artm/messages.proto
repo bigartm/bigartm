@@ -795,6 +795,7 @@ message MasterModelConfig {
   repeated float transaction_weight = 18;
   optional int32 parent_master_model_id = 19;
   optional float parent_master_model_weight = 20 [default = 1.0];
+  optional float min_sparsity_rate = 21 [default = 0.6];
 }
 
 message FitOfflineMasterModelArgs {

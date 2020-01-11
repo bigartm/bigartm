@@ -289,7 +289,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
   }
 
   if (use_any_relative_regularization) {
-    DensePhiMatrix local_r_wt(ModelName(), n_wt.topic_name());
+    DensePhiMatrix local_r_wt(ModelName(), n_wt.topic_name(), instance->config()->min_sparsity_rate());
     local_r_wt.Reshape(n_wt);
 
     for (const auto &reg_it : regularizer_settings) {
