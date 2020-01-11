@@ -473,7 +473,9 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
     }
 
     topic_model.set_name(args.model_name());
-    target = std::make_shared<DensePhiMatrix>(args.model_name(), topic_model.topic_name());
+    target = std::make_shared<DensePhiMatrix>(args.model_name(),
+                                              topic_model.topic_name(),
+                                              instance_->config()->min_sparsity_rate());
 
     PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, /* add_missing_tokens = */ true, target.get());
   }
@@ -614,7 +616,9 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
       BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
     }
 
-    new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), args.topic_name());
+    new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(),
+                                                              args.topic_name(),
+                                                              instance_->config()->min_sparsity_rate());
     for (int index = 0; index < (int64_t) dict->size(); ++index) {
       ::artm::core::Token token = dict->entry(index)->token();
 
@@ -783,7 +787,9 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
         PhiMatrixOperations::AssignValue(0.0f, const_cast<::artm::core::PhiMatrix*>(current_nwt_target.get()));
       }
     } else {
-      auto nwt_target(std::make_shared<DensePhiMatrix>(args.nwt_target_name(), p_wt.topic_name()));
+      auto nwt_target(std::make_shared<DensePhiMatrix>(args.nwt_target_name(),
+                                                       p_wt.topic_name(),
+                                                       instance_->config()->min_sparsity_rate()));
       nwt_target->Reshape(p_wt);
       instance_->SetPhiMatrix(args.nwt_target_name(), nwt_target);
     }
@@ -925,7 +931,7 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
   }
 
   std::shared_ptr<DensePhiMatrix> nwt_target = std::make_shared<DensePhiMatrix>(
-    merge_model_args.nwt_target_name(), merge_model_args.topic_name());
+    merge_model_args.nwt_target_name(), merge_model_args.topic_name(), instance_->config()->min_sparsity_rate());
 
   std::shared_ptr<Dictionary> dictionary = nullptr;
   if (merge_model_args.has_dictionary_name()) {
@@ -993,7 +999,9 @@ void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_mode
   std::shared_ptr<const PhiMatrix> pwt_phi_matrix = instance_->GetPhiMatrixSafe(pwt_source_name);
   const PhiMatrix& p_wt = *pwt_phi_matrix;
 
-  auto rwt_target(std::make_shared<DensePhiMatrix>(rwt_target_name, nwt_phi_matrix->topic_name()));
+  auto rwt_target(std::make_shared<DensePhiMatrix>(rwt_target_name,
+                                                   nwt_phi_matrix->topic_name(),
+                                                   instance_->config()->min_sparsity_rate()));
   rwt_target->Reshape(*nwt_phi_matrix);
   PhiMatrixOperations::InvokePhiRegularizers(instance_.get(), regularize_model_args.regularizer_settings(),
                                              p_wt, n_wt, rwt_target.get());
@@ -1022,7 +1030,9 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
     rwt_phi_matrix = instance_->GetPhiMatrixSafe(rwt_source_name);
   }
 
-  auto pwt_target(std::make_shared<DensePhiMatrix>(pwt_target_name, n_wt.topic_name()));
+  auto pwt_target(std::make_shared<DensePhiMatrix>(pwt_target_name,
+                                                   n_wt.topic_name(),
+                                                   instance_->config()->min_sparsity_rate()));
   pwt_target->Reshape(n_wt);
   if (rwt_phi_matrix == nullptr) {
     PhiMatrixOperations::FindPwt(n_wt, pwt_target.get());
@@ -1039,7 +1049,10 @@ void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& args) {
     const_cast< ::artm::TopicModel*>(&args)->set_name(config->pwt_name());
   }
 
-  auto target = std::make_shared<DensePhiMatrix>(args.name(), args.topic_name());
+  auto target = std::make_shared<DensePhiMatrix>(args.name(),
+                                                 args.topic_name(),
+                                                 instance_->config()->min_sparsity_rate());
+
   PhiMatrixOperations::ApplyTopicModelOperation(args, 1.0f, /* add_missing_tokens = */ true, target.get());
   instance_->SetPhiMatrix(args.name(), target);
 }

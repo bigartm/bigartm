@@ -58,12 +58,14 @@ class SpinLock : boost::noncopyable {
 class PhiMatrixFrame : public PhiMatrix {
  public:
   explicit PhiMatrixFrame(const ModelName& model_name,
-                          const google::protobuf::RepeatedPtrField<std::string>& topic_name);
+                          const google::protobuf::RepeatedPtrField<std::string>& topic_name,
+                          float min_sparsity_rate);
 
   virtual ~PhiMatrixFrame() { }
 
   virtual int topic_size() const { return static_cast<int>(topic_name_.size()); }
   virtual int token_size() const { return static_cast<int>(token_collection_.token_size()); }
+  virtual float min_sparsity_rate() const { return min_sparsity_rate_; }
   virtual const Token& token(int index) const;
   virtual bool has_token(const Token& token) const;
   virtual int token_index(const Token& token) const;
@@ -90,6 +92,7 @@ class PhiMatrixFrame : public PhiMatrix {
 
   TokenCollection token_collection_;
   std::vector<std::shared_ptr<SpinLock> > spin_locks_;
+  float min_sparsity_rate_;
 };
 
 class DensePhiMatrix;
@@ -99,10 +102,10 @@ class AttachedPhiMatrix;
 // Sparse rows (with many zeros) might be packed for memory efficiency.
 class PackedValues {
  public:
-  PackedValues();
-  explicit PackedValues(int size);
-  explicit PackedValues(const PackedValues& rhs);
-  PackedValues(const float* values, int size);
+  explicit PackedValues(float min_sparsity_rate);
+  PackedValues(int size, float min_sparsity_rate);
+  PackedValues(const PackedValues& rhs, float min_sparsity_rate);
+  PackedValues(const float* values, int size, float min_sparsity_rate);
   virtual int64_t ByteSize() const;
 
   bool is_packed() const;
@@ -116,6 +119,7 @@ class PackedValues {
   std::vector<float> values_;
   std::vector<bool> bitmask_;
   std::vector<int> ptr_;
+  float min_sparsity_rate_;
 };
 
 // DensePhiMatrix class implements PhiMatrix interface as a dense matrix.
@@ -123,7 +127,8 @@ class PackedValues {
 class DensePhiMatrix : public PhiMatrixFrame {
  public:
   explicit DensePhiMatrix(const ModelName& model_name,
-                          const google::protobuf::RepeatedPtrField<std::string>& topic_name);
+                          const google::protobuf::RepeatedPtrField<std::string>& topic_name,
+                          float min_sparsity_rate);
 
   virtual ~DensePhiMatrix() { Clear(); }
   virtual int64_t ByteSize() const;

@@ -44,7 +44,8 @@ void CacheManager::Clear() {
   cache_.clear();
   std::string ptd_name = (instance_ != nullptr) ? instance_->config()->ptd_name() : std::string();
   if (!ptd_name.empty()) {
-    std::shared_ptr<PhiMatrix> ptd(new DensePhiMatrix(ptd_name, instance_->config()->topic_name()));
+    std::shared_ptr<PhiMatrix> ptd(
+            new DensePhiMatrix(ptd_name, instance_->config()->topic_name(), instance_->config()->min_sparsity_rate()));
     instance_->SetPhiMatrix(ptd_name, ptd);
   }
 }
