@@ -334,7 +334,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
       }
 
       for (int token_id = 0; token_id < token_size; ++token_id) {
-        const auto &class_id = n_wt.token(token_id).class_id;
+        const auto& class_id = n_wt.token(token_id).class_id;
         auto iter = relative_coefficients.find(class_id);
 
         if (use_relative_reg && iter == relative_coefficients.end()) {
@@ -356,7 +356,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
       local_r_wt.Reset();
     }
   } else {
-    for (const auto &reg_it : regularizer_settings) {
+    for (const auto& reg_it : regularizer_settings) {
       auto regularizer = instance->regularizers()->get(reg_it.name().c_str());
 
       if (regularizer == nullptr) {
