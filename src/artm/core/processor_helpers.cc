@@ -421,7 +421,7 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
 
     std::vector<int> num_non_zero_topics_for_token(max_local_token_size, num_topics);
 
-    LocalThetaMatrix<float> r_td(num_topics, 1);
+    LocalThetaMatrix<float> r_td(num_topics, 1.0f);
     std::vector<float> helper_vector_values(num_topics, 0.0f);
     std::vector<int> helper_vector_ptrs(num_topics, 0);
 
