@@ -17,7 +17,8 @@ BitermsPhi::BitermsPhi(const BitermsPhiConfig& config) : config_(config) { }
 
 bool BitermsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                const ::artm::core::PhiMatrix& n_wt,
-                               ::artm::core::PhiMatrix* result) {
+                               ::artm::core::PhiMatrix* r_wt,
+                               const float* tau) {
   if (!::artm::core::PhiMatrixOperations::HasEqualShape(p_wt, n_wt)) {
     LOG(ERROR) << "BitermsPhi does not support changes in p_wt and n_wt matrix. Cancel it's launch.";
     return false;
@@ -113,7 +114,14 @@ bool BitermsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
         values[topic_id] += p_t_uw * mult_coef;
       }
     }
-    result->increase(token_id, values);
+
+    if (tau != nullptr) {
+      for (auto& v : values) {
+        v *= *tau;
+      }
+    }
+
+    r_wt->increase(token_id, values);
   }
 
   return true;

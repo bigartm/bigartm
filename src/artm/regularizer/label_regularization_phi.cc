@@ -16,7 +16,8 @@ namespace regularizer {
 
 bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                            const ::artm::core::PhiMatrix& n_wt,
-                                           ::artm::core::PhiMatrix* result) {
+                                           ::artm::core::PhiMatrix* r_wt,
+                                           const float* tau) {
   // read the parameters from config and control their correctness
   const int topic_size = n_wt.topic_size();
   const int token_size = n_wt.token_size();
@@ -65,7 +66,7 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
       if (topics_to_regularize[topic_id]) {
         float weight = n_wt.get(token_id, topic_id);
         float value = static_cast<float>(coefficient * weight / weights_sum);
-        result->set(token_id, topic_id, value);
+        r_wt->increase(token_id, topic_id, value * (tau != nullptr ? *tau : 1.0f));
       }
     }
   }

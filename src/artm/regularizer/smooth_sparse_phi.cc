@@ -24,7 +24,8 @@ SmoothSparsePhi::SmoothSparsePhi(const SmoothSparsePhiConfig& config)
 
 bool SmoothSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                     const ::artm::core::PhiMatrix& n_wt,
-                                    ::artm::core::PhiMatrix* result) {
+                                    ::artm::core::PhiMatrix* r_wt,
+                                    const float* tau) {
   // read the parameters from config and control their correctness
   const int topic_size = p_wt.topic_size();
 
@@ -73,7 +74,7 @@ bool SmoothSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
         float value = transform_function_->apply(p_wt.get(token_pwt_id, topic_id));
-        result->set(token_nwt_id, topic_id, coefficient * value);
+        r_wt->increase(token_nwt_id, topic_id, coefficient * value * (tau != nullptr ? *tau : 1.0f));
       }
     }
   }
