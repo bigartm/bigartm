@@ -879,7 +879,7 @@ class ScoreHelper {
      score_name_.push_back(std::make_pair(score, score_config.type()));
    }
 
-   std::string showScore(const std::string& score_name, ::artm::ScoreType type) {
+   std::string showScore(const std::string& score_name, ::artm::ScoreType type, bool is_first_iter = false) {
      std::string retval;
      GetScoreValueArgs get_score_args;
      get_score_args.set_score_name(score_name);
@@ -940,17 +940,22 @@ class ScoreHelper {
        }
      }
      else if (type == ::artm::ScoreType_TopicKernel) {
-       auto score_data = master_->GetScoreAs< ::artm::TopicKernelScore>(get_score_args);
        std::stringstream suffix;
        if (boost::to_lower_copy(score_name) != "topickernel") {
          suffix << "\t(" << score_name << ")";
        }
 
-       std::cerr << "KernelSize      = " << score_data.average_kernel_size() << suffix.str() << "\n";
-       std::cerr << "KernelPurity    = " << score_data.average_kernel_purity() << suffix.str() << "\n";
-       std::cerr << "KernelContrast  = " << score_data.average_kernel_contrast() << suffix.str() << "\n";
-       if (score_data.has_average_coherence()) {
-         std::cerr << "KernelCoherence = " << score_data.average_coherence() << suffix.str() << "\n";
+       if (!is_first_iter) {
+         auto score_data = master_->GetScoreAs<::artm::TopicKernelScore>(get_score_args);
+
+         std::cerr << "KernelSize      = " << score_data.average_kernel_size() << suffix.str() << "\n";
+         std::cerr << "KernelPurity    = " << score_data.average_kernel_purity() << suffix.str() << "\n";
+         std::cerr << "KernelContrast  = " << score_data.average_kernel_contrast() << suffix.str() << "\n";
+         if (score_data.has_average_coherence()) {
+           std::cerr << "KernelCoherence = " << score_data.average_coherence() << suffix.str() << "\n";
+         }
+       } else {
+         std::cerr << "TopicKernelScore cannot be caluculated before first iter is complete " << suffix.str() << "\n";
        }
      }
      else if (type == ::artm::ScoreType_ClassPrecision) {
@@ -1016,7 +1021,7 @@ class ScoreHelper {
        output_ << iter << sep << elapsed_ms;
      }
      for (const auto& score_name: score_name_) {
-       std::string score_value = showScore(score_name.first, score_name.second);
+       std::string score_value = showScore(score_name.first, score_name.second, iter == 0);
        if (output_.is_open()) {
          output_ << sep << score_value;
        }
