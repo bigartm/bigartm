@@ -15,7 +15,8 @@ namespace regularizer {
 
 bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                         const ::artm::core::PhiMatrix& n_wt,
-                                        ::artm::core::PhiMatrix* result) {
+                                        ::artm::core::PhiMatrix* r_wt,
+                                        const float* tau) {
   const int topic_size = n_wt.topic_size();
   const int token_size = n_wt.token_size();
 
@@ -78,7 +79,14 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
         values[topic_id] += n_wt.get(cooc_token_index, topic_id) * mult_coef;
       }
     }
-    result->increase(token_id, values);
+
+    if (tau != nullptr) {
+      for (auto& v : values) {
+        v *= *tau;
+      }
+    }
+
+    r_wt->increase(token_id, values);
   }
   return true;
 }

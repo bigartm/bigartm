@@ -15,7 +15,8 @@ namespace regularizer {
 
 bool SmoothTimeInTopicsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                           const ::artm::core::PhiMatrix& n_wt,
-                                          ::artm::core::PhiMatrix* result) {
+                                          ::artm::core::PhiMatrix* r_wt,
+                                          const float* tau) {
   if (!::artm::core::PhiMatrixOperations::HasEqualShape(p_wt, n_wt)) {
     LOG(ERROR) << "SmoothTimeInTopicsPhi does not support changes in p_wt and n_wt matrix. Cancel it's launch.";
     return false;
@@ -61,7 +62,7 @@ bool SmoothTimeInTopicsPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
         value *= ((p_wt.get(index_prev_prev, topic_id) - value) > 0.0 ? 1.0 : -1.0) +
                  ((p_wt.get(token_id, topic_id) - value) > 0.0 ? 1.0 : -1.0);
 
-        result->set(index_prev, topic_id, value);
+        r_wt->increase(index_prev, topic_id, value * (tau != nullptr ? *tau : 1.0f));
       }
     }
     index_prev_prev = index_prev;

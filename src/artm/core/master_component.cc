@@ -1297,6 +1297,7 @@ class ArtmExecutor {
       ::artm::core::ScoreManager score_manager(master_component_->instance_.get());
       ProcessBatches(pwt_name_, nwt_name_, iter, &score_manager);
       Regularize(pwt_name_, nwt_name_, rwt_name);
+      Dispose(pwt_name_);
       Normalize(pwt_name_, nwt_name_, rwt_name);
       StoreScores(&score_manager);
     }
@@ -1318,6 +1319,7 @@ class ArtmExecutor {
       Merge(nwt_name_, decay_weight, nwt_hat_index, apply_weight);
       Dispose(nwt_hat_index);
       Regularize(pwt_name_, nwt_name_, rwt_name);
+      Dispose(pwt_name_);
       Normalize(pwt_name_, nwt_name_, rwt_name);
       StoreScores(&score_manager);
 
@@ -1367,6 +1369,7 @@ class ArtmExecutor {
       Regularize(pwt_active, nwt_name_, rwt_name);
 
       pwt_active = is_last ? pwt_name_ : std::string(pwt_index + 1);
+      Dispose(pwt_active);
       Normalize(pwt_active, nwt_name_, rwt_name);
 
       Dispose(pwt_index - 1);

@@ -11,7 +11,8 @@ namespace regularizer {
 
 bool MultiLanguagePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                      const ::artm::core::PhiMatrix& n_wt,
-                                     ::artm::core::PhiMatrix* result) {
+                                     ::artm::core::PhiMatrix* r_wt,
+                                     const float* tau) {
   // the body of this method will be defined later
 
   ++no_regularization_calls_;

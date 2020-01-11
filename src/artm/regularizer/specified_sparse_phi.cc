@@ -22,7 +22,8 @@ struct Comparator {
 
 bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                        const ::artm::core::PhiMatrix& n_wt,
-                                       ::artm::core::PhiMatrix* result) {
+                                       ::artm::core::PhiMatrix* r_wt,
+                                       const float* tau) {
   // read the parameters from config and control their correctness
   const int topic_size = n_wt.topic_size();
   const int token_size = n_wt.token_size();
@@ -117,11 +118,11 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     auto saved_indices = artm::core::is_member(all_indices, indices_of_max);
     for (int local_index = 0; local_index < local_end; ++local_index) {
       if (mode_topics) {
-        result->set(local_index, global_index,
-                    saved_indices[local_index] ? 0.0f : -n_wt.get(local_index, global_index));
+        float final_value = saved_indices[local_index] ? 0.0f : -n_wt.get(local_index, global_index);
+        r_wt->increase(local_index, global_index, final_value * (tau != nullptr ? *tau : 1.0f));
       } else {
-        result->set(global_index, local_index,
-                    saved_indices[local_index] ? 0.0f : -n_wt.get(global_index, local_index));
+        float final_value = saved_indices[local_index] ? 0.0f : -n_wt.get(global_index, local_index);
+        r_wt->increase(global_index, local_index, final_value * (tau != nullptr ? *tau : 1.0f));
       }
     }
   }

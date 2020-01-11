@@ -21,6 +21,75 @@
 namespace artm {
 namespace core {
 
+namespace {
+  std::unordered_map<ClassId, std::vector<float>> FindRelativeRegularizationCoefficients(
+          const std::shared_ptr<artm::RegularizerInterface>& regularizer,
+          const PhiMatrix& n_wt,
+          const DensePhiMatrix& local_r_wt,
+          const Normalizers& n_t_all,
+          const std::vector<bool>& topics_to_regularize,
+          int topic_size,
+          int token_size,
+          float gamma) {
+    std::unordered_map<ClassId, std::vector<float>> relative_coefficients;
+
+    std::vector<core::ClassId> class_ids;
+    if (!regularizer->class_ids_to_regularize().empty()) {
+      for (const auto& class_id : regularizer->class_ids_to_regularize()) {
+        class_ids.push_back(class_id);
+      }
+    } else {
+      for (const auto& n_t : n_t_all) {
+        class_ids.push_back(n_t.first);
+      }
+    }
+
+    std::vector<float> r_it = std::vector<float>(topic_size, 0.0f);
+    std::vector<float> coefficients = std::vector<float>(topic_size, 0.0f);
+    for (const auto& class_id : class_ids) {
+      auto iter = n_t_all.find(class_id);
+      if (iter != n_t_all.end()) {
+        double n = 0.0;
+        double r_i = 0.0;
+        std::vector<float> n_t = iter->second;
+
+        for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+          if (!topics_to_regularize[topic_id]) {
+            continue;
+          }
+          n += n_t[topic_id];
+
+          float r_it_current = 0.0f;
+          for (int token_id = 0; token_id < token_size; ++token_id) {
+            if (n_wt.token(token_id).class_id != iter->first) {
+              continue;
+            }
+
+            r_it_current += fabs(local_r_wt.get(token_id, topic_id));
+          }
+
+          r_it[topic_id] = r_it_current;
+          r_i += r_it_current;
+        }
+
+        for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+          if (!topics_to_regularize[topic_id]) {
+            continue;
+          }
+
+          coefficients[topic_id] = gamma * (n_t[topic_id] / r_it[topic_id]) +
+                                   (1 - gamma) * static_cast<float>(n / r_i);
+        }
+
+        relative_coefficients.insert(std::make_pair(iter->first, coefficients));
+      } else {
+        LOG(WARNING) << "No class_id " << class_id << " in model";
+      }
+    }
+    return relative_coefficients;
+  }
+}  // namespace
+
 void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix,
                                                      const ::artm::GetTopicModelArgs& get_model_args,
                                                      ::artm::TopicModel* topic_model) {
@@ -209,33 +278,39 @@ void PhiMatrixOperations::InvokePhiRegularizers(
   int topic_size = n_wt.topic_size();
   int token_size = n_wt.token_size();
 
-  DensePhiMatrix local_r_wt(ModelName(), n_wt.topic_name());
-  local_r_wt.Reshape(n_wt);
-
   auto n_t_all = PhiMatrixOperations::FindNormalizers(n_wt);
 
-  for (auto reg_iterator = regularizer_settings.begin();
-       reg_iterator != regularizer_settings.end();
-       reg_iterator++) {
-    auto regularizer = instance->regularizers()->get(reg_iterator->name().c_str());
-
-    if (regularizer == nullptr) {
-      LOG(ERROR) << "Phi Regularizer with name <" << reg_iterator->name().c_str() << "> does not exist.\n";
-      continue;
+  bool use_any_relative_regularization = false;
+  for (const auto &reg_it : regularizer_settings) {
+    if (reg_it.has_gamma()) {
+      use_any_relative_regularization = true;
+      break;
     }
+  }
 
-    {
-      float tau = reg_iterator->tau();
-      bool relative_reg = reg_iterator->has_gamma();
+  if (use_any_relative_regularization) {
+    DensePhiMatrix local_r_wt(ModelName(), n_wt.topic_name());
+    local_r_wt.Reshape(n_wt);
+
+    for (const auto &reg_it : regularizer_settings) {
+      auto regularizer = instance->regularizers()->get(reg_it.name().c_str());
+
+      if (regularizer == nullptr) {
+        LOG(ERROR) << "Phi Regularizer with name <" << reg_it.name().c_str() << "> does not exist.\n";
+        continue;
+      }
+
+      float tau = reg_it.tau();
+      bool use_relative_reg = reg_it.has_gamma();
 
       // p_wt.token_size() != n_wt.token_size() --- this is possible
       // if user chooses to change the number of topics in the model between calls to fit_offline.
       if (p_wt.topic_size() != n_wt.topic_size() ||
           local_r_wt.token_size() != n_wt.token_size() || local_r_wt.topic_size() != n_wt.topic_size()) {
         LOG(ERROR) << "Inconsistent matrix size: Pwt( "
-          << p_wt.token_size() << ", " << p_wt.topic_size() << ") vs Nwt("
-          << n_wt.token_size() << ", " << n_wt.topic_size() << ") vs Rwt("
-          << local_r_wt.token_size() << ", " << local_r_wt.topic_size() << ")";
+                   << p_wt.token_size() << ", " << p_wt.topic_size() << ") vs Nwt("
+                   << n_wt.token_size() << ", " << n_wt.topic_size() << ") vs Rwt("
+                   << local_r_wt.token_size() << ", " << local_r_wt.topic_size() << ")";
         continue;
       }
 
@@ -244,93 +319,63 @@ void PhiMatrixOperations::InvokePhiRegularizers(
         continue;
       }
 
-      std::unordered_map<ClassId, std::vector<float>> relative_coefficients;
       std::vector<bool> topics_to_regularize;
+      if (!regularizer->topics_to_regularize().empty()) {
+        topics_to_regularize = core::is_member(n_wt.topic_name(), regularizer->topics_to_regularize());
+      } else {
+        topics_to_regularize.assign(topic_size, true);
+      }
 
-      if (relative_reg) {
-        std::vector<core::ClassId> class_ids;
-        if (regularizer->class_ids_to_regularize().size() > 0) {
-          for (const auto& class_id : regularizer->class_ids_to_regularize()) {
-            class_ids.push_back(class_id);
-          }
-        } else {
-          for (const auto& n_t : n_t_all) {
-            class_ids.push_back(n_t.first);
-          }
-        }
-
-        if (regularizer->topics_to_regularize().size() > 0) {
-          topics_to_regularize = core::is_member(n_wt.topic_name(), regularizer->topics_to_regularize());
-        } else {
-          topics_to_regularize.assign(topic_size, true);
-        }
-
-        std::vector<float> r_it = std::vector<float>(topic_size, 0.0f);
-        std::vector<float> coefficients = std::vector<float>(topic_size, 0.0f);
-        for (const auto& class_id : class_ids) {
-          auto iter = n_t_all.find(class_id);
-          if (iter != n_t_all.end()) {
-            double n = 0.0;
-            double r_i = 0.0;
-            std::vector<float> n_t = iter->second;
-
-            for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-              if (!topics_to_regularize[topic_id]) {
-                continue;
-              }
-              n += n_t[topic_id];
-
-              float r_it_current = 0.0f;
-              for (int token_id = 0; token_id < token_size; ++token_id) {
-                if (n_wt.token(token_id).class_id != iter->first) {
-                  continue;
-                }
-
-                r_it_current += fabs(local_r_wt.get(token_id, topic_id));
-              }
-
-              r_it[topic_id] = r_it_current;
-              r_i += r_it_current;
-            }
-
-            for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-                if (!topics_to_regularize[topic_id]) {
-                  continue;
-                }
-
-                float gamma = reg_iterator->gamma();
-                coefficients[topic_id] = gamma * (n_t[topic_id] / r_it[topic_id]) +
-                                         (1 - gamma) * static_cast<float>(n / r_i);
-            }
-
-            relative_coefficients.insert(std::make_pair(iter->first, coefficients));
-          } else {
-            LOG(WARNING) << "No class_id " << class_id << " in model";
-          }
-        }
+      std::unordered_map<ClassId, std::vector<float>> relative_coefficients;
+      if (use_relative_reg) {
+        relative_coefficients = FindRelativeRegularizationCoefficients(regularizer, n_wt, local_r_wt, n_t_all,
+                                                                       topics_to_regularize, topic_size,
+                                                                       token_size, reg_it.gamma());
       }
 
       for (int token_id = 0; token_id < token_size; ++token_id) {
         const auto& class_id = n_wt.token(token_id).class_id;
         auto iter = relative_coefficients.find(class_id);
 
-        if (relative_reg && iter == relative_coefficients.end()) {
+        if (use_relative_reg && iter == relative_coefficients.end()) {
           LOG(WARNING) << "No relative coefficients were provided for class_id " << class_id;
           continue;
         }
 
         for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-          if (relative_reg && !topics_to_regularize[topic_id]) {
+          if (use_relative_reg && !topics_to_regularize[topic_id]) {
             continue;
           }
 
           // update global r_wt using coefficient and tau
-          float coefficient = relative_reg ? iter->second[topic_id] : 1.0f;
+          float coefficient = use_relative_reg ? iter->second[topic_id] : 1.0f;
           float increment = coefficient * tau * local_r_wt.get(token_id, topic_id);
           r_wt->increase(token_id, topic_id, increment);
         }
       }
       local_r_wt.Reset();
+    }
+  } else {
+    for (const auto& reg_it : regularizer_settings) {
+      auto regularizer = instance->regularizers()->get(reg_it.name().c_str());
+
+      if (regularizer == nullptr) {
+        LOG(ERROR) << "Phi Regularizer with name <" << reg_it.name().c_str() << "> does not exist.\n";
+        continue;
+      }
+
+      float tau = reg_it.tau();
+
+      // p_wt.token_size() != n_wt.token_size() --- this is possible
+      // if user chooses to change the number of topics in the model between calls to fit_offline.
+      if (p_wt.topic_size() != n_wt.topic_size()) {
+        LOG(ERROR) << "Inconsistent matrix size: Pwt( "
+                   << p_wt.token_size() << ", " << p_wt.topic_size() << ") vs Nwt("
+                   << n_wt.token_size() << ", " << n_wt.topic_size() << ")";
+        continue;
+      }
+
+      regularizer->RegularizePhi(p_wt, n_wt, r_wt, &tau);
     }
   }
 }
