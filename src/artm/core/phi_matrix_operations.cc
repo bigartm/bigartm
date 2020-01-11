@@ -88,7 +88,7 @@ namespace {
     }
     return relative_coefficients;
   }
-}
+}  // namespace
 
 void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix,
                                                      const ::artm::GetTopicModelArgs& get_model_args,
