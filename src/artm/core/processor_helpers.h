@@ -179,6 +179,7 @@ class ProcessorHelpers {
                                            LocalThetaMatrix<float>* theta_matrix,
                                            NwtWriteAdapter* nwt_writer,
                                            util::Blas* blas,
+                                           bool use_sparse_computation,
                                            ThetaMatrix* new_cache_entry_ptr = nullptr);
 
   ProcessorHelpers() = delete;

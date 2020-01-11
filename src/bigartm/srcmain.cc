@@ -325,6 +325,7 @@ struct artm_options {
   bool b_disable_avx_opt;
   int profile;
   float min_sparsity_rate;
+  bool use_sparse_computation;
 
   artm_options() {
     pwt_model_name = "pwt";
@@ -1337,6 +1338,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
   master_config.set_pwt_name(options.pwt_model_name);
   master_config.set_nwt_name(options.nwt_model_name);
   master_config.set_min_sparsity_rate(options.min_sparsity_rate);
+  master_config.set_use_sparse_computation(options.use_sparse_computation);
 
   for (const auto& topic_name : topic_names) {
     master_config.add_topic_name(topic_name);
@@ -1840,6 +1842,7 @@ int main(int argc, char * argv[]) {
       ("log-dir", po::value(&options.log_dir), "target directory for logging (GLOG_log_dir)")
       ("log-level", po::value(&options.log_level), "min logging level (GLOG_minloglevel; INFO=0, WARNING=1, ERROR=2, and FATAL=3)")
       ("min-sparsity-rate", po::value(&options.min_sparsity_rate)->default_value(0.6), "min rate of zero elements in Phi row to store it in sparse way (>= 0 and <= 1)")
+      ("use-sparse-computation", po::value(&options.use_sparse_computation)->default_value(true), "use sparse algorithm to speed up learning process")
     ;
 
     all_options.add(input_data_options);

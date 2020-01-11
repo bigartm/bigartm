@@ -75,6 +75,8 @@ class PhiMatrixFrame : public PhiMatrix {
   virtual ModelName model_name() const;
   virtual int64_t ByteSize() const;
 
+  virtual bool is_packable() const { return false; }
+
   void Clear();
   virtual int AddToken(const Token& token);
 
@@ -108,6 +110,7 @@ class PackedValues {
   PackedValues(const float* values, int size, float min_sparsity_rate);
   virtual int64_t ByteSize() const;
 
+  int size() const;
   bool is_packed() const;
   float get(int index) const;
   void get(std::vector<float>* buffer) const;
@@ -115,6 +118,7 @@ class PackedValues {
   void pack();
   void reset(int size);
 
+  void get_sparse(std::vector<float>* value_buffer, std::vector<int>* index_buffer) const;
  private:
   std::vector<float> values_;
   std::vector<bool> bitmask_;
@@ -135,11 +139,15 @@ class DensePhiMatrix : public PhiMatrixFrame {
 
   virtual std::shared_ptr<PhiMatrix> Duplicate() const;
 
+  virtual bool is_packable() const { return true; }
   virtual float get(int token_id, int topic_id) const;
   virtual void get(int token_id, std::vector<float>* buffer) const;
   virtual void set(int token_id, int topic_id, float value);
   virtual void increase(int token_id, int topic_id, float increment);
   virtual void increase(int token_id, const std::vector<float>& increment);  // must be thread-safe
+
+  virtual int get_non_zero_topic_size(int token_id) const;
+  virtual void get_sparse(int token_id, std::vector<float>* value_buffer, std::vector<int>* index_buffer) const;
 
   virtual void Clear();
   virtual int AddToken(const Token& token);
@@ -173,6 +181,9 @@ class AttachedPhiMatrix : boost::noncopyable, public PhiMatrixFrame {
   virtual void set(int token_id, int topic_id, float value) { values_[token_id][topic_id] = value; }
   virtual void increase(int token_id, int topic_id, float increment) { values_[token_id][topic_id] += increment; }
   virtual void increase(int token_id, const std::vector<float>& increment);  // must be thread-safe
+
+  virtual int get_non_zero_topic_size(int token_id) const { return topic_size(); }
+  virtual void get_sparse(int token_id, std::vector<float>* value_buffer, std::vector<int>* index_buffer) const;
 
   virtual void Clear();
   virtual int AddToken(const Token& token);
