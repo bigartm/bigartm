@@ -442,9 +442,8 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
         float* local_phi_values_ptr = &local_phi_values(i - begin_index, 0);
         int* local_phi_ptrs_ptr = &local_phi_ptrs(i - begin_index, 0);
 
-        if (p_wt.is_packable()) {
-          num_non_zero_topics_for_token[i - begin_index] =
-                  use_sparse_computation ? p_wt.get_non_zero_topic_size(token_id[w]) : num_topics;
+        if (use_sparse_computation && p_wt.is_packable()) {
+          num_non_zero_topics_for_token[i - begin_index] = p_wt.get_non_zero_topic_size(token_id[w]);
 
           p_wt.get_sparse(token_id[w], &helper_vector_values, &helper_vector_ptrs);
 
@@ -477,8 +476,7 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
           const float* phi_values_ptr = &local_phi_values(i - begin_index, 0);
           const int* phi_ptrs_ptr = &local_phi_ptrs(i - begin_index, 0);
 
-          int num_non_zero_topics =
-                  use_sparse_computation ? num_non_zero_topics_for_token[i - begin_index] : num_topics;
+          int num_non_zero_topics = num_non_zero_topics_for_token[i - begin_index];
 
           if (num_non_zero_topics < num_topics) {
             for (int k = 0; k < num_non_zero_topics; ++k) {
