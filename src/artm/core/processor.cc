@@ -243,7 +243,8 @@ void Processor::ThreadFunction() {
               CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
               ProcessorHelpers::InferThetaAndUpdateNwtSparse(args, batch, part->batch_weight(), *sparse_ndw, p_wt,
                                                              theta_agents, theta_matrix.get(), nwt_writer.get(),
-                                                             blas, new_cache_entry_ptr.get());
+                                                             blas, instance_->config()->use_sparse_computation(),
+                                                             new_cache_entry_ptr.get());
             } else {
               CuckooWatch cuckoo2("InferPtdwAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
               ProcessorHelpers::InferPtdwAndUpdateNwtSparse(args, batch, part->batch_weight(), *sparse_ndw,

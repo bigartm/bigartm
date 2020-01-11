@@ -390,6 +390,7 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
                                                     LocalThetaMatrix<float>* theta_matrix,
                                                     NwtWriteAdapter* nwt_writer,
                                                     util::Blas* blas,
+                                                    bool use_sparse_computation,
                                                     ThetaMatrix* new_cache_entry_ptr) {
   LocalThetaMatrix<float> n_td(theta_matrix->num_topics(), theta_matrix->num_items());
   const int num_topics = p_wt.topic_size();
@@ -415,9 +416,14 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
       max_local_token_size = std::max(max_local_token_size, local_token_size);
     }
 
-    LocalPhiMatrix<float> local_phi(max_local_token_size, num_topics);
+    LocalPhiMatrix<float> local_phi_values(max_local_token_size, num_topics);
+    LocalPhiMatrix<int> local_phi_ptrs(max_local_token_size, num_topics);
+
+    std::vector<int> num_non_zero_topics_for_token(max_local_token_size, num_topics);
+
     LocalThetaMatrix<float> r_td(num_topics, 1);
-    std::vector<float> helper_vector(num_topics, 0.0f);
+    std::vector<float> helper_vector_values(num_topics, 0.0f);
+    std::vector<int> helper_vector_ptrs(num_topics, 0);
 
     for (int d = 0; d < docs_count; ++d) {
       float* ntd_ptr = &n_td(0, d);
@@ -425,7 +431,7 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
 
       const int begin_index = sparse_ndw.row_ptr()[d];
       const int end_index = sparse_ndw.row_ptr()[d + 1];
-      local_phi.InitializeZeros();
+      local_phi_values.InitializeZeros();
       bool item_has_tokens = false;
       for (int i = begin_index; i < end_index; ++i) {
         int w = sparse_ndw.col_ind()[i];
@@ -433,10 +439,26 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
           continue;
         }
         item_has_tokens = true;
-        float* local_phi_ptr = &local_phi(i - begin_index, 0);
-        p_wt.get(token_id[w], &helper_vector);
-        for (int k = 0; k < num_topics; ++k) {
-          local_phi_ptr[k] = helper_vector[k];
+        float* local_phi_values_ptr = &local_phi_values(i - begin_index, 0);
+        int* local_phi_ptrs_ptr = &local_phi_ptrs(i - begin_index, 0);
+
+        if (p_wt.is_packable()) {
+          num_non_zero_topics_for_token[i - begin_index] =
+                  use_sparse_computation ? p_wt.get_non_zero_topic_size(token_id[w]) : num_topics;
+
+          p_wt.get_sparse(token_id[w], &helper_vector_values, &helper_vector_ptrs);
+
+          for (int k = 0; k < num_non_zero_topics_for_token[i - begin_index]; ++k) {
+            local_phi_values_ptr[k] = helper_vector_values[k];
+            local_phi_ptrs_ptr[k] = helper_vector_ptrs[k];
+          }
+        } else {
+          num_non_zero_topics_for_token[i - begin_index] = num_topics;
+          p_wt.get(token_id[w], &helper_vector_values);
+
+          for (int k = 0; k < num_topics; ++k) {
+            local_phi_values_ptr[k] = helper_vector_values[k];
+          }
         }
       }
 
@@ -450,19 +472,37 @@ void ProcessorHelpers::InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& ar
         }
 
         for (int i = begin_index; i < end_index; ++i) {
-          const float* phi_ptr = &local_phi(i - begin_index, 0);
-
           float p_dw_val = 0.0f;
-          for (int k = 0; k < num_topics; ++k) {
-            p_dw_val += phi_ptr[k] * theta_ptr[k];
+
+          const float* phi_values_ptr = &local_phi_values(i - begin_index, 0);
+          const int* phi_ptrs_ptr = &local_phi_ptrs(i - begin_index, 0);
+
+          int num_non_zero_topics =
+                  use_sparse_computation ? num_non_zero_topics_for_token[i - begin_index] : num_topics;
+
+          if (num_non_zero_topics < num_topics) {
+            for (int k = 0; k < num_non_zero_topics; ++k) {
+              p_dw_val += phi_values_ptr[k] * theta_ptr[phi_ptrs_ptr[k]];
+            }
+          } else {
+            for (int k = 0; k < num_topics; ++k) {
+              p_dw_val += phi_values_ptr[k] * theta_ptr[k];
+            }
           }
+
           if (isZero(p_dw_val)) {
             continue;
           }
 
           const float alpha = sparse_ndw.val()[i] / p_dw_val;
-          for (int k = 0; k < num_topics; ++k) {
-            ntd_ptr[k] += alpha * phi_ptr[k];
+          if (num_non_zero_topics < num_topics) {
+            for (int k = 0; k < num_non_zero_topics; ++k) {
+              ntd_ptr[phi_ptrs_ptr[k]] += alpha * phi_values_ptr[k];
+            }
+          } else {
+            for (int k = 0; k < num_topics; ++k) {
+              ntd_ptr[k] += alpha * phi_values_ptr[k];
+            }
           }
         }
 
