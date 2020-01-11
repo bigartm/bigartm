@@ -75,7 +75,7 @@ class PhiMatrixFrame : public PhiMatrix {
   virtual ModelName model_name() const;
   virtual int64_t ByteSize() const;
 
-  virtual bool is_packable() const { return false; };
+  virtual bool is_packable() const { return false; }
 
   void Clear();
   virtual int AddToken(const Token& token);
@@ -182,7 +182,7 @@ class AttachedPhiMatrix : boost::noncopyable, public PhiMatrixFrame {
   virtual void increase(int token_id, int topic_id, float increment) { values_[token_id][topic_id] += increment; }
   virtual void increase(int token_id, const std::vector<float>& increment);  // must be thread-safe
 
-  virtual int get_non_zero_topic_size(int token_id) const { return topic_size(); };
+  virtual int get_non_zero_topic_size(int token_id) const { return topic_size(); }
   virtual void get_sparse(int token_id, std::vector<float>* value_buffer, std::vector<int>* index_buffer) const;
 
   virtual void Clear();
