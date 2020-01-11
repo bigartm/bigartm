@@ -67,9 +67,9 @@ class Instance {
 
   std::shared_ptr<ScoreCalculatorInterface> CreateScoreCalculator(const ScoreConfig& config);
 
-  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(ModelName model_name) const;
-  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrixSafe(ModelName model_name) const;
-  void SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix);
+  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(const ModelName& model_name) const;
+  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrixSafe(const ModelName& model_name) const;
+  void SetPhiMatrix(const ModelName& model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix);
 
  private:
   bool is_configured_;
