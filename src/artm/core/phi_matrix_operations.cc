@@ -426,6 +426,7 @@ static void FindPwtImpl(const PhiMatrix& n_wt, const PhiMatrix* r_wt, PhiMatrix*
     const std::vector<float>& nt = n_t[token.class_id];
     for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
       if (nt[topic_index] <= 0) {
+        p_wt->set(token_id, topic_index, 0.0f);
         continue;
       }
 

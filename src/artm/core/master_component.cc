@@ -42,6 +42,28 @@ typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::MasterCompone
 namespace artm {
 namespace core {
 
+namespace {
+  bool areEqualMatrices(const DensePhiMatrix& a, const PhiMatrix& b) {
+    if (a.token_size() != b.token_size() || a.topic_size() != b.topic_size()) {
+      return false;
+    }
+
+    for (int i = 0; i < a.topic_size(); ++i) {
+      if (a.topic_name(i) != b.topic_name(i)) {
+        return false;
+      }
+    }
+
+    for (int i = 0; i < a.token_size(); ++i) {
+      if (a.token(i) != b.token(i)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+}  // namespace
+
 static void HandleExternalTopicModelRequest(::artm::TopicModel* topic_model, std::string* lm) {
   lm->resize(sizeof(float) * topic_model->token_size() * topic_model->num_topics());
   char* lm_ptr = &(*lm)[0];
@@ -1030,16 +1052,25 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
     rwt_phi_matrix = instance_->GetPhiMatrixSafe(rwt_source_name);
   }
 
-  auto pwt_target(std::make_shared<DensePhiMatrix>(pwt_target_name,
-                                                   n_wt.topic_name(),
-                                                   instance_->config()->min_sparsity_rate()));
-  pwt_target->Reshape(n_wt);
+  auto pwt_target = std::dynamic_pointer_cast<DensePhiMatrix>(instance_->models()->get(pwt_target_name));
+
+  bool use_newly_created_pwt = (pwt_target == nullptr) || !areEqualMatrices(*pwt_target, n_wt);
+
+  if (use_newly_created_pwt) {
+    pwt_target = std::make_shared<DensePhiMatrix>(pwt_target_name, n_wt.topic_name(),
+                                                  instance_->config()->min_sparsity_rate());
+    pwt_target.get()->Reshape(n_wt);
+  }
+
   if (rwt_phi_matrix == nullptr) {
     PhiMatrixOperations::FindPwt(n_wt, pwt_target.get());
   } else {
     PhiMatrixOperations::FindPwt(n_wt, *rwt_phi_matrix, pwt_target.get());
   }
-  instance_->SetPhiMatrix(pwt_target_name, pwt_target);
+
+  if (use_newly_created_pwt) {
+    instance_->SetPhiMatrix(pwt_target_name, pwt_target);
+  }
   VLOG(0) << "MasterComponent: complete normalizing model " << normalize_model_args.nwt_source_name();
 }
 
@@ -1310,7 +1341,6 @@ class ArtmExecutor {
       ::artm::core::ScoreManager score_manager(master_component_->instance_.get());
       ProcessBatches(pwt_name_, nwt_name_, iter, &score_manager);
       Regularize(pwt_name_, nwt_name_, rwt_name);
-      Dispose(pwt_name_);
       Normalize(pwt_name_, nwt_name_, rwt_name);
       StoreScores(&score_manager);
     }
@@ -1332,7 +1362,6 @@ class ArtmExecutor {
       Merge(nwt_name_, decay_weight, nwt_hat_index, apply_weight);
       Dispose(nwt_hat_index);
       Regularize(pwt_name_, nwt_name_, rwt_name);
-      Dispose(pwt_name_);
       Normalize(pwt_name_, nwt_name_, rwt_name);
       StoreScores(&score_manager);
 
@@ -1382,7 +1411,6 @@ class ArtmExecutor {
       Regularize(pwt_active, nwt_name_, rwt_name);
 
       pwt_active = is_last ? pwt_name_ : std::string(pwt_index + 1);
-      Dispose(pwt_active);
       Normalize(pwt_active, nwt_name_, rwt_name);
 
       Dispose(pwt_index - 1);
