@@ -203,7 +203,7 @@ ScoreTracker* Instance::score_tracker() {
   return score_tracker_.get();
 }
 
-void Instance::DisposeModel(ModelName model_name) {
+void Instance::DisposeModel(const ModelName& model_name) {
   models_.erase(model_name);
 }
 

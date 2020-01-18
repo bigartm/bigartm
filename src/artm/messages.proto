@@ -797,6 +797,8 @@ message MasterModelConfig {
   optional float parent_master_model_weight = 20 [default = 1.0];
   optional float min_sparsity_rate = 21 [default = 0.6];
   optional bool use_sparse_computation = 22 [default = true];
+  optional float dense_init_rate = 23 [default = 1.0];
+  optional float guaranteed_zeros_rate = 24 [default = 0.0];
 }
 
 message FitOfflineMasterModelArgs {

@@ -623,9 +623,10 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   }
 
   std::shared_ptr<PhiMatrix> new_ttm;
+  std::shared_ptr<artm::core::Dictionary> dict(nullptr);
   int excluded_tokens = 0;
   if (args.has_dictionary_name()) {
-    auto dict = instance_->dictionaries()->get(args.dictionary_name());
+    dict = instance_->dictionaries()->get(args.dictionary_name());
     if (dict == nullptr) {
       std::stringstream ss;
       ss << "Dictionary '" << args.dictionary_name() << "' does not exist";
@@ -677,10 +678,41 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
-  for (int token_index = 0; token_index < new_ttm->token_size(); token_index++) {
-    Token token = new_ttm->token(token_index);
-    std::vector<float> vec = Helpers::GenerateRandomVector(new_ttm->topic_size(), token, args.seed());
-    new_ttm->increase(token_index, vec);
+  bool use_sparse_init = false;
+  if (instance_->config()->dense_init_rate() < 1.0f) {
+    if (dict == nullptr) {
+      LOG(WARNING) << "Unable to use any sparse initialization because dictionary was not provided";
+    } else {
+      use_sparse_init = true;
+    }
+  }
+
+  if (use_sparse_init) {
+    std::vector<std::pair<float, artm::core::Token>> token_with_tf;
+    for (const auto& entry : dict->entries()) {
+      token_with_tf.push_back({ -entry.token_tf(), entry.token() });
+    }
+    std::sort(token_with_tf.begin(), token_with_tf.end());
+
+    int num_dense_tokens = static_cast<int>(token_with_tf.size() * instance_->config()->dense_init_rate());
+    LOG(INFO) << "Number of dense rows in future Phi matrix: " << num_dense_tokens
+              << ", total number: " << token_with_tf.size();
+
+    for (int sorted_token_index = 0; sorted_token_index < token_with_tf.size(); ++sorted_token_index) {
+      const auto& token = token_with_tf[sorted_token_index].second;
+
+      std::vector<float> vec = Helpers::GenerateRandomVector(
+              new_ttm->topic_size(), token, args.seed(),
+              (sorted_token_index < num_dense_tokens) ? 0.0f : instance_->config()->guaranteed_zeros_rate());
+
+      new_ttm->increase(new_ttm->token_index(token), vec);
+    }
+  } else {
+    for (int token_index = 0; token_index < new_ttm->token_size(); token_index++) {
+      Token token = new_ttm->token(token_index);
+      std::vector<float> vec = Helpers::GenerateRandomVector(new_ttm->topic_size(), token, args.seed());
+      new_ttm->increase(token_index, vec);
+    }
   }
 
   PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());

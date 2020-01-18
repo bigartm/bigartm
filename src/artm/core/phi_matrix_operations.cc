@@ -449,8 +449,7 @@ Normalizers PhiMatrixOperations::FindNormalizers(const PhiMatrix& n_wt) {
   return FindNormalizersImpl(n_wt, nullptr);
 }
 
-Normalizers PhiMatrixOperations::FindNormalizers(const PhiMatrix& n_wt,
-                                                                            const PhiMatrix& r_wt) {
+Normalizers PhiMatrixOperations::FindNormalizers(const PhiMatrix& n_wt, const PhiMatrix& r_wt) {
   return FindNormalizersImpl(n_wt, &r_wt);
 }
 
