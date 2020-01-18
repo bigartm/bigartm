@@ -42,6 +42,28 @@ typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::MasterCompone
 namespace artm {
 namespace core {
 
+namespace {
+  bool areEqualMatrices(const DensePhiMatrix& a, const PhiMatrix& b) {
+    if (a.token_size() != b.token_size() || a.topic_size() != b.topic_size()) {
+      return false;
+    }
+
+    for (int i = 0; i < a.topic_size(); ++i) {
+      if (a.topic_name(i) != b.topic_name(i)) {
+        return false;
+      }
+    }
+
+    for (int i = 0; i < a.token_size(); ++i) {
+      if (a.token(i) != b.token(i)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+}  // namespace
+
 static void HandleExternalTopicModelRequest(::artm::TopicModel* topic_model, std::string* lm) {
   lm->resize(sizeof(float) * topic_model->token_size() * topic_model->num_topics());
   char* lm_ptr = &(*lm)[0];
@@ -1032,12 +1054,13 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
 
   auto pwt_target = std::dynamic_pointer_cast<DensePhiMatrix>(instance_->models()->get(pwt_target_name));
 
-  bool newly_created_pwt = pwt_target == nullptr;
-  if (newly_created_pwt) {
+  bool use_newly_created_pwt = (pwt_target == nullptr) || !areEqualMatrices(*pwt_target, n_wt);
+
+  if (use_newly_created_pwt) {
     pwt_target = std::make_shared<DensePhiMatrix>(pwt_target_name, n_wt.topic_name(),
                                                   instance_->config()->min_sparsity_rate());
+    pwt_target.get()->Reshape(n_wt);
   }
-  pwt_target.get()->Reshape(n_wt);
 
   if (rwt_phi_matrix == nullptr) {
     PhiMatrixOperations::FindPwt(n_wt, pwt_target.get());
@@ -1045,7 +1068,7 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
     PhiMatrixOperations::FindPwt(n_wt, *rwt_phi_matrix, pwt_target.get());
   }
 
-  if (newly_created_pwt) {
+  if (use_newly_created_pwt) {
     instance_->SetPhiMatrix(pwt_target_name, pwt_target);
   }
   VLOG(0) << "MasterComponent: complete normalizing model " << normalize_model_args.nwt_source_name();
