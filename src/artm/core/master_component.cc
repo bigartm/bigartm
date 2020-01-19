@@ -42,28 +42,6 @@ typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::MasterCompone
 namespace artm {
 namespace core {
 
-namespace {
-  bool areEqualMatrices(const DensePhiMatrix& a, const PhiMatrix& b) {
-    if (a.token_size() != b.token_size() || a.topic_size() != b.topic_size()) {
-      return false;
-    }
-
-    for (int i = 0; i < a.topic_size(); ++i) {
-      if (a.topic_name(i) != b.topic_name(i)) {
-        return false;
-      }
-    }
-
-    for (int i = 0; i < a.token_size(); ++i) {
-      if (a.token(i) != b.token(i)) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-}  // namespace
-
 static void HandleExternalTopicModelRequest(::artm::TopicModel* topic_model, std::string* lm) {
   lm->resize(sizeof(float) * topic_model->token_size() * topic_model->num_topics());
   char* lm_ptr = &(*lm)[0];
@@ -1086,7 +1064,7 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
 
   auto pwt_target = std::dynamic_pointer_cast<DensePhiMatrix>(instance_->models()->get(pwt_target_name));
 
-  bool use_newly_created_pwt = (pwt_target == nullptr) || !areEqualMatrices(*pwt_target, n_wt);
+  bool use_newly_created_pwt = (pwt_target == nullptr) || !PhiMatrixOperations::HasEqualShape(*pwt_target, n_wt);
 
   if (use_newly_created_pwt) {
     pwt_target = std::make_shared<DensePhiMatrix>(pwt_target_name, n_wt.topic_name(),
