@@ -60,7 +60,7 @@ class Instance {
   Processor* processor(int processor_index) { return processors_[processor_index].get(); }
 
   void Reconfigure(const MasterModelConfig& master_config);
-  void DisposeModel(ModelName model_name);
+  void DisposeModel(const ModelName& model_name);
 
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
   void DisposeRegularizer(const std::string& name);

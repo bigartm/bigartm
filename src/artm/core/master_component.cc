@@ -42,28 +42,6 @@ typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::MasterCompone
 namespace artm {
 namespace core {
 
-namespace {
-  bool areEqualMatrices(const DensePhiMatrix& a, const PhiMatrix& b) {
-    if (a.token_size() != b.token_size() || a.topic_size() != b.topic_size()) {
-      return false;
-    }
-
-    for (int i = 0; i < a.topic_size(); ++i) {
-      if (a.topic_name(i) != b.topic_name(i)) {
-        return false;
-      }
-    }
-
-    for (int i = 0; i < a.token_size(); ++i) {
-      if (a.token(i) != b.token(i)) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-}  // namespace
-
 static void HandleExternalTopicModelRequest(::artm::TopicModel* topic_model, std::string* lm) {
   lm->resize(sizeof(float) * topic_model->token_size() * topic_model->num_topics());
   char* lm_ptr = &(*lm)[0];
@@ -623,9 +601,10 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   }
 
   std::shared_ptr<PhiMatrix> new_ttm;
+  std::shared_ptr<artm::core::Dictionary> dict(nullptr);
   int excluded_tokens = 0;
   if (args.has_dictionary_name()) {
-    auto dict = instance_->dictionaries()->get(args.dictionary_name());
+    dict = instance_->dictionaries()->get(args.dictionary_name());
     if (dict == nullptr) {
       std::stringstream ss;
       ss << "Dictionary '" << args.dictionary_name() << "' does not exist";
@@ -677,10 +656,41 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
-  for (int token_index = 0; token_index < new_ttm->token_size(); token_index++) {
-    Token token = new_ttm->token(token_index);
-    std::vector<float> vec = Helpers::GenerateRandomVector(new_ttm->topic_size(), token, args.seed());
-    new_ttm->increase(token_index, vec);
+  bool use_sparse_init = false;
+  if (instance_->config()->dense_init_rate() < 1.0f) {
+    if (dict == nullptr) {
+      LOG(WARNING) << "Unable to use any sparse initialization because dictionary was not provided";
+    } else {
+      use_sparse_init = true;
+    }
+  }
+
+  if (use_sparse_init) {
+    std::vector<std::pair<float, artm::core::Token>> token_with_tf;
+    for (const auto& entry : dict->entries()) {
+      token_with_tf.push_back({ -entry.token_tf(), entry.token() });
+    }
+    std::sort(token_with_tf.begin(), token_with_tf.end());
+
+    int num_dense_tokens = static_cast<int>(token_with_tf.size() * instance_->config()->dense_init_rate());
+    LOG(INFO) << "Number of dense rows in future Phi matrix: " << num_dense_tokens
+              << ", total number: " << token_with_tf.size();
+
+    for (int sorted_token_index = 0; sorted_token_index < token_with_tf.size(); ++sorted_token_index) {
+      const auto& token = token_with_tf[sorted_token_index].second;
+
+      std::vector<float> vec = Helpers::GenerateRandomVector(
+              new_ttm->topic_size(), token, args.seed(),
+              (sorted_token_index < num_dense_tokens) ? 0.0f : instance_->config()->guaranteed_zeros_rate());
+
+      new_ttm->increase(new_ttm->token_index(token), vec);
+    }
+  } else {
+    for (int token_index = 0; token_index < new_ttm->token_size(); token_index++) {
+      Token token = new_ttm->token(token_index);
+      std::vector<float> vec = Helpers::GenerateRandomVector(new_ttm->topic_size(), token, args.seed());
+      new_ttm->increase(token_index, vec);
+    }
   }
 
   PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());
@@ -1054,7 +1064,7 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
 
   auto pwt_target = std::dynamic_pointer_cast<DensePhiMatrix>(instance_->models()->get(pwt_target_name));
 
-  bool use_newly_created_pwt = (pwt_target == nullptr) || !areEqualMatrices(*pwt_target, n_wt);
+  bool use_newly_created_pwt = (pwt_target == nullptr) || !PhiMatrixOperations::HasEqualShape(*pwt_target, n_wt);
 
   if (use_newly_created_pwt) {
     pwt_target = std::make_shared<DensePhiMatrix>(pwt_target_name, n_wt.topic_name(),

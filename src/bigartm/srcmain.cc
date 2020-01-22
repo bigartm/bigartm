@@ -278,6 +278,10 @@ struct artm_options {
   std::string topics;
   std::string use_modality;
   std::string predict_class;
+
+  float dense_init_rate;
+  float guaranteed_zeros_rate;
+
   time_t rand_seed;
 
   // Learning
@@ -1339,6 +1343,8 @@ int execute(const artm_options& options, int argc, char* argv[]) {
   master_config.set_nwt_name(options.nwt_model_name);
   master_config.set_min_sparsity_rate(options.min_sparsity_rate);
   master_config.set_use_sparse_computation(options.use_sparse_computation);
+  master_config.set_dense_init_rate(options.dense_init_rate);
+  master_config.set_guaranteed_zeros_rate(options.guaranteed_zeros_rate);
 
   for (const auto& topic_name : topic_names) {
     master_config.add_topic_name(topic_name);
@@ -1790,6 +1796,8 @@ int main(int argc, char * argv[]) {
       ("topics,t", po::value(&options.topics)->default_value("16"), "number of topics")
       ("use-modality", po::value< std::string >(&options.use_modality)->default_value(""), "modalities (class_ids) and their weights")
       ("predict-class", po::value< std::string >(&options.predict_class)->default_value(""), "target modality to predict by theta matrix")
+      ("dense-init-rate", po::value(&options.dense_init_rate)->default_value(1.0f), "Rate of tokens in sorted by tf dictionary to be initialized without guaranteed zeros")
+      ("guaranteed-zeros-rate", po::value(&options.guaranteed_zeros_rate)->default_value(0.0f), "Rate of zeros in Phi matrix rows initialization corresponding to rare tokens")
     ;
 
     po::options_description learning_options("Learning");
