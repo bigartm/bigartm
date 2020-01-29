@@ -29,22 +29,41 @@ BigARTM is a powerful tool for [topic modeling](https://en.wikipedia.org/wiki/To
 
 ### Related Software Packages
 
+- [TopicNet](https://github.com/machine-intelligence-laboratory/TopicNet/) is a high-level interface for BigARTM which is helpful for rapid solution prototyping and for exploring the topics of finished ARTM models.
 - [David Blei's List](http://www.cs.columbia.edu/~blei/topicmodeling_software.html) of Open Source topic modeling software
 - [MALLET](http://mallet.cs.umass.edu/topics.php): Java-based toolkit for language processing with topic modeling package
 - [Gensim](https://radimrehurek.com/gensim/): Python topic modeling library
 - [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit) has an implementation of [Online-LDA algorithm](https://github.com/JohnLangford/vowpal_wabbit/wiki/Latent-Dirichlet-Allocation)
 
 
-# How to Use
+# Installation
+### Installing with pip (Linux only)
 
-### Installing
+We have a PyPi release for Linux:
+```bash
+$ pip install bigartm
+```
+or 
+```bash
+$ pip install bigartm10
+```
 
+### Installing on Windows
+We suggest [using pre-build binaries](https://bigartm.readthedocs.io/en/master/installation/windows.html).
+
+It is also possible to [compile C++ code on Windows](https://bigartm.readthedocs.io/en/master/devguide/dev_build_windows.html) you want the latest development version.
+
+### Installing on Linux / MacOS
 Download [binary release](https://github.com/bigartm/bigartm/releases) or build from source using cmake:
 ```bash
 $ mkdir build && cd build
 $ cmake ..
 $ make install
 ```
+
+See [here](https://bigartm.readthedocs.io/en/master/installation/linux.html) for detailed instructions.
+
+# How to Use
 
 ### Command-line interface
 
