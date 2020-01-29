@@ -36,11 +36,10 @@ BigARTM is a powerful tool for [topic modeling](https://en.wikipedia.org/wiki/To
 - [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit) has an implementation of [Online-LDA algorithm](https://github.com/JohnLangford/vowpal_wabbit/wiki/Latent-Dirichlet-Allocation)
 
 
-# How to Use
+# Installation
+### Installing with pip (Linux only)
 
-### Installing on Linux
-
-We have a PyPi release:
+We have a PyPi release for Linux:
 ```bash
 $ pip install bigartm
 ```
@@ -49,13 +48,22 @@ or
 $ pip install bigartm10
 ```
 
-### Installing on Windows / MacOS
+### Installing on Windows
+We suggest [using pre-build binaries](https://bigartm.readthedocs.io/en/master/installation/windows.html).
+
+It is also possible to [compile C++ code on Windows](https://bigartm.readthedocs.io/en/master/devguide/dev_build_windows.html) you want the latest development version.
+
+### Installing on Linux / MacOS
 Download [binary release](https://github.com/bigartm/bigartm/releases) or build from source using cmake:
 ```bash
 $ mkdir build && cd build
 $ cmake ..
 $ make install
 ```
+
+See [here](https://bigartm.readthedocs.io/en/master/installation/linux.html) for detailed instructions.
+
+# How to Use
 
 ### Command-line interface
 
