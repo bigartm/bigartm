@@ -116,6 +116,3 @@ def test_func():
         shutil.rmtree(batches_folder)
         shutil.rmtree(parent_batch_folder)
         shutil.rmtree(hierarchy_model_folder)
-
-if __name__ == "__main__":
-    test_func()
