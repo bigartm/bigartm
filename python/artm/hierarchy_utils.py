@@ -253,16 +253,16 @@ class hARTM(object):
           *  to access any level, use [] or get_level method
           *  Important! You cannot add next level before previous one is initialized and fit.
         """
-        if len(self._levels) and num_topics <= self._levels[-1].num_topics:
-            warnings.warn("Adding level with num_topics = %s less or equal than parent level's num_topics = %s" %
-                          (num_topics, self._levels[-1].num_topics))
+        if topic_names is not None:
+            num_topics = len(topic_names)
+
         level_idx = len(self._levels)
-        if not len(self._levels):
-            self._levels.append(artm.ARTM(num_topics=num_topics,
-                                          topic_names=topic_names,
-                                          seed=self._get_seed(level_idx),
-                                          **self._common_models_args))
-        else:
+
+        if level_idx:
+            if num_topics <= self._levels[-1].num_topics:
+                warnings.warn("Adding level with num_topics = %s less or equal than parent level's num_topics = %s" %
+                              (num_topics, self._levels[-1].num_topics))
+
             self._levels.append(ARTM_Level(parent_model=self._levels[-1],
                                            phi_batch_weight=parent_level_weight,
                                            phi_batch_path=self._tmp_files_path,
@@ -271,11 +271,17 @@ class hARTM(object):
                                            topic_names=topic_names,
                                            seed=self._get_seed(level_idx),
                                            **self._common_models_args))
+
+        else:
+            self._levels.append(artm.ARTM(num_topics=num_topics,
+                                          topic_names=topic_names,
+                                          seed=self._get_seed(level_idx),
+                                          **self._common_models_args))
+
         level = self._levels[-1]
         config = level.master._config
         config.opt_for_avx = False
-        level.master._lib.ArtmReconfigureMasterModel(
-            level.master.master_id, config)
+        level.master._lib.ArtmReconfigureMasterModel(level.master.master_id, config)
         return level
 
     def del_level(self, level_idx):
