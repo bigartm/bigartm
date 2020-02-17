@@ -19,7 +19,7 @@ def test_func():
     regularizer_tau = 10 ** 5
     zero_eps = 0.001
 
-    data_path = os.environ.get('BIGARTM_UNITTEыST_DATA')
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
 
     batches_folder = tempfile.mkdtemp()
     parent_batch_folder = tempfile.mkdtemp()
@@ -89,7 +89,7 @@ def test_func():
         hierarchy_new = artm.hARTM(dictionary=dictionary, cache_theta=True, num_document_passes=num_document_passes,
                                    tmp_files_path=parent_batch_folder, theta_columns_naming="title")
 
-        level_0_new  = hierarchy_new.add_level(topic_names=level_0.topic_names)
+        level_0_new = hierarchy_new.add_level(topic_names=level_0.topic_names)
         level_0_new.initialize(dictionary=dictionary)
         level_0_new.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
 
@@ -110,7 +110,7 @@ def test_func():
         theta_1_new = hierarchy_new.get_level(1).get_theta()
         assert (theta_1 - theta_1_new).abs().max().max() < 1e-3
 
-        psi_new = level_1_new.get_parent_psi()
+        psi_new = hierarchy_new.get_level(1).get_psi()
         assert (psi - psi_new).abs().max().max() < 1e-3
 
         # Test the same functionality with hARTM, and validate that resulting psi matrix is exactly the same
