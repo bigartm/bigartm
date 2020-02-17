@@ -72,6 +72,47 @@ def test_func():
         assert(level_1.clone() is not None)
         assert(hierarchy.clone() is not None)
 
+        # Test save and load methods
+        hierarchy.save(hierarchy_model_folder)
+
+        hierarchy_load = artm.hARTM()
+        hierarchy_load.load(hierarchy_model_folder)
+
+        assert level_0.num_topics == hierarchy_load.get_level(0).num_topics
+        assert (phi_0 - hierarchy_load.get_level(0).get_phi()).abs().max().max() < 1e-3
+
+        assert level_1.num_topics == hierarchy_load.get_level(1).num_topics
+        assert (phi_1 - hierarchy_load.get_level(1).get_phi()).abs().max().max() < 1e-3
+
+        # Test add_level method when we definite topic_names but don't definite num_topics
+
+        hierarchy_new = artm.hARTM(dictionary=dictionary, cache_theta=True, num_document_passes=num_document_passes,
+                                   tmp_files_path=parent_batch_folder, theta_columns_naming="title")
+
+        level_0_new = hierarchy_new.add_level(topic_names=level_0.topic_names)
+        level_0_new.initialize(dictionary=dictionary)
+        level_0_new.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
+
+        phi_0_new = hierarchy_new.get_level(0).get_phi()
+        assert (phi_0 - phi_0_new).abs().max().max() < 1e-3
+
+        theta_0_new = hierarchy_new.get_level(0).get_theta()
+        assert (theta_0 - theta_0_new).abs().max().max() < 1e-3
+
+        level_1_new = hierarchy_new.add_level(topic_names=level_1.topic_names)
+        level_1_new.initialize(dictionary=dictionary)
+        level_1_new.regularizers.add(artm.HierarchySparsingThetaRegularizer(name="HierSparsTheta", tau=regularizer_tau))
+        level_1_new.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
+
+        phi_1_new = hierarchy_new.get_level(1).get_phi()
+        assert (phi_1 - phi_1_new).abs().max().max() < 1e-3
+
+        theta_1_new = hierarchy_new.get_level(1).get_theta()
+        assert (theta_1 - theta_1_new).abs().max().max() < 1e-3
+
+        psi_new = hierarchy_new.get_level(1).get_psi()
+        assert (psi - psi_new).abs().max().max() < 1e-3
+
         # Test the same functionality with hARTM, and validate that resulting psi matrix is exactly the same
         level_0_plain = artm.ARTM(num_topics=num_topics_level_0, num_document_passes=num_document_passes,
                                   cache_theta=True, seed=level_0.seed, theta_columns_naming="title")
@@ -99,19 +140,6 @@ def test_func():
 
         psi_plain = level_1_plain.get_parent_psi()
         assert (psi - psi_plain).abs().max().max() < 1e-3
-
-        #Test save and load methods
-
-        hierarchy.save(hierarchy_model_folder)
-
-        hierarchy_load = artm.hARTM()
-        hierarchy_load.load(hierarchy_model_folder)
-
-        assert level_0.num_topics == hierarchy_load.get_level(0).num_topics
-        assert (phi_0 - hierarchy_load.get_level(0).get_phi()).abs().max().max() < 1e-3
-
-        assert level_1.num_topics == hierarchy_load.get_level(1).num_topics
-        assert (phi_1 - hierarchy_load.get_level(1).get_phi()).abs().max().max() < 1e-3
 
     finally:
         shutil.rmtree(batches_folder)
