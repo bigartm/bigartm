@@ -215,18 +215,10 @@ void Processor::ThreadFunction() {
 
           if (use_real_transactions) {
             if (ptdw_agents.empty() && !part->has_ptdw_cache_manager()) {
-              std::shared_ptr<BatchTransactionInfo> batch_info;
-              {
-                CuckooWatch cuckoo2("PrepareBatchInfo", &cuckoo, kTimeLoggingThreshold);
-                batch_info = ProcessorTransactionHelpers::PrepareBatchInfo(
-                  batch, args, p_wt);
-              }
-
               CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparseNew", &cuckoo, kTimeLoggingThreshold);
               ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
-                                              args, batch, part->batch_weight(),
-                                              batch_info, p_wt, theta_agents,
-                                              theta_matrix.get(), nwt_writer.get(),
+                                              args, batch, part->batch_weight(), p_wt,
+                                              theta_agents, theta_matrix.get(), nwt_writer.get(),
                                               blas, new_cache_entry_ptr.get());
             } else {
               LOG(ERROR) << "Current version of BigARTM doesn't support"
