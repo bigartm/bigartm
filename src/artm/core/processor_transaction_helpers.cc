@@ -29,6 +29,15 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
   LocalThetaMatrix<float> n_td(num_topics, docs_count);
   LocalThetaMatrix<float> r_td(num_topics, 1);
 
+  std::unordered_map<int, int> local_token_id_to_global_id;
+  for (int local_id = 0; local_id < batch.token_size(); ++local_id) {
+    int global_id = p_wt.token_index({ batch.class_id(local_id), batch.token(local_id) });
+    if (global_id == -1) {
+      continue;
+    }
+    local_token_id_to_global_id[local_id] = global_id;
+  }
+
   bool use_transaction_weight = false;
   std::unordered_map<TransactionTypeName, float> tt_name_to_weight;
   if (args.transaction_typename_size() > 0) {
@@ -46,6 +55,19 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
       class_id_to_weight.emplace(args.class_id(i), args.class_weight(i));
     }
   }
+
+  auto compute_ptdx = [&](const Item& item, float init_value, int start_index, int end_index, int topic_id) -> double {
+    double pre_p_dx_val = init_value;
+    for (int token_id = start_index; token_id < end_index; ++token_id) {
+      auto token_iter = local_token_id_to_global_id.find(item.token_id(token_id));
+      if (token_iter == local_token_id_to_global_id.end()) {
+        continue;
+      }
+      pre_p_dx_val *= p_wt.get(token_iter->second, topic_id);
+    }
+
+    return pre_p_dx_val;
+  };
 
   for (int d = 0; d < docs_count; ++d) {
     float *ntd_ptr = &n_td(0, d);
@@ -71,12 +93,7 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
 
         double p_dx_val = 0.0;
         for (int k = 0; k < num_topics; ++k) {
-          double pre_p_dx_val = theta_ptr[k];
-          for (int token_id = start_index; token_id < end_index; ++token_id) {
-            pre_p_dx_val *= p_wt.get(p_wt.token_index({batch.class_id(item.token_id(token_id)),
-                                                       batch.token(item.token_id(token_id))}), k);
-          }
-          p_dx_val += pre_p_dx_val;
+          p_dx_val += compute_ptdx(item, theta_ptr[k], start_index, end_index, k);
         }
 
         if (isZero(p_dx_val, kTransactionsEps)) {
@@ -84,12 +101,7 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
         }
 
         for (int k = 0; k < num_topics; ++k) {
-          double pre_p_dx_val = 1.0;
-          for (int token_id = start_index; token_id < end_index; ++token_id) {
-            pre_p_dx_val *= p_wt.get(p_wt.token_index({batch.class_id(item.token_id(token_id)),
-                                                       batch.token(item.token_id(token_id))}), k);
-          }
-
+          double pre_p_dx_val = compute_ptdx(item, 1.0f, start_index, end_index, k);
           ntd_ptr[k] += (tt_weight * pre_p_dx_val / p_dx_val);
         }
       }
@@ -147,23 +159,12 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
         }
 
         for (int k = 0; k < num_topics; ++k) {
-          double pre_p_dx_val = (*theta_matrix)(k, d);
-          for (int token_id = start_index; token_id < end_index; ++token_id) {
-            pre_p_dx_val *= p_wt.get(p_wt.token_index({batch.class_id(item.token_id(token_id)),
-                                                       batch.token(item.token_id(token_id))}), k);
-          }
-
-          p_dx_val += pre_p_dx_val;
+          p_dx_val += compute_ptdx(item, (*theta_matrix)(k, d), start_index, end_index, k);
         }
 
         std::vector<float> values(num_topics, 0.0f);
         for (int k = 0; k < num_topics; ++k) {
-          double value = (*theta_matrix)(k, d);
-          for (int token_id = start_index; token_id < end_index; ++token_id) {
-            value *= p_wt.get(p_wt.token_index({batch.class_id(item.token_id(token_id)),
-                                                batch.token(item.token_id(token_id))}), k);
-          }
-
+          double value = compute_ptdx(item, (*theta_matrix)(k, d), start_index, end_index, k);
           values[k] = (tt_weight * class_weight) * value * batch_weight / p_dx_val;
         }
 
