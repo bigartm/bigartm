@@ -25,6 +25,9 @@ namespace core {
 
 class ProcessorTransactionHelpers {
  public:
+  static inline double ComputePtdx(const Item& item, float init_value, int start_index, int end_index, int topic_id,
+          const std::vector<int>& local_token_id_to_global_id, const ::artm::core::PhiMatrix& p_wt);
+
   static void TransactionInferThetaAndUpdateNwtSparse(
                                      const ProcessBatchesArgs& args,
                                      const Batch& batch,
