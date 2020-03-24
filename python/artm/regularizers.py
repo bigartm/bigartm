@@ -173,12 +173,14 @@ class BaseRegularizer(object):
     @tau.setter
     def tau(self, tau):
         self._tau = tau
-        self._master.reconfigure_regularizer(self._name, self._config, tau, self._gamma)
+        if self._master is not None:
+            self._master.reconfigure_regularizer(self._name, self._config, tau, self._gamma)
 
     @gamma.setter
     def gamma(self, gamma):
         self._gamma = gamma
-        self._master.reconfigure_regularizer(self._name, self._config, self._tau, gamma)
+        if self._master is not None:
+            self._master.reconfigure_regularizer(self._name, self._config, self._tau, gamma)
 
     @config.setter
     def config(self, config):
