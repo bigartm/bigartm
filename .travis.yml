@@ -1,61 +1,34 @@
-language:
-  - python
-# Currently Travis doesn't support multiple values for language variable
-#  - cpp
+language: python
 
-#compiler:
-#  - gcc
-
-# not sure whether the following configuration will be available
-# with non-C/C++ language (e.g python)
-#cache: ccache
-
-cache:
-  directories:
-    - $HOME/.ccache
-
-python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
-  - "3.6"
-
-env:
-  global:
-    # variables for caching
-    - CCACHE_DIR=$HOME/.ccache
-    - CCACHE_COMPILERCHECK=content
-    - CCACHE_COMPRESS=true
-    - CCACHE_NODISABLE=true
-    - CCACHE_MAXSIZE=500M
-  matrix:
-    - GCC_VER=4.9
-
-before_install:
-  # we need latest pip to work with only-binary option
-  - pip install -U pip
-  - pip install -U pytest pep8 wheel pytest-forked
-  - pip install -U numpy scipy pandas tqdm --only-binary numpy scipy pandas
-  - pip install protobuf
-  # install boost
-  - sudo add-apt-repository universe
-  - sudo apt-get update
-  - sudo apt-get install libboost-all-dev
-  # configure ccache
-  # code from https://github.com/urho3d/Urho3D/blob/master/.travis.yml
-  - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
-  - export CXX=g++ CC=gcc PATH=$HOME:$PATH
+jobs:
+  include:
+    # perform a linux build
+    - services: docker
+    # perform a linux ARMv8 build
+    - services: docker
+      arch: aarch64
+    # perform a linux PPC64LE build
+    - services: docker
+      arch: ppc64le
+    # perform a linux S390X build
+    - services: docker
+      arch: s390x
+    # and a mac build
+    - os: osx
+      language: shell
+    # and a windows build
+    - os: windows
+      language: shell
+      before_install:
+        - choco install python --version 3.8.0
+        - export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
+        # make sure it's on PATH as 'python3'
+        - ln -s /c/Python38/python.exe /c/Python38/python3.exe
 
 install:
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then ./codestyle_checks.sh; fi
-  - mkdir build
-  - pushd build && cmake -DBUILD_BIGARTM_CLI_STATIC=OFF .. && make -j2 && file ./bin/bigartm && popd
-  - pushd python && python setup.py install && popd
-
-before_script:
-  - pushd test_data && ./download_datasets.sh && popd
+  - python3 -m pip install cibuildwheel==1.3.0
 
 script:
-  - export ARTM_SHARED_LIBRARY=`pwd`/build/lib/libartm.so
-  - export BIGARTM_UNITTEST_DATA=`pwd`/test_data
-  - pushd build && make test ARGS="-V" && popd
+  # build the wheels, put them into './wheelhouse'
+  - python3 -m cibuildwheel --output-dir wheelhouse
+
