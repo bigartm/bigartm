@@ -30,5 +30,9 @@ install:
 
 script:
   # build the wheels, put them into './wheelhouse'
+  - |
+    if [[ $TRAVIS_OS_NAME == linux ]]; then
+       echo $CIBW_MANYLINUX_X86_64_IMAGE
+    fi
   - python3 -m cibuildwheel --output-dir wheelhouse
 
