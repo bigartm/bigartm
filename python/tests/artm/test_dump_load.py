@@ -109,12 +109,12 @@ def _assert_score_values_equality(model_1, model_2):
 
 
 def _assert_matrices_equality(model_1, model_2):
-    assert numpy.allclose(model_1.get_phi().as_matrix(), model_2.get_phi().as_matrix(), 0.0001, 0.0001)
-    assert numpy.allclose(model_1.get_phi(model_name=model_1.model_nwt).as_matrix(),
-                          model_2.get_phi(model_name=model_1.model_nwt).as_matrix(), 0.0001, 0.0001)
+    assert numpy.allclose(model_1.get_phi().values, model_2.get_phi().values, 0.0001, 0.0001)
+    assert numpy.allclose(model_1.get_phi(model_name=model_1.model_nwt).values,
+                          model_2.get_phi(model_name=model_1.model_nwt).values, 0.0001, 0.0001)
     if model_1.theta_name is not None:
-        assert numpy.allclose(model_1.get_phi(model_name=model_1.theta_name).as_matrix(),
-                              model_2.get_phi(model_name=model_1.theta_name).as_matrix(), 0.0001, 0.0001)
+        assert numpy.allclose(model_1.get_phi(model_name=model_1.theta_name).values,
+                              model_2.get_phi(model_name=model_1.theta_name).values, 0.0001, 0.0001)
 
 
 def test_func():
