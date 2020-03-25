@@ -101,11 +101,11 @@ def test_func():
         model = artm.ARTM(num_topics=num_topics, dictionary=dictionary, num_document_passes=num_document_passes)
         model.regularizers.add(artm.BitermsPhiRegularizer(name='Biterms', tau=biterms_tau, dictionary=dictionary))
 
-        assert abs(model.phi_.as_matrix()[0][0] - phi_first_elem) < phi_eps
+        assert abs(model.phi_.values[0][0] - phi_first_elem) < phi_eps
 
         model.fit_offline(batch_vectorizer=batch_vectorizer)
         for i in range(len(phi_values)):
             for j in range(len(phi_values[0])):
-                assert abs(model.phi_.as_matrix()[i][j] - phi_values[i][j]) < phi_eps
+                assert abs(model.phi_.values[i][j] - phi_values[i][j]) < phi_eps
     finally:
         shutil.rmtree(batches_folder)
