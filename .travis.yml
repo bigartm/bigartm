@@ -8,6 +8,8 @@ jobs:
       sudo: required
       env:
         - CIBW_MANYLINUX_X86_64_IMAGE="manylinux1"
+        - CIBW_BEFORE_BUILD="tools/prepare-cibuildwheel-linux.sh"
+
       services: docker
 
     # and a mac build
