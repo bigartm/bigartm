@@ -34,7 +34,7 @@ if [[ ! -f /.dockerenv ]]; then
 #    docker run -t -v $(pwd):/opt quay.io/pypa/manylinux1_x86_64:latest  /opt/bigartm/tools/build-manylinux.sh "$LIBRDKAFKA_VERSION"
 
 #    exit $?
-#fi
+fi
 
 
 #
@@ -94,12 +94,12 @@ zip -r /wheels /wheelhouse/*
 # Install packages and test
 # echo "# Installing wheels"
 # for PYBIN in /opt/python/*/bin/; do
-    # for ARTMVER in bigartm9 bigartm10; do
-        # echo "## Installing $ARTMVER on $PYBIN"
-        # "${PYBIN}/pip" install $ARTMVER -f /wheelhouse
-        # "${PYBIN}/python" -c 'import artm; print(artm.version())'
-        # echo "## Uninstalling $PYBIN"
-        # "${PYBIN}/pip" uninstall -y bigartm
+#    # for ARTMVER in bigartm9 bigartm10; do
+#        # echo "## Installing $ARTMVER on $PYBIN"
+#        # "${PYBIN}/pip" install $ARTMVER -f /wheelhouse
+#        # "${PYBIN}/python" -c 'import artm; print(artm.version())'
+#        # echo "## Uninstalling $PYBIN"
+#        # "${PYBIN}/pip" uninstall -y bigartm
 # done
 
 
