@@ -19,22 +19,20 @@
 
 set -ex
 
-# if [[ ! -f /.dockerenv ]]; then
+if [[ ! -f /.dockerenv ]]; then
     #
-    # Running on host
+    # Running on host, fire up a docker container and run it.
     #
-#     echo "Must be called from docker"
-#     exit 1
 
-#    if [[ ! -f /opt/bigartm/tools/$(basename $0) ]]; then
-#        echo "Must be called from bigartm root directory"
-#        exit 1
-#    fi
+    if [[ ! -f tools/$(basename $0) ]]; then
+        echo "Must be called from (?) root directory"
+        exit 1
+    fi
 
-#    docker run -t -v $(pwd):/opt quay.io/pypa/manylinux1_x86_64:latest  /opt/bigartm/tools/build-manylinux.sh "$LIBRDKAFKA_VERSION"
+    docker run -t -v $(pwd):/io quay.io/pypa/manylinux1_x86_64:latest  /io/tools/build-manylinux.sh
 
-#    exit $?
-# fi
+    exit $?
+fi
 
 
 #

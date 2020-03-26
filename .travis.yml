@@ -10,7 +10,6 @@ matrix:
       env:
         - PYTHON_CONFIGURE_OPTS="--enable-unicode=ucs4 --with-wide-unicode"
         - CIBW_MANYLINUX_X86_64_IMAGE="manylinux1"
-        - CIBW_MANYLINUX_I686_IMAGE="manylinux1"
       language: python
       python:
           - 3.5
