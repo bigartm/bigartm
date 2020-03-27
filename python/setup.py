@@ -105,7 +105,18 @@ def generate_proto_files(
             src_py_file = src_proto_file.replace(".proto", "_pb2.py")
             if os.path.exists(dst_py_file):
                 os.remove(dst_py_file)
+
             print("Moving {} to {}".format(os.path.join(tmp_dir, src_py_file), dst_py_file))
+            print(subprocess.call('ls', cwd=src_folder))
+            print(subprocess.call('ls', cwd=tmp_dir))
+
+            compiled_result = os.path.join(tmp_dir, src_py_file)
+            sys.stderr.write("first file {} exists: {}\n".format(compiled_result, os.path.isfile(compiled_result)))
+
+            dst_dir = './artm/wrapper/'
+            sys.stderr.write("dst_dir {} exists: {}\n".format(dst_dir, os.path.isdir(dst_dir)))
+            print(subprocess.call('ls', cwd=dst_dir))
+
             os.rename(os.path.join(tmp_dir, src_py_file), dst_py_file)
         finally:
             if os.path.exists(tmp_dir):
