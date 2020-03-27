@@ -107,10 +107,14 @@ from distutils.command.build import build as _build
 
 
 class build(_build):
+    # Generate necessary .proto file if it doesn't exist.
     def run(self):
-        # Generate necessary .proto file if it doesn't exist.
+        # maybe we are inside Travis contaainer? Fallback
+        src_folder = os.environ.get('TRAVIS_BUILD_DIR')
+        if src_folder is None:
+            src_folder = ".."
         generate_proto_files(
-            "../src",
+            src_folder + "/src",
             "./artm/messages.proto",
             "./artm/wrapper/messages_pb2.py")
 
