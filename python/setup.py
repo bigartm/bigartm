@@ -73,12 +73,13 @@ def generate_proto_files(
             os.path.getmtime(source_file) > os.path.getmtime(output_file)):
         print("Generating {}...".format(dst_py_file))
 
+        sys.stderr.write("src_folder {} exists: {}\n".format(src_folder, os.path.isdir(src_folder)))
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        sys.stderr.write("full path to me is {}, working directory is: {}".format(dir_path, os.getcwd()))
+
         if not os.path.exists(source_file):
             sys.stderr.write("Can't find required file: {}\n".format(
                 source_file))
-            sys.stderr.write("src_folder {} exists: {}".format(src_folder, os.path.isdir(src_folder)))
-            dir_path = os.path.dirname(os.path.realpath(__file__))
-            sys.stderr.write("full path to me is {}, working directory is: {}".format(dir_path, os.getcwd()))
             sys.exit(-1)
 
         if not protoc_exec:
@@ -88,7 +89,7 @@ def generate_proto_files(
             tmp_dir = tempfile.mkdtemp(dir="./")
             protoc_command = [
                 protoc_exec,
-                "-I" + src_folder,
+                "-I " + src_folder,
                 "--python_out=" + tmp_dir,
                 source_file]
             print("Executing {}...".format(protoc_command))
