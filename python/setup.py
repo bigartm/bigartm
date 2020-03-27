@@ -78,7 +78,7 @@ def generate_proto_files(
                 source_file))
             sys.stderr.write("src_folder {} exists: {}".format(src_folder, os.path.isdir(src_folder)))
             dir_path = os.path.dirname(os.path.realpath(__file__))
-            sys.stderr.write("full path to me is {}, working directory is: {}".format(dir_name, os.getcwd()))
+            sys.stderr.write("full path to me is {}, working directory is: {}".format(dir_path, os.getcwd()))
             sys.exit(-1)
 
         if not protoc_exec:
