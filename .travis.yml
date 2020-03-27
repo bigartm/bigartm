@@ -33,5 +33,6 @@ script:
     if [[ $TRAVIS_OS_NAME == linux ]]; then
        echo $CIBW_MANYLINUX_X86_64_IMAGE
     fi
-  - python3 -m cibuildwheel ../python --output-dir wheelhouse
+  - ls
+  - python3 -m cibuildwheel --output-dir wheelhouse
 
