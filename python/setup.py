@@ -60,7 +60,8 @@ protoc_exec = find_protoc_exec()
 def generate_proto_files(
         src_folder,
         src_proto_file,
-        dst_py_file):
+        dst_py_file,
+        src_abspath=None):
     """
     Generates pb2.py files from corresponding .proto files
     """
@@ -74,6 +75,8 @@ def generate_proto_files(
         print("Generating {}...".format(dst_py_file))
 
         sys.stderr.write("src_folder {} exists: {}\n".format(src_folder, os.path.isdir(src_folder)))
+        if src_abspath:
+            sys.stderr.write("src_abspath {} exists: {}\n".format(src_abspath, os.path.isdir(src_abspath)))
         dir_path = os.path.dirname(os.path.realpath(__file__))
         sys.stderr.write("full path to me is {}, working directory is: {}\n".format(dir_path, os.getcwd()))
 
@@ -89,11 +92,11 @@ def generate_proto_files(
             tmp_dir = tempfile.mkdtemp(dir="./")
             protoc_command = [
                 protoc_exec,
-                "-I " + src_folder,
+                "-I=" + src_folder,
                 "--python_out=" + tmp_dir,
                 source_file]
             print("Executing {}...".format(protoc_command))
-            if subprocess.call(protoc_command):
+            if subprocess.call(protoc_command, cwd=src_folder):
                 raise
             src_py_file = src_proto_file.replace(".proto", "_pb2.py")
             if os.path.exists(dst_py_file):
@@ -111,11 +114,11 @@ class build(_build):
     # Generate necessary .proto file if it doesn't exist.
     def run(self):
         # maybe we are inside Travis contaainer? Fallback
-        src_folder = os.environ.get('TRAVIS_BUILD_DIR')
-        if src_folder is None:
+        src_abspath = os.environ.get('TRAVIS_BUILD_DIR')
+        if src_abspath is None:
             src_folder = "../src"
         else:
-            src_folder = src_folder + "/src"
+            src_folder = src_abspath + "/src"
         if sys.platform.startswith('darwin'):
             proto_name = "messages.proto"
             src_folder = src_folder + "/artm"
@@ -125,7 +128,8 @@ class build(_build):
         generate_proto_files(
             src_folder,
             proto_name,
-            "./artm/wrapper/messages_pb2.py")
+            "./artm/wrapper/messages_pb2.py",
+            src_abspath=src_abspath)
 
         # _build is an old-style class, so super() doesn't work.
         _build.run(self)
