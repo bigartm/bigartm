@@ -115,7 +115,7 @@ class build(_build):
         if src_folder is None:
             src_folder = "../src"
         else:
-            src_folder = src_folder + "/src",
+            src_folder = src_folder + "/src"
         if sys.platform.startswith('darwin'):
             proto_name = "messages.proto"
             src_folder = src_folder + "/artm",
