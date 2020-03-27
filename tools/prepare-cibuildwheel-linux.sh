@@ -17,7 +17,7 @@ travis_wait ./b2 link=static,shared cxxflags="-std=c++11 -fPIC" --without-python
 # Instructions taken from https://askubuntu.com/questions/355565/how-to-install-latest-cmake-version-in-linux-ubuntu-from-command-line.
 mkdir ~/temp && cd ~/temp && curl -L https://cmake.org/files/v3.9/cmake-3.9.1.tar.gz -o cmake-3.9.1.tar.gz && tar -xzf cmake-3.9.1.tar.gz && cd cmake-3.9.1/ 
 
-travis_wait ./bootstrap > /dev/null
+travis_wait ./bootstrap.sh > /dev/null
 make && make install && cd ~ && rm -rf ~/temp
 
 for PYBIN in /opt/python/*/bin; do\

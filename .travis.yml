@@ -1,5 +1,12 @@
 language: python
 
+addons:
+  artifacts:
+    s3_region: "us-east-2"
+    working_dir: wheelhouse
+
+
+
 jobs:
   include:
     # perform a linux build
