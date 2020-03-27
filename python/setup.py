@@ -113,8 +113,8 @@ def generate_proto_files(
             compiled_result = os.path.join(tmp_dir, src_py_file)
             sys.stderr.write("first file {} exists: {}\n".format(compiled_result, os.path.isfile(compiled_result)))
 
-            dst_dir = './artm/wrapper/'
-            sys.stderr.write("dst_dir {} exists: {}\n".format(dst_dir, os.path.isdir(dst_dir)))
+            # dst_dir = './artm/wrapper/'
+            # sys.stderr.write("dst_dir {} exists: {}\n".format(dst_dir, os.path.isdir(dst_dir)))
             print(subprocess.call('ls', cwd=dst_dir))
 
             os.rename(os.path.join(tmp_dir, src_py_file), dst_py_file)
@@ -141,10 +141,14 @@ class build(_build):
         else:
             proto_name = "artm/messages.proto"
 
+        if src_abspath is None:
+            dst_dir = './artm/wrapper/'
+        else:
+            dst_dir = os.path.join(src_abspath, "python", "artm", "wrapper")
         generate_proto_files(
             src_folder,
             proto_name,
-            "./artm/wrapper/messages_pb2.py",
+            dst_dir + "messages_pb2.py",
             src_abspath=src_abspath)
 
         # _build is an old-style class, so super() doesn't work.
