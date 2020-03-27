@@ -45,4 +45,7 @@ script:
     fi
   - cp python/setup.py .
   - python3 -m cibuildwheel --output-dir wheelhouse
+  - pip install --user --upgrade awscli
+  - aws s3 cp wheelhouse/ s3://bucket4bt/ --recursive
+
 
