@@ -89,9 +89,9 @@ def generate_proto_files(
             raise ValueError("No protobuf compiler executable was found!")
 
         try:
-            tmp_dir = tempfile.mkdtemp(dir="./")
+            tmp_dir = tempfile.mkdtemp(dir=src_folder)
             sys.stderr.write("tmp_dir {} exists: {}\n".format(tmp_dir, os.path.isdir(tmp_dir)))
-            tmp_dir = os.path.join(os.getcwd(), tmp_dir[2:])
+            # tmp_dir = os.path.join(os.getcwd(), tmp_dir[2:])
             sys.stderr.write("tmp_dir {} exists: {}\n".format(tmp_dir, os.path.isdir(tmp_dir)))
             sys.stderr.write("proto_file {} exists: {}\n".format(source_file, os.path.isfile(source_file)))
             protoc_command = [
@@ -105,6 +105,7 @@ def generate_proto_files(
             src_py_file = src_proto_file.replace(".proto", "_pb2.py")
             if os.path.exists(dst_py_file):
                 os.remove(dst_py_file)
+            print("Moving {} to {}".format(os.path.join(tmp_dir, src_py_file), dst_py_file))
             os.rename(os.path.join(tmp_dir, src_py_file), dst_py_file)
         finally:
             if os.path.exists(tmp_dir):
