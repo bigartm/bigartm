@@ -90,7 +90,9 @@ def generate_proto_files(
 
         try:
             tmp_dir = tempfile.mkdtemp(dir="./")
+            sys.stderr.write("tmp_dir {} exists: {}\n".format(tmp_dir, os.path.isdir(tmp_dir)))
             tmp_dir = os.path.join(os.getcwd(), tmp_dir)
+            sys.stderr.write("tmp_dir {} exists: {}\n".format(tmp_dir, os.path.isdir(tmp_dir)))
             protoc_command = [
                 protoc_exec,
                 "-I=" + src_folder,
