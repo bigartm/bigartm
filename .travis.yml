@@ -7,7 +7,7 @@ addons:
     # Below 3 values are configured as environmental variables in Travis web console
     access_key_id: $ARTIFACTS_KEY
     secret_access_key: $ARTIFACTS_SECRET
-    bucket: westbucket4bt
+    bucket: $ARTIFACTS_BUCKET
 
 
 jobs:
