@@ -4,7 +4,10 @@ addons:
   artifacts:
     s3_region: "us-east-2"
     working_dir: wheelhouse
-
+    # Below 3 values are configured as environmental variables in Travis web console
+    access_key_id: $ARTIFACTS_KEY
+    secret_access_key: $ARTIFACTS_SECRET
+    bucket: $ARTIFACTS_BUCKET
 
 
 jobs:

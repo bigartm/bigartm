@@ -15,10 +15,12 @@ travis_wait ./b2 link=static,shared cxxflags="-std=c++11 -fPIC" --without-python
 # manylinux image came with pre-installed cmake 2.8.11.2, while protobuf-3 requires cmake 2.8.12.
 # So, we have to manually install a newer version of cmake.
 # Instructions taken from https://askubuntu.com/questions/355565/how-to-install-latest-cmake-version-in-linux-ubuntu-from-command-line.
-mkdir ~/temp && cd ~/temp && curl -L https://cmake.org/files/v3.9/cmake-3.9.1.tar.gz -o cmake-3.9.1.tar.gz && tar -xzf cmake-3.9.1.tar.gz && cd cmake-3.9.1/ 
+mkdir ~/temp_cmake
+cd ~/temp_cmake
+curl -L https://cmake.org/files/v3.9/cmake-3.9.1.tar.gz -o cmake-3.9.1.tar.gz && tar -xzf cmake-3.9.1.tar.gz && cd cmake-3.9.1/ 
 
 travis_wait ./bootstrap.sh > /dev/null
-make && make install && cd ~ && rm -rf ~/temp
+make && make install && cd ~ && rm -rf ~/temp_cmake
 
 for PYBIN in /opt/python/*/bin; do\
     "${PYBIN}/pip" install -U pip 
