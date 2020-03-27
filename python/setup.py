@@ -90,6 +90,7 @@ def generate_proto_files(
 
         try:
             tmp_dir = tempfile.mkdtemp(dir="./")
+            tmp_dir = os.getcwd() + tmp_dir
             protoc_command = [
                 protoc_exec,
                 "-I=" + src_folder,
