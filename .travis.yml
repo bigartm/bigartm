@@ -19,12 +19,16 @@ jobs:
       env:
         - CIBW_MANYLINUX_X86_64_IMAGE="manylinux1"
         - CIBW_BEFORE_BUILD="tools/prepare-cibuildwheel-linux.sh"
+        - CIBW_BUILD=cp3?-*
 
       services: docker
 
     # and a mac build
     - os: osx
       language: shell
+      env:
+        - CIBW_BEFORE_BUILD="tools/prepare-cibuildwheel-linux.sh"
+        - CIBW_BUILD=cp3?-*
     # and a windows build
     # - os: windows
     #  language: shell
