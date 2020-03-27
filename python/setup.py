@@ -75,7 +75,7 @@ def generate_proto_files(
 
         sys.stderr.write("src_folder {} exists: {}\n".format(src_folder, os.path.isdir(src_folder)))
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        sys.stderr.write("full path to me is {}, working directory is: {}".format(dir_path, os.getcwd()))
+        sys.stderr.write("full path to me is {}, working directory is: {}\n".format(dir_path, os.getcwd()))
 
         if not os.path.exists(source_file):
             sys.stderr.write("Can't find required file: {}\n".format(
@@ -116,7 +116,7 @@ class build(_build):
             src_folder = ".."
         generate_proto_files(
             src_folder + "/src",
-            "./artm/messages.proto",
+            "artm/messages.proto",
             "./artm/wrapper/messages_pb2.py")
 
         # _build is an old-style class, so super() doesn't work.
