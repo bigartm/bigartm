@@ -115,7 +115,7 @@ def generate_proto_files(
 
             # dst_dir = './artm/wrapper/'
             # sys.stderr.write("dst_dir {} exists: {}\n".format(dst_dir, os.path.isdir(dst_dir)))
-            print(subprocess.call('ls', cwd=dst_dir))
+            # print(subprocess.call('ls', cwd=dst_dir))
 
             os.rename(os.path.join(tmp_dir, src_py_file), dst_py_file)
         finally:
