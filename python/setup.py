@@ -113,10 +113,18 @@ class build(_build):
         # maybe we are inside Travis contaainer? Fallback
         src_folder = os.environ.get('TRAVIS_BUILD_DIR')
         if src_folder is None:
-            src_folder = ".."
+            src_folder = "../src"
+        else:
+            src_folder = src_folder + "/src",
+        if sys.platform.startswith('darwin'):
+            proto_name = "messages.proto"
+            src_folder = src_folder + "/artm",
+        else:
+            proto_name = "artm/messages.proto"
+
         generate_proto_files(
-            src_folder + "/src",
-            "artm/messages.proto",
+            src_folder,
+            proto_name,
             "./artm/wrapper/messages_pb2.py")
 
         # _build is an old-style class, so super() doesn't work.
