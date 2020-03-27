@@ -20,7 +20,7 @@ if [ ! -f built-lib ]; then
     # So, we have to manually install a newer version of cmake.
     # Instructions taken from https://askubuntu.com/questions/355565/how-to-install-latest-cmake-version-in-linux-ubuntu-from-command-line.
 
-    if [ -d ~/temp_cmake ]; then rm -rf ~/temp_cmake fi
+    if [ -d ~/temp_cmake ]; then rm -rf ~/temp_cmake; fi
     mkdir ~/temp_cmake
     cd ~/temp_cmake
     curl -L https://cmake.org/files/v3.9/cmake-3.9.1.tar.gz -o cmake-3.9.1.tar.gz && tar -xzf cmake-3.9.1.tar.gz && cd cmake-3.9.1/ 
@@ -30,7 +30,7 @@ if [ ! -f built-lib ]; then
     make install
     cd ~ && rm -rf ~/temp_cmake
 
-    touch built-lib;
+    touch built-lib
 fi
 
 pip install -U pip 
@@ -38,7 +38,7 @@ pip install -U pytest pep8 wheel==0.31.1 protobuf==3.0.0 numpy scipy pandas tqdm
 
 cd ~/bigartm
 
-if [ -d build ]; then rm -rf build fi
+if [ -d build ]; then rm -rf build; fi
 mkdir build && cd build
 
 # cmake -DPYTHON="${PYBIN}/python" -DBUILD_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
