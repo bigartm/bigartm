@@ -20,7 +20,9 @@ cd ~/temp_cmake
 curl -L https://cmake.org/files/v3.9/cmake-3.9.1.tar.gz -o cmake-3.9.1.tar.gz && tar -xzf cmake-3.9.1.tar.gz && cd cmake-3.9.1/ 
 
 travis_wait ./bootstrap.sh > /dev/null
-make && make install && cd ~ && rm -rf ~/temp_cmake
+make
+make install
+cd ~ && rm -rf ~/temp_cmake
 
 for PYBIN in /opt/python/*/bin; do\
     "${PYBIN}/pip" install -U pip 
