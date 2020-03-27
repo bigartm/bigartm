@@ -2,12 +2,12 @@ language: python
 
 addons:
   artifacts:
-    s3_region: "us-east-2"
+    s3_region: us-west-1
     working_dir: wheelhouse
     # Below 3 values are configured as environmental variables in Travis web console
     access_key_id: $ARTIFACTS_KEY
     secret_access_key: $ARTIFACTS_SECRET
-    bucket: $ARTIFACTS_BUCKET
+    bucket: westbucket4bt
 
 
 jobs:
@@ -45,7 +45,7 @@ script:
     fi
   - cp python/setup.py .
   - python3 -m cibuildwheel --output-dir wheelhouse
-  - pip install --user --upgrade awscli
-  - aws s3 cp wheelhouse/ s3://bucket4bt/ --recursive
+  #- pip install --user --upgrade awscli
+  #- aws s3 cp wheelhouse/ s3://bucket4bt/ --recursive
 
 
