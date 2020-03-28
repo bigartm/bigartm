@@ -4,7 +4,11 @@
 # cibuildwheel builder for Linux
 # based on: https://github.com/vengky/confluent-kafka-python/blob/master/tools/prepare-cibuildwheel-linux.sh
 
+# -e is "exits as soon as any line in the bash script fails"
 # set -ex
+
+# -x is "prints each command that is going to be executed with a little plus"
+set -x
 
 # hack needed to install boost only one
 # see: https://github.com/joerick/cibuildwheel/issues/54
@@ -33,13 +37,15 @@ if [ ! -f built-lib ]; then
     touch built-lib
 fi
 
-pip install -U pip 
-pip install -U pytest pep8 wheel==0.31.1 protobuf==3.0.0 numpy scipy pandas tqdm --only-binary numpy scipy pandas
+pip install -U pip -q
+pip install -U pytest pep8 wheel==0.31.1 protobuf==3.0.0 numpy scipy pandas tqdm --only-binary numpy scipy pandas -q
 
 cd $TRAVIS_BUILD_DIR
+pwd
+ls
 
-if [ -d build ]; then rm -rf build; fi
-mkdir build && cd build
+if [ -d $TRAVIS_BUILD_DIR/build ]; then rm -rf build; fi
+mkdir $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build
 
 # cmake -DPYTHON="${PYBIN}/python" -DBUILD_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
 
