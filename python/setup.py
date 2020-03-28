@@ -135,6 +135,9 @@ class build(_build):
 
         # maybe we are inside Travis container? Fallback
         src_abspath = os.environ.get('CI_BUILD_DIR')
+        if os.environ.get("__CIBW_VIRTUALENV_PATH__"):
+            print("wow such virtualenv wow")
+            src_abspath = "/project"
         if src_abspath is None:
             src_folder = "../src"
         else:

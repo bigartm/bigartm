@@ -10,8 +10,6 @@
 # -x is "prints each command that is going to be executed with a little plus"
 set -x
 
-pwd
-ls
 
 echo "# INITIALIZING ENV VARS"
 if [ -z $TRAVIS_BUILD_DIR ]; then
@@ -20,6 +18,8 @@ if [ -z $TRAVIS_BUILD_DIR ]; then
 else
     export CI_BUILD_DIR=$TRAVIS_BUILD_DIR
 fi
+
+echo $CI_BUILD_DIR
 
 # hack needed to install boost only one
 # see: https://github.com/joerick/cibuildwheel/issues/54
