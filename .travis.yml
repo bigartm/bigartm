@@ -47,6 +47,10 @@ script:
     if [[ $TRAVIS_OS_NAME == linux ]]; then
        echo $CIBW_MANYLINUX_X86_64_IMAGE
     fi
+  # quick fix for
+  # "Invalid binary wheel, found the following shared library/libraries in purelib folder:"
+  - echo -e "[install]\ninstall_lib=" >> python/setup.cfg
+
   - cp python/setup.py .
   - python3 -m cibuildwheel --output-dir wheelhouse
   #- pip install --user --upgrade awscli
