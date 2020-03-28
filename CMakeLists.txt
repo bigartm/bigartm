@@ -59,7 +59,7 @@ check_include_files(unistd.h HAVE_UNISTD_H)
 # set compiler flags
 if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
     ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread -fPIC")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fPIC")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -Wall")
   set(GFLAGS_INTTYPES_FORMAT "C99")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")

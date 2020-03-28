@@ -27,7 +27,7 @@ jobs:
     - os: osx
       language: shell
       env:
-        - CIBW_BEFORE_BUILD="tools/prepare-cibuildwheel-linux.sh"
+        - CIBW_BEFORE_BUILD="tools/prepare-cibuildwheel-macos.sh"
         - CIBW_BUILD=cp36-*
     # and a windows build
     # - os: windows
