@@ -61,8 +61,6 @@ pip install -U pip -q
 pip install -U pytest pep8 wheel==0.31.1 protobuf==3.0.0 numpy scipy pandas tqdm --only-binary numpy scipy pandas -q
 
 cd $CI_BUILD_DIR
-pwd
-ls
 
 if [ -d $CI_BUILD_DIR/build ]; then rm -rf build; fi
 mkdir $CI_BUILD_DIR/build && cd $CI_BUILD_DIR/build
@@ -76,7 +74,3 @@ cat src/bigartm/CMakeFiles/bigartm.dir/link.txt | awk '{print $0 " -lrt"}' > src
 
 make
  
-pwd
-ls
-
-

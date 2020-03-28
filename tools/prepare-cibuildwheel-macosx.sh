@@ -10,10 +10,6 @@
 set -x
 
 
-printenv
-which python
-
-
 echo "# INITIALIZING ENV VARS"
 if [ -z $TRAVIS_BUILD_DIR ]; then
     echo "# TRAVIS_BUILD_DIR is empty"
@@ -24,30 +20,8 @@ fi
 
 echo $CI_BUILD_DIR
 
-# hack needed to install boost only one
-# see: https://github.com/joerick/cibuildwheel/issues/54
-if [ ! -f built-lib ]; then
-    echo "# Installing basic system dependencies"
-    # brew install -y bzip2-devel zip
 
-    # brew install boost --without-python > /dev/null
-    brew install boost 
-
-
-    # curl -L http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz -o boost_1_60_0.tar.gz && tar -xf boost_1_60_0.tar.gz && cd boost_1_60_0 && ./bootstrap.sh 
-
-    # we are in an awkward state of "log is too big for travis to handle" and "no output for 20 minutes, travis declares us dead" 
-    # travis_wait does not work inside CentOS docker (why should it?)
-    # see also: https://github.com/CCPPETMR/SIRF-SuperBuild/issues/177
-    # ./b2 link=static,shared cxxflags="-std=c++11 -fPIC" --without-python
-    # ./b2 install --without-python -d0 --prefix=$CI_BUILD_DIR
-
-    # sudo chown -R `whoami` /usr/local
-
-    # sudo ./b2 install --without-python -d0
-
-    touch built-lib
-fi
+# on Travis, boost 1.71.0 is already installed
 
 pip install -U pip -q
 pip install -U pytest pep8 wheel==0.31.1 protobuf==3.0.0 numpy scipy pandas tqdm --only-binary numpy scipy pandas -q
