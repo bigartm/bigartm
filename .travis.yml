@@ -54,7 +54,7 @@ script:
   # "Invalid binary wheel, found the following shared library/libraries in purelib folder:"
   - echo -e "[install]\ninstall_lib=" >> python/setup.cfg
 
-  - cp python/setup.py .
+  - cp python/setup.* .
   - python3 -m cibuildwheel --output-dir wheelhouse
   #- pip install --user --upgrade awscli
   #- aws s3 cp wheelhouse/ s3://bucket4bt/ --recursive

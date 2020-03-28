@@ -316,7 +316,7 @@ endif()
 
 # compiler flags
 mz_add_definition(${CMAKE_SYSTEM_PROCESSOR}=1)
-mz_add_flag(GCC -Wall -Werror -Wno-unused-function)
+mz_add_flag(GCC -Werror -Wno-unused-function)
 if(WINDOWS)
     mz_add_definition(WIN32=1 WINDOWS=1)
 elseif(IOS)
