@@ -36,7 +36,7 @@ fi
 pip install -U pip 
 pip install -U pytest pep8 wheel==0.31.1 protobuf==3.0.0 numpy scipy pandas tqdm --only-binary numpy scipy pandas
 
-cd ~/bigartm
+cd $TRAVIS_BUILD_DIR
 
 if [ -d build ]; then rm -rf build; fi
 mkdir build && cd build
@@ -46,7 +46,7 @@ mkdir build && cd build
 cmake -DPYTHON=python -DBUILD_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
 
 # dirty hack to fix librt issue
-cat ./src/bigartm/CMakeFiles/bigartm.dir/link.txt | awk '{print $0 " -lrt"}' > ./src/bigartm/CMakeFiles/bigartm.dir/link2.txt && mv -f ./src/bigartm/CMakeFiles/bigartm.dir/link2.txt ./src/bigartm/CMakeFiles/bigartm.dir/link.txt
+cat src/bigartm/CMakeFiles/bigartm.dir/link.txt | awk '{print $0 " -lrt"}' > src/bigartm/CMakeFiles/bigartm.dir/link2.txt && mv -f src/bigartm/CMakeFiles/bigartm.dir/link2.txt src/bigartm/CMakeFiles/bigartm.dir/link.txt
 
 make
  
