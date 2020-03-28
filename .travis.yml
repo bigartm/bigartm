@@ -46,16 +46,17 @@ install:
 
 script:
   # build the wheels, put them into './wheelhouse'
-  - |
-    if [[ $TRAVIS_OS_NAME == linux ]]; then
-       echo $CIBW_MANYLINUX_X86_64_IMAGE
-    fi
+  #
   # quick fix for
   # "Invalid binary wheel, found the following shared library/libraries in purelib folder:"
   - echo -e "[install]\ninstall_lib=" >> python/setup.cfg
+  - |
+    if [[ $TRAVIS_OS_NAME == linux ]]; then
+       echo $CIBW_MANYLINUX_X86_64_IMAGE
+       cp python/setup.cfg .
+    fi
 
   - cp python/setup.py .
-  - cp python/setup.cfg .
   - python3 -m cibuildwheel --output-dir wheelhouse
   #- pip install --user --upgrade awscli
   #- aws s3 cp wheelhouse/ s3://bucket4bt/ --recursive
