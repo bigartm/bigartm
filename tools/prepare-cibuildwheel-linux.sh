@@ -10,6 +10,17 @@
 # -x is "prints each command that is going to be executed with a little plus"
 set -x
 
+pwd
+ls
+
+echo "# INITIALIZING ENV VARS"
+if [ -z $TRAVIS_BUILD_DIR ]; then
+    echo "# TRAVIS_BUILD_DIR is empty"
+    export $CI_BUILD_DIR='/project'
+else
+    export $CI_BUILD_DIR=$TRAVIS_BUILD_DIR
+fi
+
 # hack needed to install boost only one
 # see: https://github.com/joerick/cibuildwheel/issues/54
 if [ ! -f built-lib ]; then
@@ -40,12 +51,12 @@ fi
 pip install -U pip -q
 pip install -U pytest pep8 wheel==0.31.1 protobuf==3.0.0 numpy scipy pandas tqdm --only-binary numpy scipy pandas -q
 
-cd $TRAVIS_BUILD_DIR
+cd $CI_BUILD_DIR
 pwd
 ls
 
-if [ -d $TRAVIS_BUILD_DIR/build ]; then rm -rf build; fi
-mkdir $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build
+if [ -d $CI_BUILD_DIR/build ]; then rm -rf build; fi
+mkdir $CI_BUILD_DIR/build && cd $CI_BUILD_DIR/build
 
 # cmake -DPYTHON="${PYBIN}/python" -DBUILD_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
 

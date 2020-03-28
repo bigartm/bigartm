@@ -127,19 +127,18 @@ from distutils.command.build import build as _build
 
 
 class build(_build):
-    # Generate necessary .proto file if it doesn't exist.
     def run(self):
-        # maybe we are inside Travis contaainer? Fallback
-        src_abspath = os.environ.get('TRAVIS_BUILD_DIR')
+        # Generate necessary .proto file if it doesn't exist.
+        proto_name = "messages.proto"
+
+        # maybe we are inside Travis container? Fallback
+        src_abspath = os.environ.get('CI_BUILD_DIR')
         if src_abspath is None:
             src_folder = "../src"
         else:
             src_folder = src_abspath + "/src"
-        if sys.platform.startswith('darwin'):
-            proto_name = "messages.proto"
-            src_folder = src_folder + "/artm"
-        else:
-            proto_name = "artm/messages.proto"
+
+        src_folder = src_folder + "/artm"
 
         if src_abspath is None:
             dst_dir = './artm/wrapper/'
