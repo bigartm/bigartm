@@ -31,7 +31,13 @@ if [ ! -f built-lib ]; then
     # we are in an awkward state of "log is too big for travis to handle" and "no output for 20 minutes, travis declares us dead" 
     # travis_wait does not work inside CentOS docker (why should it?)
     # see also: https://github.com/CCPPETMR/SIRF-SuperBuild/issues/177
-    ./b2 link=static,shared cxxflags="-std=c++11 -fPIC" --without-python -d0
+    echo $AUIDITWHEEL_PLAT
+    if [[ $AUIDITWHEEL_PLAT == manylinux1_x86_64 ]]; then
+        ./b2 link=static,shared cxxflags="-std=c++11 -fPIC" --without-python -d0
+    else
+        ./b2 link=static,shared cxxflags="-std=c++11 -fPIC" --without-python
+    fi
+
     ./b2 install --without-python -d0
 
     # manylinux image came with pre-installed cmake 2.8.11.2, while protobuf-3 requires cmake 2.8.12.
