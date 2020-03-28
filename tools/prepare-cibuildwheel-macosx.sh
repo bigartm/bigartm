@@ -33,6 +33,8 @@ if [ ! -f built-lib ]; then
     ./b2 link=static,shared cxxflags="-std=c++11 -fPIC" --without-python
     # ./b2 install --without-python -d0 --prefix=$CI_BUILD_DIR
 
+    # sudo chown -R `whoami` /usr/local
+
     sudo ./b2 install --without-python -d0
 
     touch built-lib

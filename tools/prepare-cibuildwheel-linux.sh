@@ -31,7 +31,7 @@ if [ ! -f built-lib ]; then
     # we are in an awkward state of "log is too big for travis to handle" and "no output for 20 minutes, travis declares us dead" 
     # travis_wait does not work inside CentOS docker (why should it?)
     # see also: https://github.com/CCPPETMR/SIRF-SuperBuild/issues/177
-    ./b2 link=static,shared cxxflags="-std=c++11 -fPIC" --without-python
+    ./b2 link=static,shared cxxflags="-std=c++11 -fPIC" --without-python -d0
     ./b2 install --without-python -d0
 
     # manylinux image came with pre-installed cmake 2.8.11.2, while protobuf-3 requires cmake 2.8.12.
@@ -44,8 +44,8 @@ if [ ! -f built-lib ]; then
     curl -L https://cmake.org/files/v3.9/cmake-3.9.1.tar.gz -o cmake-3.9.1.tar.gz && tar -xzf cmake-3.9.1.tar.gz && cd cmake-3.9.1/ 
 
     ./bootstrap > /dev/null
-    make
-    make install
+    make -s
+    make install -s
     cd ~ && rm -rf ~/temp_cmake
 
     touch built-lib
