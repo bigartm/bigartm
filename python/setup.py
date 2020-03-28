@@ -139,6 +139,9 @@ class build(_build):
             if os.environ.get("AUDITWHEEL_PLAT"):
                 print("wow such virtualenv wow")
                 src_abspath = "/project"
+            elif shutil.which("python") == "/tmp/cibw_bin/python":
+                print("wow such macos such travis wow")
+                src_abspath = "/Users/travis/build/bt2901/bigartm"
 
         if src_abspath is None:
             src_folder = "../src"

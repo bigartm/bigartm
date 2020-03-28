@@ -10,6 +10,10 @@
 set -x
 
 
+printenv
+which python
+
+
 echo "# INITIALIZING ENV VARS"
 if [ -z $TRAVIS_BUILD_DIR ]; then
     echo "# TRAVIS_BUILD_DIR is empty"
@@ -56,6 +60,5 @@ mkdir $CI_BUILD_DIR/build && cd $CI_BUILD_DIR/build
 cmake -DPYTHON=python -DBUILD_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
 
 make
- 
 
 
