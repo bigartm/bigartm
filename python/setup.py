@@ -135,20 +135,19 @@ class build(_build):
 
         # maybe we are inside Travis container? Fallback
         src_abspath = os.environ.get('CI_BUILD_DIR')
-        if os.environ.get("__CIBW_VIRTUALENV_PATH__"):
-            print("wow such virtualenv wow")
-            src_abspath = "/project"
+        if src_abspath is None:
+            if os.environ.get("AUDITWHEEL_PLAT"):
+                print("wow such virtualenv wow")
+                src_abspath = "/project"
+
         if src_abspath is None:
             src_folder = "../src"
-        else:
-            src_folder = src_abspath + "/src"
-
-        src_folder = src_folder + "/artm"
-
-        if src_abspath is None:
             dst_dir = './artm/wrapper/'
         else:
+            src_folder = src_abspath + "/src"
             dst_dir = os.path.join(src_abspath, "python", "artm", "wrapper")
+
+        src_folder = src_folder + "/artm"
         generate_proto_files(
             src_folder,
             proto_name,
