@@ -26,7 +26,9 @@ if [ ! -f built-lib ]; then
     echo "# Installing basic system dependencies"
     # brew install -y bzip2-devel zip
 
-    brew install boost --without-python
+    # brew install boost --without-python > /dev/null
+    brew install boost 
+
 
     # curl -L http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz -o boost_1_60_0.tar.gz && tar -xf boost_1_60_0.tar.gz && cd boost_1_60_0 && ./bootstrap.sh 
 
@@ -47,22 +49,13 @@ pip install -U pip -q
 pip install -U pytest pep8 wheel==0.31.1 protobuf==3.0.0 numpy scipy pandas tqdm --only-binary numpy scipy pandas -q
 
 cd $CI_BUILD_DIR
-pwd
-ls
 
-if [ -d $CI_BUILD_DIR/build ]; then rm -rf build; fi
+if [ -d $CI_BUILD_DIR/build ]; then rm -rf $CI_BUILD_DIR/build; fi
 mkdir $CI_BUILD_DIR/build && cd $CI_BUILD_DIR/build
-
-# cmake -DPYTHON="${PYBIN}/python" -DBUILD_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
 
 cmake -DPYTHON=python -DBUILD_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
 
-# dirty hack to fix librt issue
-cat src/bigartm/CMakeFiles/bigartm.dir/link.txt | awk '{print $0 " -lrt"}' > src/bigartm/CMakeFiles/bigartm.dir/link2.txt && mv -f src/bigartm/CMakeFiles/bigartm.dir/link2.txt src/bigartm/CMakeFiles/bigartm.dir/link.txt
-
 make
  
-pwd
-ls
 
 
