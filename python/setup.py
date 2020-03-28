@@ -100,6 +100,8 @@ def generate_proto_files(
                 "--python_out=" + tmp_dir,
                 source_file]
             print("Executing {}...".format(protoc_command))
+            # protoc seems to not understand relative paths, so we need to tweak cwd
+            # see https://github.com/protocolbuffers/protobuf/issues/3028
             if subprocess.call(protoc_command, cwd=src_folder):
                 raise
             src_py_file = src_proto_file.replace(".proto", "_pb2.py")

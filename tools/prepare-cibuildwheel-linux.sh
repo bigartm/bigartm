@@ -16,9 +16,9 @@ ls
 echo "# INITIALIZING ENV VARS"
 if [ -z $TRAVIS_BUILD_DIR ]; then
     echo "# TRAVIS_BUILD_DIR is empty"
-    export $CI_BUILD_DIR='/project'
+    export CI_BUILD_DIR='/project'
 else
-    export $CI_BUILD_DIR=$TRAVIS_BUILD_DIR
+    export CI_BUILD_DIR=$TRAVIS_BUILD_DIR
 fi
 
 # hack needed to install boost only one
@@ -28,6 +28,9 @@ if [ ! -f built-lib ]; then
     yum install -y bzip2-devel zip
     curl -L http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz -o boost_1_60_0.tar.gz && tar -xf boost_1_60_0.tar.gz && cd boost_1_60_0 && ./bootstrap.sh 
 
+    # we are in an awkward state of "log is too big for travis to handle" and "no output for 20 minutes, travis declares us dead" 
+    # travis_wait does not work inside CentOS docker (why should it?)
+    # see also: https://github.com/CCPPETMR/SIRF-SuperBuild/issues/177
     ./b2 link=static,shared cxxflags="-std=c++11 -fPIC" --without-python
     ./b2 install --without-python -d0
 
