@@ -24,7 +24,7 @@ echo $CI_BUILD_DIR
 # see: https://github.com/joerick/cibuildwheel/issues/54
 if [ ! -f built-lib ]; then
     echo "# Installing basic system dependencies"
-    brew install -y bzip2-devel zip
+    # brew install -y bzip2-devel zip
     curl -L http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz -o boost_1_60_0.tar.gz && tar -xf boost_1_60_0.tar.gz && cd boost_1_60_0 && ./bootstrap.sh 
 
     # we are in an awkward state of "log is too big for travis to handle" and "no output for 20 minutes, travis declares us dead" 

@@ -2,6 +2,9 @@ language: python
 
 addons:
   artifacts:
+    # warning: works only with some regions
+    # see https://github.com/travis-ci/artifacts/issues/57
+    # see https://github.com/travis-ci/travis-ci/issues/5318
     s3_region: us-west-1
     working_dir: wheelhouse
     # Below 3 values are configured as environmental variables in Travis web console
