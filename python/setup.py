@@ -4,6 +4,7 @@ from setuptools import setup, find_packages, Distribution
 from setuptools.command.build_py import build_py
 from distutils.spawn import find_executable
 
+from ..tools.setup_data import BIGARTM_CLASSIFIERS, setup_kwargs
 # parse arguments
 import sys
 import os.path
@@ -13,150 +14,39 @@ import subprocess
 import argparse
 
 
-# specify classifiers
-BIGARTM_CLASSIFIERS = [
-    'Development Status :: 4 - Beta',
-    'Intended Audience :: Developers',
-    'Intended Audience :: Science/Research',
-    'License :: OSI Approved',
-    'Operating System :: POSIX',
-    'Operating System :: Unix',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 2',
-    'Programming Language :: Python :: 2.7',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.4',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7',
-    'Programming Language :: Python :: 3.8',
-    'Topic :: Scientific/Engineering',
-    'Topic :: Scientific/Engineering :: Information Analysis',
-    'Topic :: Software Development'
-]
-
-
-# Find the Protocol Buffer Compiler.
-def find_protoc_exec():
-    # extract path to protobuf executable from command-line arguments
-    argument_prefix = "protoc_executable"
-    parser = argparse.ArgumentParser(description="", add_help=False)
-    parser.add_argument("--{}".format(argument_prefix), action="store")
-    found_args, rest_args = parser.parse_known_args(sys.argv)
-    sys.argv = rest_args
-    result = vars(found_args).get(argument_prefix, None)
-    if result is not None and os.path.exists(result):
-        return result
-    # try to guess from environment variables
-    if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
-        return os.environ['PROTOC']
-    # try to find using distutils helper function
-    return find_executable("protoc")
-
-
-protoc_exec = find_protoc_exec()
-
-
-def generate_proto_files(
-        src_folder,
-        src_proto_file,
-        dst_py_file,
-        src_abspath=None):
-    """
-    Generates pb2.py files from corresponding .proto files
-    """
-
-    source_file = os.path.join(src_folder, src_proto_file)
-    output_file = dst_py_file
-
-    if (not os.path.exists(output_file) or
-            os.path.exists(output_file) and
-            os.path.getmtime(source_file) > os.path.getmtime(output_file)):
-        print("Generating {}...".format(dst_py_file))
-
-        sys.stderr.write("src_folder {} exists: {}\n".format(src_folder, os.path.isdir(src_folder)))
-        if src_abspath:
-            sys.stderr.write("src_abspath {} exists: {}\n".format(src_abspath, os.path.isdir(src_abspath)))
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        sys.stderr.write("full path to me is {}, working directory is: {}\n".format(dir_path, os.getcwd()))
-
-        if not os.path.exists(source_file):
-            sys.stderr.write("Can't find required file: {}\n".format(
-                source_file))
-            sys.exit(-1)
-
-        if not protoc_exec:
-            raise ValueError("No protobuf compiler executable was found!")
-
-        try:
-            tmp_dir = tempfile.mkdtemp(dir=src_folder)
-            sys.stderr.write("tmp_dir {} exists: {}\n".format(tmp_dir, os.path.isdir(tmp_dir)))
-            # tmp_dir = os.path.join(os.getcwd(), tmp_dir[2:])
-            sys.stderr.write("tmp_dir {} exists: {}\n".format(tmp_dir, os.path.isdir(tmp_dir)))
-            sys.stderr.write("proto_file {} exists: {}\n".format(source_file, os.path.isfile(source_file)))
-            protoc_command = [
-                protoc_exec,
-                "-I=" + src_folder,
-                "--python_out=" + tmp_dir,
-                source_file]
-            print("Executing {}...".format(protoc_command))
-            # protoc seems to not understand relative paths, so we need to tweak cwd
-            # see https://github.com/protocolbuffers/protobuf/issues/3028
-            if subprocess.call(protoc_command, cwd=src_folder):
-                raise
-            src_py_file = src_proto_file.replace(".proto", "_pb2.py")
-            if os.path.exists(dst_py_file):
-                os.remove(dst_py_file)
-
-            print("Moving {} to {}".format(os.path.join(tmp_dir, src_py_file), dst_py_file))
-            print(subprocess.call('ls', cwd=src_folder))
-            print(subprocess.call('ls', cwd=tmp_dir))
-
-            compiled_result = os.path.join(tmp_dir, src_py_file)
-            sys.stderr.write("first file {} exists: {}\n".format(compiled_result, os.path.isfile(compiled_result)))
-
-            # dst_dir = './artm/wrapper/'
-            # sys.stderr.write("dst_dir {} exists: {}\n".format(dst_dir, os.path.isdir(dst_dir)))
-            # print(subprocess.call('ls', cwd=dst_dir))
-
-            os.rename(os.path.join(tmp_dir, src_py_file), dst_py_file)
-        finally:
-            if os.path.exists(tmp_dir):
-                shutil.rmtree(tmp_dir)
-
 
 from distutils.command.build import build as _build
 
 
 class build(_build):
     def run(self):
-        # Generate necessary .proto file if it doesn't exist.
-        proto_name = "messages.proto"
-
-        # maybe we are inside Travis container? Fallback
-        src_abspath = os.environ.get('CI_BUILD_DIR')
-        if src_abspath is None:
-            if os.environ.get("AUDITWHEEL_PLAT"):
-                print("wow such virtualenv wow")
-                src_abspath = "/project"
-            elif shutil.which("python") == "/tmp/cibw_bin/python":
-                print("wow such macos such travis wow")
-                src_abspath = "/Users/travis/build/bt2901/bigartm"
-
-        if src_abspath is None:
-            src_folder = "../src"
-            dst_dir = './artm/wrapper/'
-        else:
-            src_folder = src_abspath + "/src"
-            dst_dir = os.path.join(src_abspath, "python", "artm", "wrapper")
-
-        src_folder = src_folder + "/artm"
-        generate_proto_files(
-            src_folder,
-            proto_name,
-            dst_dir + "messages_pb2.py",
-            src_abspath=src_abspath)
-
+        try:
+            build_directory = tempfile.mkdtemp(dir="./")
+            os.chdir(build_directory)
+            # run cmake
+            cmake_process = [cmake_exec]
+            cmake_process.append("../")
+            cmake_process.append("-DBUILD_PIP_DIST=ON")
+            # FIXME
+            # validate return code
+            retval = subprocess.call(cmake_process)
+            if retval:
+                sys.exit(-1)
+            # run make command
+            make_process = ["make"]
+            # make_process.append("-j6")
+            retval = subprocess.call(make_process)
+            if retval:
+                sys.exit(-1)
+            # run make install command
+            install_process = ["make", "install"]
+            retval = subprocess.call(install_process)
+            if retval:
+                sys.exit(-1)
+        finally:
+            os.chdir(working_dir)
+            if os.path.exists(build_directory):
+                shutil.rmtree(build_directory)
         # _build is an old-style class, so super() doesn't work.
         _build.run(self)
 
@@ -208,47 +98,6 @@ if sys.platform.startswith('win'):
 elif sys.platform.startswith('darwin'):
     artm_library_name = 'libartm.dylib'
 
-
-setup_kwargs = dict(
-    # some common information
-    name='bigartm',
-    version='0.9.2',
-    packages=find_packages(),
-
-    # package_dir={'': './python'},
-
-    # add shared library to package
-    package_data={'artm.wrapper': [artm_library_name]},
-
-    # information about dependencies
-    install_requires=[
-        'pandas',
-        'numpy',
-        'tqdm',
-        'protobuf>=3.0'
-    ],
-    # this option must solve problem with installing
-    # numpy as dependency during `setup.py install` execution
-    # some explanations here:
-    # https://github.com/nengo/nengo/issues/508#issuecomment-64962892
-    # https://github.com/numpy/numpy/issues/2434#issuecomment-65252402
-    setup_requires=[
-        'numpy'
-    ],
-    cmdclass={'build': build},
-
-    # metadata for upload to PyPI
-    license='New BSD license',
-    url='https://github.com/bigartm/bigartm',
-    description='BigARTM: the state-of-the-art platform for topic modeling',
-    classifiers=BIGARTM_CLASSIFIERS,
-    # Who should referred as author and how?
-    # author = 'Somebody'
-    # author_email = 'Somebody\'s email'
-    # Now include `artm_dev` Google group as primary maintainer
-    maintainer='ARTM developers group',
-    maintainer_email='artm_dev+pypi_develop@googlegroups.com'
-)
 
 if sys.argv[1] == "bdist_wheel":
     # we only mess up with those hacks if we are building a wheel

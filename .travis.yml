@@ -48,17 +48,16 @@ install:
 
 script:
   # build the wheels, put them into './wheelhouse'
-  #
+
   # quick fix for
   # "Invalid binary wheel, found the following shared library/libraries in purelib folder:"
-  - echo -e "[install]\ninstall_lib=" >> python/setup.cfg
+  # see github.com/pypa/auditwheel/pull/28#issuecomment-212082647
   - |
     if [[ $TRAVIS_OS_NAME == linux ]]; then
        echo $CIBW_MANYLINUX_X86_64_IMAGE
-       cp python/setup.cfg .
+       echo -e "[install]\ninstall_lib=" >> setup.cfg
     fi
 
-  - cp python/setup.py .
   - python3 -m cibuildwheel --output-dir wheelhouse
 
 
