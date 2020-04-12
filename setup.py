@@ -42,10 +42,12 @@ class build(_build):
             if src_abspath is None:
                 if os.environ.get("AUDITWHEEL_PLAT"):
                     print("wow such virtualenv wow")
-                    src_abspath = "/project"
+                    src_abspath = "/project/"
                 elif shutil.which("python") == "/tmp/cibw_bin/python":
                     print("wow such macos such travis wow")
-                    src_abspath = "/Users/travis/build/bt2901/bigartm"
+                    src_abspath = "/Users/travis/build/bt2901/bigartm/"
+                else:
+                    src_abspath = "./"
 
             build_directory = tempfile.mkdtemp(dir=src_abspath)
             os.chdir(build_directory)
@@ -60,9 +62,10 @@ class build(_build):
                 sys.exit(-1)
 
             # dirty hack to fix librt issue
-            with open("./src/bigartm/CMakeFiles/bigartm.dir/link.txt", "r") as link:
+            link_path = src_abspath + "src/bigartm/CMakeFiles/bigartm.dir/link.txt"
+            with open(link_path, "r") as link:
                 contents = link.read().strip()
-            with open("./src/bigartm/CMakeFiles/bigartm.dir/link.txt", "w") as link:
+            with open(link_path, "w") as link:
                 link.write(contents + " -lrt" + "\n")
 
             # run make command
