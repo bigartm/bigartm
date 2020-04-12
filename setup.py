@@ -66,10 +66,10 @@ class build(_build):
             print(src_abspath)
             print(build_directory)
             print(link_path)
-            print(subprocess.call(["ls", build_directory])
-            print(subprocess.call(["ls", build_directory + "/src"])
-            print(subprocess.call(["ls", build_directory + "/src/bigartm/CMakeFiles/"])
-            print(subprocess.call(["ls", build_directory + "/src/bigartm/CMakeFiles/bigartm.dir"])
+            print(subprocess.call(["ls", build_directory]))
+            print(subprocess.call(["ls", build_directory + "/src"]))
+            print(subprocess.call(["ls", build_directory + "/src/bigartm/CMakeFiles/"]))
+            print(subprocess.call(["ls", build_directory + "/src/bigartm/CMakeFiles/bigartm.dir"]))
             with open(link_path, "r") as link:
                 contents = link.read().strip()
             with open(link_path, "w") as link:
