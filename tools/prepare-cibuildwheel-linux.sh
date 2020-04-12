@@ -33,9 +33,9 @@ if [ ! -f built-lib ]; then
     # see also: https://github.com/CCPPETMR/SIRF-SuperBuild/issues/177
     echo $AUIDITWHEEL_PLAT
     if [[ $AUIDITWHEEL_PLAT == manylinux1_x86_64 ]]; then
-        ./b2 link=static,shared cxxflags="-std=c++11 -fPIC" --without-python -d0
+        ./b2 link=static,shared runtime-link=static,shared cxxflags="-std=c++11 -fPIC" --without-python -d0
     else
-        ./b2 link=static,shared cxxflags="-std=c++11 -fPIC" --without-python
+        ./b2 link=static,shared runtime-link=static,shared cxxflags="-std=c++11 -fPIC" --without-python
     fi
 
     ./b2 install --without-python -d0
@@ -62,15 +62,3 @@ pip install -U pytest pep8 wheel==0.34.1 protobuf==3.0.0 numpy scipy pandas tqdm
 
 cd $CI_BUILD_DIR
 
-if [ -d $CI_BUILD_DIR/build ]; then rm -rf build; fi
-mkdir $CI_BUILD_DIR/build && cd $CI_BUILD_DIR/build
-
-# cmake -DPYTHON="${PYBIN}/python" -DBUILD_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
-
-cmake -DPYTHON=python -DBUILD_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
-
-# dirty hack to fix librt issue
-cat src/bigartm/CMakeFiles/bigartm.dir/link.txt | awk '{print $0 " -lrt"}' > src/bigartm/CMakeFiles/bigartm.dir/link2.txt && mv -f src/bigartm/CMakeFiles/bigartm.dir/link2.txt src/bigartm/CMakeFiles/bigartm.dir/link.txt
-
-make
- 

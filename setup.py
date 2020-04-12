@@ -48,6 +48,11 @@ class build(_build):
             retval = subprocess.call(cmake_process)
             if retval:
                 sys.exit(-1)
+
+            # dirty hack to fix librt issue
+            with open("./src/bigartm/CMakeFiles/bigartm.dir/link.txt", "a") as link:
+                link.write(" -lrt")
+
             # run make command
             make_process = ["make"]
             # make_process.append("-j6")
