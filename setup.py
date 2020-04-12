@@ -62,7 +62,7 @@ class build(_build):
                 sys.exit(-1)
 
             # dirty hack to fix librt issue
-            link_path = src_abspath + "src/bigartm/CMakeFiles/bigartm.dir/link.txt"
+            link_path = build_directory + "src/bigartm/CMakeFiles/bigartm.dir/link.txt"
             with open(link_path, "r") as link:
                 contents = link.read().strip()
             with open(link_path, "w") as link:
