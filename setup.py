@@ -62,18 +62,12 @@ class build(_build):
                 sys.exit(-1)
 
             # dirty hack to fix librt issue
-            link_path = build_directory + "/src/artm/CMakeFiles/artm.dir/link.txt"
-            print(src_abspath)
-            print(build_directory)
-            print(link_path)
-            print(subprocess.call(["ls", build_directory]))
-            print(subprocess.call(["ls", build_directory + "/src"]))
-            print(subprocess.call(["ls", build_directory + "/src/artm/CMakeFiles/"]))
-            print(subprocess.call(["ls", build_directory + "/src/artm/CMakeFiles/artm.dir"]))
-            with open(link_path, "r") as link:
-                contents = link.read().strip()
-            with open(link_path, "w") as link:
-                link.write(contents + " -lrt" + "\n")
+            if os.environ.get("AUDITWHEEL_PLAT"):
+                link_path = build_directory + "/src/artm/CMakeFiles/artm.dir/link.txt"
+                with open(link_path, "r") as link:
+                    contents = link.read().strip()
+                with open(link_path, "w") as link:
+                    link.write(contents + " -lrt" + "\n")
 
             # run make command
             make_process = ["make"]
