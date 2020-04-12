@@ -37,11 +37,21 @@ working_dir = os.path.abspath(os.getcwd())
 class build(_build):
     def run(self):
         try:
-            build_directory = tempfile.mkdtemp(dir="./")
+            # maybe we are inside Travis container? Fallback
+            src_abspath = os.environ.get('CI_BUILD_DIR')
+            if src_abspath is None:
+                if os.environ.get("AUDITWHEEL_PLAT"):
+                    print("wow such virtualenv wow")
+                    src_abspath = "/project"
+                elif shutil.which("python") == "/tmp/cibw_bin/python":
+                    print("wow such macos such travis wow")
+                    src_abspath = "/Users/travis/build/bt2901/bigartm"
+
+            build_directory = tempfile.mkdtemp(dir=src_abspath)
             os.chdir(build_directory)
             # run cmake
             cmake_process = [cmake_exec]
-            cmake_process.append("../")
+            cmake_process.append(src_abspath)
             cmake_process.append("-DBUILD_PIP_DIST=ON")
             # FIXME
             # validate return code
@@ -52,6 +62,9 @@ class build(_build):
             # dirty hack to fix librt issue
             with open("./src/bigartm/CMakeFiles/bigartm.dir/link.txt", "a") as link:
                 link.write(" -lrt")
+
+            with open("./src/bigartm/CMakeFiles/bigartm.dir/link.txt", "r") as link:
+                print(link.read())
 
             # run make command
             make_process = ["make"]
