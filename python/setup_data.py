@@ -43,7 +43,6 @@ setup_kwargs = dict(
     setup_requires=[
         'numpy'
     ],
-    cmdclass={'build': build},
 
     # metadata for upload to PyPI
     license='New BSD license',

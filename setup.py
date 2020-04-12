@@ -118,10 +118,11 @@ elif sys.platform.startswith('darwin'):
 if sys.argv[1] == "bdist_wheel":
     # we only mess up with those hacks if we are building a wheel
     setup_kwargs['distclass'] = BinaryDistribution
+    setup_kwargs['cmdclass'] = {}
+    setup_kwargs['cmdclass']['build'] = build
     setup_kwargs['cmdclass']['build_py'] = AddLibraryBuild
 
 setup(
-    cmdclass={'build': build},
     package_data={'artm.wrapper': [artm_library_name]},
     packages=find_packages(),
     **setup_kwargs
