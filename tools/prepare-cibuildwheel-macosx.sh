@@ -28,11 +28,3 @@ pip install -U pytest pep8 wheel==0.34.1 protobuf==3.0.0 numpy scipy pandas tqdm
 
 cd $CI_BUILD_DIR
 
-if [ -d $CI_BUILD_DIR/build ]; then rm -rf $CI_BUILD_DIR/build; fi
-mkdir $CI_BUILD_DIR/build && cd $CI_BUILD_DIR/build
-
-cmake -DPYTHON=python -DBUILD_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
-
-make
-
-
