@@ -33,9 +33,9 @@ if [ ! -f built-lib ]; then
     # see also: https://github.com/CCPPETMR/SIRF-SuperBuild/issues/177
     echo $AUIDITWHEEL_PLAT
     if [[ $AUIDITWHEEL_PLAT == manylinux1_x86_64 ]]; then
-        ./b2 link=static,shared runtime-link=static,shared cxxflags="-std=c++11 -fPIC" --without-python -d0
+        ./b2 runtime-link=shared link=static,shared cxxflags="-std=c++11 -fPIC" --without-python -d0
     else
-        ./b2 link=static,shared runtime-link=static,shared cxxflags="-std=c++11 -fPIC" --without-python
+        ./b2 runtime-link=shared link=static,shared cxxflags="-std=c++11 -fPIC" --without-python
     fi
 
     ./b2 install --without-python -d0

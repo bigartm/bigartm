@@ -60,11 +60,10 @@ class build(_build):
                 sys.exit(-1)
 
             # dirty hack to fix librt issue
-            with open("./src/bigartm/CMakeFiles/bigartm.dir/link.txt", "a") as link:
-                link.write(" -lrt")
-
             with open("./src/bigartm/CMakeFiles/bigartm.dir/link.txt", "r") as link:
-                print(link.read())
+                contents = link.read().strip()
+            with open("./src/bigartm/CMakeFiles/bigartm.dir/link.txt", "w") as link:
+                link.write(contents + " -lrt" + "\n")
 
             # run make command
             make_process = ["make"]
