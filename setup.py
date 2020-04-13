@@ -43,7 +43,7 @@ if src_abspath is None:
         print("wow such macos such travis wow")
         src_abspath = "/Users/travis/build/bt2901/bigartm/"
     else:
-        src_abspath = "./"
+        src_abspath = working_dir
 
 
 class build(_build):
@@ -81,7 +81,7 @@ class build(_build):
             if retval:
                 sys.exit(-1)
         finally:
-            os.chdir(working_dir)
+            os.chdir(src_abspath)
             if os.path.exists(build_directory):
                 shutil.rmtree(build_directory)
         # _build is an old-style class, so super() doesn't work.
