@@ -62,14 +62,13 @@ class build(_build):
         try:
             warnings.warn('inside run()')
             build_directory = tempfile.mkdtemp(dir=src_abspath)
-            os.chdir(build_directory)
             # run cmake
             cmake_process = [cmake_exec]
             cmake_process.append(src_abspath)
             cmake_process.append("-DBUILD_PIP_DIST=ON")
             # FIXME
             # validate return code
-            retval = subprocess.call(cmake_process)
+            retval = subprocess.call(cmake_process, cwd=build_directory)
             if retval:
                 sys.exit(-1)
 
@@ -84,18 +83,17 @@ class build(_build):
             # run make command
             make_process = ["make"]
             # make_process.append("-j6")
-            retval = subprocess.call(make_process)
+            retval = subprocess.call(make_process, cwd=build_directory)
             if retval:
                 sys.exit(-1)
             # run make install command
             install_process = ["make", "install"]
-            retval = subprocess.call(install_process)
+            retval = subprocess.call(install_process, cwd=build_directory)
             if retval:
                 sys.exit(-1)
-            result = subprocess.run(["ls"], stdout=subprocess.PIPE)
+            result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=build_directory)
             warnings.warn(result.stdout.decode("utf8"))
         finally:
-            os.chdir(src_abspath)
             if os.path.exists(build_directory):
                 shutil.rmtree(build_directory)
         # _build is an old-style class, so super() doesn't work.
@@ -149,7 +147,7 @@ if sys.argv[1] == "bdist_wheel":
     setup_kwargs['cmdclass']['build'] = build
     setup_kwargs['cmdclass']['build_py'] = AddLibraryBuild
 
-os.chdir(src_abspath + 'python/')
+# os.chdir(src_abspath + 'python/')
 
 setup(
     package_data={'artm.wrapper': [path_to_lib]},
