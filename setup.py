@@ -93,6 +93,13 @@ class build(_build):
                 sys.exit(-1)
             result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=build_directory)
             warnings.warn(result.stdout.decode("utf8"))
+
+            result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=src_abspath + '../../../../../../Users')
+            warnings.warn(result.stdout.decode("utf8"))
+            result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=src_abspath + '../../../../../../')
+            warnings.warn(result.stdout.decode("utf8"))
+            result = subprocess.run(["pwd"], stdout=subprocess.PIPE, cwd=src_abspath)
+            warnings.warn(result.stdout.decode("utf8"))
         finally:
             if os.path.exists(build_directory):
                 shutil.rmtree(build_directory)
