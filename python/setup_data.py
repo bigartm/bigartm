@@ -26,8 +26,6 @@ setup_kwargs = dict(
     name='bigartm',
     version='0.9.2',
 
-    # package_dir={'': './python'},
-
     # information about dependencies
     install_requires=[
         'pandas',
