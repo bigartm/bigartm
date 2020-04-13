@@ -82,8 +82,8 @@ class build(_build):
             retval = subprocess.call(install_process)
             if retval:
                 sys.exit(-1)
-            output = subprocess.check_output(["ls"])
-            warnings.warn(output)
+            result = subprocess.run(["ls"])
+            warnings.warn(result.stdout)
         finally:
             os.chdir(src_abspath)
             if os.path.exists(build_directory):
