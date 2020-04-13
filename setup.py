@@ -14,6 +14,7 @@ import subprocess
 import argparse
 
 
+import warnings
 
 from distutils.command.build import build as _build
 
@@ -49,6 +50,7 @@ if src_abspath is None:
 class build(_build):
     def run(self):
         try:
+            warnings.warn('inside run()')
             build_directory = tempfile.mkdtemp(dir=src_abspath)
             os.chdir(build_directory)
             # run cmake
@@ -80,6 +82,8 @@ class build(_build):
             retval = subprocess.call(install_process)
             if retval:
                 sys.exit(-1)
+            output = subprocess.check_output(["ls"])
+            warnings.warn(output)
         finally:
             os.chdir(src_abspath)
             if os.path.exists(build_directory):
@@ -108,7 +112,7 @@ class AddLibraryBuild(build_py):
         self._library_paths = []
         library = os.getenv("ARTM_SHARED_LIBRARY", None)
         if library is None:
-            return
+            raise ValueError()
         destdir = os.path.join(self.build_lib, 'artm')
         self.mkpath(destdir)
         dest = os.path.join(destdir, os.path.basename(library))
