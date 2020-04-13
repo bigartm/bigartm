@@ -152,7 +152,7 @@ if sys.argv[1] == "bdist_wheel":
 os.chdir(src_abspath + 'python/')
 
 setup(
-    package_data={'artm.wrapper': [path_to_lib]},
+    package_data={'python.artm.wrapper': [path_to_lib]},
     include_package_data=True,
     packages=find_packages(src_abspath + 'python/'),
     **setup_kwargs
