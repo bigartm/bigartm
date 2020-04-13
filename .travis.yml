@@ -58,6 +58,6 @@ script:
        echo -e "[install]\ninstall_lib=" >> setup.cfg
     fi
 
-  - python3 -m cibuildwheel --output-dir wheelhouse
+  - sudo python3 -m cibuildwheel --output-dir wheelhouse
 
 
