@@ -155,7 +155,7 @@ setup(
     package_data={'artm.wrapper': [path_to_lib]},
     include_package_data=True,
     packages=find_packages(src_abspath + 'python/'),
-    package_dir={'': src_abspath + 'python/'},
+    package_dir={'': '/python/'},
 
     **setup_kwargs
 )
