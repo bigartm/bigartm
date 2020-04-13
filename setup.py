@@ -139,6 +139,14 @@ if sys.platform.startswith('win'):
 elif sys.platform.startswith('darwin'):
     artm_library_name = 'libartm.dylib'
 
+path_to_lib = src_abspath + 'python/artm/wrapper/' + artm_library_name
+print(find_packages(src_abspath))
+print(find_packages())
+print(find_packages(src_abspath + 'python/'))
+
+print(os.path.isfile(path_to_lib))
+print(path_to_lib)
+raise ValueError()
 
 if sys.argv[1] == "bdist_wheel":
     # we only mess up with those hacks if we are building a wheel
@@ -148,7 +156,7 @@ if sys.argv[1] == "bdist_wheel":
     setup_kwargs['cmdclass']['build_py'] = AddLibraryBuild
 
 setup(
-    package_data={'artm.wrapper': [artm_library_name]},
+    package_data={'artm.wrapper': [path_to_lib]},
     include_package_data=True,
     packages=find_packages(src_abspath),
     **setup_kwargs
