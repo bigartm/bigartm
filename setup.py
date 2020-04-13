@@ -33,22 +33,22 @@ if os.path.dirname(filename):
     os.chdir(os.path.dirname(filename))
 working_dir = os.path.abspath(os.getcwd())
 
+# maybe we are inside Travis container? Fallback
+src_abspath = os.environ.get('CI_BUILD_DIR')
+if src_abspath is None:
+    if os.environ.get("AUDITWHEEL_PLAT"):
+        print("wow such virtualenv wow")
+        src_abspath = "/project/"
+    elif shutil.which("python") == "/tmp/cibw_bin/python":
+        print("wow such macos such travis wow")
+        src_abspath = "/Users/travis/build/bt2901/bigartm/"
+    else:
+        src_abspath = "./"
+
 
 class build(_build):
     def run(self):
         try:
-            # maybe we are inside Travis container? Fallback
-            src_abspath = os.environ.get('CI_BUILD_DIR')
-            if src_abspath is None:
-                if os.environ.get("AUDITWHEEL_PLAT"):
-                    print("wow such virtualenv wow")
-                    src_abspath = "/project/"
-                elif shutil.which("python") == "/tmp/cibw_bin/python":
-                    print("wow such macos such travis wow")
-                    src_abspath = "/Users/travis/build/bt2901/bigartm/"
-                else:
-                    src_abspath = "./"
-
             build_directory = tempfile.mkdtemp(dir=src_abspath)
             os.chdir(build_directory)
             # run cmake
@@ -145,6 +145,7 @@ if sys.argv[1] == "bdist_wheel":
 
 setup(
     package_data={'artm.wrapper': [artm_library_name]},
-    packages=find_packages(),
+    include_package_data=True,
+    packages=find_packages(src_abspath),
     **setup_kwargs
 )
