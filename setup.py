@@ -149,7 +149,7 @@ if sys.argv[1] == "bdist_wheel":
     setup_kwargs['cmdclass']['build'] = build
     setup_kwargs['cmdclass']['build_py'] = AddLibraryBuild
 
-os.chdir(src_abspath + 'python/')
+# os.chdir(src_abspath + 'python/')
 
 setup(
     package_data={'python.artm.wrapper': [path_to_lib]},
