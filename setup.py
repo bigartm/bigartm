@@ -47,6 +47,16 @@ if src_abspath is None:
         src_abspath = working_dir
 
 
+# name of artm shared library
+artm_library_name = 'libartm.so'
+if sys.platform.startswith('win'):
+    artm_library_name = 'artm.dll'
+elif sys.platform.startswith('darwin'):
+    artm_library_name = 'libartm.dylib'
+
+path_to_lib = src_abspath + 'python/artm/wrapper/' + artm_library_name
+
+
 class build(_build):
     def run(self):
         try:
@@ -112,7 +122,8 @@ class AddLibraryBuild(build_py):
         self._library_paths = []
         library = os.getenv("ARTM_SHARED_LIBRARY", None)
         if library is None:
-            raise ValueError()
+            # raise ValueError()
+            library = path_to_lib
         destdir = os.path.join(self.build_lib, 'artm')
         self.mkpath(destdir)
         dest = os.path.join(destdir, os.path.basename(library))
@@ -130,16 +141,6 @@ class BinaryDistribution(Distribution):
 
     def is_pure(self):
         return False
-
-
-# name of artm shared library
-artm_library_name = 'libartm.so'
-if sys.platform.startswith('win'):
-    artm_library_name = 'artm.dll'
-elif sys.platform.startswith('darwin'):
-    artm_library_name = 'libartm.dylib'
-
-path_to_lib = src_abspath + 'python/artm/wrapper/' + artm_library_name
 
 if sys.argv[1] == "bdist_wheel":
     # we only mess up with those hacks if we are building a wheel
