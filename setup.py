@@ -88,8 +88,6 @@ class build(_build):
             # warnings.warn(result.stdout.decode("utf8"))
             # result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=src_abspath + '../../../../../../')
             # warnings.warn(result.stdout.decode("utf8"))
-            # result = subprocess.run(["pwd"], stdout=subprocess.PIPE, cwd=src_abspath)
-            # warnings.warn(result.stdout.decode("utf8"))
         finally:
             if os.path.exists(build_directory):
                 shutil.rmtree(build_directory)
@@ -124,6 +122,9 @@ class AddLibraryBuild(build_py):
         dest = os.path.join(destdir, os.path.basename(library))
         shutil.copy(library, dest)
         self._library_paths = [dest]
+        result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=dest)
+        warnings.warn(result.stdout.decode("utf8"))
+        warnings.warn(dest)
 
 
 class BinaryDistribution(Distribution):
