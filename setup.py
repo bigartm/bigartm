@@ -37,11 +37,12 @@ working_dir = os.path.abspath(os.getcwd())
 src_abspath = os.environ.get('CI_BUILD_DIR')
 if src_abspath is None:
     if os.environ.get("AUDITWHEEL_PLAT"):
-        print("wow such virtualenv wow")
+        # we are inside PyPa manylinux docker
         src_abspath = "/project/"
     elif shutil.which("python") == "/tmp/cibw_bin/python":
-        print("wow such macos such travis wow")
-        src_abspath = "/Users/travis/build/bt2901/bigartm/"
+        # we are inside macosx virtual machine
+        username = 'bt2901'  # TODO: do not hardcode this
+        src_abspath = f"/Users/travis/build/{username}/bigartm/"
     else:
         src_abspath = working_dir
 
@@ -91,15 +92,15 @@ class build(_build):
             retval = subprocess.call(install_process, cwd=build_directory)
             if retval:
                 sys.exit(-1)
-            result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=build_directory)
-            warnings.warn(result.stdout.decode("utf8"))
+            # result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=build_directory)
+            # warnings.warn(result.stdout.decode("utf8"))
 
-            result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=src_abspath + '../../../../../../Users')
-            warnings.warn(result.stdout.decode("utf8"))
-            result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=src_abspath + '../../../../../../')
-            warnings.warn(result.stdout.decode("utf8"))
-            result = subprocess.run(["pwd"], stdout=subprocess.PIPE, cwd=src_abspath)
-            warnings.warn(result.stdout.decode("utf8"))
+            # result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=src_abspath + '../../../../../../Users')
+            # warnings.warn(result.stdout.decode("utf8"))
+            # result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=src_abspath + '../../../../../../')
+            # warnings.warn(result.stdout.decode("utf8"))
+            # result = subprocess.run(["pwd"], stdout=subprocess.PIPE, cwd=src_abspath)
+            # warnings.warn(result.stdout.decode("utf8"))
         finally:
             if os.path.exists(build_directory):
                 shutil.rmtree(build_directory)
