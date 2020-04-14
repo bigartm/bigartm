@@ -30,21 +30,10 @@ except NameError:
     filename = sys.argv[0]
 filename = os.path.abspath(filename)
 if os.path.dirname(filename):
-    os.chdir(os.path.dirname(filename))
-working_dir = os.path.abspath(os.getcwd())
+    src_abspath = os.path.dirname(__file__)
+else:
+    raise ValueError("Cannot determine working directory!")
 
-# maybe we are inside Travis container? Fallback
-src_abspath = os.environ.get('CI_BUILD_DIR')
-if src_abspath is None:
-    if os.environ.get("AUDITWHEEL_PLAT"):
-        # we are inside PyPa manylinux docker
-        src_abspath = "/project/"
-    elif shutil.which("python") == "/tmp/cibw_bin/python":
-        # we are inside macosx virtual machine
-        username = 'bt2901'  # TODO: do not hardcode this
-        src_abspath = f"/Users/travis/build/{username}/bigartm/"
-    else:
-        src_abspath = working_dir
 
 setup_kwargs = {}
 
