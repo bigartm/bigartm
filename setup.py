@@ -125,6 +125,7 @@ class AddLibraryBuild(build_py):
         result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=dest)
         warnings.warn(result.stdout.decode("utf8"))
         warnings.warn(dest)
+        raise ValueError()
 
 
 class BinaryDistribution(Distribution):
