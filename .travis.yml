@@ -29,7 +29,6 @@ jobs:
     # and a mac build
     - os: osx
       language: shell
-      sudo: required
       env:
         - CIBW_BEFORE_BUILD="tools/prepare-cibuildwheel-macosx.sh"
         - CIBW_BUILD=cp3*

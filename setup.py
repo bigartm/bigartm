@@ -4,7 +4,6 @@ from setuptools import setup, find_packages, Distribution
 from setuptools.command.build_py import build_py
 from distutils.spawn import find_executable
 
-from python.setup_data import setup_kwargs
 # parse arguments
 import sys
 import os.path
@@ -46,6 +45,7 @@ if src_abspath is None:
     else:
         src_abspath = working_dir
 
+setup_kwargs = {}
 
 # name of artm shared library
 artm_library_name = 'libartm.so'
@@ -150,11 +150,7 @@ class BinaryDistribution(Distribution):
 if sys.argv[1] == "bdist_wheel":
     # we only mess up with those hacks if we are building a wheel
     setup_kwargs['distclass'] = BinaryDistribution
-    setup_kwargs['cmdclass'] = {}
-    setup_kwargs['cmdclass']['build'] = build
-    setup_kwargs['cmdclass']['build_py'] = AddLibraryBuild
-
-# os.chdir(src_abspath + 'python/')
+    setup_kwargs['cmdclass'] = {'build': build, 'build_py': AddLibraryBuild}
 
 setup(
     package_data={'artm.wrapper': [path_to_lib]},

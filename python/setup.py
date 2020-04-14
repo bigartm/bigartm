@@ -2,8 +2,6 @@
 
 from setuptools import setup, find_packages
 
-from setup_data import setup_kwargs
-
 import sys
 
 
@@ -18,5 +16,4 @@ setup(
     # add shared library to package
     package_data={'artm.wrapper': [artm_library_name]},
     packages=find_packages(),
-    **setup_kwargs
 )
