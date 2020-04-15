@@ -47,7 +47,7 @@ if src_abspath is None:
         username = 'bt2901'  # TODO: do not hardcode this
         src_abspath = f"/Users/travis/build/{username}/bigartm/"
     else:
-        src_abspath = working_dir**
+        src_abspath = working_dir
 
 
 setup_kwargs = {}
