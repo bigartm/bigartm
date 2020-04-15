@@ -34,6 +34,21 @@ if os.path.dirname(filename):
 else:
     raise ValueError("Cannot determine working directory!")
 
+working_dir = os.path.abspath(os.getcwd())
+
+# maybe we are inside Travis container? Fallback
+src_abspath = os.environ.get('CI_BUILD_DIR')
+if src_abspath is None:
+    if os.environ.get("AUDITWHEEL_PLAT"):
+        # we are inside PyPa manylinux docker
+        src_abspath = "/project/"
+    elif shutil.which("python") == "/tmp/cibw_bin/python":
+        # we are inside macosx virtual machine
+        username = 'bt2901'  # TODO: do not hardcode this
+        src_abspath = f"/Users/travis/build/{username}/bigartm/"
+    else:
+        src_abspath = working_dir**
+
 
 setup_kwargs = {}
 
@@ -95,39 +110,6 @@ class build(_build):
         _build.run(self)
 
 
-class AddLibraryBuild(build_py):
-    """
-    This hacky inheritor adds the shared library into the binary distribution.
-    We pretend that we generated our library and place it into the temporary
-    build directory.
-    """
-    def run(self):
-        result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=path_to_lib + "/..")
-        warnings.warn(result.stdout.decode("utf8"))
-        warnings.warn(self.dry_run)
-        raise ValueError()
-        if not self.dry_run:
-            self.copy_library()
-        build_py.run(self)
-
-    def get_outputs(self, *args, **kwargs):
-        outputs = build_py.get_outputs(*args, **kwargs)
-        outputs.extend(self._library_paths)
-        return outputs
-
-    def copy_library(self, builddir=None):
-        self._library_paths = []
-        library = os.getenv("ARTM_SHARED_LIBRARY", None)
-        if library is None:
-            # raise ValueError()
-            library = path_to_lib
-        destdir = os.path.join(self.build_lib, 'artm')
-        self.mkpath(destdir)
-        dest = os.path.join(destdir, os.path.basename(library))
-        shutil.copy(library, dest)
-        self._library_paths = [dest]
-
-
 class BinaryDistribution(Distribution):
     """
     This inheritor forces setuptools to include the "built" shared library into
@@ -142,7 +124,7 @@ class BinaryDistribution(Distribution):
 if sys.argv[1] == "bdist_wheel":
     # we only mess up with those hacks if we are building a wheel
     setup_kwargs['distclass'] = BinaryDistribution
-    setup_kwargs['cmdclass'] = {'build': build, 'build_py': AddLibraryBuild}
+    setup_kwargs['cmdclass'] = {'build': build}
 
 setup(
     package_data={'artm.wrapper': [path_to_lib]},
