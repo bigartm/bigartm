@@ -75,7 +75,11 @@ class CMakeBuild(build_ext):
 
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-        # run cmake
+        print(extdir)
+        print(ext.sourcedir)
+        print(self.build_temp)
+
+        print("running cmake")
         cmake_process = [cmake_exec]
         cmake_process.append(ext.sourcedir)
         cmake_process.append("-DBUILD_PIP_DIST=ON")
@@ -92,12 +96,12 @@ class CMakeBuild(build_ext):
             with open(link_path, "w") as link:
                 link.write(contents + " -lrt" + "\n")
 
-        # run make command
+        print("running make")
         make_process = ["make"]
         # make_process.append("-j6")
         subprocess.check_call(make_process, cwd=self.build_temp)
 
-        # run make install command
+        print("running make install")
         install_process = ["make", "install"]
         subprocess.check_call(install_process, cwd=self.build_temp)
 
