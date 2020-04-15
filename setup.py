@@ -113,16 +113,12 @@ class BinaryDistribution(Distribution):
     def is_pure(self):
         return False
 
-if sys.argv[1] == "bdist_wheel":
-    # we only mess up with those hacks if we are building a wheel
-    setup_kwargs['distclass'] = BinaryDistribution
-    setup_kwargs['cmdclass'] = {'build': build}
-
 setup(
     package_data={'artm.wrapper': [path_to_lib]},
     include_package_data=True,
     packages=find_packages(src_abspath + 'python/'),
     package_dir={'': './python/'},
+
     ext_modules=[CMakeExtension('bigartm')],
     cmdclass=dict(build_ext=CMakeBuild),
 
