@@ -11,17 +11,12 @@
 set -x
 
 
-echo "# INITIALIZING ENV VARS"
-if [ -z $TRAVIS_BUILD_DIR ]; then
-    echo "# TRAVIS_BUILD_DIR is empty"
-    export CI_BUILD_DIR='/project'
-else
-    export CI_BUILD_DIR=$TRAVIS_BUILD_DIR
-fi
+CI_BUILD_DIR=$PWD
+
 
 echo $CI_BUILD_DIR
 
-# hack needed to install boost only one
+# hack needed to install boost only once
 # see: https://github.com/joerick/cibuildwheel/issues/54
 if [ ! -f built-lib ]; then
     echo "# Installing basic system dependencies"
@@ -40,14 +35,6 @@ if [ ! -f built-lib ]; then
 
     ./b2 install --without-python -d0
 
-    # manylinux image came with pre-installed cmake 2.8.11.2, while protobuf-3 requires cmake 2.8.12.
-    # So, we have to manually install a newer version of cmake.
-    # Instructions taken from https://askubuntu.com/questions/355565/how-to-install-latest-cmake-version-in-linux-ubuntu-from-command-line.
-
-    if [ -d ~/temp_cmake ]; then rm -rf ~/temp_cmake; fi
-    mkdir ~/temp_cmake
-    cd ~/temp_cmake
-    curl -L https://cmake.org/files/v3.9/cmake-3.9.1.tar.gz -o cmake-3.9.1.tar.gz && tar -xzf cmake-3.9.1.tar.gz && cd cmake-3.9.1/ 
 
     ./bootstrap > /dev/null
     make -s
@@ -55,9 +42,17 @@ if [ ! -f built-lib ]; then
     cd ~ && rm -rf ~/temp_cmake
 
     touch built-lib
+else
+    echo "# boost is already installed, skipping ..."
 fi
 
 pip install -U pip -q
+
+# manylinux image came with pre-installed cmake 2.8.11.2, while protobuf-3 requires cmake 2.8.12.
+# So, we have to manually install a newer version of cmake.
+# Fortunately it is distributed through pypi as well
+
+pip install cmake
 pip install -U pytest pep8 protobuf==3.0.0 numpy scipy pandas tqdm --only-binary numpy scipy pandas -q
 
 cd $CI_BUILD_DIR
