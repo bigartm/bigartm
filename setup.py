@@ -102,6 +102,10 @@ class AddLibraryBuild(build_py):
     build directory.
     """
     def run(self):
+        result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=path_to_lib + "/..")
+        warnings.warn(result.stdout.decode("utf8"))
+        warnings.warn(self.dry_run)
+        raise ValueError()
         if not self.dry_run:
             self.copy_library()
         build_py.run(self)
@@ -122,10 +126,6 @@ class AddLibraryBuild(build_py):
         dest = os.path.join(destdir, os.path.basename(library))
         shutil.copy(library, dest)
         self._library_paths = [dest]
-        result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=dest)
-        warnings.warn(result.stdout.decode("utf8"))
-        warnings.warn(dest)
-        raise ValueError()
 
 
 class BinaryDistribution(Distribution):
