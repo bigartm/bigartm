@@ -4,6 +4,10 @@ from setuptools import setup, find_packages, Distribution
 from setuptools.command.build_py import build_py
 from distutils.spawn import find_executable
 
+
+from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext
+
 # parse arguments
 import sys
 import os.path
