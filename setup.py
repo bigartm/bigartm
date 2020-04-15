@@ -79,31 +79,31 @@ class CMakeBuild(build_ext):
         print(ext.sourcedir)
         print(self.build_temp)
 
-        print("running cmake")
+        print(f"running cmake from {extdir}")
         cmake_process = [cmake_exec]
         cmake_process.append(ext.sourcedir)
         cmake_process.append("-DBUILD_PIP_DIST=ON")
-        cmake_process.append('-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir)
+        # cmake_process.append('-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir)
         # cmake_process.append('-DPYTHON_EXECUTABLE=' + sys.executable)
 
-        subprocess.check_call(cmake_process, cwd=self.build_temp)
+        subprocess.check_call(cmake_process, cwd=extdir)
 
         # dirty hack to fix librt issue
         if os.environ.get("AUDITWHEEL_PLAT"):
-            link_path = self.build_temp + "/src/artm/CMakeFiles/artm.dir/link.txt"
+            link_path = extdir + "/src/artm/CMakeFiles/artm.dir/link.txt"
             with open(link_path, "r") as link:
                 contents = link.read().strip()
             with open(link_path, "w") as link:
                 link.write(contents + " -lrt" + "\n")
 
-        print("running make")
+        print(f"running make from {extdir}")
         make_process = ["make"]
         # make_process.append("-j6")
-        subprocess.check_call(make_process, cwd=self.build_temp)
+        subprocess.check_call(make_process, cwd=extdir)
 
-        print("running make install")
+        print(f"running make install from {extdir}")
         install_process = ["make", "install"]
-        subprocess.check_call(install_process, cwd=self.build_temp)
+        subprocess.check_call(install_process, cwd=extdir)
 
 
 class BinaryDistribution(Distribution):
