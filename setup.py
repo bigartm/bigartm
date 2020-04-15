@@ -69,7 +69,6 @@ class CMakeBuild(build_ext):
         except OSError:
             raise RuntimeError("CMake must be installed to build the following extensions: " + ", ".join(e.name for e in self.extensions))
 
-
         for ext in self.extensions:
             self.build_extension(ext)
 
@@ -79,9 +78,14 @@ class CMakeBuild(build_ext):
         print(ext.sourcedir)
         print(self.build_temp)
 
+        print(f"does {self.build_temp} exist? {os.path.exists(self.build_temp)}")
+        print(f"does {extdir} exist? {os.path.exists(extdir)}")
         print(f"running cmake from {extdir}")
         if not os.path.exists(self.build_temp):
+            print(f"creating  {self.build_temp}")
             os.makedirs(self.build_temp)
+            print(f"does {self.build_temp} exist? {os.path.exists(self.build_temp)}")
+            print(f"does {extdir} exist? {os.path.exists(extdir)}")
 
         cmake_process = [cmake_exec]
         cmake_process.append(ext.sourcedir)
