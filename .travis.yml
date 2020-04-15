@@ -18,7 +18,6 @@ jobs:
     # perform a linux build
     - os: linux
       dist: trusty
-      sudo: required
       env:
         - CIBW_MANYLINUX_X86_64_IMAGE="manylinux1"
         - CIBW_BEFORE_BUILD="tools/prepare-cibuildwheel-linux.sh"

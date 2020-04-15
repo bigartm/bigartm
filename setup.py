@@ -108,9 +108,9 @@ class CMakeBuild(build_ext):
         # make_process.append("-j6")
         subprocess.check_call(make_process, cwd=extdir)
 
-        print(f"running make install from {extdir}")
-        install_process = ["make", "install"]
-        subprocess.check_call(install_process, cwd=extdir)
+        # print(f"running make install from {extdir}")
+        # install_process = ["make", "install"]
+        # subprocess.check_call(install_process, cwd=extdir)
 
 
 class BinaryDistribution(Distribution):
