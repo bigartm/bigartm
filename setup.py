@@ -81,9 +81,9 @@ class CMakeBuild(build_ext):
         print(f"does {self.build_temp} exist? {os.path.exists(self.build_temp)}")
         print(f"does {extdir} exist? {os.path.exists(extdir)}")
         print(f"running cmake from {extdir}")
-        if not os.path.exists(self.build_temp):
+        if not os.path.exists(extdir):
             print(f"creating  {self.build_temp}")
-            os.makedirs(self.build_temp)
+            os.makedirs(extdir)
             print(f"does {self.build_temp} exist? {os.path.exists(self.build_temp)}")
             print(f"does {extdir} exist? {os.path.exists(extdir)}")
 
