@@ -34,20 +34,6 @@ if os.path.dirname(filename):
 else:
     raise ValueError("Cannot determine working directory!")
 
-working_dir = os.path.abspath(os.getcwd())
-
-# maybe we are inside Travis container? Fallback
-src_abspath = os.environ.get('CI_BUILD_DIR')
-if src_abspath is None:
-    if os.environ.get("AUDITWHEEL_PLAT"):
-        # we are inside PyPa manylinux docker
-        src_abspath = "/project/"
-    elif shutil.which("python") == "/tmp/cibw_bin/python":
-        # we are inside macosx virtual machine
-        username = 'bt2901'  # TODO: do not hardcode this
-        src_abspath = f"/Users/travis/build/{username}/bigartm/"
-    else:
-        src_abspath = working_dir
 
 
 setup_kwargs = {}
@@ -61,53 +47,55 @@ elif sys.platform.startswith('darwin'):
 
 path_to_lib = src_abspath + 'python/artm/wrapper/' + artm_library_name
 
+# setuptools to CMake solution based on https://github.com/pybind/cmake_example/
+# which is based on https://github.com/YannickJadoul/Parselmouth/blob/master/setup.py
 
-class build(_build):
+
+class CMakeExtension(Extension):
+    def __init__(self, name, sourcedir=''):
+        Extension.__init__(self, name, sources=[])
+        self.sourcedir = os.path.abspath(sourcedir)
+
+
+class CMakeBuild(build_ext):
     def run(self):
         try:
-            warnings.warn('inside run()')
-            build_directory = tempfile.mkdtemp(dir=src_abspath)
-            # run cmake
-            cmake_process = [cmake_exec]
-            cmake_process.append(src_abspath)
-            cmake_process.append("-DBUILD_PIP_DIST=ON")
-            # FIXME
-            # validate return code
-            retval = subprocess.call(cmake_process, cwd=build_directory)
-            if retval:
-                sys.exit(-1)
+            # TODO: check CMake version
+            out = subprocess.check_output(['cmake', '--version'])
+        except OSError:
+            raise RuntimeError("CMake must be installed to build the following extensions: " + ", ".join(e.name for e in self.extensions))
 
-            # dirty hack to fix librt issue
-            if os.environ.get("AUDITWHEEL_PLAT"):
-                link_path = build_directory + "/src/artm/CMakeFiles/artm.dir/link.txt"
-                with open(link_path, "r") as link:
-                    contents = link.read().strip()
-                with open(link_path, "w") as link:
-                    link.write(contents + " -lrt" + "\n")
 
-            # run make command
-            make_process = ["make"]
-            # make_process.append("-j6")
-            retval = subprocess.call(make_process, cwd=build_directory)
-            if retval:
-                sys.exit(-1)
-            # run make install command
-            install_process = ["make", "install"]
-            retval = subprocess.call(install_process, cwd=build_directory)
-            if retval:
-                sys.exit(-1)
-            # result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=build_directory)
-            # warnings.warn(result.stdout.decode("utf8"))
+        for ext in self.extensions:
+            self.build_extension(ext)
 
-            # result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=src_abspath + '../../../../../../Users')
-            # warnings.warn(result.stdout.decode("utf8"))
-            # result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=src_abspath + '../../../../../../')
-            # warnings.warn(result.stdout.decode("utf8"))
-        finally:
-            if os.path.exists(build_directory):
-                shutil.rmtree(build_directory)
-        # _build is an old-style class, so super() doesn't work.
-        _build.run(self)
+    def build_extension(self, ext):
+        extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
+        # run cmake
+        cmake_process = [cmake_exec]
+        cmake_process.append(ext.sourcedir)
+        cmake_process.append("-DBUILD_PIP_DIST=ON")
+        cmake_process.append('-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir)
+        # cmake_process.append('-DPYTHON_EXECUTABLE=' + sys.executable)
+
+        subprocess.check_call(cmake_process, cwd=self.build_temp)
+
+        # dirty hack to fix librt issue
+        if os.environ.get("AUDITWHEEL_PLAT"):
+            link_path = self.build_temp + "/src/artm/CMakeFiles/artm.dir/link.txt"
+            with open(link_path, "r") as link:
+                contents = link.read().strip()
+            with open(link_path, "w") as link:
+                link.write(contents + " -lrt" + "\n")
+
+        # run make command
+        make_process = ["make"]
+        # make_process.append("-j6")
+        subprocess.check_call(make_process, cwd=self.build_temp)
+
+        # run make install command
+        install_process = ["make", "install"]
+        subprocess.check_call(install_process, cwd=self.build_temp)
 
 
 class BinaryDistribution(Distribution):
@@ -131,6 +119,9 @@ setup(
     include_package_data=True,
     packages=find_packages(src_abspath + 'python/'),
     package_dir={'': './python/'},
+    ext_modules=[CMakeExtension('bigartm')],
+    cmdclass=dict(build_ext=CMakeBuild),
+
 
     **setup_kwargs
 )
