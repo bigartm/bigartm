@@ -80,6 +80,9 @@ class CMakeBuild(build_ext):
         print(self.build_temp)
 
         print(f"running cmake from {extdir}")
+        if not os.path.exists(self.build_temp):
+            os.makedirs(self.build_temp)
+
         cmake_process = [cmake_exec]
         cmake_process.append(ext.sourcedir)
         cmake_process.append("-DBUILD_PIP_DIST=ON")
