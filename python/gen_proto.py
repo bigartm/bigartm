@@ -37,8 +37,7 @@ protoc_exec = find_protoc_exec()
 def generate_proto_files(
         src_folder,
         src_proto_file,
-        dst_py_file,
-        src_abspath=None):
+        dst_py_file):
     """
     Generates pb2.py files from corresponding .proto files
     """
@@ -52,8 +51,6 @@ def generate_proto_files(
         print("Generating {}...".format(dst_py_file))
 
         sys.stderr.write("src_folder {} exists: {}\n".format(src_folder, os.path.isdir(src_folder)))
-        if src_abspath:
-            sys.stderr.write("src_abspath {} exists: {}\n".format(src_abspath, os.path.isdir(src_abspath)))
         dir_path = os.path.dirname(os.path.realpath(__file__))
         sys.stderr.write("full path to me is {}, working directory is: {}\n".format(dir_path, os.getcwd()))
 
@@ -106,28 +103,14 @@ if __name__ == "__main__":
         # Generate necessary .proto file if it doesn't exist.
         proto_name = "messages.proto"
 
-        # maybe we are inside Travis container? Fallback
-        src_abspath = os.environ.get('CI_BUILD_DIR')
-        if src_abspath is None:
-            if os.environ.get("AUDITWHEEL_PLAT"):
-                print("wow such virtualenv wow")
-                src_abspath = "/project"
-            elif shutil.which("python") == "/tmp/cibw_bin/python":
-                print("wow such macos such travis wow")
-                src_abspath = "/Users/travis/build/bt2901/bigartm"
 
-        if src_abspath is None:
-            src_folder = "../src"
-            dst_dir = './artm/wrapper/'
-        else:
-            src_folder = src_abspath + "/src"
-            dst_dir = os.path.join(src_abspath, "python", "artm", "wrapper")
+        src_folder = "../src"
+        dst_dir = './artm/wrapper/'
 
         src_folder = src_folder + "/artm"
         generate_proto_files(
             src_folder,
             proto_name,
-            dst_dir + "messages_pb2.py",
-            src_abspath=src_abspath)
+            dst_dir + "messages_pb2.py")
 
 
