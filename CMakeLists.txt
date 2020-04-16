@@ -39,8 +39,7 @@ if (BUILD_PIP_DIST)
     COMMENT "Generating python protobuf files"
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
   add_dependencies(python_generate_proto protoc)
-
-else
+else (BUILD_PIP_DIST)
   option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
   option(BUILD_BIGARTM_CLI "Indicates whether to build bigartm-CLI executable" ON)
   option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
