@@ -124,10 +124,16 @@ class BinaryDistribution(Distribution):
     def is_pure(self):
         return False
 
+print(find_packages(src_abspath + 'python/'))
+print(find_packages('python/'))
+print(find_packages())
+print(find_packages(src_abspath))
+print(find_packages(tmp))
+
 setup(
     package_data={'artm.wrapper': [path_to_lib]},
     include_package_data=True,
-    packages=find_packages(src_abspath + 'python/'),
+    packages=find_packages('./python/'),
     package_dir={'': './python/'},
 
     ext_modules=[CMakeExtension('bigartm')],
