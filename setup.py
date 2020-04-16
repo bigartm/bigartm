@@ -110,7 +110,7 @@ class CMakeBuild(build_ext):
         warnings.warn(result.stdout.decode("utf8"))
 
         print(f"running make from {extdir}")
-        make_process = ["make"]
+        make_process = ["sudo", "make"]
         # make_process.append("-j6")
         subprocess.check_call(make_process, cwd=extdir)
 
