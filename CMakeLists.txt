@@ -33,11 +33,18 @@ else (MSVC)
   message("-- Build type: ${CMAKE_BUILD_TYPE}")
 endif (MSVC)
 
-if (NOT BUILD_PIP_DIST)
+if (BUILD_PIP_DIST)
+  add_custom_target(python_generate_proto ALL
+    ${PYTHON} ${CMAKE_CURRENT_LIST_DIR}/gen_proto.py --protoc_executable=$<TARGET_FILE:protoc>
+    COMMENT "Generating python protobuf files"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+  add_dependencies(python_generate_proto protoc)
+
+else
   option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
   option(BUILD_BIGARTM_CLI "Indicates whether to build bigartm-CLI executable" ON)
   option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
-endif (NOT BUILD_PIP_DIST)
+endif (BUILD_PIP_DIST)
 
 set(PYTHON python CACHE INTERNAL "Python command")
 

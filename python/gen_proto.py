@@ -111,6 +111,5 @@ if __name__ == "__main__":
             src_folder,
             proto_name,
             dst_dir + "messages_pb2.py")
-        raise RuntimeError()
 
 

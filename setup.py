@@ -90,7 +90,7 @@ class CMakeBuild(build_ext):
         cmake_process = [cmake_exec]
         cmake_process.append(ext.sourcedir)
         cmake_process.append("-DBUILD_PIP_DIST=ON")
-        # cmake_process.append('-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir)
+        cmake_process.append('-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir)
         # cmake_process.append('-DPYTHON_EXECUTABLE=' + sys.executable)
 
         subprocess.check_call(cmake_process, cwd=extdir)
