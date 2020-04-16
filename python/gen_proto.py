@@ -103,7 +103,6 @@ if __name__ == "__main__":
         # Generate necessary .proto file if it doesn't exist.
         proto_name = "messages.proto"
 
-
         src_folder = "../src"
         dst_dir = './artm/wrapper/'
 
@@ -112,5 +111,6 @@ if __name__ == "__main__":
             src_folder,
             proto_name,
             dst_dir + "messages_pb2.py")
+        raise RuntimeError()
 
 
