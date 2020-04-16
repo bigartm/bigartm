@@ -110,9 +110,15 @@ class CMakeBuild(build_ext):
         warnings.warn(result.stdout.decode("utf8"))
 
         print(f"running make from {extdir}")
-        make_process = ["sudo", "make"]
+        make_process = ["make"]
         # make_process.append("-j6")
         subprocess.check_call(make_process, cwd=extdir)
+
+        ${PYTHON} ${CMAKE_CURRENT_LIST_DIR}/python/gen_proto.py --protoc_executable=$<TARGET_FILE:protoc>
+
+        print(f"generating proto files {extdir}")
+        gen_proto_process = ["./python/gen_proto.py", f"--protoc_executable={extdir}/bin/protoc"]
+        subprocess.check_call(gen_proto_process, cwd=ext.sourcedir)
 
         # print(f"running make install from {extdir}")
         # install_process = ["make", "install"]
