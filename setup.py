@@ -103,6 +103,12 @@ class CMakeBuild(build_ext):
             with open(link_path, "w") as link:
                 link.write(contents + " -lrt" + "\n")
 
+        result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=extdir)
+        warnings.warn(result.stdout.decode("utf8"))
+
+        result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=extdir + "/python/")
+        warnings.warn(result.stdout.decode("utf8"))
+
         print(f"running make from {extdir}")
         make_process = ["make"]
         # make_process.append("-j6")
