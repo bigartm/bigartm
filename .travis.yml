@@ -30,7 +30,7 @@ jobs:
       language: shell
       env:
         - CIBW_BEFORE_BUILD="tools/prepare-cibuildwheel-macosx.sh"
-        - CIBW_BUILD=cp36*
+        - CIBW_BUILD=cp3*
         - CIBW_SKIP="cp35-*"
     # and a windows build
     # - os: windows
