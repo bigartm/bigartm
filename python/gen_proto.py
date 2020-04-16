@@ -31,6 +31,7 @@ def find_protoc_exec():
     return find_executable("protoc")
 
 
+raise ValueError
 protoc_exec = find_protoc_exec()
 
 
