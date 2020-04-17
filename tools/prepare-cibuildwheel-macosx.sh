@@ -14,6 +14,6 @@ set -x
 # on Travis, boost 1.71.0 is already installed
 
 pip install -U pip -q
-pip install -U pytest pep8 wheel==0.34.1 protobuf==3.0.0 numpy scipy pandas tqdm --only-binary numpy scipy pandas -q
+pip install -U pytest pep8 protobuf==3.0.0 numpy scipy pandas tqdm --only-binary numpy scipy pandas -q
 
 
