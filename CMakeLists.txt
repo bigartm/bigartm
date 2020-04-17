@@ -33,6 +33,8 @@ else (MSVC)
   message("-- Build type: ${CMAKE_BUILD_TYPE}")
 endif (MSVC)
 
+set(PYTHON python CACHE INTERNAL "Python command")
+
 if (BUILD_PIP_DIST)
   message("BUILD_PIP_DIST")
   add_custom_target(python_generate_proto ALL
@@ -46,7 +48,6 @@ else (BUILD_PIP_DIST)
   option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
 endif (BUILD_PIP_DIST)
 
-set(PYTHON python CACHE INTERNAL "Python command")
 
 if (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
   option(BUILD_BIGARTM_CLI_STATIC "Request build of static executable bigartm (for Linux only)" ON)
