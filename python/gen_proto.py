@@ -67,9 +67,6 @@ def generate_proto_files(
         print(subprocess.check_output('pwd', cwd=dir_path + "/.."))
         print(subprocess.check_output('ls', cwd=dir_path + "/.."))
         print("-=-=-")
-        print(subprocess.check_output('pwd', cwd=os.getcwd() + "/../src"))
-        print(subprocess.check_output('ls', cwd=os.getcwd() + "/../src"))
-        print("----")
         print(subprocess.check_output('pwd', cwd=dir_path + "/../src"))
         print(subprocess.check_output('ls', cwd=dir_path + "/../src"))
 
