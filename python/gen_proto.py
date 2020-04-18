@@ -44,7 +44,7 @@ def generate_proto_files(
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
     # source_file = os.path.join(src_folder, src_proto_file)
-    source_file = os.path.join(dst_path, src_folder, src_proto_file)
+    source_file = os.path.join(dir_path, src_folder, src_proto_file)
     output_file = dst_py_file
 
     if (not os.path.exists(output_file) or
