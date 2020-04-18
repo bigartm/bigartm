@@ -55,14 +55,14 @@ def generate_proto_files(
         sys.stderr.write("full path to me is {}, working directory is: {}\n".format(dir_path, os.getcwd()))
 
         print("----")
-        print(subprocess.call('pwd', cwd=src_folder))
-        print(subprocess.call('ls', cwd=src_folder))
-        print("----")
         print(subprocess.call('pwd', cwd=dir_path))
         print(subprocess.call('ls', cwd=dir_path))
         print("----")
         print(subprocess.call('pwd', cwd=os.getcwd()))
         print(subprocess.call('ls', cwd=os.getcwd()))
+        print("----")
+        print(subprocess.call('pwd', cwd=src_folder))
+        print(subprocess.call('ls', cwd=src_folder))
         if not os.path.exists(source_file):
             sys.stderr.write("Can't find required file: {}\n".format(
                 source_file))
