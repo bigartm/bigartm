@@ -45,7 +45,9 @@ def generate_proto_files(
     dir_path = os.path.dirname(os.path.realpath(__file__))
     # source_file = os.path.join(src_folder, src_proto_file)
     source_file = os.path.join(dir_path, src_folder, src_proto_file)
-    output_file = dst_py_file
+    src_folder_abs = os.path.join(dir_path, src_folder)
+    dst_py_file_abs = os.path.join(dir_path, dst_py_file)
+    output_file = dst_py_file_abs
 
     if (not os.path.exists(output_file) or
             os.path.exists(output_file) and
@@ -83,26 +85,26 @@ def generate_proto_files(
             raise ValueError("No protobuf compiler executable was found!")
 
         try:
-            tmp_dir = tempfile.mkdtemp(dir=os.path.join(dir_path, src_folder))
+            tmp_dir = tempfile.mkdtemp(dir=src_folder_abs)
             sys.stderr.write("tmp_dir {} exists: {}\n".format(tmp_dir, os.path.isdir(tmp_dir)))
             # tmp_dir = os.path.join(os.getcwd(), tmp_dir[2:])
             sys.stderr.write("tmp_dir {} exists: {}\n".format(tmp_dir, os.path.isdir(tmp_dir)))
             sys.stderr.write("proto_file {} exists: {}\n".format(source_file, os.path.isfile(source_file)))
             protoc_command = [
                 protoc_exec,
-                "-I=" + src_folder,
+                "-I=" + src_folder_abs,
                 "--python_out=" + tmp_dir,
                 source_file]
             print("Executing {}...".format(protoc_command))
             # protoc seems to not understand relative paths, so we need to tweak cwd
             # see https://github.com/protocolbuffers/protobuf/issues/3028
-            if subprocess.call(protoc_command, cwd=src_folder):
+            if subprocess.call(protoc_command, cwd=src_folder_abs):
                 raise
             src_py_file = src_proto_file.replace(".proto", "_pb2.py")
-            if os.path.exists(dst_py_file):
-                os.remove(dst_py_file)
+            if os.path.exists(dst_py_file_abs):
+                os.remove(dst_py_file_abs)
 
-            print("Moving {} to {}".format(os.path.join(tmp_dir, src_py_file), dst_py_file))
+            print("Moving {} to {}".format(os.path.join(tmp_dir, src_py_file), dst_py_file_abs))
 
             compiled_result = os.path.join(tmp_dir, src_py_file)
             sys.stderr.write("first file {} exists: {}\n".format(compiled_result, os.path.isfile(compiled_result)))
@@ -111,7 +113,7 @@ def generate_proto_files(
             # sys.stderr.write("dst_dir {} exists: {}\n".format(dst_dir, os.path.isdir(dst_dir)))
             # print(subprocess.call('ls', cwd=dst_dir))
 
-            os.rename(os.path.join(tmp_dir, src_py_file), dst_py_file)
+            os.rename(os.path.join(tmp_dir, src_py_file), dst_py_file_abs)
         finally:
             if os.path.exists(tmp_dir):
                 shutil.rmtree(tmp_dir)
