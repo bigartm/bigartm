@@ -42,7 +42,9 @@ def generate_proto_files(
     Generates pb2.py files from corresponding .proto files
     """
 
-    source_file = os.path.join(src_folder, src_proto_file)
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    # source_file = os.path.join(src_folder, src_proto_file)
+    source_file = os.path.join(dst_path, src_folder, src_proto_file)
     output_file = dst_py_file
 
     if (not os.path.exists(output_file) or
@@ -51,7 +53,6 @@ def generate_proto_files(
         print("Generating {}...".format(dst_py_file))
 
         sys.stderr.write("src_folder {} exists: {}\n".format(src_folder, os.path.isdir(src_folder)))
-        dir_path = os.path.dirname(os.path.realpath(__file__))
         sys.stderr.write("full path to me is {}, working directory is: {}\n".format(dir_path, os.getcwd()))
 
         print("----")
