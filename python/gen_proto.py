@@ -70,6 +70,9 @@ def generate_proto_files(
         print("-=-=-")
         print(subprocess.check_output('pwd', cwd=dir_path + "/../src"))
         print(subprocess.check_output('ls', cwd=dir_path + "/../src"))
+        print("-=-=-")
+        print(subprocess.check_output('pwd', cwd=dir_path + "/../src/artm"))
+        print(subprocess.check_output('ls', cwd=dir_path + "/../src/artm"))
 
         if not os.path.exists(source_file):
             sys.stderr.write("Can't find required file: {}\n".format(
@@ -80,7 +83,7 @@ def generate_proto_files(
             raise ValueError("No protobuf compiler executable was found!")
 
         try:
-            tmp_dir = tempfile.mkdtemp(dir=src_folder)
+            tmp_dir = tempfile.mkdtemp(dir=os.path.join(dir_path, src_folder))
             sys.stderr.write("tmp_dir {} exists: {}\n".format(tmp_dir, os.path.isdir(tmp_dir)))
             # tmp_dir = os.path.join(os.getcwd(), tmp_dir[2:])
             sys.stderr.write("tmp_dir {} exists: {}\n".format(tmp_dir, os.path.isdir(tmp_dir)))
