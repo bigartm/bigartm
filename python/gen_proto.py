@@ -54,6 +54,15 @@ def generate_proto_files(
         dir_path = os.path.dirname(os.path.realpath(__file__))
         sys.stderr.write("full path to me is {}, working directory is: {}\n".format(dir_path, os.getcwd()))
 
+        print("----")
+        print(subprocess.call('pwd', cwd=src_folder))
+        print(subprocess.call('ls', cwd=src_folder))
+        print("----")
+        print(subprocess.call('pwd', cwd=dir_path))
+        print(subprocess.call('ls', cwd=dir_path))
+        print("----")
+        print(subprocess.call('pwd', cwd=os.getcwd()))
+        print(subprocess.call('ls', cwd=os.getcwd()))
         if not os.path.exists(source_file):
             sys.stderr.write("Can't find required file: {}\n".format(
                 source_file))
@@ -83,8 +92,6 @@ def generate_proto_files(
                 os.remove(dst_py_file)
 
             print("Moving {} to {}".format(os.path.join(tmp_dir, src_py_file), dst_py_file))
-            print(subprocess.call('ls', cwd=src_folder))
-            print(subprocess.call('ls', cwd=tmp_dir))
 
             compiled_result = os.path.join(tmp_dir, src_py_file)
             sys.stderr.write("first file {} exists: {}\n".format(compiled_result, os.path.isfile(compiled_result)))
