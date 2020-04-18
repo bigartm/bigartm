@@ -60,9 +60,19 @@ def generate_proto_files(
         print("----")
         print(subprocess.check_output('pwd', cwd=os.getcwd()))
         print(subprocess.check_output('ls', cwd=os.getcwd()))
+        print("====")
+        print(subprocess.check_output('pwd', cwd=os.getcwd() + ".."))
+        print(subprocess.check_output('ls', cwd=os.getcwd() + ".."))
         print("----")
-        print(subprocess.check_output('pwd', cwd=src_folder))
-        print(subprocess.check_output('ls', cwd=src_folder))
+        print(subprocess.check_output('pwd', cwd=dir_path + ".."))
+        print(subprocess.check_output('ls', cwd=dir_path + ".."))
+        print("-=-=-")
+        print(subprocess.check_output('pwd', cwd=os.getcwd() + "../src"))
+        print(subprocess.check_output('ls', cwd=os.getcwd() + "../src"))
+        print("----")
+        print(subprocess.check_output('pwd', cwd=dir_path + "../src"))
+        print(subprocess.check_output('ls', cwd=dir_path + "../src"))
+
         if not os.path.exists(source_file):
             sys.stderr.write("Can't find required file: {}\n".format(
                 source_file))
