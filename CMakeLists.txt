@@ -40,7 +40,7 @@ if (BUILD_PIP_DIST)
   add_custom_target(python_generate_proto ALL
     ${PYTHON} ${CMAKE_CURRENT_LIST_DIR}/python/gen_proto.py --protoc_executable=$<TARGET_FILE:protoc>
     COMMENT "Generating python protobuf files"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   add_dependencies(python_generate_proto protoc)
 else (BUILD_PIP_DIST)
   option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
