@@ -53,6 +53,7 @@ def generate_proto_files(
             os.path.exists(output_file) and
             os.path.getmtime(source_file) > os.path.getmtime(output_file)):
         print("Generating {}...".format(dst_py_file))
+        print("Generating {}...".format(dst_py_file_abs))
 
         sys.stderr.write("src_folder {} exists: {}\n".format(src_folder, os.path.isdir(src_folder)))
         sys.stderr.write("full path to me is {}, working directory is: {}\n".format(dir_path, os.getcwd()))
