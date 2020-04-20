@@ -46,38 +46,16 @@ def generate_proto_files(
     # source_file = os.path.join(src_folder, src_proto_file)
     source_file = os.path.join(dir_path, src_folder, src_proto_file)
     src_folder_abs = os.path.join(dir_path, src_folder)
-    dst_py_file_abs = os.path.join(dir_path, '..', dst_py_file)
+    dst_py_file_abs = os.path.join(os.getcwd(), "artm", "wrapper", dst_py_file)
     output_file = dst_py_file_abs
 
     if (not os.path.exists(output_file) or
             os.path.exists(output_file) and
             os.path.getmtime(source_file) > os.path.getmtime(output_file)):
-        print("Generating {}...".format(dst_py_file))
         print("Generating {}...".format(dst_py_file_abs))
 
         sys.stderr.write("src_folder {} exists: {}\n".format(src_folder, os.path.isdir(src_folder)))
         sys.stderr.write("full path to me is {}, working directory is: {}\n".format(dir_path, os.getcwd()))
-
-        print("----")
-        print(subprocess.check_output('pwd', cwd=dir_path))
-        print(subprocess.check_output('ls', cwd=dir_path))
-        print("----")
-        print(subprocess.check_output('pwd', cwd=os.getcwd()))
-        print(subprocess.check_output('ls', cwd=os.getcwd()))
-        print("====")
-        print(subprocess.check_output('pwd', cwd=os.getcwd() + "/artm/"))
-        print(subprocess.check_output('ls', cwd=os.getcwd() + "/artm/"))
-        print(subprocess.check_output('pwd', cwd=os.getcwd() + "/artm/wrapper"))
-        print(subprocess.check_output('ls', cwd=os.getcwd() + "/artm/wrapper"))
-        print("----")
-        print(subprocess.check_output('pwd', cwd=dir_path + "/.."))
-        print(subprocess.check_output('ls', cwd=dir_path + "/.."))
-        print("-=-=-")
-        print(subprocess.check_output('pwd', cwd=dir_path + "/../artm"))
-        print(subprocess.check_output('ls', cwd=dir_path + "/../artm"))
-        print("-=-=-")
-        print(subprocess.check_output('pwd', cwd=dir_path + "/../artm/wrapper"))
-        print(subprocess.check_output('ls', cwd=dir_path + "/../artm/wrapper"))
 
         if not os.path.exists(source_file):
             sys.stderr.write("Can't find required file: {}\n".format(
