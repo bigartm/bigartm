@@ -46,7 +46,7 @@ def generate_proto_files(
     # source_file = os.path.join(src_folder, src_proto_file)
     source_file = os.path.join(dir_path, src_folder, src_proto_file)
     src_folder_abs = os.path.join(dir_path, src_folder)
-    dst_py_file_abs = os.path.join(os.getcwd(), "artm", "wrapper", dst_py_file)
+    dst_py_file_abs = os.path.join(os.getcwd(), dst_py_file)
     output_file = dst_py_file_abs
 
     if (not os.path.exists(output_file) or
