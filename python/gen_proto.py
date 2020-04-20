@@ -95,7 +95,6 @@ def generate_proto_files(
             # print(subprocess.call('ls', cwd=dst_dir))
 
             os.rename(os.path.join(tmp_dir, src_py_file), dst_py_file_abs)
-            raise ValueError()
         finally:
             if os.path.exists(tmp_dir):
                 shutil.rmtree(tmp_dir)
