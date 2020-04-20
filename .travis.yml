@@ -21,7 +21,7 @@ jobs:
       env:
         - CIBW_MANYLINUX_X86_64_IMAGE="manylinux1"
         - CIBW_BEFORE_BUILD="tools/prepare-cibuildwheel-linux.sh"
-        - CIBW_BUILD=cp3*
+        - CIBW_BUILD=cp37*
         - CIBW_SKIP="cp35-* *-manylinux_i686"
       services: docker
 
@@ -30,7 +30,7 @@ jobs:
       language: shell
       env:
         - CIBW_BEFORE_BUILD="tools/prepare-cibuildwheel-macosx.sh"
-        - CIBW_BUILD=cp3*
+        - CIBW_BUILD=cp37*
         - CIBW_SKIP="cp35-*"
     # and a windows build
     # - os: windows
