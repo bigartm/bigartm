@@ -114,13 +114,17 @@ class CMakeBuild(build_ext):
         # make_process.append("-j6")
         subprocess.check_call(make_process, cwd=extdir)
 
-        # print(f"generating proto files {extdir}")
-        # gen_proto_process = [python, "./python/gen_proto.py", f"--protoc_executable={extdir}/bin/protoc"]
-        # subprocess.check_call(gen_proto_process, cwd=ext.sourcedir)
+        # removing extraneous artifacts
+        print("cleaning up...")
+        for bad_dir in ['3rdparty', 'CMakeFiles', 'src']:
+            shutil.rmtree(extdir + "/" + bad_dir)
 
-        # print(f"running make install from {extdir}")
-        # install_process = ["make", "install"]
-        # subprocess.check_call(install_process, cwd=extdir)
+        # hack: copy libartm into /artm/wrapper/, where it belongs
+        # instead of leaving it in the root direcetory where it mysteriously appeared
+        shutil.copyfile(
+            extdir + "/" + artm_library_name,
+            extdir + '/artm/wrapper/' + artm_library_name
+        )
 
 
 class BinaryDistribution(Distribution):
@@ -134,8 +138,6 @@ class BinaryDistribution(Distribution):
     def is_pure(self):
         return False
 
-print(find_packages('python/'))
-print(find_packages())
 
 setup(
     package_data={'artm.wrapper': [path_to_lib]},
