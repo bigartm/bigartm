@@ -116,12 +116,15 @@ class CMakeBuild(build_ext):
 
         # removing extraneous artifacts
         print("cleaning up...")
-        for bad_dir in ['3rdparty', 'CMakeFiles', 'src']:
+        for bad_dir in ['3rdparty', 'CMakeFiles', 'src', 'bin', 'lib', 'python']:
             shutil.rmtree(extdir + "/" + bad_dir)
+
+        for bad_file in ['*.cmake', 'CMakeCache.txt', 'Makefile']:
+            os.remove(extdir + "/" + bad_file)
 
         # hack: copy libartm into /artm/wrapper/, where it belongs
         # instead of leaving it in the root direcetory where it mysteriously appeared
-        shutil.copyfile(
+        shutil.movefile(
             extdir + "/" + artm_library_name,
             extdir + '/artm/wrapper/' + artm_library_name
         )
