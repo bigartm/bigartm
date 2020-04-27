@@ -29,7 +29,7 @@ jobs:
     - os: osx
       language: shell
       env:
-        - CIBW_REPAIR_WHEEL_COMMAND="delocate-listdeps {wheel} && delocate-wheel -v --require-archs x86_64 -w {dest_dir} {wheel}"
+        - CIBW_REPAIR_WHEEL_COMMAND="delocate-listdeps {wheel} && delocate-wheel -v --require-archs x86_64 -w {dest_dir} {wheel} && ls {dest_dir}"
         - CIBW_BEFORE_BUILD="tools/prepare-cibuildwheel-macosx.sh"
         - CIBW_BUILD=cp3*
         - CIBW_SKIP="cp35-*"
