@@ -124,7 +124,7 @@ class CMakeBuild(build_ext):
 
         # hack: copy libartm into /artm/wrapper/, where it belongs
         # instead of leaving it in the root direcetory where it mysteriously appeared
-        shutil.movefile(
+        shutil.move(
             extdir + "/" + artm_library_name,
             extdir + '/artm/wrapper/' + artm_library_name
         )

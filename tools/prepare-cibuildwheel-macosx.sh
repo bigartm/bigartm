@@ -16,7 +16,8 @@ set -x
 
 # hack needed to install boost only once
 # see: https://github.com/joerick/cibuildwheel/issues/54
-if [ ! -f built-lib ]; then
+# if [ ! -f built-lib ]; then
+if false; then
     echo "# Installing basic system dependencies"
     curl -L http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz -o boost_1_60_0.tar.gz && tar -xf boost_1_60_0.tar.gz && cd boost_1_60_0 && ./bootstrap.sh 
 
