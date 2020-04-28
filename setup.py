@@ -119,7 +119,7 @@ class CMakeBuild(build_ext):
         for bad_dir in ['3rdparty', 'CMakeFiles', 'src', 'bin', 'lib', 'python']:
             shutil.rmtree(extdir + "/" + bad_dir)
 
-        for bad_file in ['*.cmake', 'CMakeCache.txt', 'Makefile']:
+        for bad_file in ['CTestTestfile.cmake', 'cmake_install.cmake', 'CMakeCache.txt', 'Makefile']:
             os.remove(extdir + "/" + bad_file)
 
         # hack: copy libartm into /artm/wrapper/, where it belongs
