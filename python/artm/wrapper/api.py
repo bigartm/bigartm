@@ -52,9 +52,12 @@ class LibArtm(object):
             lib_names.append(env_lib_name)
         
         lib_names.append(os.path.join(os.path.dirname(__file__), "..", default_lib_name))
+        lib_names.append(os.path.join(os.path.dirname(__file__), default_lib_name))
+
         lib_names.append(default_lib_name)
         
-        # We look into 4 places: lib_name, ARTM_SHARED_LIBRARY, packaged default_lib_name
+        # We look into 5 places: lib_name, ARTM_SHARED_LIBRARY,
+        # packaged default_lib_name (and the same in parent directory)
         # and then default_lib_name
         cdll = None
         exceptions = {}
