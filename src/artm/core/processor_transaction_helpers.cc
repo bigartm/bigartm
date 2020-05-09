@@ -18,10 +18,12 @@ inline double ProcessorTransactionHelpers::ComputePtdx(const Item& item,
                                                        const ::artm::core::PhiMatrix& p_wt) {
   double pre_p_dx_val = init_value;
   for (int token_id = start_index; token_id < end_index; ++token_id) {
-    //int global_id = item.token_id(token_id);
-    //if (global_id >= local_token_id_to_global_id.size()) {
-    //  continue;
-    //}
+    // Comment this check to achieve speed-up if you are NOT sure, that there's no UNK words in items
+    int global_id = item.token_id(token_id);
+    if (global_id >= local_token_id_to_global_id.size()) {
+      continue;
+    }
+
     pre_p_dx_val *= p_wt.get(local_token_id_to_global_id[item.token_id(token_id)], topic_id);
   }
   return pre_p_dx_val;
@@ -34,7 +36,7 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
                                      const ::artm::core::PhiMatrix& p_wt,
                                      const RegularizeThetaAgentCollection& theta_agents,
                                      LocalThetaMatrix<float>* theta_matrix,
-                                     NwtWriteAdapter* nwt_writer, util::Blas* blas,
+                                     NwtWriteAdapter* nwt_writer,
                                      ThetaMatrix* new_cache_entry_ptr) {
   if (!args.opt_for_avx()) {
     LOG(WARNING) << "Current version of BigARTM doesn't support 'opt_for_avx' == false"
@@ -91,10 +93,10 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
 
         const TransactionTypeName &tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
         float tt_weight = 1.0f;
-        //if (use_transaction_weight) {
-        //  auto iter = tt_name_to_weight.find(tt_name);
-        //  tt_weight = (iter == tt_name_to_weight.end()) ? 0.0f : iter->second;
-        //}
+        if (use_transaction_weight) {
+          auto iter = tt_name_to_weight.find(tt_name);
+          tt_weight = (iter == tt_name_to_weight.end()) ? 0.0f : iter->second;
+        }
 
         double p_dx_val = 0.0;
         for (int k = 0; k < num_topics; ++k) {
@@ -132,10 +134,10 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
       const auto &current_token = p_wt.token(current_token_id);
 
       float class_weight = 1.0f;
-      //if (use_class_weight) {
-      //  auto iter = class_id_to_weight.find(current_token.class_id);
-      //  class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
-      //}
+      if (use_class_weight) {
+        auto iter = class_id_to_weight.find(current_token.class_id);
+        class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
+      }
 
       for (int t_index = 0; t_index < item.transaction_start_index_size() - 1; ++t_index) {
         const int start_index = item.transaction_start_index(t_index);
@@ -145,10 +147,10 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
 
         const TransactionTypeName &tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
         float tt_weight = 1.0f;
-        //if (use_transaction_weight) {
-        //  auto iter = tt_name_to_weight.find(tt_name);
-        //  tt_weight = (iter == tt_name_to_weight.end()) ? 0.0f : iter->second;
-        //}
+        if (use_transaction_weight) {
+          auto iter = tt_name_to_weight.find(tt_name);
+          tt_weight = (iter == tt_name_to_weight.end()) ? 0.0f : iter->second;
+        }
 
         bool transaction_contains_token = false;
         for (int token_id = start_index; token_id < end_index; ++token_id) {

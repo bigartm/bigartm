@@ -35,7 +35,7 @@ class ProcessorTransactionHelpers {
                                      const ::artm::core::PhiMatrix& p_wt,
                                      const RegularizeThetaAgentCollection& theta_agents,
                                      LocalThetaMatrix<float>* theta_matrix,
-                                     NwtWriteAdapter* nwt_writer, util::Blas* blas,
+                                     NwtWriteAdapter* nwt_writer,
                                      ThetaMatrix* new_cache_entry_ptr);
 
   ProcessorTransactionHelpers() = delete;
