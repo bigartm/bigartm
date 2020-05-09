@@ -173,14 +173,16 @@ TEST(Transactions, BasicTest) {
             p_xd += val;
           }
 
-          if (d == 0 || d == 3) {
-            ASSERT_TRUE(std::abs(p_xd - 0.66f) < 0.01f);
-          } else if (d == 1 || d == 2 || d == 4 || d == 5 || (d == 6 && x == 0)) {
+          if ((d == 1 && x == 0) || (d == 4 && x == 0) || (d == 6 && x == 0)) {
             ASSERT_TRUE(std::abs(p_xd - 1.0f) < 0.01f);
+          } else if (d == 0 || d == 2 || d == 3 || d == 5) {
+            ASSERT_TRUE(std::abs(p_xd - 1.0f) < 0.01f);
+          } else if ((d == 1 && x == 1) || (d == 4 && x == 1)) {
+            ASSERT_TRUE(std::abs(p_xd - 0.75f) < 0.01f);
           } else if ((d == 6 && x == 1) || (d == 7 && x == 1)) {
-            ASSERT_TRUE(std::abs(p_xd - 0.33f) < 0.01f);
-          } else if (d == 7) {
-            ASSERT_TRUE(std::abs(p_xd - 0.44f) < 0.01f);
+            ASSERT_TRUE(std::abs(p_xd - 0.250f) < 0.01f);
+          } else if ((d == 7 && x == 0) || (d == 7 && x == 2)) {
+            ASSERT_TRUE(std::abs(p_xd - 0.67f) < 0.01f);
           } else {
             ASSERT_TRUE(false);
           }

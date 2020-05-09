@@ -205,7 +205,7 @@ void Processor::ThreadFunction() {
             ProcessorHelpers::CreateRegularizerAgents(batch, args, instance_, &theta_agents, &ptdw_agents);
           }
 
-          // We assum here that batch is correct, e.g. it's transaction_type field
+          // We assume here that batch is correct, e.g. it's transaction_type field
           // in case of regular model contains ALL class_ids from batch, not their subset.
           // Both parser and checker generates such batches.
           bool use_real_transactions = true;
@@ -215,19 +215,11 @@ void Processor::ThreadFunction() {
 
           if (use_real_transactions) {
             if (ptdw_agents.empty() && !part->has_ptdw_cache_manager()) {
-              std::shared_ptr<BatchTransactionInfo> batch_info;
-              {
-                CuckooWatch cuckoo2("PrepareBatchInfo", &cuckoo, kTimeLoggingThreshold);
-                batch_info = ProcessorTransactionHelpers::PrepareBatchInfo(
-                  batch, args, p_wt);
-              }
-
               CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparseNew", &cuckoo, kTimeLoggingThreshold);
               ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
-                                              args, batch, part->batch_weight(),
-                                              batch_info, p_wt, theta_agents,
-                                              theta_matrix.get(), nwt_writer.get(),
-                                              blas, new_cache_entry_ptr.get());
+                                              args, batch, part->batch_weight(), p_wt,
+                                              theta_agents, theta_matrix.get(),
+                                              nwt_writer.get(), new_cache_entry_ptr.get());
             } else {
               LOG(ERROR) << "Current version of BigARTM doesn't support"
                 << " ptdw matrix operations with with complex transactions";
