@@ -48,6 +48,8 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
   const int num_topics = p_wt.topic_size();
   const int docs_count = theta_matrix->num_items();
 
+  std::vector<double> helper_vector(num_topics, 0.0f);
+
   LocalThetaMatrix<float> n_td(num_topics, docs_count);
   LocalThetaMatrix<float> r_td(num_topics, 1);
 
@@ -103,7 +105,9 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
 
         double p_dx_val = 0.0;
         for (int k = 0; k < num_topics; ++k) {
-          p_dx_val += ComputePtdx(item, theta_ptr[k], start_index, end_index, k, local_token_id_to_global_id, p_wt);
+          helper_vector[k] = ComputePtdx(item, theta_ptr[k], start_index,
+                                         end_index, k, local_token_id_to_global_id, p_wt);
+          p_dx_val += helper_vector[k];
         }
 
         if (isZero(p_dx_val, kTransactionsEps)) {
@@ -111,13 +115,12 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
         }
 
         for (int k = 0; k < num_topics; ++k) {
-          double pre_p_dx_val = ComputePtdx(item, 1.0f, start_index, end_index, k, local_token_id_to_global_id, p_wt);
-          ntd_ptr[k] += (tt_weight * n_kdx * pre_p_dx_val / p_dx_val);
+          ntd_ptr[k] += (tt_weight * n_kdx * helper_vector[k] / p_dx_val);
         }
       }
 
       for (int k = 0; k < num_topics; ++k) {
-        theta_ptr[k] *= ntd_ptr[k];
+        theta_ptr[k] = ntd_ptr[k];
       }
 
       r_td.InitializeZeros();
@@ -147,8 +150,6 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
         const int end_index = item.transaction_start_index(t_index + 1);
         const double n_kdx = item.token_weight(start_index);
 
-        double p_dx_val = 0.0;
-
         const TransactionTypeName &tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
         float tt_weight = 1.0f;
         if (use_transaction_weight) {
@@ -169,16 +170,16 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
           continue;
         }
 
+        double p_dx_val = 0.0;
         for (int k = 0; k < num_topics; ++k) {
-          p_dx_val += ComputePtdx(item, (*theta_matrix)(k, d), start_index, end_index, k,
-                  local_token_id_to_global_id, p_wt);
+          helper_vector[k] = ComputePtdx(item, (*theta_matrix)(k, d), start_index,
+                                         end_index, k, local_token_id_to_global_id, p_wt);
+          p_dx_val += helper_vector[k];
         }
 
         std::vector<float> values(num_topics, 0.0f);
         for (int k = 0; k < num_topics; ++k) {
-          double value = ComputePtdx(item, (*theta_matrix)(k, d), start_index, end_index, k,
-                  local_token_id_to_global_id, p_wt);
-          values[k] = (tt_weight * class_weight) * value * n_kdx * batch_weight / p_dx_val;
+          values[k] = (tt_weight * class_weight) * helper_vector[k] * n_kdx * batch_weight / p_dx_val;
         }
 
         nwt_writer->Store(current_token_id, values);
