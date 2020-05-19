@@ -17,16 +17,10 @@ inline double ProcessorTransactionHelpers::ComputePtdx(const Item& item,
                                                        const std::vector<int>& local_token_id_to_global_id,
                                                        const ::artm::core::PhiMatrix& p_wt) {
   double pre_p_dx_val = init_value;
-  auto bound = local_token_id_to_global_id.size();
 
   for (int token_id = start_index; token_id < end_index; ++token_id) {
-    // Comment this check to achieve speed-up if you are sure, that there's no UNK words in items
-    int global_id = item.token_id(token_id);
-    if (global_id >= bound) {
-      continue;
-    }
-
-    pre_p_dx_val *= p_wt.get(local_token_id_to_global_id[item.token_id(token_id)], topic_id);
+    int local_id = item.token_id(token_id);
+    pre_p_dx_val *= p_wt.get(local_token_id_to_global_id[local_id], topic_id);
   }
   return pre_p_dx_val;
 }
@@ -68,15 +62,6 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
     use_transaction_weight = true;
     for (int i = 0; i < args.transaction_typename_size(); ++i) {
       tt_name_to_weight.emplace(args.transaction_typename(i), args.transaction_weight(i));
-    }
-  }
-
-  bool use_class_weight = false;
-  std::unordered_map<ClassId, float> class_id_to_weight;
-  if (args.class_weight_size() > 0) {
-    use_class_weight = true;
-    for (int i = 0; i < args.class_weight_size(); ++i) {
-      class_id_to_weight.emplace(args.class_id(i), args.class_weight(i));
     }
   }
 
@@ -136,53 +121,35 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
 
   for (int d = 0; d < docs_count; ++d) {
     const auto &item = batch.item(d);
-    for (int current_token_id = 0; current_token_id < p_wt.token_size(); ++current_token_id) {
-      const auto &current_token = p_wt.token(current_token_id);
 
-      float class_weight = 1.0f;
-      if (use_class_weight) {
-        auto iter = class_id_to_weight.find(current_token.class_id);
-        class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
+    for (int t_index = 0; t_index < item.transaction_start_index_size() - 1; ++t_index) {
+      const int start_index = item.transaction_start_index(t_index);
+      const int end_index = item.transaction_start_index(t_index + 1);
+      const double n_kdx = item.token_weight(start_index);
+
+      const TransactionTypeName &tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
+      float tt_weight = 1.0f;
+      if (use_transaction_weight) {
+        auto iter = tt_name_to_weight.find(tt_name);
+        tt_weight = (iter == tt_name_to_weight.end()) ? 0.0f : iter->second;
       }
 
-      for (int t_index = 0; t_index < item.transaction_start_index_size() - 1; ++t_index) {
-        const int start_index = item.transaction_start_index(t_index);
-        const int end_index = item.transaction_start_index(t_index + 1);
-        const double n_kdx = item.token_weight(start_index);
+      double p_dx_val = 0.0;
+      for (int k = 0; k < num_topics; ++k) {
+        helper_vector[k] = ComputePtdx(item, (*theta_matrix)(k, d), start_index,
+                                       end_index, k, local_token_id_to_global_id, p_wt);
+        p_dx_val += helper_vector[k];
+      }
 
-        const TransactionTypeName &tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
-        float tt_weight = 1.0f;
-        if (use_transaction_weight) {
-          auto iter = tt_name_to_weight.find(tt_name);
-          tt_weight = (iter == tt_name_to_weight.end()) ? 0.0f : iter->second;
-        }
+      std::vector<float> values(num_topics, 0.0f);
+      for (int k = 0; k < num_topics; ++k) {
+        values[k] = tt_weight * helper_vector[k] * n_kdx * batch_weight / p_dx_val;
+      }
 
-        bool transaction_contains_token = false;
-        for (int token_id = start_index; token_id < end_index; ++token_id) {
-          if (batch.token(item.token_id(token_id)) == current_token.keyword &&
-              batch.class_id(item.token_id(token_id)) == current_token.class_id) {
-            transaction_contains_token = true;
-            break;
-          }
-        }
+      for (int token_id = start_index; token_id < end_index; ++token_id) {
+        auto global_id = local_token_id_to_global_id[item.token_id(token_id)];
 
-        if (!transaction_contains_token) {
-          continue;
-        }
-
-        double p_dx_val = 0.0;
-        for (int k = 0; k < num_topics; ++k) {
-          helper_vector[k] = ComputePtdx(item, (*theta_matrix)(k, d), start_index,
-                                         end_index, k, local_token_id_to_global_id, p_wt);
-          p_dx_val += helper_vector[k];
-        }
-
-        std::vector<float> values(num_topics, 0.0f);
-        for (int k = 0; k < num_topics; ++k) {
-          values[k] = (tt_weight * class_weight) * helper_vector[k] * n_kdx * batch_weight / p_dx_val;
-        }
-
-        nwt_writer->Store(current_token_id, values);
+        nwt_writer->Store(global_id, values);
       }
     }
   }
