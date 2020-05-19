@@ -17,10 +17,12 @@ inline double ProcessorTransactionHelpers::ComputePtdx(const Item& item,
                                                        const std::vector<int>& local_token_id_to_global_id,
                                                        const ::artm::core::PhiMatrix& p_wt) {
   double pre_p_dx_val = init_value;
+  auto bound = local_token_id_to_global_id.size();
+
   for (int token_id = start_index; token_id < end_index; ++token_id) {
-    // Comment this check to achieve speed-up if you are NOT sure, that there's no UNK words in items
+    // Comment this check to achieve speed-up if you are sure, that there's no UNK words in items
     int global_id = item.token_id(token_id);
-    if (global_id >= local_token_id_to_global_id.size()) {
+    if (global_id >= bound) {
       continue;
     }
 
@@ -82,7 +84,7 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
 
     const auto &item = batch.item(d);
 
-    for (int inner_iter = 0; inner_iter < args.num_document_passes(); ++inner_iter) {
+    for (int inner_iter = 0; inner_iter <= args.num_document_passes(); ++inner_iter) {
       for (int k = 0; k < num_topics; ++k) {
         ntd_ptr[k] = 0.0f;
       }
@@ -90,6 +92,7 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
       for (int t_index = 0; t_index < item.transaction_start_index_size() - 1; ++t_index) {
         const int start_index = item.transaction_start_index(t_index);
         const int end_index = item.transaction_start_index(t_index + 1);
+        double n_kdx = item.token_weight(start_index);
 
         const TransactionTypeName &tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
         float tt_weight = 1.0f;
@@ -109,7 +112,7 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
 
         for (int k = 0; k < num_topics; ++k) {
           double pre_p_dx_val = ComputePtdx(item, 1.0f, start_index, end_index, k, local_token_id_to_global_id, p_wt);
-          ntd_ptr[k] += (tt_weight * pre_p_dx_val / p_dx_val);
+          ntd_ptr[k] += (tt_weight * n_kdx * pre_p_dx_val / p_dx_val);
         }
       }
 
@@ -142,6 +145,7 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
       for (int t_index = 0; t_index < item.transaction_start_index_size() - 1; ++t_index) {
         const int start_index = item.transaction_start_index(t_index);
         const int end_index = item.transaction_start_index(t_index + 1);
+        const double n_kdx = item.token_weight(start_index);
 
         double p_dx_val = 0.0;
 
@@ -174,7 +178,7 @@ void ProcessorTransactionHelpers::TransactionInferThetaAndUpdateNwtSparse(
         for (int k = 0; k < num_topics; ++k) {
           double value = ComputePtdx(item, (*theta_matrix)(k, d), start_index, end_index, k,
                   local_token_id_to_global_id, p_wt);
-          values[k] = (tt_weight * class_weight) * value * batch_weight / p_dx_val;
+          values[k] = (tt_weight * class_weight) * value * n_kdx * batch_weight / p_dx_val;
         }
 
         nwt_writer->Store(current_token_id, values);
