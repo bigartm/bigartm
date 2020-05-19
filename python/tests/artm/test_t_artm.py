@@ -90,16 +90,19 @@ def test_func():
                         val *= phi[t][tok]
                     p_xd += val
 
-        if i_d == 0 or i_d == 3:
-            assert abs(p_xd - 0.66) < 0.01
-        elif i_d == 1 or i_d == 2 or i_d == 4 or i_d == 5 or (i_d == 6 and i_x == 0):
-            assert abs(p_xd - 1.0) < 0.01
-        elif (i_d == 6 and i_x == 1) or (i_d == 7 and i_x == 1):
-            assert abs(p_xd - 0.33) < 0.01
-        elif i_d == 7:
-            assert abs(p_xd - 0.44) < 0.01
-        else:
-            raise RuntimeError("Invalid i_x or i_d: {}, {}".format(i_x, i_d))
+                if (i_d == 1 and i_x == 0) or (i_d == 4 and i_x == 0) or (i_d == 6 and i_x == 0):
+                    assert abs(p_xd - 1.0) < 0.01
+                elif i_d == 0 or i_d == 2 or i_d == 3 or i_d == 5:
+                    assert abs(p_xd - 1.0) < 0.01
+                elif (i_d == 1 and i_x == 1) or (i_d == 4 and i_x == 1):
+                    assert abs(p_xd - 0.75) < 0.01
+                elif (i_d == 6 and i_x == 1) or (i_d == 7 and i_x == 1):
+                    assert abs(p_xd - 0.250) < 0.01
+                elif (i_d == 7 and i_x == 0) or (i_d == 7 and i_x == 2):
+                    assert abs(p_xd - 0.67) < 0.01
+                else:
+                    raise RuntimeError("Invalid i_x or i_d: {}, {}".format(i_x, i_d))
+
     finally:
         shutil.rmtree(batches_folder)
 
