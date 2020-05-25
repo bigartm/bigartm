@@ -133,12 +133,8 @@ class BinaryDistribution(Distribution):
         return False
 
 
-# long-description-content-type does not work for some mystical reason
-# 
-# with open(os.path.join(src_abspath, 'README.md'), encoding='utf-8') as f:
-#     long_description = f.read()
-
-long_description = "See the GitHub repository for details"
+with open(os.path.join(src_abspath, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
     package_data={'artm.wrapper': [path_to_lib]},
