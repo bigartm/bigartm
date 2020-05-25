@@ -145,6 +145,5 @@ setup(
     ext_modules=[CMakeExtension('bigartm')],
     cmdclass=dict(build_ext=CMakeBuild),
 
-    long_description_content_type='text/markdown',
     long_description=long_description,
 )
