@@ -40,7 +40,6 @@ else:
 
 
 
-setup_kwargs = {}
 
 # name of artm shared library
 artm_library_name = 'libartm.so'
@@ -74,18 +73,10 @@ class CMakeBuild(build_ext):
 
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-        print(extdir)
-        print(ext.sourcedir)
-        print(self.build_temp)
 
-        print(f"does {self.build_temp} exist? {os.path.exists(self.build_temp)}")
-        print(f"does {extdir} exist? {os.path.exists(extdir)}")
         print(f"running cmake from {extdir}")
         if not os.path.exists(extdir):
-            print(f"creating  {self.build_temp}")
             os.makedirs(extdir)
-            print(f"does {self.build_temp} exist? {os.path.exists(self.build_temp)}")
-            print(f"does {extdir} exist? {os.path.exists(extdir)}")
 
         cmake_process = [cmake_exec]
         cmake_process.append(ext.sourcedir)
@@ -142,6 +133,9 @@ class BinaryDistribution(Distribution):
         return False
 
 
+with open(os.path.join(src_abspath, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
+
 setup(
     package_data={'artm.wrapper': [path_to_lib]},
     include_package_data=True,
@@ -151,6 +145,7 @@ setup(
     ext_modules=[CMakeExtension('bigartm')],
     cmdclass=dict(build_ext=CMakeBuild),
 
+    long_description=long_description,
+    long_description_content_type='text/markdown'
 
-    **setup_kwargs
 )
