@@ -473,9 +473,12 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
     }
 
     topic_model.set_name(args.model_name());
-    target = std::make_shared<DensePhiMatrix>(args.model_name(),
-                                              topic_model.topic_name(),
-                                              instance_->config()->min_sparsity_rate());
+    if (target == nullptr){
+      target = std::make_shared<DensePhiMatrix>(args.model_name(),
+                                                topic_model.topic_name(),
+                                                instance_->config()->min_sparsity_rate());
+    }
+
 
     PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, /* add_missing_tokens = */ true, target.get());
   }
