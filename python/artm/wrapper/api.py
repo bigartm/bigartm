@@ -149,7 +149,7 @@ class LibArtm(object):
                     c_args += [len(message_str), message_cstr_p]
 
                 elif issubclass(arg_type, numpy.ndarray):
-                    c_args += [arg_value.nbytes, ctypes.c_char_p(arg_value.ctypes.data)]
+                    c_args += [ctypes.c_int64(arg_value.nbytes), ctypes.c_char_p(arg_value.ctypes.data)]
 
                 else:
                     c_args.append(arg_value)
