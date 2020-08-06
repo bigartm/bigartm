@@ -35,7 +35,11 @@ before_install:
   # we need latest pip to work with only-binary option
   - pip install -U pip
   - pip install -U pytest pep8 wheel pytest-forked
-  - pip install -U numpy scipy pandas tqdm --only-binary numpy,scipy,pandas
+  - pip install -U numpy scipy tqdm --only-binary numpy,scipy
+  # Right now we cannot use 1.1.0 version of Pandas
+  # because it introduces bug with series indexing using tuples:
+  # https://github.com/pandas-dev/pandas/issues/35534
+  - pip install -U 'pandas<1.1.0' --only-binary pandas
   - pip install -U protobuf
   # install boost
   - sudo add-apt-repository universe
