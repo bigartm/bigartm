@@ -44,7 +44,7 @@ install:
   - conda update -q -c conda-forge conda
   # During update conda can switch to newer python
   # We need to reinstall python with fixed version
-  - const install -c conda-forge python=%PYTHON_VERSION%
+  - conda install -c conda-forge python=%PYTHON_VERSION%
   - conda info -a
   # Right now we cannot use 1.1.0 version of Pandas
   # because it introduces bug with series indexing using tuples:
