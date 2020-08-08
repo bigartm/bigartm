@@ -65,7 +65,7 @@ install:
     #    * Next invocation of bash (directly or via MSYS2 tools) crashes
     #      https://github.com/msys2/MSYS2-packages/issues/1966
     #    These problems are extremely difficult to tackle from CI script.
-    - c:\msys64\usr\bin\pacman -S --noconfirm --needed mingw-w64-x86_64-cmake mingw-x86_64-make
+    - c:\msys64\usr\bin\pacman -S --noconfirm --needed mingw-w64-x86_64-cmake mingw-w64-x86_64-make
     - c:\msys64\usr\bin\pacman -U --noconfirm http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-boost-1.64.0-3-any.pkg.tar.xz
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q -c conda-forge conda
