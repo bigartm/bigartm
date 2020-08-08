@@ -459,6 +459,18 @@ if (UNIX OR (APPLE AND HAVE_DLADDR))
   set (HAVE_SYMBOLIZE 1)
 endif (UNIX OR (APPLE AND HAVE_DLADDR))
 
+check_cxx_source_compiles ("
+#include <cstdlib>
+#include <time.h>
+int main()
+{
+    time_t timep;
+    struct tm result;
+    localtime_r(&timep, &result);
+    return EXIT_SUCCESS;
+}
+" HAVE_LOCALTIME_R)
+
 # Unit testing
 
 if (BUILD_TESTING)
