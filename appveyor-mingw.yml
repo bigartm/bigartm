@@ -21,25 +21,62 @@ environment:
         - PYTHON_VERSION: 3.6
           MINICONDA: C:\Miniconda36-x64
 
-cache:
-    # Cache MSYS2 packages to speed up builds. If version in repo changes, pacman will update it
-    # These lines below are commented, because disable caching is hot fix,
-    # but generally it's a usefull function, and when we find solution, they can be uncommented
-    #- c:\msys64\mingw64
-    #- c:\msys64\var\lib\pacman
-    - C:\Miniconda36-x64\Lib\site-packages
-    - C:\Miniconda-x64\Lib\site-packages
+# Cache MSYS2 packages to speed up builds. If version in repo changes, pacman will update it
+# These lines below are commented, because disable caching is hot fix,
+# but generally it's a useful function, and when we find solution, they can be uncommented
+# cache:
+#     - c:\msys64\mingw64
+#     - c:\msys64\var\lib\pacman
 
 install:
     - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;C:\\msys64\\mingw64\\bin;C:\\Program Files\\7-Zip;%SystemRoot%\\system32;%SystemRoot%;%SystemRoot%\\System32\\Wbem;%SYSTEMROOT%\\System32\\WindowsPowerShell\\v1.0\\
 "
-    - c:\msys64\usr\bin\pacman -Syu --noconfirm
-    - c:\msys64\usr\bin\pacman -Syyu --noconfirm --needed mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-make
+    # NOTE:
+    # It's strongly recommended not to upgrade all MSYS2 packages
+    # (done via `-u|--sysupgrade` option of sync operation).
+    #
+    # Also, it's recommended not to refresh MSYS2 package databases
+    # (done via `-y|--refresh` option of sync operation).
+    #
+    # Real-life use-case:
+    #   if you find that our Appveyor CI is broken,
+    #   and that upgrading packages makes CI green again
+    #   try to find out way without upgrading all MSYS2 packages
+    #
+    # Though this solution seems rather simple and innocent,
+    # there are some real-life examples when this solution will break in future.
+    #
+    # See https://www.msys2.org/news/#2020-06-29-new-packagers,
+    # which brings several examples:
+    #
+    # 1. New maintainers bring new keys to keyservers
+    #    (literaly some cool crypto staff to identify maintainers)
+    #    This causes some problems with synking databases.
+    #    You can solve this problem bringing temporary solution from link
+    #    (playing with keyrings, `pacman-key` executable
+    #    and running stuff in `c:\msys64\usr\bin\bash -lc`)
+    #
+    # 2. After successfully importing new keys there is another problem:
+    #    sometimes there are a lot of updates, including MSYS2 runtime ITSELF
+    #    As of August, 2020, such core updates can trigger the following problems
+    #    * MSYS2 locks up, forcing to manually restart shell:
+    #      https://github.com/msys2/MSYS2-packages/issues/1141
+    #      https://github.com/Alexpux/MSYS2-pacman/issues/38
+    #    * Next invocation of bash (directly or via MSYS2 tools) crashes
+    #      https://github.com/msys2/MSYS2-packages/issues/1966
+    #    These problems are extremely difficult to tackle from CI script.
+    - c:\msys64\usr\bin\pacman -S --noconfirm --needed mingw-w64-x86_64-cmake mingw-x86_64-make
     - c:\msys64\usr\bin\pacman -U --noconfirm http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-boost-1.64.0-3-any.pkg.tar.xz
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q -c conda-forge conda
+    # During update conda can switch to newer python
+    # We need to reinstall python with fixed version
+    - conda install -c conda-forge python=%PYTHON_VERSION%
     - conda info -a
-    - conda install -c conda-forge numpy scipy pandas pytest
+    # Right now we cannot use 1.1.0 version of Pandas
+    # because it introduces bug with series indexing using tuples:
+    # https://github.com/pandas-dev/pandas/issues/35534
+    - conda install -c conda-forge numpy scipy pandas=1.0.5 pytest
     - conda install -c conda-forge tqdm
 
 before_build:
