@@ -2,12 +2,12 @@
 version: "{build}"
 
 # Operating system (build VM template)
-os: Visual Studio 2015
+image: Visual Studio 2015
 
 configuration:
   - Release
 
-# build platform, i.e. Win32 (instead of x86), x64, Any CPU. This setting is optional.
+# build platform, i.e. x86, x64, ARM, Any CPU. This setting is optional.
 platform:
   - x64
 
@@ -42,8 +42,14 @@ install:
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q -c conda-forge conda
+  # During update conda can switch to newer python
+  # We need to reinstall python with fixed version
+  - conda install -c conda-forge python=%PYTHON_VERSION%
   - conda info -a
-  - conda install -c conda-forge numpy scipy pandas pytest
+  # Right now we cannot use 1.1.0 version of Pandas
+  # because it introduces bug with series indexing using tuples:
+  # https://github.com/pandas-dev/pandas/issues/35534
+  - conda install -c conda-forge numpy scipy pandas=1.0.5 pytest
   - conda install -c conda-forge tqdm
 
 # scripts to run before build
@@ -51,7 +57,7 @@ before_build:
   - cmd: cd C:\projects\bigartm
   - cmd: md build
   - cmd: cd build
-  - cmd: if "%platform%"=="Win32" set CMAKE_GENERATOR_NAME=Visual Studio 14 2015
+  - cmd: if "%platform%"=="x86"   set CMAKE_GENERATOR_NAME=Visual Studio 14 2015
   - cmd: if "%platform%"=="x64"   set CMAKE_GENERATOR_NAME=Visual Studio 14 2015 Win64
   - cmd: cmake -DPYTHON=python -G "%CMAKE_GENERATOR_NAME%" -DCMAKE_BUILD_TYPE=%configuration% -DBOOST_ROOT:PATH="%BOOST_ROOT%" -DBOOST_LIBRARYDIR:PATH="%BOOST_LIBRARYDIR%" ..
   - cmd: cd %BIGARTM_UNITTEST_DATA%
