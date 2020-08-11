@@ -41,10 +41,9 @@ clone_folder: C:\projects\bigartm
 install:
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
   - conda config --set always_yes yes --set changeps1 no
-  - conda update -q -c conda-forge conda
-  # During update conda can switch to newer python
-  # We need to reinstall python with fixed version
-  - conda install -c conda-forge python=%PYTHON_VERSION%
+  # Update not all conda, but only base environment
+  # In that case we preserve current version of Python interpreter
+  - conda update -q -n base conda
   - conda info -a
   # Right now we cannot use 1.1.0 version of Pandas
   # because it introduces bug with series indexing using tuples:
