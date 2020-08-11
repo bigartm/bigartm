@@ -190,7 +190,9 @@ _set_properties(TopTokensScoreTracker, {'num_tokens': {'proto_name': 'num_entrie
                                                    'proto_qualifier': 'repeated'},
                                         'weights': {'proto_name': 'weight',
                                                     'proto_qualifier': 'repeated'},
-                                        'coherence': {'proto_type': 'array'},
+                                        'coherence': {'proto_type': 'array',
+                                                      'key_field_name': 'coherence_topic_name'},
+
                                         'average_coherence': {}})
 
 
