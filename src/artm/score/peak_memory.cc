@@ -35,9 +35,11 @@ std::shared_ptr<Score> PeakMemory::CalculateScore(const artm::core::PhiMatrix& p
 #elif defined(__linux__) || defined(__APPLE__)
   rusage info;
   if (!getrusage(RUSAGE_SELF, &info)) {
-#if defined(__linux__) // For linux `ru_maxrss` field contains kilobytes
+#if defined(__linux__)
+    // For linux `ru_maxrss` field contains kilobytes
     peak_memory_score->set_value((size_t) info.ru_maxrss * (int64_t) 1024);
-#else // For MacOS `ru_maxrss` field contains bytes
+#else
+    // For MacOS `ru_maxrss` field contains bytes
     peak_memory_score->set_value((size_t) info.ru_maxrss);
 #endif
   } else {
