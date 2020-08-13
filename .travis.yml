@@ -34,7 +34,7 @@ env:
 before_install:
   # we need latest pip to work with only-binary option
   - pip install -U pip
-  - pip install -U pytest pep8 wheel pytest-forked
+  - pip install -U wheel pytest pep8 pytest-forked
   - pip install -U numpy scipy tqdm --only-binary numpy,scipy
   # Right now we cannot use 1.1.0 version of Pandas
   # because it introduces bug with series indexing using tuples:
