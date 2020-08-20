@@ -1,15 +1,12 @@
 # Copyright 2017, Additive Regularization of Topic Models.
 
 import os
-import csv
 import uuid
-import glob
-import shutil
-import tempfile
 import numpy
 import datetime
 import json
 import pickle
+import warnings
 
 from pandas import DataFrame
 from packaging.version import parse
@@ -25,7 +22,6 @@ from .wrapper import messages_pb2 as messages
 from . import master_component as mc
 
 from .regularizers import Regularizers
-from .regularizers import *
 from .scores import Scores
 from .scores import *
 from . import score_tracker
@@ -521,11 +517,20 @@ class ARTM(object):
             self._transaction_typenames = transaction_typenames
 
     @seed.setter
-    def seed(self, seed):
-        if seed < 0 or not isinstance(seed, int):
+    def seed(self, seed: int) -> None:
+        if not isinstance(seed, int) or seed < 0:
             raise IOError('Random seed should be a positive integer')
-        else:
-            self._seed = seed
+
+        if self._initialized:
+            # TODO: RuntimeError, not warning + test
+            warnings.warn(
+                message='Seed changing will have no effect:'
+                        ' the model is already initialized!'
+                        ' In the future versions of ARTM, this is going to be an Error.',
+                category=RuntimeWarning,
+            )
+
+        self._seed = seed
 
     # ========== PRIVATE METHODS ==========
     def _wait_for_batches_processed(self, async_result, num_batches):
