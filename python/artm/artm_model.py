@@ -531,7 +531,7 @@ class ARTM(object):
             self._transaction_typenames = transaction_typenames
 
     @seed.setter
-    def seed(self, seed: int) -> None:
+    def seed(self, seed):
         if not isinstance(seed, int) or seed < 0:
             raise IOError('Random seed should be a positive integer')
 
