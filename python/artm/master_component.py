@@ -1,19 +1,16 @@
 # Copyright 2017, Additive Regularization of Topic Models.
 
 import os
+
 import numpy
-import codecs
-import copy
 
 from six import iteritems
 from six.moves import zip
 
-from .wrapper import messages_pb2 as messages
-from .wrapper import constants
-
 from . import regularizers
 from . import scores
-
+from .wrapper import constants
+from .wrapper import messages_pb2 as messages
 
 REGULARIZERS = (
     (

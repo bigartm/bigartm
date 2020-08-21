@@ -1,20 +1,27 @@
 # Copyright 2017, Additive Regularization of Topic Models.
 
-import os
 import glob
-import uuid
+import os
 import shutil
+import uuid
+
 import numpy as np
 
-from six import iteritems, string_types
-from six.moves import range, zip
+from six import (
+    iteritems,
+    string_types,
+)
+from six.moves import (
+    range,
+    zip,
+)
 
 from . import wrapper
-from .wrapper import constants as const
-from .wrapper import messages_pb2 as messages
-
 from .dictionary import Dictionary
-
+from .wrapper import (
+    constants as const,
+    messages_pb2 as messages,
+)
 
 __all__ = [
     'BatchVectorizer'

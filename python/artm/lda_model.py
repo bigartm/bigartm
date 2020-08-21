@@ -1,12 +1,23 @@
 # Copyright 2017, Additive Regularization of Topic Models.
 
-from six.moves import range, zip
 from copy import deepcopy
 
-from .artm_model import ARTM
+from six.moves import (
+    range,
+    zip,
+)
 
-from .regularizers import SmoothSparsePhiRegularizer, SmoothSparseThetaRegularizer
-from .scores import *
+from .artm_model import ARTM
+from .regularizers import (
+    SmoothSparsePhiRegularizer,
+    SmoothSparseThetaRegularizer,
+)
+from .scores import (
+    PerplexityScore,
+    SparsityPhiScore,
+    SparsityThetaScore,
+    TopTokensScore,
+)
 
 
 class LDA(object):

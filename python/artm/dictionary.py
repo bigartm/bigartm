@@ -1,15 +1,13 @@
 # Copyright 2017, Additive Regularization of Topic Models.
 
-import uuid
-import os
-import glob
 import codecs
+import uuid
 
 from six.moves import range
 
+from . import master_component
 from . import wrapper
 from .wrapper import messages_pb2 as messages
-from . import master_component
 
 __all__ = [
     'Dictionary'

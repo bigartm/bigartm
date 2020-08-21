@@ -1,15 +1,16 @@
 # Copyright 2017, Additive Regularization of Topic Models.
 
-import artm
-import uuid
 import copy
+import glob
+import os
+import os.path
+import pickle
+import uuid
+import warnings
+
+import artm
 import numpy as np
 import pandas
-import os.path
-import os
-import pickle
-import glob
-import warnings
 
 from six.moves import range
 

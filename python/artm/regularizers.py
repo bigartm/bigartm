@@ -1,14 +1,17 @@
 # Copyright 2017, Additive Regularization of Topic Models.
 
 import uuid
-import random
 import warnings
 
-from . import wrapper
-from .wrapper import messages_pb2 as messages
-from .wrapper import constants as const
+from six import (
+    iteritems,
+    string_types,
+)
 
-from six import string_types, iteritems
+from .wrapper import (
+    constants as const,
+    messages_pb2 as messages,
+)
 
 __all__ = [
     'KlFunctionInfo',
