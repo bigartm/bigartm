@@ -10,7 +10,7 @@ from six.moves import zip
 from . import regularizers
 from . import scores
 from .wrapper import (
-    constants as const,
+    constants,
     messages_pb2 as messages,
 )
 
