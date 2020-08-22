@@ -3,11 +3,12 @@
 import uuid
 import warnings
 
-from . import wrapper
-from .wrapper import messages_pb2 as messages
-from .wrapper import constants as const
-
 from six import string_types
+
+from .wrapper import (
+    constants as const,
+    messages_pb2 as messages,
+)
 
 GLOB_EPS = 1e-37
 
