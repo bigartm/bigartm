@@ -379,10 +379,10 @@ class MasterComponent(object):
         :param float max_df_rate: max df rate to pass the filter
         :param float min_tf: min tf value to pass the filter
         :param float max_tf: max tf value to pass the filter
-        :param float max_dictionary_size: give an easy option to limit dictionary size;
-                                          rare tokens will be excluded until dictionary reaches given size.
-        :param bool recalculate_value: recalculate or not value field in dictionary after filtration\
-                                       according to new sun of tf values
+        :param int max_dictionary_size: give an easy option to limit dictionary size;\
+            rare tokens will be excluded until dictionary reaches given size
+        :param bool recalculate_value: recalculate or not value field in dictionary\
+            after filtration according to new sum of tf values
         :param args: an instance of FilterDictionaryArgs
         """
         filter_args = messages.FilterDictionaryArgs()
