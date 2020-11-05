@@ -113,9 +113,8 @@ class Dictionary(object):
         print(type(getattr(dictionary_data, 'token')))
         dict_pandas = {field: list(getattr(dictionary_data, field))
                        for field in FIELDS}
-        # TODO (bt): probably should be pd.DataFrame.from_dict
-        # with dtype specification (at least specify that token_value is float, not double)
-        # but dtype specification seems to be wonky:
+        # TODO (bt): find out if this is memory-efficient
+        # dtype specification seems to be wonky:
         # https://github.com/pandas-dev/pandas/issues/14655
         return pd.DataFrame.from_dict(dict_pandas).astype(FIELD_DTYPES)
 
