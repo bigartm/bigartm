@@ -117,7 +117,7 @@ def test_func():
         assert sorted(loaded_df.token) == sorted(filtered_df.token)
         first = loaded_df.reset_index()[['token', 'token_df', 'token_tf']].sort_values(by='token')
         second = filtered_df.reset_index()[['token', 'token_df', 'token_tf']].sort_values(by='token')
-        assert (first == second).all()
+        assert (first == second).all().all()
 
         dictionary_7_clone = artm.Dictionary()
         dictionary_7_clone.load_from_dataframe(filtered_df.head(2000))
