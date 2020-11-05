@@ -7,6 +7,7 @@ import os
 import pytest
 
 from six.moves import range
+import pandas as pd
 
 import artm
 

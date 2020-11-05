@@ -4,6 +4,7 @@ import codecs
 import uuid
 
 from six.moves import range
+import pandas as pd
 
 from . import master_component
 from . import wrapper
@@ -14,6 +15,11 @@ __all__ = [
 ]
 
 FIELDS = 'token class_id token_value token_tf token_df'.split()
+FIELD_DTYPES = {
+    'token_value': 'float32',
+    'token_tf': 'float32',
+    'token_df': 'float32',
+}
 
 
 class Dictionary(object):
@@ -110,7 +116,7 @@ class Dictionary(object):
         # with dtype specification (at least specify that token_value is float, not double)
         # but dtype specification seems to be wonky:
         # https://github.com/pandas-dev/pandas/issues/14655
-        return pd.DataFrame(dict_pandas)
+        return pd.DataFrame(dict_pandas).astype(FIELD_DTYPES)
 
     def load_text(self, dictionary_path, encoding='utf-8'):
         """
