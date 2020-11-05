@@ -154,17 +154,11 @@ class Dictionary(object):
         :param pandas.DataFrame dataframe: DataFrame having all the columns specified in FIELDS
         """
         new_dictionary_data = messages.DictionaryData()
-        old_dictionary_data = self._master.get_dictionary(self._name)
-
-        dictionary_data.name = old_dictionary_data.name
-        dictionary_data.num_items_in_collection = old_dictionary_data.num_items_in_collection
 
         self._reset()
         for field in FIELDS:
-            # TODO (bt): this isn't the best way to do this,
-            # but just .values doesn't work for some reason
-            for entry in dataframe[field].values:
-                getattr(new_dictionary_data, field).append(entry)
+            # https://stackoverflow.com/questions/23726335/how-to-assign-to-repeated-field
+            getattr(new_dictionary_data, field).extend(dataframe[field].values)
 
         self._master.create_dictionary(dictionary_data=new_dictionary_data, dictionary_name=self._name)
 
