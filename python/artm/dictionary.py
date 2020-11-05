@@ -116,7 +116,7 @@ class Dictionary(object):
         # with dtype specification (at least specify that token_value is float, not double)
         # but dtype specification seems to be wonky:
         # https://github.com/pandas-dev/pandas/issues/14655
-        return pd.DataFrame(dict_pandas).astype(FIELD_DTYPES)
+        return pd.DataFrame.from_dict(dict_pandas).astype(FIELD_DTYPES)
 
     def load_text(self, dictionary_path, encoding='utf-8'):
         """
