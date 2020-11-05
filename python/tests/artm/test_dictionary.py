@@ -107,7 +107,7 @@ def test_func():
         dictionary_7.load(dictionary_path=os.path.join(batches_folder, 'saved_dict_1.dict'))
         dict7_df = dictionary_7.save_dataframe()
         filtered_df = dict7_df.query("2 <= token_df <= 100 and 1 <= token_tf <= 20").copy()
-        filtered_df = filtered_df[filtered_df.index]
+        # filtered_df = filtered_df[filtered_df.index]
 
         dictionary_7.filter(min_df=2, max_df=100, min_tf=1, max_tf=20, recalculate_value=False)
         dictionary_path = os.path.join(batches_folder, 'saved_text_dict_7.txt')
@@ -119,6 +119,13 @@ def test_func():
         print(filtered_df.describe())
         print(loaded_df.tail())
         print(filtered_df.tail())
+        print("^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        strange_tokens = set(filtered_df.token) - set(loaded_df.token)
+        print(filtered_df.query("token in @strange_tokens").head(22))
+
+        strange_tokens = set(loaded_df.token) - set(filtered_df.token)
+        print(loaded_df.query("token in @strange_tokens").head(22))
+
         assert loaded_df.shape == filtered_df.shape
         assert sorted(loaded_df.token) == sorted(filtered_df.token)
 
