@@ -107,6 +107,7 @@ def test_func():
         dictionary_7.load(dictionary_path=os.path.join(batches_folder, 'saved_dict_1.dict'))
         dict7_df = dictionary_7.save_dataframe()
         filtered_df = dict7_df.query("2 <= token_df <= 100 and 1 <= token_tf <= 20").copy()
+        filtered_df = filtered_df[filtered_df.index]
 
         dictionary_7.filter(min_df=2, max_df=100, min_tf=1, max_tf=20, recalculate_value=False)
         dictionary_path = os.path.join(batches_folder, 'saved_text_dict_7.txt')
@@ -114,8 +115,12 @@ def test_func():
         loaded_df = pd.read_csv(dictionary_path, sep=', *', skiprows=[0])
         print(loaded_df.head())
         print(filtered_df.head())
+        print(loaded_df.describe())
+        print(filtered_df.describe())
+        print(loaded_df.tail())
+        print(filtered_df.tail())
         assert loaded_df.shape == filtered_df.shape
-        assert sorted(loaded_df.index) == sorted(filtered_df.index)
+        assert sorted(loaded_df.token) == sorted(filtered_df.token)
 
         dictionary_7_clone = artm.Dictionary()
         dictionary_7_clone.load_from_dataframe(filtered_df.head(2000))
