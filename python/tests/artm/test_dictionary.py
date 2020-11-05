@@ -109,8 +109,9 @@ def test_func():
         filtered_df = dict7_df.query("2 <= token_df <= 100 and 1 <= token_tf <= 20").copy()
 
         dictionary_7.filter(min_df=2, max_df=100, min_tf=1, max_tf=20, recalculate_value=True)
-        dictionary_7.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_7.txt'))
-        loaded_df = pd.read_csv('saved_text_dict_7.txt', sep=', *', skiprows=[0])
+        dictionary_path = os.path.join(batches_folder, 'saved_text_dict_7.txt')
+        dictionary_7.save_text(dictionary_path=dictionary_path)
+        loaded_df = pd.read_csv(dictionary_path, sep=', *', skiprows=[0])
         assert loaded_df == filtered_df
 
         dictionary_7_clone = artm.Dictionary()
