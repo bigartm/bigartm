@@ -110,7 +110,6 @@ class Dictionary(object):
             but has no I/O overhead
         """
         dictionary_data = self._master.get_dictionary(self._name)
-        print(type(getattr(dictionary_data, 'token')))
         dict_pandas = {field: list(getattr(dictionary_data, field))
                        for field in FIELDS}
         # TODO (bt): find out if this is memory-efficient
