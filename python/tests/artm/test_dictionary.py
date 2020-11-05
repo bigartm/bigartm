@@ -91,6 +91,7 @@ def test_func():
 
         dictionary_6 = artm.Dictionary()
         dictionary_6.load(dictionary_path=os.path.join(batches_folder, 'saved_dict_1.dict'))
+
         dictionary_6.filter(min_df=2, max_df=100, min_tf=1, max_tf=20, recalculate_value=True)
         dictionary_6.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_6.txt'))
         _check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_6.txt'), case_type=2)
@@ -98,6 +99,22 @@ def test_func():
         dictionary_6.filter(min_df_rate=0.001, max_df_rate=0.002, recalculate_value=True)
         dictionary_6.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_6.txt'))
         _check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_6.txt'), case_type=3)
+
+
+        # check dictionary-dataframe interoperability
+        dictionary_7 = artm.Dictionary()
+        dictionary_7.load(dictionary_path=os.path.join(batches_folder, 'saved_dict_1.dict'))
+        dict7_df = dictionary_7.save_dataframe()
+        filtered_df = dict7_df.query("2 <= token_df <= 100 and 1 <= token_tf <= 20").copy()
+
+        dictionary_7.filter(min_df=2, max_df=100, min_tf=1, max_tf=20, recalculate_value=True)
+        dictionary_7.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_7.txt'))
+        loaded_df = pd.DataFrame.read_csv('saved_text_dict_7.txt', sep=', *', skiprows=[0])
+        assert loaded_df == filtered_df
+
+        dictionary_7_clone = artm.Dictionary()
+        dictionary_7_clone.load_from_dataframe(filtered_df.head(2000))
+        assert dictionary_7_clone.save_dataframe().shape == (2000, 6)
     finally:
         shutil.rmtree(batches_folder)
 

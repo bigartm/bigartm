@@ -155,10 +155,10 @@ class Dictionary(object):
         self._reset()
         for field in FIELDS:
             # TODO (bt): this isn't the best way to do this,
-            # but just .values doesn't work for some reason 
+            # but just .values doesn't work for some reason
             for entry in dataframe[field].values:
                 getattr(new_dictionary_data, field).append(entry)
-            
+
         self._master.create_dictionary(dictionary_data=new_dictionary_data, dictionary_name=self._name)
 
     def create(self, dictionary_data):
@@ -236,5 +236,3 @@ class Dictionary(object):
     def __repr__(self):
         descr = next(x for x in self._master.get_info().dictionary if x.name == self.name)
         return 'artm.Dictionary(name={0}, num_entries={1})'.format(descr.name, descr.num_entries)
-
-
