@@ -112,25 +112,14 @@ def test_func():
         dictionary_path = os.path.join(batches_folder, 'saved_text_dict_7.txt')
         dictionary_7.save_text(dictionary_path=dictionary_path)
         loaded_df = pd.read_csv(dictionary_path, sep=', *', skiprows=[0])
-        print(loaded_df.head())
-        print(filtered_df.head())
-        print(loaded_df.describe())
-        print(filtered_df.describe())
-        print(loaded_df.tail())
-        print(filtered_df.tail())
-        print("^^^^^^^^^^^^^^^^^^^^^^^^^^")
-        strange_tokens = set(filtered_df.token) - set(loaded_df.token)
-        print(filtered_df.query("token in @strange_tokens").head(22))
-
-        strange_tokens = set(loaded_df.token) - set(filtered_df.token)
-        print(loaded_df.query("token in @strange_tokens").head(22))
-
+        
         assert loaded_df.shape == filtered_df.shape
         assert sorted(loaded_df.token) == sorted(filtered_df.token)
+        assert loaded_df[['token', 'token_df', 'token_tf']] == filtered_df[['token', 'token_df', 'token_tf']]
 
         dictionary_7_clone = artm.Dictionary()
         dictionary_7_clone.load_from_dataframe(filtered_df.head(2000))
-        assert dictionary_7_clone.save_dataframe().shape == (2000, 6)
+        assert dictionary_7_clone.save_dataframe().shape[0] == 2000
     finally:
         shutil.rmtree(batches_folder)
 
