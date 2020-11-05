@@ -106,8 +106,7 @@ def test_func():
         dictionary_7 = artm.Dictionary()
         dictionary_7.load(dictionary_path=os.path.join(batches_folder, 'saved_dict_1.dict'))
         dict7_df = dictionary_7.save_dataframe()
-        filtered_df = dict7_df.query("2 <= token_df <= 100 and 1 <= token_tf <= 20").copy()
-        # filtered_df = filtered_df[filtered_df.index]
+        filtered_df = dict7_df.query("2 <= token_df < 100 and 1 <= token_tf < 20").copy()
 
         dictionary_7.filter(min_df=2, max_df=100, min_tf=1, max_tf=20, recalculate_value=False)
         dictionary_path = os.path.join(batches_folder, 'saved_text_dict_7.txt')
