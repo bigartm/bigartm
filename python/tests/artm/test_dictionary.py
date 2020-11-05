@@ -115,7 +115,9 @@ def test_func():
         
         assert loaded_df.shape == filtered_df.shape
         assert sorted(loaded_df.token) == sorted(filtered_df.token)
-        assert loaded_df[['token', 'token_df', 'token_tf']] == filtered_df[['token', 'token_df', 'token_tf']]
+        first = loaded_df.reset_index()[['token', 'token_df', 'token_tf']].sort_values(by='token')
+        second = filtered_df.reset_index()[['token', 'token_df', 'token_tf']].sort_values(by='token')
+        assert first == second
 
         dictionary_7_clone = artm.Dictionary()
         dictionary_7_clone.load_from_dataframe(filtered_df.head(2000))
