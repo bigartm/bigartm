@@ -110,7 +110,7 @@ class Dictionary(object):
             but has no I/O overhead
         """
         dictionary_data = self._master.get_dictionary(self._name)
-        print(getattr(dictionary_data, 'token'))
+        print(type(getattr(dictionary_data, 'token')))
         dict_pandas = {field: list(getattr(dictionary_data, field))
                        for field in FIELDS}
         # TODO (bt): probably should be pd.DataFrame.from_dict
