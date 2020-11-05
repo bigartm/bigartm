@@ -110,7 +110,7 @@ def test_func():
 
         dictionary_7.filter(min_df=2, max_df=100, min_tf=1, max_tf=20, recalculate_value=True)
         dictionary_7.save_text(dictionary_path=os.path.join(batches_folder, 'saved_text_dict_7.txt'))
-        loaded_df = pd.DataFrame.read_csv('saved_text_dict_7.txt', sep=', *', skiprows=[0])
+        loaded_df = pd.read_csv('saved_text_dict_7.txt', sep=', *', skiprows=[0])
         assert loaded_df == filtered_df
 
         dictionary_7_clone = artm.Dictionary()
