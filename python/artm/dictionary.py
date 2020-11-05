@@ -13,6 +13,8 @@ __all__ = [
     'Dictionary'
 ]
 
+FIELDS = 'token class_id token_value token_tf token_df'.split()
+
 
 class Dictionary(object):
     def __init__(self, name=None, dictionary_path=None, data_path=None):
@@ -85,7 +87,7 @@ class Dictionary(object):
         with codecs.open(dictionary_path, 'w', encoding) as fout:
             fout.write(u'name: {} num_items: {}\n'.format(dictionary_data.name,
                                                           dictionary_data.num_items_in_collection))
-            fout.write(u'token, class_id, token_value, token_tf, token_df\n')
+            fout.write(', '.join(FIELDS) + '\n')
 
             for i in range(len(dictionary_data.token)):
                 fout.write(u'{0}, {1}, {2}, {3}, {4}\n'.format(dictionary_data.token[i],
@@ -93,6 +95,22 @@ class Dictionary(object):
                                                                dictionary_data.token_value[i],
                                                                dictionary_data.token_tf[i],
                                                                dictionary_data.token_df[i]))
+
+    def save_dataframe(self):
+        """
+        :Description: converts the BigARTM dictionary of the collection
+            to the pandas.DataFrame.
+            This is approximately equivalent to the dictionary.save_text()
+            but has no I/O overhead
+        """
+        dictionary_data = self._master.get_dictionary(self._name)
+        dict_pandas = {field: getattr(dictionary_data, field)
+                       for field in FIELDS}
+        # TODO (bt): probably should be pd.DataFrame.from_dict
+        # with dtype specification (at least specify that token_value is float, not double)
+        # but dtype specification seems to be wonky:
+        # https://github.com/pandas-dev/pandas/issues/14655
+        return pd.DataFrame(dict_pandas)
 
     def load_text(self, dictionary_path, encoding='utf-8'):
         """
@@ -119,6 +137,29 @@ class Dictionary(object):
                 dictionary_data.token_df.append(float(line_list[4][0: -1]))
 
         self._master.create_dictionary(dictionary_data=dictionary_data, dictionary_name=self._name)
+
+    def load_from_dataframe(self, dataframe):
+        """
+        :Description: loads the BigARTM dictionary of the collection from the\
+                      pandas.dataframe
+                      Might be time- and memory-inefficient!
+
+        :param pandas.DataFrame dataframe: DataFrame having all the columns specified in FIELDS
+        """
+        new_dictionary_data = messages.DictionaryData()
+        old_dictionary_data = self._master.get_dictionary(self._name)
+
+        dictionary_data.name = old_dictionary_data.name
+        dictionary_data.num_items_in_collection = old_dictionary_data.num_items_in_collection
+
+        self._reset()
+        for field in FIELDS:
+            # TODO (bt): this isn't the best way to do this,
+            # but just .values doesn't work for some reason 
+            for entry in dataframe[field].values:
+                getattr(new_dictionary_data, field).append(entry)
+            
+        self._master.create_dictionary(dictionary_data=new_dictionary_data, dictionary_name=self._name)
 
     def create(self, dictionary_data):
         """
@@ -195,3 +236,5 @@ class Dictionary(object):
     def __repr__(self):
         descr = next(x for x in self._master.get_info().dictionary if x.name == self.name)
         return 'artm.Dictionary(name={0}, num_entries={1})'.format(descr.name, descr.num_entries)
+
+
