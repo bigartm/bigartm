@@ -49,38 +49,44 @@ before_install:
   - pip install -U pip
   - pip install -U pytest pep8 pytest-forked
   - |
-    if [[ $TRAVIS_COMMIT_MESSAGE == *"[TEST]"* ]]; then
-      # pip install -U wheel
-      pip install -U numpy scipy tqdm --only-binary numpy,scipy
-      # Right now we cannot use 1.1.0 version of Pandas
-      # because it introduces bug with series indexing using tuples:
-      # https://github.com/pandas-dev/pandas/issues/35534
-      pip install -U 'pandas<1.1.0' --only-binary pandas
-      pip install -U protobuf
-      # install boost
-      sudo add-apt-repository universe
-      sudo apt-get update
-      sudo apt-get install libboost-all-dev
-      # configure ccache
-      # code from https://github.com/urho3d/Urho3D/blob/master/.travis.yml
-      export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
-      export CXX=g++ CC=gcc PATH=$HOME:$PATH
+    if [[ $TRAVIS_OS_NAME == linux ]]; then
+      if [[ $TRAVIS_COMMIT_MESSAGE == *"[TEST]"* ]]; then
+        # pip install -U wheel
+        pip install -U numpy scipy tqdm --only-binary numpy,scipy
+        # Right now we cannot use 1.1.0 version of Pandas
+        # because it introduces bug with series indexing using tuples:
+        # https://github.com/pandas-dev/pandas/issues/35534
+        pip install -U 'pandas<1.1.0' --only-binary pandas
+        pip install -U protobuf
+        # install boost
+        sudo add-apt-repository universe
+        sudo apt-get update
+        sudo apt-get install libboost-all-dev
+        # configure ccache
+        # code from https://github.com/urho3d/Urho3D/blob/master/.travis.yml
+        export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
+        export CXX=g++ CC=gcc PATH=$HOME:$PATH
+      fi
     fi
 
 install:
-  - ./codestyle_checks.sh
   - |
-    if [[ $TRAVIS_COMMIT_MESSAGE == *"[TEST]"* ]]; then
-      mkdir build
-      pushd build && cmake .. && make -j2 && file ./bin/bigartm && popd
-      pushd python && python setup.py install && popd
+    if [[ $TRAVIS_OS_NAME == linux ]]; then
+      if [[ $TRAVIS_COMMIT_MESSAGE == *"[TEST]"* ]]; then
+        ./codestyle_checks.sh
+        mkdir build
+        pushd build && cmake .. && make -j2 && file ./bin/bigartm && popd
+        pushd python && python setup.py install && popd
+      fi
     fi
   - python3 -m pip install cibuildwheel==1.3.0
 
 before_script:
   - |
     if [[ $TRAVIS_COMMIT_MESSAGE == *"[TEST]"* ]]; then
-      pushd test_data && ./download_datasets.sh && popd
+      if [[ $TRAVIS_OS_NAME == linux ]]; then
+        pushd test_data && ./download_datasets.sh && popd
+      fi
     fi
 
 script:
@@ -97,10 +103,12 @@ script:
     fi
 
   - |
-    if [[ $TRAVIS_COMMIT_MESSAGE == *"[TEST]"* ]]; then
-      export ARTM_SHARED_LIBRARY=`pwd`/build/lib/libartm.so
-      export BIGARTM_UNITTEST_DATA=`pwd`/test_data
-      pushd build && make test ARGS="-V" && popd
+    if [[ $TRAVIS_OS_NAME == linux ]]; then
+      if [[ $TRAVIS_COMMIT_MESSAGE == *"[TEST]"* ]]; then
+        export ARTM_SHARED_LIBRARY=`pwd`/build/lib/libartm.so
+        export BIGARTM_UNITTEST_DATA=`pwd`/test_data
+        pushd build && make test ARGS="-V" && popd
+      fi
     fi
 
   - python3 -m cibuildwheel --output-dir wheelhouse
