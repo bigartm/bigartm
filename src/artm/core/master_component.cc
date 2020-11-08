@@ -179,7 +179,10 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
     instance_ = std::make_shared<Instance>(config);
   } else {
     auto old_config = instance_->config();
-    if (!change_topic_name && (old_config->topic_name_size() != config.topic_name_size())) { BOOST_THROW_EXCEPTION(InvalidOperation( "ArtmReconfigureMasterModel can not change number of topics; use ArtmReconfigureTopicName")); }
+    if (!change_topic_name && (old_config->topic_name_size() != config.topic_name_size())) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "ArtmReconfigureMasterModel can not change number of topics; use ArtmReconfigureTopicName"));
+    }
     if (old_config->ptd_name() != config.ptd_name()) {
       BOOST_THROW_EXCEPTION(InvalidOperation(
         "ArtmReconfigureMasterModel can not change MasterModelConfig.ptd_name"));
