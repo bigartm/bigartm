@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 language: python
 
 addons:
@@ -47,7 +46,6 @@ jobs:
 before_install:
   # we need latest pip to work with only-binary option
   - pip install -U pip
-<<<<<<< HEAD
   - pip install -U pytest pep8 pytest-forked
   - |
     if [[ $TRAVIS_OS_NAME == linux ]]; then
