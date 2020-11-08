@@ -203,7 +203,7 @@ ScoreTracker* Instance::score_tracker() {
   return score_tracker_.get();
 }
 
-void Instance::DisposeModel(ModelName model_name) {
+void Instance::DisposeModel(const ModelName& model_name) {
   models_.erase(model_name);
 }
 
@@ -443,12 +443,12 @@ void Instance::Reconfigure(const MasterModelConfig& master_config) {
 }
 
 std::shared_ptr<const ::artm::core::PhiMatrix>
-Instance::GetPhiMatrix(ModelName model_name) const {
+Instance::GetPhiMatrix(const ModelName& model_name) const {
   return models_.get(model_name);
 }
 
 std::shared_ptr<const ::artm::core::PhiMatrix>
-Instance::GetPhiMatrixSafe(ModelName model_name) const {
+Instance::GetPhiMatrixSafe(const ModelName& model_name) const {
   std::shared_ptr<const PhiMatrix> retval = models_.get(model_name);
   if (retval == nullptr) {
     BOOST_THROW_EXCEPTION(InvalidOperation("Model " + model_name + " does not exist"));
@@ -456,7 +456,7 @@ Instance::GetPhiMatrixSafe(ModelName model_name) const {
   return retval;
 }
 
-void Instance::SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix) {
+void Instance::SetPhiMatrix(const ModelName& model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix) {
   models_.erase(model_name);
   if (phi_matrix != nullptr) {
     models_.set(model_name, phi_matrix);

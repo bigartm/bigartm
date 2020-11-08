@@ -1,12 +1,12 @@
-// Copyright 2017, Additive Regularization of Topic Models.
+// Copyright 2019, Additive Regularization of Topic Models.
 
 #include <stdlib.h>
+
 #include <algorithm>
 #include <chrono>
-#include <ctime>
+#include <cstring>
 #include <fstream>
 #include <future>
-#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <set>
@@ -28,10 +28,6 @@ namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 
 #include "artm/cpp_interface.h"
-#include "artm/core/common.h"
-#include "glog/logging.h"
-
-#include "cooccurrence_dictionary.h"
 
 using namespace artm;
 
@@ -275,12 +271,17 @@ struct artm_options {
   int cooc_window;
   int cooc_min_df;
   int cooc_min_tf;
+  bool store_symmetric_cooc_values;
 
   // Model
   std::string load_model;
   std::string topics;
   std::string use_modality;
   std::string predict_class;
+
+  float dense_init_rate;
+  float guaranteed_zeros_rate;
+
   time_t rand_seed;
 
   // Learning
@@ -306,8 +307,8 @@ struct artm_options {
   std::string write_predictions;
   std::string write_cooc_tf;
   std::string write_cooc_df;
-  std::string write_tf_ppmi;
-  std::string write_df_ppmi;
+  std::string write_ppmi_tf;
+  std::string write_ppmi_df;
   std::string write_class_predictions;
   std::string write_scores;
   std::string write_vw_corpus;
@@ -327,6 +328,8 @@ struct artm_options {
   bool b_paused;
   bool b_disable_avx_opt;
   int profile;
+  float min_sparsity_rate;
+  bool use_sparse_computation;
 
   artm_options() {
     pwt_model_name = "pwt";
@@ -534,7 +537,7 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
       if (class_ids.empty()) {
         throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
       }
-    } else if (elem[0] == '!') {
+    } else if (elem[0] == '?') {
       dictionary_path = elem.substr(1, elem.size() - 1);
       if (dictionary_path.empty()) {
         throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
@@ -750,7 +753,7 @@ class ScoreHelper {
          if (class_ids.empty()) {
            throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
          }
-       } else if (elem[0] == '!') {
+       } else if (elem[0] == '?') {
          dictionary_path = elem.substr(1, elem.size() - 1);
          if (dictionary_path.empty()) {
            throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
@@ -783,6 +786,7 @@ class ScoreHelper {
        for (const auto& class_id : class_ids) {
          specific_config.add_class_id(class_id.first);
        }
+
        if (dictionary_name.empty()) {
          specific_config.set_model_type(PerplexityScoreConfig_Type_UnigramDocumentModel);
        } else {
@@ -880,7 +884,7 @@ class ScoreHelper {
      score_name_.push_back(std::make_pair(score, score_config.type()));
    }
 
-   std::string showScore(const std::string& score_name, ::artm::ScoreType type) {
+   std::string showScore(const std::string& score_name, ::artm::ScoreType type, bool is_first_iter = false) {
      std::string retval;
      GetScoreValueArgs get_score_args;
      get_score_args.set_score_name(score_name);
@@ -941,17 +945,22 @@ class ScoreHelper {
        }
      }
      else if (type == ::artm::ScoreType_TopicKernel) {
-       auto score_data = master_->GetScoreAs< ::artm::TopicKernelScore>(get_score_args);
        std::stringstream suffix;
        if (boost::to_lower_copy(score_name) != "topickernel") {
          suffix << "\t(" << score_name << ")";
        }
 
-       std::cerr << "KernelSize      = " << score_data.average_kernel_size() << suffix.str() << "\n";
-       std::cerr << "KernelPurity    = " << score_data.average_kernel_purity() << suffix.str() << "\n";
-       std::cerr << "KernelContrast  = " << score_data.average_kernel_contrast() << suffix.str() << "\n";
-       if (score_data.has_average_coherence()) {
-         std::cerr << "KernelCoherence = " << score_data.average_coherence() << suffix.str() << "\n";
+       if (!is_first_iter) {
+         auto score_data = master_->GetScoreAs<::artm::TopicKernelScore>(get_score_args);
+
+         std::cerr << "KernelSize      = " << score_data.average_kernel_size() << suffix.str() << "\n";
+         std::cerr << "KernelPurity    = " << score_data.average_kernel_purity() << suffix.str() << "\n";
+         std::cerr << "KernelContrast  = " << score_data.average_kernel_contrast() << suffix.str() << "\n";
+         if (score_data.has_average_coherence()) {
+           std::cerr << "KernelCoherence = " << score_data.average_coherence() << suffix.str() << "\n";
+         }
+       } else {
+         std::cerr << "TopicKernelScore cannot be caluculated before first iter is complete " << suffix.str() << "\n";
        }
      }
      else if (type == ::artm::ScoreType_ClassPrecision) {
@@ -1017,7 +1026,7 @@ class ScoreHelper {
        output_ << iter << sep << elapsed_ms;
      }
      for (const auto& score_name: score_name_) {
-       std::string score_value = showScore(score_name.first, score_name.second);
+       std::string score_value = showScore(score_name.first, score_name.second, iter == 0);
        if (output_.is_open()) {
          output_ << sep << score_value;
        }
@@ -1114,9 +1123,38 @@ class BatchVectorizer {
         if (!options_.read_uci_vocab.empty()) {
           collection_parser_config.set_vocab_file_path(options_.read_uci_vocab);
         }
+
+        collection_parser_config.set_num_threads(options_.threads);
+
         collection_parser_config.set_target_folder(batch_folder_);
         collection_parser_config.set_num_items_per_batch(options_.batch_size);
         collection_parser_config.set_name_type(options_.b_guid_batch_name ? CollectionParserConfig_BatchNameType_Guid : CollectionParserConfig_BatchNameType_Code);
+
+        // Settings for co-occurrence gathering
+        if (!options_.write_cooc_tf.empty()) {
+          collection_parser_config.set_cooc_tf_file_path(options_.write_cooc_tf);
+        }
+        if (!options_.write_cooc_df.empty()) {
+          collection_parser_config.set_cooc_df_file_path(options_.write_cooc_df);
+        }
+        if (!options_.write_ppmi_tf.empty()) {
+          collection_parser_config.set_ppmi_tf_file_path(options_.write_ppmi_tf);
+        }
+        if (!options_.write_ppmi_df.empty()) {
+          collection_parser_config.set_ppmi_df_file_path(options_.write_ppmi_df);
+        }
+
+        collection_parser_config.set_gather_cooc_tf(collection_parser_config.has_cooc_tf_file_path() ||
+                                                    collection_parser_config.has_ppmi_tf_file_path());
+        collection_parser_config.set_gather_cooc_df(collection_parser_config.has_cooc_df_file_path() ||
+                                                    collection_parser_config.has_ppmi_df_file_path());
+
+        collection_parser_config.set_gather_cooc(collection_parser_config.gather_cooc_tf() ||
+                                                 collection_parser_config.gather_cooc_df());
+        collection_parser_config.set_cooc_window_width(options_.cooc_window);
+        collection_parser_config.set_cooc_min_tf(options_.cooc_min_tf);
+        collection_parser_config.set_cooc_min_df(options_.cooc_min_df);
+        collection_parser_config.set_store_symmetric_cooc_values(options_.store_symmetric_cooc_values);
 
         // If user specifies specific modalities "use_modality", pass it to collection parser to limit set of modalities available in batches
         std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options_.use_modality);
@@ -1303,6 +1341,10 @@ int execute(const artm_options& options, int argc, char* argv[]) {
   master_config.set_num_document_passes(options.num_document_passes);
   master_config.set_pwt_name(options.pwt_model_name);
   master_config.set_nwt_name(options.nwt_model_name);
+  master_config.set_min_sparsity_rate(options.min_sparsity_rate);
+  master_config.set_use_sparse_computation(options.use_sparse_computation);
+  master_config.set_dense_init_rate(options.dense_init_rate);
+  master_config.set_guaranteed_zeros_rate(options.guaranteed_zeros_rate);
 
   for (const auto& topic_name : topic_names) {
     master_config.add_topic_name(topic_name);
@@ -1315,7 +1357,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     }
 
     master_config.add_class_id(class_id.first);
-    master_config.add_class_weight(class_id.second == 0.0f ? 1.0f : class_id.second);
+    master_config.add_class_weight(std::abs(class_id.second) < 1e-16 ? 1.0f : class_id.second);
   }
 
   master_config.set_opt_for_avx(!options.b_disable_avx_opt);
@@ -1398,12 +1440,12 @@ int execute(const artm_options& options, int argc, char* argv[]) {
       filter_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
       bool fraction;
       float value;
-      if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction))  {
+      if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction)) {
         if (fraction) {
           filter_dictionary_args.set_min_df_rate(value);
         } else {
           filter_dictionary_args.set_min_df(value);
-	}
+        }
       } else {
         if (!options.dictionary_min_df.empty()) {
           std::cerr << "Error in parameter 'dictionary_min_df', the option will be ignored (" << options.dictionary_min_df << ")\n";
@@ -1693,6 +1735,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     if (!options.predict_class.empty()) {
       transform_args.set_predict_class_id(options.predict_class);
     }
+
     for (const auto& batch_filename : batch_file_names) {
       transform_args.add_batch_filename(batch_filename.string());
     }
@@ -1742,6 +1785,7 @@ int main(int argc, char * argv[]) {
       ("cooc-window", po::value(&options.cooc_window)->default_value(5), "number of tokens around specific token, which are used in calculation of cooccurrences")
       ("dictionary-min-df", po::value(&options.dictionary_min_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary-max-df", po::value(&options.dictionary_max_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
+      ("store-symmetric-cooc", po::bool_switch(&options.store_symmetric_cooc_values)->default_value(false), "to not write repeating pairs in co-occurrence dictionary, like if the pair (token_a, token_b) is written, to not write the pair (token_b, token_a)")
       ("dictionary-size", po::value(&options.dictionary_size)->default_value(0), "limit dictionary size by filtering out tokens with high document frequency")
       ("use-dictionary", po::value(&options.use_dictionary)->default_value(""), "filename of binary dictionary file to use")
     ;
@@ -1752,6 +1796,8 @@ int main(int argc, char * argv[]) {
       ("topics,t", po::value(&options.topics)->default_value("16"), "number of topics")
       ("use-modality", po::value< std::string >(&options.use_modality)->default_value(""), "modalities (class_ids) and their weights")
       ("predict-class", po::value< std::string >(&options.predict_class)->default_value(""), "target modality to predict by theta matrix")
+      ("dense-init-rate", po::value(&options.dense_init_rate)->default_value(1.0f), "Rate of tokens in sorted by tf dictionary to be initialized without guaranteed zeros")
+      ("guaranteed-zeros-rate", po::value(&options.guaranteed_zeros_rate)->default_value(0.0f), "Rate of zeros in Phi matrix rows initialization corresponding to rare tokens")
     ;
 
     po::options_description learning_options("Learning");
@@ -1772,8 +1818,8 @@ int main(int argc, char * argv[]) {
     output_options.add_options()
       ("write-cooc-tf", po::value(&options.write_cooc_tf)->default_value(""), "save dictionary of co-occurrences with frequencies of co-occurrences of every specific pair of tokens in whole collection")
       ("write-cooc-df", po::value(&options.write_cooc_df)->default_value(""), "save dictionary of co-occurrences with number of documents in which every specific pair occured together")
-      ("write-ppmi-tf", po::value(&options.write_tf_ppmi)->default_value(""), "save values of positive pmi of pairs of tokens from cooc_tf dictionary")
-      ("write-ppmi-df", po::value(&options.write_df_ppmi)->default_value(""), "save values of positive pmi of pairs of tokens from cooc_df dictionary")
+      ("write-ppmi-tf", po::value(&options.write_ppmi_tf)->default_value(""), "save values of positive pmi of pairs of tokens from cooc_tf dictionary")
+      ("write-ppmi-df", po::value(&options.write_ppmi_df)->default_value(""), "save values of positive pmi of pairs of tokens from cooc_df dictionary")
       ("save-model", po::value(&options.save_model)->default_value(""), "save the model to binary file after processing")
       ("save-batches", po::value(&options.save_batches)->default_value(""), "batch folder")
       ("save-dictionary", po::value(&options.save_dictionary)->default_value(""), "filename of dictionary file")
@@ -1803,6 +1849,8 @@ int main(int argc, char * argv[]) {
       ("time-limit", po::value(&options.time_limit)->default_value(0), "limit execution time in milliseconds")
       ("log-dir", po::value(&options.log_dir), "target directory for logging (GLOG_log_dir)")
       ("log-level", po::value(&options.log_level), "min logging level (GLOG_minloglevel; INFO=0, WARNING=1, ERROR=2, and FATAL=3)")
+      ("min-sparsity-rate", po::value(&options.min_sparsity_rate)->default_value(0.6), "min rate of zero elements in Phi row to store it in sparse way (>= 0 and <= 1)")
+      ("use-sparse-computation", po::value(&options.use_sparse_computation)->default_value(true), "use sparse algorithm to speed up learning process")
     ;
 
     all_options.add(input_data_options);
@@ -1874,13 +1922,13 @@ int main(int argc, char * argv[]) {
       std::cerr << "List of regularizers available in BigARTM CLI:\n\n";
       std::cerr << "\t--regularizer \"tau SmoothTheta #topics\"\n";
       std::cerr << "\t--regularizer \"tau SparseTheta #topics\"\n";
-      std::cerr << "\t--regularizer \"tau SmoothPhi #topics @class_ids !dictionary\"\n";
-      std::cerr << "\t--regularizer \"tau SparsePhi #topics @class_ids !dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau SmoothPhi #topics @class_ids ?dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau SparsePhi #topics @class_ids ?dictionary\"\n";
       std::cerr << "\t--regularizer \"tau Decorrelation #topics @class_ids\"\n";
       std::cerr << "\t--regularizer \"tau TopicSelection #topics\"\n";
-      std::cerr << "\t--regularizer \"tau LabelRegularization #topics @class_ids !dictionary\"\n";
-      std::cerr << "\t--regularizer \"tau ImproveCoherence #topics @class_ids !dictionary\"\n";
-      std::cerr << "\t--regularizer \"tau Biterms #topics @class_ids !dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau LabelRegularization #topics @class_ids ?dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau ImproveCoherence #topics @class_ids ?dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau Biterms #topics @class_ids ?dictionary\"\n";
       std::cerr << "\nList of regularizers available in BigARTM, but not exposed in CLI:\n\n";
       std::cerr << "\t--regularizer \"tau SpecifiedSparsePhi\"\n";
       std::cerr << "\t--regularizer \"tau SmoothPtdw\"\n";
@@ -1892,7 +1940,7 @@ int main(int argc, char * argv[]) {
       std::cerr << "list of topics (for example, #topic1;topic2) or topic groups (#obj).\n";
       std::cerr << "Similarly, to limit action onto specific set of class ids use at sign (@),\n";
       std::cerr << "by the list of class ids (for example, @default_class).\n";
-      std::cerr << "Some regularizers accept a dictionary. To specify the dictionary use exclamation mark (!),\n";
+      std::cerr << "Some regularizers accept a dictionary. To specify the dictionary use question mark (?),\n";
       std::cerr << "followed by the path to the dictionary(.dict file in your file system).\n";
       std::cerr << "Depending on regularizer the dictinoary can be either optional or required.\n";
       std::cerr << "Some regularizers expect an dictinoary with tokens and their frequencies;\n";
@@ -1987,36 +2035,6 @@ int main(int argc, char * argv[]) {
         args.set_minloglevel(options.log_level);
       }
       ::artm::ConfigureLogging(args);
-    }
-
-    if (!options.write_cooc_tf.empty() || !options.write_cooc_df.empty() ||
-        !options.write_tf_ppmi.empty() || !options.write_df_ppmi.empty()) {
-      if (options.read_vw_corpus.empty()) {
-        throw std::invalid_argument("input file in VowpalWabbit format not specified");
-        throw "input file in VowpalWabbit format not specified";
-      }
-      if (options.read_uci_vocab.empty()) {
-        throw std::invalid_argument("input file in UCI vocab format not specified");
-      }
-      if (options.write_cooc_tf.empty() && !options.write_tf_ppmi.empty()) {
-        throw std::invalid_argument("please specify name of cooc_tf file");
-      }
-      if (options.write_cooc_df.empty() && !options.write_df_ppmi.empty()) {
-        throw std::invalid_argument("please specify name of cooc_df file");
-      }
-
-      CooccurrenceDictionary cooc_dictionary(options.cooc_window,
-          options.cooc_min_tf, options.cooc_min_df, options.read_uci_vocab,
-          options.read_vw_corpus, options.write_cooc_tf,
-          options.write_cooc_df, options.write_tf_ppmi, options.write_df_ppmi,
-          options.threads);
-      cooc_dictionary.FetchVocab();
-      if (cooc_dictionary.VocabDictionarySize() > 1) {
-        cooc_dictionary.ReadVowpalWabbit();
-        if (cooc_dictionary.CooccurrenceBatchQuantity() != 0) {
-          cooc_dictionary.ReadAndMergeCooccurrenceBatches();
-        }
-      }
     }
 
     return execute(options, argc, argv);

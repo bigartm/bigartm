@@ -52,12 +52,18 @@ class LibArtm(object):
             lib_names.append(env_lib_name)
         
         lib_names.append(os.path.join(os.path.dirname(__file__), "..", default_lib_name))
+<<<<<<< HEAD
         lib_names.append(os.path.join(os.path.dirname(__file__), default_lib_name))
 
         lib_names.append(default_lib_name)
         
         # We look into 5 places: lib_name, ARTM_SHARED_LIBRARY,
         # packaged default_lib_name (and the same in parent directory)
+=======
+        lib_names.append(default_lib_name)
+        
+        # We look into 4 places: lib_name, ARTM_SHARED_LIBRARY, packaged default_lib_name
+>>>>>>> master
         # and then default_lib_name
         cdll = None
         exceptions = {}
@@ -162,7 +168,7 @@ class LibArtm(object):
                     c_args += [len(message_str), message_cstr_p]
 
                 elif issubclass(arg_type, numpy.ndarray):
-                    c_args += [arg_value.nbytes, ctypes.c_char_p(arg_value.ctypes.data)]
+                    c_args += [ctypes.c_int64(arg_value.nbytes), ctypes.c_char_p(arg_value.ctypes.data)]
 
                 else:
                     c_args.append(arg_value)

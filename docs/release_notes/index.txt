@@ -16,3 +16,5 @@ Release Notes
    bigartm_cli
    c_interface
    v0.7
+   v0.9
+   v0.10.0

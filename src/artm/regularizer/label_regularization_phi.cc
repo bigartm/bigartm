@@ -16,7 +16,8 @@ namespace regularizer {
 
 bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                            const ::artm::core::PhiMatrix& n_wt,
-                                           ::artm::core::PhiMatrix* result) {
+                                           ::artm::core::PhiMatrix* r_wt,
+                                           const float* tau) {
   // read the parameters from config and control their correctness
   const int topic_size = n_wt.topic_size();
   const int token_size = n_wt.token_size();
@@ -37,24 +38,19 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   if (config_.has_dictionary_name()) {
     dictionary_ptr = dictionary(config_.dictionary_name());
   }
-  bool has_dictionary = dictionary_ptr != nullptr;
 
   // proceed the regularization
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    const auto& token = n_wt.token(token_id);
-
-    float coefficient = 1.0f;
-    if (has_dictionary) {
-      if (use_all_classes ||
-          core::is_member(token.class_id, config_.class_id())) {
-        auto entry_ptr = dictionary_ptr->entry(token);
-        // don't process tokens without value in the dictionary
-        coefficient = entry_ptr != nullptr ? entry_ptr->token_value() : 0.0f;
-      }
-    }
-
+    const auto& token = p_wt.token(token_id);
     if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) {
       continue;
+    }
+
+    float coefficient = 1.0f;
+    if (dictionary_ptr != nullptr) {
+      auto entry_ptr = dictionary_ptr->entry(token);
+      // don't process tokens without value in the dictionary
+      coefficient = entry_ptr != nullptr ? entry_ptr->token_value() : 0.0f;
     }
 
     // count sum of weights
@@ -70,7 +66,7 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
       if (topics_to_regularize[topic_id]) {
         float weight = n_wt.get(token_id, topic_id);
         float value = static_cast<float>(coefficient * weight / weights_sum);
-        result->set(token_id, topic_id, value);
+        r_wt->increase(token_id, topic_id, value * (tau != nullptr ? *tau : 1.0f));
       }
     }
   }

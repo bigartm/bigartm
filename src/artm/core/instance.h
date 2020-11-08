@@ -60,16 +60,16 @@ class Instance {
   Processor* processor(int processor_index) { return processors_[processor_index].get(); }
 
   void Reconfigure(const MasterModelConfig& master_config);
-  void DisposeModel(ModelName model_name);
+  void DisposeModel(const ModelName& model_name);
 
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
   void DisposeRegularizer(const std::string& name);
 
   std::shared_ptr<ScoreCalculatorInterface> CreateScoreCalculator(const ScoreConfig& config);
 
-  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(ModelName model_name) const;
-  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrixSafe(ModelName model_name) const;
-  void SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix);
+  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(const ModelName& model_name) const;
+  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrixSafe(const ModelName& model_name) const;
+  void SetPhiMatrix(const ModelName& model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix);
 
  private:
   bool is_configured_;

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <fstream>  // NOLINT
 #include <vector>
-#include <set>
+#include <unordered_set>
 #include <sstream>
 #include <utility>
 
@@ -403,6 +403,7 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
 
   const char version = 0;
   fout << version;
+
   for (int token_id = 0; token_id < token_size; ++token_id) {
     Token token = n_wt.token(token_id);
     get_topic_model_args.add_token(token.keyword);
@@ -450,7 +451,7 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
     BOOST_THROW_EXCEPTION(DiskReadException(ss.str()));
   }
 
-  std::shared_ptr<DensePhiMatrix> target;
+  std::shared_ptr<DensePhiMatrix> target = nullptr;
   while (!fin.eof()) {
     int length;
     fin >> length;
@@ -472,10 +473,12 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
     }
 
     topic_model.set_name(args.model_name());
-
     if (target == nullptr) {
-      target = std::make_shared<DensePhiMatrix>(args.model_name(), topic_model.topic_name());
+      target = std::make_shared<DensePhiMatrix>(args.model_name(),
+                                                topic_model.topic_name(),
+                                                instance_->config()->min_sparsity_rate());
     }
+
 
     PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, /* add_missing_tokens = */ true, target.get());
   }
@@ -601,9 +604,10 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   }
 
   std::shared_ptr<PhiMatrix> new_ttm;
+  std::shared_ptr<artm::core::Dictionary> dict(nullptr);
   int excluded_tokens = 0;
   if (args.has_dictionary_name()) {
-    auto dict = instance_->dictionaries()->get(args.dictionary_name());
+    dict = instance_->dictionaries()->get(args.dictionary_name());
     if (dict == nullptr) {
       std::stringstream ss;
       ss << "Dictionary '" << args.dictionary_name() << "' does not exist";
@@ -616,9 +620,12 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
       BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
     }
 
-    new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), args.topic_name());
+    new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(),
+                                                              args.topic_name(),
+                                                              instance_->config()->min_sparsity_rate());
     for (int index = 0; index < (int64_t) dict->size(); ++index) {
       ::artm::core::Token token = dict->entry(index)->token();
+
       if (config->class_id_size() > 0 && !is_member(token.class_id, config->class_id())) {
         continue;
       }
@@ -652,10 +659,41 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
-  for (int token_index = 0; token_index < new_ttm->token_size(); token_index++) {
-    Token token = new_ttm->token(token_index);
-    std::vector<float> vec = Helpers::GenerateRandomVector(new_ttm->topic_size(), token, args.seed());
-    new_ttm->increase(token_index, vec);
+  bool use_sparse_init = false;
+  if (instance_->config()->dense_init_rate() < 1.0f) {
+    if (dict == nullptr) {
+      LOG(WARNING) << "Unable to use any sparse initialization because dictionary was not provided";
+    } else {
+      use_sparse_init = true;
+    }
+  }
+
+  if (use_sparse_init) {
+    std::vector<std::pair<float, artm::core::Token>> token_with_tf;
+    for (const auto& entry : dict->entries()) {
+      token_with_tf.push_back({ -entry.token_tf(), entry.token() });
+    }
+    std::sort(token_with_tf.begin(), token_with_tf.end());
+
+    int num_dense_tokens = static_cast<int>(token_with_tf.size() * instance_->config()->dense_init_rate());
+    LOG(INFO) << "Number of dense rows in future Phi matrix: " << num_dense_tokens
+              << ", total number: " << token_with_tf.size();
+
+    for (int sorted_token_index = 0; sorted_token_index < token_with_tf.size(); ++sorted_token_index) {
+      const auto& token = token_with_tf[sorted_token_index].second;
+
+      std::vector<float> vec = Helpers::GenerateRandomVector(
+              new_ttm->topic_size(), token, args.seed(),
+              (sorted_token_index < num_dense_tokens) ? 0.0f : instance_->config()->guaranteed_zeros_rate());
+
+      new_ttm->increase(new_ttm->token_index(token), vec);
+    }
+  } else {
+    for (int token_index = 0; token_index < new_ttm->token_size(); token_index++) {
+      Token token = new_ttm->token(token_index);
+      std::vector<float> vec = Helpers::GenerateRandomVector(new_ttm->topic_size(), token, args.seed());
+      new_ttm->increase(token_index, vec);
+    }
   }
 
   PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());
@@ -764,7 +802,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
   if (instance_->processor_size() <= 0) {
     BOOST_THROW_EXCEPTION(InvalidOperation(
-        "Can't process batches because there are no processors. Check  MasterModelConfig.num_processors setting."));
+        "Can't process batches because there are no processors. Check MasterModelConfig.num_processors setting."));
   }
 
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(model_name);
@@ -784,7 +822,9 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
         PhiMatrixOperations::AssignValue(0.0f, const_cast<::artm::core::PhiMatrix*>(current_nwt_target.get()));
       }
     } else {
-      auto nwt_target(std::make_shared<DensePhiMatrix>(args.nwt_target_name(), p_wt.topic_name()));
+      auto nwt_target(std::make_shared<DensePhiMatrix>(args.nwt_target_name(),
+                                                       p_wt.topic_name(),
+                                                       instance_->config()->min_sparsity_rate()));
       nwt_target->Reshape(p_wt);
       instance_->SetPhiMatrix(args.nwt_target_name(), nwt_target);
     }
@@ -926,7 +966,7 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
   }
 
   std::shared_ptr<DensePhiMatrix> nwt_target = std::make_shared<DensePhiMatrix>(
-    merge_model_args.nwt_target_name(), merge_model_args.topic_name());
+    merge_model_args.nwt_target_name(), merge_model_args.topic_name(), instance_->config()->min_sparsity_rate());
 
   std::shared_ptr<Dictionary> dictionary = nullptr;
   if (merge_model_args.has_dictionary_name()) {
@@ -994,7 +1034,9 @@ void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_mode
   std::shared_ptr<const PhiMatrix> pwt_phi_matrix = instance_->GetPhiMatrixSafe(pwt_source_name);
   const PhiMatrix& p_wt = *pwt_phi_matrix;
 
-  auto rwt_target(std::make_shared<DensePhiMatrix>(rwt_target_name, nwt_phi_matrix->topic_name()));
+  auto rwt_target(std::make_shared<DensePhiMatrix>(rwt_target_name,
+                                                   nwt_phi_matrix->topic_name(),
+                                                   instance_->config()->min_sparsity_rate()));
   rwt_target->Reshape(*nwt_phi_matrix);
   PhiMatrixOperations::InvokePhiRegularizers(instance_.get(), regularize_model_args.regularizer_settings(),
                                              p_wt, n_wt, rwt_target.get());
@@ -1023,14 +1065,25 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
     rwt_phi_matrix = instance_->GetPhiMatrixSafe(rwt_source_name);
   }
 
-  auto pwt_target(std::make_shared<DensePhiMatrix>(pwt_target_name, n_wt.topic_name()));
-  pwt_target->Reshape(n_wt);
+  auto pwt_target = std::dynamic_pointer_cast<DensePhiMatrix>(instance_->models()->get(pwt_target_name));
+
+  bool use_newly_created_pwt = (pwt_target == nullptr) || !PhiMatrixOperations::HasEqualShape(*pwt_target, n_wt);
+
+  if (use_newly_created_pwt) {
+    pwt_target = std::make_shared<DensePhiMatrix>(pwt_target_name, n_wt.topic_name(),
+                                                  instance_->config()->min_sparsity_rate());
+    pwt_target.get()->Reshape(n_wt);
+  }
+
   if (rwt_phi_matrix == nullptr) {
     PhiMatrixOperations::FindPwt(n_wt, pwt_target.get());
   } else {
     PhiMatrixOperations::FindPwt(n_wt, *rwt_phi_matrix, pwt_target.get());
   }
-  instance_->SetPhiMatrix(pwt_target_name, pwt_target);
+
+  if (use_newly_created_pwt) {
+    instance_->SetPhiMatrix(pwt_target_name, pwt_target);
+  }
   VLOG(0) << "MasterComponent: complete normalizing model " << normalize_model_args.nwt_source_name();
 }
 
@@ -1040,7 +1093,10 @@ void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& args) {
     const_cast< ::artm::TopicModel*>(&args)->set_name(config->pwt_name());
   }
 
-  auto target = std::make_shared<DensePhiMatrix>(args.name(), args.topic_name());
+  auto target = std::make_shared<DensePhiMatrix>(args.name(),
+                                                 args.topic_name(),
+                                                 instance_->config()->min_sparsity_rate());
+
   PhiMatrixOperations::ApplyTopicModelOperation(args, 1.0f, /* add_missing_tokens = */ true, target.get());
   instance_->SetPhiMatrix(args.name(), target);
 }
@@ -1119,6 +1175,10 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
 
   process_batches_args.mutable_class_id()->CopyFrom(config->class_id());
   process_batches_args.mutable_class_weight()->CopyFrom(config->class_weight());
+
+  process_batches_args.mutable_transaction_typename()->CopyFrom(config->transaction_typename());
+  process_batches_args.mutable_transaction_weight()->CopyFrom(config->transaction_weight());
+
   process_batches_args.set_theta_matrix_type(args.theta_matrix_type());
   if (args.has_predict_class_id()) {
     process_batches_args.set_predict_class_id(args.predict_class_id());
@@ -1262,6 +1322,9 @@ class ArtmExecutor {
     process_batches_args_.mutable_class_id()->CopyFrom(master_model_config.class_id());
     process_batches_args_.mutable_class_weight()->CopyFrom(master_model_config.class_weight());
 
+    process_batches_args_.mutable_transaction_typename()->CopyFrom(master_model_config.transaction_typename());
+    process_batches_args_.mutable_transaction_weight()->CopyFrom(master_model_config.transaction_weight());
+
     for (const auto& regularizer : master_model_config.regularizer_config()) {
       process_batches_args_.add_regularizer_name(regularizer.name());
       process_batches_args_.add_regularizer_tau(regularizer.tau());
@@ -1387,7 +1450,7 @@ class ArtmExecutor {
   MasterComponent* master_component_;
   ProcessBatchesArgs process_batches_args_;
   RegularizeModelArgs regularize_model_args_;
-  std::vector<std::shared_ptr<BatchManager>> async_;
+  std::vector<std::shared_ptr<BatchManager>> asynchronous_;
 
   void ProcessBatches(std::string pwt, std::string nwt, BatchesIterator* iter, ScoreManager* score_manager) {
     process_batches_args_.set_pwt_source_name(pwt);
@@ -1410,11 +1473,15 @@ class ArtmExecutor {
     process_batches_args_.set_theta_matrix_type(ThetaMatrixType_None);
     iter->move(&process_batches_args_);
 
-    int operation_id = static_cast<int>(async_.size());
-    async_.push_back(std::make_shared<BatchManager>());
+    int operation_id = static_cast<int>(asynchronous_.size());
+    asynchronous_.push_back(std::make_shared<BatchManager>());
     LOG(INFO) << DescribeMessage(process_batches_args_);
     master_component_->RequestProcessBatchesImpl(process_batches_args_,
+<<<<<<< HEAD
                                                  async_.back().get(),
+=======
+                                                 asynchronous_.back().get(),
+>>>>>>> master
                                                  /* asynchronous =*/ true,
                                                  /* score_manager =*/ nullptr,
                                                  /* theta_matrix*/ nullptr);
@@ -1423,7 +1490,7 @@ class ArtmExecutor {
   }
 
   void Await(int operation_id) {
-    while (!async_[operation_id]->IsEverythingProcessed()) {
+    while (!asynchronous_[operation_id]->IsEverythingProcessed()) {
       boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
     }
   }

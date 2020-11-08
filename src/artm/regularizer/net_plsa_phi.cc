@@ -5,6 +5,8 @@
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/phi_matrix.h"
 #include "artm/core/phi_matrix_operations.h"
+#include "artm/core/token.h"
+
 #include "artm/regularizer/net_plsa_phi.h"
 
 namespace artm {
@@ -12,7 +14,8 @@ namespace regularizer {
 
 bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                const ::artm::core::PhiMatrix& n_wt,
-                               ::artm::core::PhiMatrix* result) {
+                               ::artm::core::PhiMatrix* r_wt,
+                               const float* tau) {
   if (!::artm::core::PhiMatrixOperations::HasEqualShape(p_wt, n_wt)) {
     LOG(ERROR) << "NetPlsaPhi does not support changes in p_wt and n_wt matrix. Cancel it's launch.";
     return false;
@@ -67,7 +70,7 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
         continue;
       }
 
-      float value = 0.0;
+      float value = 0.0f;
       float p_ut = p_wt.get(token_id, topic_id);
 
       for (const auto& pair_id : edge_iter->second) {
@@ -87,7 +90,7 @@ bool NetPlsaPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
         value += pair_id.second * (p_vt / D_v - p_ut / D_u) * (1 / D_u);
       }
       value *= n_t[topic_id] * n_t[topic_id];
-      result->set(token_id, topic_id, value);
+      r_wt->increase(token_id, topic_id, value * (tau != nullptr ? *tau : 1.0f));
     }
   }
 
@@ -121,8 +124,10 @@ void NetPlsaPhi::UpdateNetInfo(const NetPlsaPhiConfig& config) {
   int num_edges = config.first_vertex_index_size();
   if (num_edges) {
     if (num_edges != config.second_vertex_index_size() || num_edges != config.edge_weight_size()) {
-      BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(
-          "Both vertex indices and value arrays should have the same length"));
+      std::stringstream ss;
+      ss << "Both vertex indices and value arrays should have the same length " << num_edges << ", now: "
+         << config.second_vertex_index_size() << " and " << config.edge_weight_size();
+      BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(ss.str()));
     }
 
     for (int i = 0; i < num_edges; ++i) {

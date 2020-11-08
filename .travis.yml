@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 language: python
 
 addons:
@@ -24,7 +25,6 @@ jobs:
         - CIBW_BUILD=cp3*
         - CIBW_SKIP="cp35-* *-manylinux_i686"
       services: docker
-
     # and a mac build
     - os: osx
       language: shell
@@ -47,6 +47,7 @@ jobs:
 before_install:
   # we need latest pip to work with only-binary option
   - pip install -U pip
+<<<<<<< HEAD
   - pip install -U pytest pep8 pytest-forked
   - |
     if [[ $TRAVIS_OS_NAME == linux ]]; then

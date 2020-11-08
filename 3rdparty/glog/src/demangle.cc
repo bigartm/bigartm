@@ -223,9 +223,6 @@ static bool ParseTwoCharToken(State *state, const char *two_char_token) {
 // Returns true and advances "mangled_cur" if we find any character in
 // "char_class" at "mangled_cur" position.
 static bool ParseCharClass(State *state, const char *char_class) {
-  if (state->mangled_cur[0] == '\0') {
-    return false;
-  }
   const char *p = char_class;
   for (; *p != '\0'; ++p) {
     if (state->mangled_cur[0] == *p) {

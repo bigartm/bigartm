@@ -15,7 +15,8 @@ class MultiLanguagePhi : public RegularizerInterface {
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,
-                             ::artm::core::PhiMatrix* result);
+                             ::artm::core::PhiMatrix* r_wt,
+                             const float* tau);
 
   virtual bool Reconfigure(const RegularizerConfig& config);
 

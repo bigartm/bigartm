@@ -32,8 +32,9 @@ class Helpers {
   // the method is used to initialize entries in the phi matrix.
   // For unit-tests it is important that such initialization is deterministic
   // (depends only on the keyword and class_id of the token.
-  static std::vector<float> GenerateRandomVector(int size, size_t seed);
-  static std::vector<float> GenerateRandomVector(int size, const Token& token, int seed = -1);
+  static std::vector<float> GenerateRandomVector(int size, size_t seed, float guaranteed_zeros_rate = 0.0);
+  static std::vector<float> GenerateRandomVector(int size, const Token& token,
+                                                 int seed = -1, float guaranteed_zeros_rate = 0.0);
 
   // Lists all batches in a given folder
   static std::vector<boost::filesystem::path> ListAllBatches(const boost::filesystem::path& root);
@@ -57,6 +58,9 @@ class Helpers {
   static void SaveMessage(const std::string& filename, const std::string& disk_path,
                           const ::google::protobuf::Message& message);
 };
+
+bool isZero(float value, float tol = 1e-16f);
+bool isZero(double value, double tol = 1e-16);
 
 }  // namespace core
 }  // namespace artm

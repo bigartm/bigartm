@@ -191,10 +191,6 @@ float Dictionary::CountTopicCoherence(const std::vector<core::Token>& tokens_to_
   return 2.0f / (k * (k - 1)) * coherence_value;
 }
 
-std::shared_ptr<Dictionary> Dictionary::Duplicate() const {
-  return std::shared_ptr<Dictionary>(new Dictionary(*this));
-}
-
 void Dictionary::clear() {
   name_.clear();
   entries_.clear();

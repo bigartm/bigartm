@@ -58,12 +58,14 @@ class SpinLock : boost::noncopyable {
 class PhiMatrixFrame : public PhiMatrix {
  public:
   explicit PhiMatrixFrame(const ModelName& model_name,
-                          const google::protobuf::RepeatedPtrField<std::string>& topic_name);
+                          const google::protobuf::RepeatedPtrField<std::string>& topic_name,
+                          float min_sparsity_rate);
 
   virtual ~PhiMatrixFrame() { }
 
   virtual int topic_size() const { return static_cast<int>(topic_name_.size()); }
   virtual int token_size() const { return static_cast<int>(token_collection_.token_size()); }
+  virtual float min_sparsity_rate() const { return min_sparsity_rate_; }
   virtual const Token& token(int index) const;
   virtual bool has_token(const Token& token) const;
   virtual int token_index(const Token& token) const;
@@ -72,6 +74,8 @@ class PhiMatrixFrame : public PhiMatrix {
   virtual void set_topic_name(int topic_id, const std::string& topic_name);
   virtual ModelName model_name() const;
   virtual int64_t ByteSize() const;
+
+  virtual bool is_packable() const { return false; }
 
   void Clear();
   virtual int AddToken(const Token& token);
@@ -90,6 +94,7 @@ class PhiMatrixFrame : public PhiMatrix {
 
   TokenCollection token_collection_;
   std::vector<std::shared_ptr<SpinLock> > spin_locks_;
+  float min_sparsity_rate_;
 };
 
 class DensePhiMatrix;
@@ -99,12 +104,13 @@ class AttachedPhiMatrix;
 // Sparse rows (with many zeros) might be packed for memory efficiency.
 class PackedValues {
  public:
-  PackedValues();
-  explicit PackedValues(int size);
-  explicit PackedValues(const PackedValues& rhs);
-  PackedValues(const float* values, int size);
+  explicit PackedValues(float min_sparsity_rate);
+  PackedValues(int size, float min_sparsity_rate);
+  PackedValues(const PackedValues& rhs, float min_sparsity_rate);
+  PackedValues(const float* values, int size, float min_sparsity_rate);
   virtual int64_t ByteSize() const;
 
+  int size() const;
   bool is_packed() const;
   float get(int index) const;
   void get(std::vector<float>* buffer) const;
@@ -112,10 +118,12 @@ class PackedValues {
   void pack();
   void reset(int size);
 
+  void get_sparse(std::vector<float>* value_buffer, std::vector<int>* index_buffer) const;
  private:
   std::vector<float> values_;
   std::vector<bool> bitmask_;
   std::vector<int> ptr_;
+  float min_sparsity_rate_;
 };
 
 // DensePhiMatrix class implements PhiMatrix interface as a dense matrix.
@@ -123,18 +131,23 @@ class PackedValues {
 class DensePhiMatrix : public PhiMatrixFrame {
  public:
   explicit DensePhiMatrix(const ModelName& model_name,
-                          const google::protobuf::RepeatedPtrField<std::string>& topic_name);
+                          const google::protobuf::RepeatedPtrField<std::string>& topic_name,
+                          float min_sparsity_rate);
 
   virtual ~DensePhiMatrix() { Clear(); }
   virtual int64_t ByteSize() const;
 
   virtual std::shared_ptr<PhiMatrix> Duplicate() const;
 
+  virtual bool is_packable() const { return true; }
   virtual float get(int token_id, int topic_id) const;
   virtual void get(int token_id, std::vector<float>* buffer) const;
   virtual void set(int token_id, int topic_id, float value);
   virtual void increase(int token_id, int topic_id, float increment);
   virtual void increase(int token_id, const std::vector<float>& increment);  // must be thread-safe
+
+  virtual int get_non_zero_topic_size(int token_id) const;
+  virtual void get_sparse(int token_id, std::vector<float>* value_buffer, std::vector<int>* index_buffer) const;
 
   virtual void Clear();
   virtual int AddToken(const Token& token);
@@ -168,6 +181,9 @@ class AttachedPhiMatrix : boost::noncopyable, public PhiMatrixFrame {
   virtual void set(int token_id, int topic_id, float value) { values_[token_id][topic_id] = value; }
   virtual void increase(int token_id, int topic_id, float increment) { values_[token_id][topic_id] += increment; }
   virtual void increase(int token_id, const std::vector<float>& increment);  // must be thread-safe
+
+  virtual int get_non_zero_topic_size(int token_id) const { return topic_size(); }
+  virtual void get_sparse(int token_id, std::vector<float>* value_buffer, std::vector<int>* index_buffer) const;
 
   virtual void Clear();
   virtual int AddToken(const Token& token);

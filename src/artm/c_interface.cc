@@ -289,7 +289,7 @@ int64_t ArtmAsyncProcessBatches(int master_id, int64_t length, const char* proce
     master->AsyncRequestProcessBatches(args, batch_manager.get());
     int retval = AsyncProcessBatchesManager::singleton().Store(batch_manager);
 
-    LOG(INFO) << "Creating async operation (id=" << retval << ")...";
+    LOG(INFO) << "Creating asynchronous operation (id=" << retval << ")...";
     return retval;
   } CATCH_EXCEPTIONS;
 }

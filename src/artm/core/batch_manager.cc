@@ -1,4 +1,4 @@
-// Copyright 2017, Additive Regularization of Topic Models.
+// Copyright 2018, Additive Regularization of Topic Models.
 
 #include "artm/core/batch_manager.h"
 

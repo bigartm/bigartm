@@ -5,7 +5,8 @@
    This class count the n_t values for each topic in Phi matrix.
    
    Parameters:
-   - topic_name (names of topics from which top tokens need to be extracted)
+   - topic_name (names of topics to compute n_t)
+   - transaction_typename (transaction typename to score, empty -> DefaultTransactionTypeName)
    - class_id (class_id to use, empty == all modalities)
    - eps
 

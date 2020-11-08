@@ -6,6 +6,7 @@
 
 #include "artm/score/items_processed.h"
 #include "artm/core/protobuf_helpers.h"
+#include "artm/core/common.h"
 
 namespace artm {
 namespace score {
@@ -18,21 +19,29 @@ void ItemsProcessed::AppendScore(const Batch& batch,
   float token_weight_in_effect = 0.0f;
 
   for (const auto& item : batch.item()) {
-    for (int token_index = 0; token_index < item.token_id_size(); token_index++) {
-      int token_id = item.token_id(token_index);
-      token_weight += item.token_weight(token_index);
-      const std::string& token = batch.token(token_id);
-      const std::string& class_id = batch.class_id(token_id);
+    for (int t_index = 0; t_index < item.transaction_start_index_size() - 1; ++t_index) {
+      const int start_index = item.transaction_start_index(t_index);
+      const int end_index = item.transaction_start_index(t_index + 1);
 
-      // Check whether token is in effect (e.g. present in the model, and belongs to relevant modality)
-      if (!p_wt.has_token(::artm::core::Token(class_id, token))) {
+      artm::core::TransactionTypeName tt_name = batch.transaction_typename(item.transaction_typename_id(t_index));
+      if (args.transaction_typename_size() > 0 && !core::is_member(tt_name, args.transaction_typename())) {
         continue;
       }
 
-      if (args.class_id_size() > 0 && !::artm::core::is_member(class_id, args.class_id())) {
-        continue;
+      for (int idx = start_index; idx < end_index; ++idx) {
+        const int token_id = item.token_id(idx);
+
+        if (args.class_id_size() > 0 && !::artm::core::is_member(batch.class_id(token_id), args.class_id())) {
+          continue;
+        }
+
+        // Check whether token is in effect,
+        // e.g. present in the model, and belongs to relevant modality and tt)
+        if (p_wt.has_token(::artm::core::Token(batch.class_id(token_id), batch.token(token_id)))) {
+          token_weight += item.token_weight(idx);
+          token_weight_in_effect += item.token_weight(idx);
+        }
       }
-      token_weight_in_effect += item.token_weight(token_index);
     }
   }
 

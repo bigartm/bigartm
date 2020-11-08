@@ -1,15 +1,16 @@
 # Copyright 2017, Additive Regularization of Topic Models.
 
-import artm
-import uuid
 import copy
+import glob
+import os
+import os.path
+import pickle
+import uuid
+import warnings
+
+import artm
 import numpy as np
 import pandas
-import os.path
-import os
-import pickle
-import glob
-import warnings
 
 from six.moves import range
 
@@ -253,16 +254,16 @@ class hARTM(object):
           *  to access any level, use [] or get_level method
           *  Important! You cannot add next level before previous one is initialized and fit.
         """
-        if len(self._levels) and num_topics <= self._levels[-1].num_topics:
-            warnings.warn("Adding level with num_topics = %s less or equal than parent level's num_topics = %s" %
-                          (num_topics, self._levels[-1].num_topics))
+        if topic_names is not None:
+            num_topics = len(topic_names)
+
         level_idx = len(self._levels)
-        if not len(self._levels):
-            self._levels.append(artm.ARTM(num_topics=num_topics,
-                                          topic_names=topic_names,
-                                          seed=self._get_seed(level_idx),
-                                          **self._common_models_args))
-        else:
+
+        if level_idx:
+            if num_topics <= self._levels[-1].num_topics:
+                warnings.warn("Adding level with num_topics = %s less or equal than parent level's num_topics = %s" %
+                              (num_topics, self._levels[-1].num_topics))
+
             self._levels.append(ARTM_Level(parent_model=self._levels[-1],
                                            phi_batch_weight=parent_level_weight,
                                            phi_batch_path=self._tmp_files_path,
@@ -271,11 +272,17 @@ class hARTM(object):
                                            topic_names=topic_names,
                                            seed=self._get_seed(level_idx),
                                            **self._common_models_args))
+
+        else:
+            self._levels.append(artm.ARTM(num_topics=num_topics,
+                                          topic_names=topic_names,
+                                          seed=self._get_seed(level_idx),
+                                          **self._common_models_args))
+
         level = self._levels[-1]
         config = level.master._config
         config.opt_for_avx = False
-        level.master._lib.ArtmReconfigureMasterModel(
-            level.master.master_id, config)
+        level.master._lib.ArtmReconfigureMasterModel(level.master.master_id, config)
         return level
 
     def del_level(self, level_idx):
@@ -358,13 +365,16 @@ class hARTM(object):
         """
         if len(glob.glob(os.path.join(path, "*"))):
             raise ValueError("Passed path should be empty")
+
         for level_idx, level in enumerate(self._levels):
             level.save(os.path.join(path, "level" +
                                     str(level_idx) + "_nwt.model"), model_name="n_wt")
             level.save(os.path.join(path, "level" +
                                     str(level_idx) + "_pwt.model"), model_name="p_wt")
-        info = {"parent_level_weight": [
-            level.parent_level_weight for level in self._levels[1:]]}
+
+        info = {"num_level_topics": [level.num_topics for level in self._levels],
+                "parent_level_weight": [level.parent_level_weight for level in self._levels[1:]]}
+
         with open(os.path.join(path, "info.dump"), "wb") as fout:
             pickle.dump(info, fout)
 
@@ -387,33 +397,39 @@ class hARTM(object):
         info_filename = glob.glob(os.path.join(path, "info.dump"))
         if len(info_filename) != 1:
             raise ValueError("Given path is not hARTM safe")
+
         with open(info_filename[0], "rb") as fin:
             info = pickle.load(fin)
+
         model_filenames = glob.glob(os.path.join(path, "*.model"))
         if len({len(info["parent_level_weight"]) + 1, len(model_filenames) / 2}) > 1:
             raise ValueError("Given path is not hARTM safe")
+
+        model_filenames = sorted(model_filenames)
+
         self._levels = []
-        sorted_model_filenames = sorted(model_filenames)
-        for level_idx in range(len(model_filenames) // 2):
+        for level_idx, num_topics in enumerate(info["num_level_topics"]):
             if not len(self._levels):
-                model = artm.ARTM(num_topics=1,
+                model = artm.ARTM(num_topics=num_topics,
                                   seed=self._get_seed(level_idx),
                                   **self._common_models_args)
             else:
-                parent_level_weight = info[
-                    "parent_level_weight"][level_idx - 1]
+                parent_level_weight = info["parent_level_weight"][level_idx - 1]
                 model = ARTM_Level(parent_model=self._levels[-1],
                                    phi_batch_weight=parent_level_weight,
                                    phi_batch_path=self._tmp_files_path,
-                                   num_topics=1,
+                                   num_topics=num_topics,
                                    seed=self._get_seed(level_idx),
                                    **self._common_models_args)
-            filename = sorted_model_filenames[2 * level_idx + 1]
+
+            filename = model_filenames[2 * level_idx + 1]
             model.load(filename, "p_wt")
-            filename = sorted_model_filenames[2 * level_idx]
+            filename = model_filenames[2 * level_idx]
             model.load(filename, "n_wt")
+
             config = model.master._config
             config.opt_for_avx = False
+
             model.master._lib.ArtmReconfigureMasterModel(
                 model.master.master_id, config)
             self._levels.append(model)
@@ -594,9 +610,9 @@ class ARTM_Level(artm.ARTM):
             item.title = topic_name
             field = item.field.add()
             indices = phi[topic_name] > 0
-            for token, weight in  \
+            for class_token_tt, weight in  \
                     zip(phi.index[indices], phi[topic_name][indices]):
-                field.token_id.append(batch_dict[token])
+                field.token_id.append(batch_dict[class_token_tt[1]])
                 field.token_weight.append(float(weight))
                 NNZ += weight
         self.parent_batch = batch

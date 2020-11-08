@@ -1,19 +1,25 @@
 # Copyright 2017, Additive Regularization of Topic Models.
 
-import uuid
-import os
-import glob
 import codecs
+import uuid
 
 from six.moves import range
+import pandas as pd
 
+from . import master_component
 from . import wrapper
 from .wrapper import messages_pb2 as messages
-from . import master_component
 
 __all__ = [
     'Dictionary'
 ]
+
+FIELDS = 'token class_id token_value token_tf token_df'.split()
+FIELD_DTYPES = {
+    'token_value': 'float32',
+    'token_tf': 'float32',
+    'token_df': 'float32',
+}
 
 
 class Dictionary(object):
@@ -87,7 +93,7 @@ class Dictionary(object):
         with codecs.open(dictionary_path, 'w', encoding) as fout:
             fout.write(u'name: {} num_items: {}\n'.format(dictionary_data.name,
                                                           dictionary_data.num_items_in_collection))
-            fout.write(u'token, class_id, token_value, token_tf, token_df\n')
+            fout.write(', '.join(FIELDS) + '\n')
 
             for i in range(len(dictionary_data.token)):
                 fout.write(u'{0}, {1}, {2}, {3}, {4}\n'.format(dictionary_data.token[i],
@@ -95,6 +101,21 @@ class Dictionary(object):
                                                                dictionary_data.token_value[i],
                                                                dictionary_data.token_tf[i],
                                                                dictionary_data.token_df[i]))
+
+    def save_dataframe(self):
+        """
+        :Description: converts the BigARTM dictionary of the collection
+            to the pandas.DataFrame.
+            This is approximately equivalent to the dictionary.save_text()
+            but has no I/O overhead
+        """
+        dictionary_data = self._master.get_dictionary(self._name)
+        dict_pandas = {field: list(getattr(dictionary_data, field))
+                       for field in FIELDS}
+        # TODO (bt): find out if this is memory-efficient
+        # dtype specification seems to be wonky:
+        # https://github.com/pandas-dev/pandas/issues/14655
+        return pd.DataFrame.from_dict(dict_pandas).astype(FIELD_DTYPES)
 
     def load_text(self, dictionary_path, encoding='utf-8'):
         """
@@ -121,6 +142,23 @@ class Dictionary(object):
                 dictionary_data.token_df.append(float(line_list[4][0: -1]))
 
         self._master.create_dictionary(dictionary_data=dictionary_data, dictionary_name=self._name)
+
+    def load_from_dataframe(self, dataframe):
+        """
+        :Description: loads the BigARTM dictionary of the collection from the\
+                      pandas.dataframe
+                      Might be time- and memory-inefficient!
+
+        :param pandas.DataFrame dataframe: DataFrame having all the columns specified in FIELDS
+        """
+        new_dictionary_data = messages.DictionaryData()
+
+        self._reset()
+        for field in FIELDS:
+            # https://stackoverflow.com/questions/23726335/how-to-assign-to-repeated-field
+            getattr(new_dictionary_data, field).extend(dataframe[field].values)
+
+        self._master.create_dictionary(dictionary_data=new_dictionary_data, dictionary_name=self._name)
 
     def create(self, dictionary_data):
         """
@@ -169,10 +207,10 @@ class Dictionary(object):
         :param float max_df_rate: max df rate to pass the filter
         :param float min_tf: min tf value to pass the filter
         :param float max_tf: max tf value to pass the filter
-        :param float max_dictionary_size: give an easy option to limit dictionary size;
-                                          rare tokens will be excluded until dictionary reaches given size.
-        :param bool recalculate_value: recalculate or not value field in dictionary after filtration\
-                                       according to new sun of tf values
+        :param int max_dictionary_size: give an easy option to limit dictionary size;\
+            rare tokens will be excluded until dictionary reaches given size
+        :param bool recalculate_value: recalculate or not value field in dictionary\
+            after filtration according to new sum of tf values
         :param bool inplace: if True, fill in place, otherwise return a new dictionary
 
         :Note: the current dictionary will be replaced with filtered
