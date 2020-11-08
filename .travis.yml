@@ -43,6 +43,30 @@ jobs:
     #    - ln -s /c/Python38/python.exe /c/Python38/python3.exe
     #- CIBW_SKIP="*-win32 *-manylinux_i686"
 
+
+before_install:
+  # we need latest pip to work with only-binary option
+  - pip install -U pip
+  - pip install -U pytest pep8 pytest-forked
+  - |
+    if [[ $TRAVIS_COMMIT_MESSAGE == *"[TEST]"* ]]; then
+      # pip install -U wheel
+      pip install -U numpy scipy tqdm --only-binary numpy,scipy
+      # Right now we cannot use 1.1.0 version of Pandas
+      # because it introduces bug with series indexing using tuples:
+      # https://github.com/pandas-dev/pandas/issues/35534
+      pip install -U 'pandas<1.1.0' --only-binary pandas
+      pip install -U protobuf
+      # install boost
+      sudo add-apt-repository universe
+      sudo apt-get update
+      sudo apt-get install libboost-all-dev
+      # configure ccache
+      # code from https://github.com/urho3d/Urho3D/blob/master/.travis.yml
+      export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
+      export CXX=g++ CC=gcc PATH=$HOME:$PATH
+    fi
+
 install:
   - ./codestyle_checks.sh
   - |
