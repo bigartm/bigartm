@@ -73,7 +73,6 @@ install:
     if [[ $TRAVIS_OS_NAME == linux ]]; then
       if [[ $TRAVIS_COMMIT_MESSAGE == *"[TEST]"* ]]; then
         set -e  # fail fast: https://github.com/travis-ci/travis-ci/issues/1066
-        ./codestyle_checks.sh 2> echo
         mkdir build
         pushd build && cmake .. && make -j2 && file ./bin/bigartm && popd
         pushd python && python setup.py install && popd
