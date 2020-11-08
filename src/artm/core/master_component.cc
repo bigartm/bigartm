@@ -1477,11 +1477,7 @@ class ArtmExecutor {
     asynchronous_.push_back(std::make_shared<BatchManager>());
     LOG(INFO) << DescribeMessage(process_batches_args_);
     master_component_->RequestProcessBatchesImpl(process_batches_args_,
-<<<<<<< HEAD
-                                                 async_.back().get(),
-=======
                                                  asynchronous_.back().get(),
->>>>>>> master
                                                  /* asynchronous =*/ true,
                                                  /* score_manager =*/ nullptr,
                                                  /* theta_matrix*/ nullptr);

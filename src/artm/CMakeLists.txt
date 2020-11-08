@@ -37,13 +37,8 @@ add_custom_target(proto_generation ALL
 
 # The version number
 set(ARTM_VERSION_MAJOR 0)
-<<<<<<< HEAD
-set(ARTM_VERSION_MINOR 9)
-set(ARTM_VERSION_PATCH 2)
-=======
 set(ARTM_VERSION_MINOR 10)
-set(ARTM_VERSION_PATCH 1)
->>>>>>> master
+set(ARTM_VERSION_PATCH 2)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
@@ -259,21 +254,7 @@ target_compile_definitions(artm
     PUBLIC PROTOBUF_USE_DLLS
     PRIVATE LIBPROTOBUF_EXPORTS)
 
-<<<<<<< HEAD
-add_custom_command(TARGET artm
-  POST_BUILD
-  COMMAND cmake -E copy $<TARGET_FILE:artm> ${CMAKE_SOURCE_DIR}/python/artm/wrapper/)
-
-
-if (MSVC)
-  install(TARGETS artm DESTINATION bin)
-  install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)
-elseif (NOT BUILD_PIP_DIST)
-  install(TARGETS artm DESTINATION lib)
-  # FIXME: install headers to /usr/include, protobuf and compiled messages --- to appropriate path
-  #install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)
-endif (MSVC)
-=======
+# see 7738315e64eb1577cc1dec1eb872983fdedc7b3e for black magic that might be relevant
 if (WIN32)
     set_target_properties(artm PROPERTIES PREFIX "")
 endif (WIN32)
@@ -341,4 +322,3 @@ install(CODE
     set(CMAKE_INSTALL_COMPONENT \${COMPONENT_BACKUP})
     "
     )
->>>>>>> master

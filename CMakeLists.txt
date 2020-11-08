@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-cmake_minimum_required(VERSION 2.8.12)
-=======
 cmake_minimum_required(VERSION 3.3)
 
 # CMake Policy 0060 (CMP0060) controls how CMake
@@ -16,7 +13,6 @@ cmake_minimum_required(VERSION 3.3)
 IF (POLICY CMP0060)
   cmake_policy(SET CMP0060 NEW)
 endif (POLICY CMP0060)
->>>>>>> master
 
 project(BigARTM)
 
@@ -53,7 +49,6 @@ endif (MSVC)
 
 set(PYTHON python CACHE INTERNAL "Python command")
 
-<<<<<<< HEAD
 if (BUILD_PIP_DIST)
   message("BUILD_PIP_DIST")
   add_custom_target(python_generate_proto ALL
@@ -71,7 +66,7 @@ endif (BUILD_PIP_DIST)
 if (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
   option(BUILD_BIGARTM_CLI_STATIC "Request build of static executable bigartm (for Linux only)" ON)
 endif (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
-=======
+
 # Describe necessary options for static version of `bigartm` executable
 
 include(CMakeDependentOption)
@@ -113,7 +108,6 @@ if (BUILD_BIGARTM_CLI_STATIC AND NOT HAS_STATIC_LIBUNWIND)
   # related to autodetection in file 3rdparty/glog/CMakeLists.txt
   set(UNWIND_LIBRARY CACHE INTERNAL "")
 endif (BUILD_BIGARTM_CLI_STATIC AND NOT HAS_STATIC_LIBUNWIND)
->>>>>>> master
 
 if (APPLE)
   set(CMAKE_MACOSX_RPATH 1)

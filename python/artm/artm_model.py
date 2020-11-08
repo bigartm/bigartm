@@ -1146,12 +1146,8 @@ class ARTM(object):
             num_tokens = next((x.num_tokens for x in self.info.model if x.name == self._model_pwt), None)
         else:
             num_tokens = "<UNKNOWN>"
-<<<<<<< HEAD
-        class_ids = ', class_ids={0}'.format(list(self.class_ids.keys())) if self.class_ids else ''
-=======
         transaction_typenames = ', transaction_typenames={0}'.format(
             list(self.transaction_typenames.keys())) if self.transaction_typenames else ''
->>>>>>> master
         return 'artm.ARTM(num_topics={0}, num_tokens={1}{2})'.format(
             self.num_topics, num_tokens, transaction_typenames)
 
