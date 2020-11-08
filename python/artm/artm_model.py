@@ -1362,3 +1362,8 @@ def load_artm_model(data_path):
         model._master.import_model(model.theta_name, os.path.join(data_path, PTD_FILENAME))
 
     return model
+
+# whitespace at the end      
+
+
+
