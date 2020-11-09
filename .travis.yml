@@ -11,8 +11,7 @@ addons:
     access_key_id: $ARTIFACTS_KEY
     secret_access_key: $ARTIFACTS_SECRET
     bucket: $ARTIFACTS_BUCKET
-    paths: $(git ls-files -o | tr "\n" ":" | grep "whl")
-
+    paths: $(git ls-files -o | grep "whl" | tr "\n" ":")
 
 
 jobs:
