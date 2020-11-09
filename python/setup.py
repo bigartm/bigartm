@@ -17,5 +17,5 @@ setup(
     # add shared library to package
     package_data={'artm.wrapper': [artm_library_name]},
     packages=find_packages(),
-    install_requires=['pytest'],
+    install_requires=['pytest', 'pytest-forked', 'scipy'],
 )
