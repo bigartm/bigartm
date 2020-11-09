@@ -12,7 +12,10 @@ elif sys.platform.startswith('darwin'):
     artm_library_name = 'libartm.dylib'
 
 setup(
+    name='bigartm',
+    version='0.10.2.dev0',
     # add shared library to package
     package_data={'artm.wrapper': [artm_library_name]},
     packages=find_packages(),
+    install_requires=['pytest'],
 )

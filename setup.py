@@ -80,7 +80,10 @@ class CMakeBuild(build_ext):
 
         cmake_process = [cmake_exec]
         cmake_process.append(ext.sourcedir)
-        cmake_process.append("-DBUILD_PIP_DIST=ON")
+        if os.environ.get("AUDITWHEEL_PLAT") or os.environ.get("CIBW_BUILD"):
+            cmake_process.append("-DBUILD_PIP_DIST=ON")
+        else:
+            cmake_process.append("-DBUILD_PIP_DIST=OFF")
         cmake_process.append('-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir)
         # cmake_process.append('-DPYTHON_EXECUTABLE=' + sys.executable)
 
@@ -94,11 +97,13 @@ class CMakeBuild(build_ext):
             with open(link_path, "w") as link:
                 link.write(contents + " -lrt" + "\n")
 
-        result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=extdir)
-        warnings.warn(result.stdout.decode("utf8"))
+        # some debug info for CIBW
+        if os.environ.get("AUDITWHEEL_PLAT") or os.environ.get("CIBW_BUILD"):
+            result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=extdir)
+            warnings.warn(result.stdout.decode("utf8"))
 
-        result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=extdir + "/python/")
-        warnings.warn(result.stdout.decode("utf8"))
+            result = subprocess.run(["ls"], stdout=subprocess.PIPE, cwd=extdir + "/python/")
+            warnings.warn(result.stdout.decode("utf8"))
 
         print(f"running make from {extdir}")
         make_process = ["make"]
@@ -106,12 +111,13 @@ class CMakeBuild(build_ext):
         subprocess.check_call(make_process, cwd=extdir)
 
         # removing extraneous artifacts
-        print("cleaning up...")
-        for bad_dir in ['3rdparty', 'CMakeFiles', 'src', 'bin', 'lib', 'python']:
-            shutil.rmtree(extdir + "/" + bad_dir)
+        if os.environ.get("AUDITWHEEL_PLAT") or os.environ.get("CIBW_BUILD"):
+            print("cleaning up...")
+            for bad_dir in ['3rdparty', 'CMakeFiles', 'src', 'bin', 'lib', 'python']:
+                shutil.rmtree(extdir + "/" + bad_dir)
 
-        for bad_file in ['CTestTestfile.cmake', 'cmake_install.cmake', 'CMakeCache.txt', 'Makefile']:
-            os.remove(extdir + "/" + bad_file)
+            for bad_file in ['CTestTestfile.cmake', 'cmake_install.cmake', 'CMakeCache.txt', 'Makefile']:
+                os.remove(extdir + "/" + bad_file)
 
         # hack: copy libartm into /artm/wrapper/, where it belongs
         # instead of leaving it in the root direcetory where it mysteriously appeared
@@ -119,6 +125,12 @@ class CMakeBuild(build_ext):
             extdir + "/" + artm_library_name,
             extdir + '/artm/wrapper/' + artm_library_name
         )
+        #TODO: this message is linux-specific
+        print(f"Now consider running\n"
+              f"export ARTM_SHARED_LIBRARY={extdir}/libartm.so\n"
+              f"so python is able to find compiled binary"
+        )
+
 
 
 class BinaryDistribution(Distribution):
