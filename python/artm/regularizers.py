@@ -42,7 +42,10 @@ def _reconfigure_field(obj, field, field_name, proto_field_name=None):
             getattr(obj._config, proto_field_name).append(value)
     else:
         setattr(obj._config, proto_field_name, field)
-    obj._master.reconfigure_regularizer(obj.name, obj._config, obj.tau, obj.gamma)
+    if obj._master is not None:
+        # user attempts to change fields of regularizer yet to be attached to model
+        # no need to bother master component, since it will be "registered" with updated params
+        obj._master.reconfigure_regularizer(obj.name, obj._config, obj.tau, obj.gamma)
 
 
 class KlFunctionInfo(object):
@@ -57,7 +60,7 @@ class KlFunctionInfo(object):
         self.function_type = function_type
         self.power_value = power_value
 
-    def _update_config(self, obj, first=False):
+    def _update_config(self, obj):
         if self.function_type == 'log':
             obj._config.transform_config.type = const.TransformConfig_TransformType_Constant
         elif self.function_type == 'pol':
@@ -65,7 +68,7 @@ class KlFunctionInfo(object):
             obj._config.transform_config.n = self.power_value  # power_value - 1, but *x gives no change
             obj._config.transform_config.a = self.power_value
 
-        if not first:
+        if self._master is not None:
             obj._master.reconfigure_regularizer(obj.name, obj._config, obj.tau, obj.gamma)
 
     def _update_from_config(self, obj):
@@ -176,17 +179,20 @@ class BaseRegularizer(object):
     @tau.setter
     def tau(self, tau):
         self._tau = tau
-        self._master.reconfigure_regularizer(self._name, self._config, tau, self._gamma)
+        if self._master is not None:
+            self._master.reconfigure_regularizer(self._name, self._config, tau, self._gamma)
 
     @gamma.setter
     def gamma(self, gamma):
         self._gamma = gamma
-        self._master.reconfigure_regularizer(self._name, self._config, self._tau, gamma)
+        if self._master is not None:
+            self._master.reconfigure_regularizer(self._name, self._config, self._tau, gamma)
 
     @config.setter
     def config(self, config):
         self._config = config
-        self._master.reconfigure_regularizer(self._name, config, self._tau, self._gamma)
+        if self._master is not None:
+            self._master.reconfigure_regularizer(self._name, config, self._tau, self._gamma)
 
 
 class BaseRegularizerPhi(BaseRegularizer):
@@ -368,7 +374,7 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
         elif config is not None and config.HasField('transform_config'):
             self._kl_function_info._update_from_config(self)
 
-        self._kl_function_info._update_config(self, first=True)
+        self._kl_function_info._update_config(self)
 
     @property
     def kl_function_info(self):
@@ -429,7 +435,7 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
         elif config is not None and config.HasField('transform_config'):
             self._kl_function_info._update_from_config(self)
 
-        self._kl_function_info._update_config(self, first=True)
+        self._kl_function_info._update_config(self)
 
         self._doc_titles = []
         if doc_titles is not None:
@@ -490,7 +496,8 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
             for coef in topic_coef:
                 ref.value.append(coef)
         self._doc_topic_coef = doc_topic_coef
-        self._master.reconfigure_regularizer(self.name, self._config, self.tau, self.gamma)
+        if self._master is not None:
+            self._master.reconfigure_regularizer(self.name, self._config, self.tau, self.gamma)
 
 
 class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
@@ -571,7 +578,8 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
         if topic_pairs is not None:
             self._update_config(topic_pairs)
             self._topic_pairs = topic_pairs
-            self._master.reconfigure_regularizer(self.name, self._config, self.tau, self.gamma)
+            if self._master is not None:
+                self._master.reconfigure_regularizer(self.name, self._config, self.tau, self.gamma)
 
 
 class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
@@ -1126,7 +1134,8 @@ class NetPlsaPhiRegularizer(BaseRegularizerPhi):
         if edge_weights is not None:
             self._update_config(edge_weights)
             self._edge_weights = edge_weights
-            self._master.reconfigure_regularizer(self.name, self._config, self.tau, self.gamma)
+            if self._master is not None:
+                self._master.reconfigure_regularizer(self.name, self._config, self.tau, self.gamma)
 
     @vertex_names.setter
     def vertex_names(self, vertex_names):

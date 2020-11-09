@@ -6,6 +6,7 @@ import numpy
 
 from six import iteritems
 from six.moves import zip
+import warnings
 
 from . import regularizers
 from . import scores
@@ -130,18 +131,30 @@ def _regularizer_type(config):
     for mcls, const, _ in REGULARIZERS:
         if isinstance(config, mcls):
             return const
+    warnings.warn(
+        message='Failed to determine the config type of {config}.'
+                ' Make sure that all regularizers are defined correctly'
+    )
 
 
 def _score_type(config):
     for const, ccls, _, _ in SCORES:
         if isinstance(config, ccls):
             return const
+    warnings.warn(
+        message='Failed to determine the config type of {config}.'
+                ' Make sure that all scores are defined correctly'
+    )
 
 
 def _score_data_func(score_data_type):
     for const, _, mfunc, _ in SCORES:
         if score_data_type == const:
             return mfunc
+    warnings.warn(
+        message='Failed to determine the config type of {config}.'
+                ' Make sure that all scores are defined correctly'
+    )
 
 
 def _prepare_config(topic_names=None, class_ids=None, transaction_typenames=None,
