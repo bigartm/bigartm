@@ -38,7 +38,8 @@ def _reconfigure_field(obj, field, field_name, proto_field_name=None):
     else:
         setattr(obj._config, proto_field_name, field)
 
-    obj._master.reconfigure_score(obj._name, obj._config)
+    if self._master is not None:
+        obj._master.reconfigure_score(obj._name, obj._config)
 
 
 class Scores(object):
@@ -371,6 +372,7 @@ class PerplexityScore(BaseScore):
             score_config = messages.PerplexityScoreConfig()
             score_config.CopyFrom(self._config)
             score_config.model_type = const.PerplexityScoreConfig_Type_UnigramCollectionModel
+            # TODO: is it possible for master to not be set at this point?
             self._master.reconfigure_score(self._name, score_config)
 
         dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
