@@ -68,7 +68,7 @@ class KlFunctionInfo(object):
             obj._config.transform_config.n = self.power_value  # power_value - 1, but *x gives no change
             obj._config.transform_config.a = self.power_value
 
-        if self._master is not None:
+        if getattr(self, '_master', None) is not None:
             obj._master.reconfigure_regularizer(obj.name, obj._config, obj.tau, obj.gamma)
 
     def _update_from_config(self, obj):
