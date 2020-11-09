@@ -140,7 +140,8 @@ class PerplexityScoreTracker(BaseScoreTracker):
         * zero_tokens - number of zero p(w|d) = sum_t p(w|t) p(t|d)  (in case of one class id).
         * transaction_typename_info - array of structures, each structure contains raw, normalizer\
                                       zero_tokens and transaction_typename name\
-                                      (in case of several transaction types)\ Note, that in the case\
+                                      (in case of several transaction types)\
+                                      Note, that in the case\
                                       of non-transaction model transaction type is equal @default_transaction.
         * Note: every field has a version with prefix 'last_', means retrieving only\
           info about the last synchronization.
