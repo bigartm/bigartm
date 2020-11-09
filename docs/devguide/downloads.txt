@@ -8,8 +8,8 @@ Download and install the following tools:
 * Github for Windows from https://windows.github.com/
     * https://github-windows.s3.amazonaws.com/GitHubSetup.exe
 * Visual Studio 2013 Express for Windows Desktop from https://www.visualstudio.com/en-us/products/visual-studio-express-vs.aspx
-* CMake from http://www.cmake.org/download/ 
-    * http://www.cmake.org/files/v3.0/cmake-3.0.2-win32-x86.exe
+* CMake from http://www.cmake.org/download/
+    * https://cmake.org/files/v3.10/cmake-3.10.0-win32-x86.msi
 * Prebuilt Boost binaries from http://sourceforge.net/projects/boost/files/boost-binaries/, for example these two:
     * http://sourceforge.net/projects/boost/files/boost-binaries/1.57.0/boost_1_57_0-msvc-12.0-32.exe/download
     * http://sourceforge.net/projects/boost/files/boost-binaries/1.57.0/boost_1_57_0-msvc-12.0-64.exe/download

@@ -83,11 +83,13 @@ void SpinLock::Unlock() {
 // =======================================================
 
 PhiMatrixFrame::PhiMatrixFrame(const ModelName& model_name,
-                               const google::protobuf::RepeatedPtrField<std::string>& topic_name)
+                               const google::protobuf::RepeatedPtrField<std::string>& topic_name,
+                               float min_sparsity_rate)
     : model_name_(model_name)
     , topic_name_()
     , token_collection_()
-    , spin_locks_() {
+    , spin_locks_()
+    , min_sparsity_rate_(min_sparsity_rate) {
   if (topic_name.size() == 0) {
     BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("Can not create model " + model_name + " with 0 topics"));
   }
@@ -98,10 +100,11 @@ PhiMatrixFrame::PhiMatrixFrame(const ModelName& model_name,
 }
 
 PhiMatrixFrame::PhiMatrixFrame(const PhiMatrixFrame& rhs)
-    : model_name_(rhs.model_name_),
-      topic_name_(rhs.topic_name_),
-      token_collection_(rhs.token_collection_),
-      spin_locks_() {
+    : model_name_(rhs.model_name_)
+    , topic_name_(rhs.topic_name_)
+    , token_collection_(rhs.token_collection_)
+    , spin_locks_()
+    , min_sparsity_rate_(rhs.min_sparsity_rate_) {
   spin_locks_.reserve(rhs.spin_locks_.size());
   for (unsigned i = 0; i < rhs.spin_locks_.size(); ++i) {
     spin_locks_.push_back(std::make_shared<SpinLock>());
@@ -171,27 +174,31 @@ int64_t PhiMatrixFrame::ByteSize() const {
 // PackedValues methods
 // =======================================================
 
-PackedValues::PackedValues()
+PackedValues::PackedValues(float min_sparsity_rate)
     : values_()
     , bitmask_()
-    , ptr_() { }
+    , ptr_()
+    , min_sparsity_rate_(min_sparsity_rate) { }
 
-PackedValues::PackedValues(int size)
+PackedValues::PackedValues(int size, float min_sparsity_rate)
     : values_()
     , bitmask_()
-    , ptr_() {
+    , ptr_()
+    , min_sparsity_rate_(min_sparsity_rate) {
   bitmask_.resize(size, false);
 }
 
-PackedValues::PackedValues(const PackedValues& rhs)
+PackedValues::PackedValues(const PackedValues& rhs, float min_sparsity_rate)
     : values_(rhs.values_)
     , bitmask_(rhs.bitmask_)
-    , ptr_(rhs.ptr_) { }
+    , ptr_(rhs.ptr_)
+    , min_sparsity_rate_(min_sparsity_rate) { }
 
-PackedValues::PackedValues(const float* values, int size)
+PackedValues::PackedValues(const float* values, int size, float min_sparsity_rate)
     : values_()
     , bitmask_()
-    , ptr_() {
+    , ptr_()
+    , min_sparsity_rate_(min_sparsity_rate) {
   values_.resize(size); memcpy(&values_[0], values, sizeof(float) * size);
   pack();
 }
@@ -224,6 +231,22 @@ void PackedValues::get(std::vector<float>* buffer) const {
   }
 }
 
+int PackedValues::size() const {
+  return values_.size();
+}
+
+void PackedValues::get_sparse(std::vector<float>* value_buffer, std::vector<int>* index_buffer) const {
+  for (int i = 0; i < values_.size(); ++i) {
+    (*value_buffer)[i] = values_[i];
+  }
+
+  if (is_packed()) {
+    for (int i = 0; i < ptr_.size(); ++i) {
+      (*index_buffer)[i] = ptr_[i];
+    }
+  }
+}
+
 float* PackedValues::unpack() {
   if (is_packed()) {
     const int full_size = bitmask_.size();
@@ -251,15 +274,15 @@ void PackedValues::pack() {
     return;
   }
 
-  int num_zeros = 0;
+  float num_zeros = 0.0f;
   for (auto value : values_) {
     if (value == 0) {
-      num_zeros++;
+      ++num_zeros;
     }
   }
 
-  // pack iff at 60% of elements (or more) are zeros
-  if (num_zeros < (int64_t) (3 * values_.size() / 5)) {
+  // pack if at least (100 * min_sparsity_rate_)% of elements (or more) are zeros
+  if ((num_zeros / static_cast<float>(values_.size())) < min_sparsity_rate_) {
     return;
   }
 
@@ -299,19 +322,20 @@ int64_t PackedValues::ByteSize() const {
 // =======================================================
 
 DensePhiMatrix::DensePhiMatrix(const ModelName& model_name,
-                               const google::protobuf::RepeatedPtrField<std::string>& topic_name)
-    : PhiMatrixFrame(model_name, topic_name), values_() { }
+                               const google::protobuf::RepeatedPtrField<std::string>& topic_name,
+                               float min_sparsity_rate)
+    : PhiMatrixFrame(model_name, topic_name, min_sparsity_rate), values_() { }
 
 DensePhiMatrix::DensePhiMatrix(const DensePhiMatrix& rhs) : PhiMatrixFrame(rhs), values_() {
   for (int token_index = 0; token_index < rhs.token_size(); ++token_index) {
-    values_.push_back(PackedValues(rhs.values_[token_index]));
+    values_.push_back(PackedValues(rhs.values_[token_index], min_sparsity_rate()));
   }
 }
 
 DensePhiMatrix::DensePhiMatrix(const AttachedPhiMatrix& rhs)
     : PhiMatrixFrame(rhs), values_() {
   for (int token_index = 0; token_index < rhs.token_size(); ++token_index) {
-    values_.push_back(PackedValues(rhs.values_[token_index], rhs.topic_size()));
+    values_.push_back(PackedValues(rhs.values_[token_index], rhs.topic_size(), min_sparsity_rate()));
   }
 }
 
@@ -355,6 +379,15 @@ void DensePhiMatrix::increase(int token_id, const std::vector<float>& increment)
   this->Unlock(token_id);
 }
 
+int DensePhiMatrix::get_non_zero_topic_size(int token_id) const {
+  return values_[token_id].size();
+}
+
+void DensePhiMatrix::get_sparse(int token_id, std::vector<float>* value_buffer,
+                                std::vector<int>* index_buffer) const {
+  values_[token_id].get_sparse(value_buffer, index_buffer);
+}
+
 void DensePhiMatrix::Clear() {
   values_.clear();
   PhiMatrixFrame::Clear();
@@ -374,7 +407,7 @@ int DensePhiMatrix::AddToken(const Token& token) {
     return token_id;
   }
 
-  values_.push_back(PackedValues(topic_size()));
+  values_.push_back(PackedValues(topic_size(), min_sparsity_rate()));
   int retval = PhiMatrixFrame::AddToken(token);
   assert(retval == (values_.size() - 1));
   return retval;
@@ -398,7 +431,7 @@ void DensePhiMatrix::Reshape(const PhiMatrix& phi_matrix) {
 // =======================================================
 
 AttachedPhiMatrix::AttachedPhiMatrix(int address_length, float* address, PhiMatrixFrame* source)
-    : PhiMatrixFrame(source->model_name(), source->topic_name()) {
+    : PhiMatrixFrame(source->model_name(), source->topic_name(), source->min_sparsity_rate()) {
 
   int topic_size = source->topic_size();
   int token_size = source->token_size();
@@ -446,6 +479,11 @@ void AttachedPhiMatrix::increase(int token_id, const std::vector<float>& increme
 void AttachedPhiMatrix::Clear() {
   values_.clear();
   PhiMatrixFrame::Clear();
+}
+
+void AttachedPhiMatrix::get_sparse(int token_id, std::vector<float>* value_buffer,
+                                   std::vector<int>* index_buffer) const {
+  get(token_id, value_buffer);
 }
 
 int AttachedPhiMatrix::AddToken(const Token& token) {

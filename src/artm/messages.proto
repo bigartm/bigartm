@@ -29,6 +29,15 @@ message Item {
   optional string title = 3;
   repeated int32 token_id = 4;
   repeated float token_weight = 5;
+
+  // Field contains start index of each transaction from token_id.
+  // Last element contains total number of tokens
+  // In case of regular text will be 0, 1, 2, 3 ... , num_tokens
+  repeated int32 transaction_start_index = 6;
+
+  // Field with length equal to transaction_start_index - 1
+  // Contains id of transaction typename, transaction belongs to
+  repeated int32 transaction_typename_id = 7;
 }
 
 // Represents a field withing an item.
@@ -59,6 +68,9 @@ message Batch {
   repeated Item item = 3;
   optional string description = 4;
   optional string id = 5;
+
+  // string identifiers of each transaction_type
+  repeated string transaction_typename = 6;
 }
 
 message RegularizerSettings {
@@ -263,15 +275,16 @@ message PerplexityScoreConfig {
     UnigramDocumentModel = 0;
     UnigramCollectionModel = 1;
   }
-  optional Type model_type = 3 [default = UnigramDocumentModel];
-  optional string dictionary_name = 4;
-  repeated string class_id = 7;
+  optional Type model_type = 1 [default = UnigramDocumentModel];
+  optional string dictionary_name = 2;
+  repeated string class_id = 3;
+  repeated string transaction_typename = 4;
 }
 
 // Represents a result of calculation of a perplexity score
 message PerplexityScore {
-  message ClassIdInfo {
-    optional string class_id = 1;
+  message TransactionNameInfo {
+    optional string transaction_typename = 1;
 
     // here and below we sum a lot of small values,
     // so double type is required
@@ -283,13 +296,13 @@ message PerplexityScore {
   // general perplexity value for all cases
   optional float value = 1;
   
-  // fields for case of all class ids
+  // fields for case of all transaction typenames
   optional double raw = 2;
   optional double normalizer = 3;
   optional int64 zero_words = 4;
 
-  // field for case of custom class ids
-  repeated ClassIdInfo class_id_info = 5;
+  // field for case of custom transaction types
+  repeated TransactionNameInfo transaction_typename_info = 5;
 }
 
 // Represents a configuration of a theta sparsity score
@@ -347,8 +360,9 @@ message TopTokensScore {
   repeated int32 topic_index = 3;
   repeated string token = 4;
   repeated float weight = 5;
-  repeated float coherence = 6;
-  optional float average_coherence = 7;
+  repeated string coherence_topic_name = 6;
+  repeated float coherence = 7;
+  optional float average_coherence = 8;
 }
 
 // Represents a configuration of a theta snippet score
@@ -480,6 +494,17 @@ message CollectionParserConfig {
   optional BatchNameType name_type = 7 [default = Guid];
   optional int32 num_threads = 8;
   repeated string class_id = 9;
+  optional string cooc_tf_file_path = 10;
+  optional string cooc_df_file_path = 11;
+  optional string ppmi_tf_file_path = 12;
+  optional string ppmi_df_file_path = 13;
+  optional bool gather_cooc_tf = 14;
+  optional bool gather_cooc_df = 15;
+  optional bool gather_cooc = 16;
+  optional int32 cooc_window_width = 17 [default = 10];
+  optional int32 cooc_min_tf = 18 [default = 1];
+  optional int32 cooc_min_df = 19 [default = 1];
+  optional bool store_symmetric_cooc_values = 20 [default = false];
 }
 
 // Misc statistics produced by collection parser
@@ -489,6 +514,33 @@ message CollectionParserInfo {
   optional int64 dictionary_size = 3;
   optional int64 num_tokens = 4;
   optional float total_token_weight = 5;
+}
+
+// Represents a configuration of a cooccurrence collector.
+message CooccurrenceCollectorConfig {
+  optional bool gather_cooc = 1;
+  optional bool gather_cooc_tf = 2;
+  optional bool gather_cooc_df = 3;
+  optional bool store_symmetric_cooc_values = 4;
+  optional bool calculate_ppmi_tf = 5;
+  optional bool calculate_ppmi_df = 6;
+  optional string vw_file_path = 7;
+  optional string vocab_file_path = 8;
+  optional string target_folder = 9;
+  optional string cooc_tf_file_path = 10;
+  optional string cooc_df_file_path = 11;
+  optional string ppmi_tf_file_path = 12;
+  optional string ppmi_df_file_path = 13;
+  optional int32 cooc_window_width = 14 [default = 10];
+  optional int32 cooc_min_tf = 15 [default = 1];
+  optional int32 cooc_min_df = 16 [default = 1];
+  optional int32 max_num_of_open_files_in_a_thread = 17;
+  optional int32 num_items_per_batch = 18 [default = 1000];
+  optional int32 num_threads = 19;
+  optional int64 total_num_of_pairs = 20;
+  optional int32 total_num_of_documents = 21;
+  repeated string class_id = 22;
+  optional int32 max_num_of_open_files_in_a_process = 23;
 }
 
 // Represents an argument of 'initialize model' operation
@@ -622,7 +674,9 @@ message ProcessBatchesArgs {
   repeated Batch batch = 18;
   optional bool use_random_theta = 19 [default = false];
   repeated string topic_name = 20;
-  optional bool reset_nwt = 21 [default = true];
+  repeated string transaction_typename = 21;
+  repeated float transaction_weight = 22;
+  optional bool reset_nwt = 23 [default = true];
 }
 
 message ProcessBatchesResult {
@@ -738,8 +792,14 @@ message MasterModelConfig {
   optional string disk_cache_path = 13;
   optional bool cache_theta = 15 [default = false];
   optional string ptd_name = 16 [default = ""];
-  optional int32 parent_master_model_id = 17;
-  optional float parent_master_model_weight = 18 [default = 1.0];
+  repeated string transaction_typename = 17;
+  repeated float transaction_weight = 18;
+  optional int32 parent_master_model_id = 19;
+  optional float parent_master_model_weight = 20 [default = 1.0];
+  optional float min_sparsity_rate = 21 [default = 0.6];
+  optional bool use_sparse_computation = 22 [default = true];
+  optional float dense_init_rate = 23 [default = 1.0];
+  optional float guaranteed_zeros_rate = 24 [default = 0.0];
 }
 
 message FitOfflineMasterModelArgs {

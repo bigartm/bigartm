@@ -46,15 +46,11 @@ and Fedora.
 
 **Open source**.
 BigARTM is released under the `New BSD License`_.
-If you plan to use our library commercially, please beware that
-BigARTM depends on ZeroMQ. Please, make sure to review
-`ZeroMQ license`_.
 
 .. _Additive Regularization of Topic Models: http://www.machinelearning.ru/wiki/images/1/1f/Voron14aist.pdf
 .. _topic models: http://en.wikipedia.org/wiki/Topic_model
 .. _Google Protocol Buffers: https://code.google.com/p/protobuf/
 .. _New BSD license: http://opensource.org/licenses/BSD-3-Clause
-.. _ZeroMQ license: http://zeromq.org/area:licensing
 
 =========================================
 

@@ -13,7 +13,7 @@ The following steps describe the procedure to build BigARTM's C++ code on Window
   at `www.visualstudio.com <http://www.visualstudio.com/en-us/products/visual-studio-express-vs.aspx>`_).
 
 * Install `CMake <http://www.cmake.org/cmake/resources/software.html>`_
-  (tested with cmake-3.0.1, Win32 Installer).
+  (at least version 3.1, Win32 Installer).
 
   Make sure that CMake executable is added to the ``PATH`` environmental variable.
   To achieve this either select the option *"Add CMake to the system PATH for all users"*

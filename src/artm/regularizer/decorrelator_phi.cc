@@ -16,7 +16,8 @@ namespace regularizer {
 
 bool DecorrelatorPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                                     const ::artm::core::PhiMatrix& n_wt,
-                                    ::artm::core::PhiMatrix* result) {
+                                    ::artm::core::PhiMatrix* r_wt,
+                                    const float* tau) {
   // read the parameters from config and control their correctness
   const bool use_topic_pairs = (topic_pairs_.size() > 0);
 
@@ -73,7 +74,7 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
       for (const auto& pair : topics_to_regularize) {
         float weight = p_wt.get(token_pwt_id, pair.second);
         float value = static_cast<float>(-weight * (weights_sum - weight));
-        result->set(token_nwt_id, pair.second, value);
+        r_wt->increase(token_nwt_id, pair.second, value * (tau != nullptr ? *tau : 1.0f));
       }
     } else {  // complex case
       for (const auto& pair : topic_pairs_) {
@@ -98,7 +99,7 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
         // process this topic value
         float weight = p_wt.get(token_pwt_id, first_iter->second);
         float value = static_cast<float>(-weight * (weights_sum - weight));
-        result->set(token_nwt_id, first_iter->second, value);
+        r_wt->increase(token_nwt_id, first_iter->second, value * (tau != nullptr ? *tau : 1.0f));
       }
     }
   }

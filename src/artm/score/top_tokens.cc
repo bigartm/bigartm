@@ -103,6 +103,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
     }
 
     if (count_coherence) {
+      top_tokens_score->add_coherence_topic_name(topic_name.Get(topic_ids[i]));
       float topic_coherence = dictionary_ptr->CountTopicCoherence(tokens_for_coherence);
       average_coherence += topic_coherence;
       coherence->Add(topic_coherence);

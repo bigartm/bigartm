@@ -35,7 +35,8 @@ std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix&
   double numerator = 0.0;
 
   for (int token_index = 0; token_index < token_size; token_index++) {
-    if (!use_all_classes && !core::is_member(p_wt.token(token_index).class_id, config_.class_id())) {
+    const auto& token = p_wt.token(token_index);
+    if ((!use_all_classes && !core::is_member(token.class_id, config_.class_id()))) {
       continue;
     }
 

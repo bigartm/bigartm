@@ -3,11 +3,12 @@
 import uuid
 import warnings
 
-from . import wrapper
-from .wrapper import messages_pb2 as messages
-from .wrapper import constants as const
-
 from six import string_types
+
+from .wrapper import (
+    constants as const,
+    messages_pb2 as messages,
+)
 
 GLOB_EPS = 1e-37
 
@@ -290,10 +291,13 @@ class PerplexityScore(BaseScore):
     _config_message = messages.PerplexityScoreConfig
     _type = const.ScoreType_Perplexity
 
-    def __init__(self, name=None, class_ids=None, dictionary=None, config=None):
+    def __init__(self, name=None, transaction_typenames=None, class_ids=None, dictionary=None, config=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
-        :param class_ids: class_id to score, means that tokens of all class_ids will be used
+        :param transaction_typenames: transaction_typenames to score, None means that tokens\
+                                                       of all transaction_typenames will be used
+        :type transaction_typenames: list of str
+        :param class_ids: class_ids to score, None means that tokens of all class_ids will be used
         :type class_ids: list of str
         :param dictionary: BigARTM collection dictionary, is strongly recommended to\
                            be used for correct replacing of zero counters.
@@ -317,6 +321,15 @@ class PerplexityScore(BaseScore):
         elif config is not None and len(config.class_id):
             self._class_ids = [class_id for class_id in config.class_id]
 
+        self._transaction_typenames = []
+        if transaction_typenames is not None:
+            self._config.ClearField('transaction_typename')
+            for transaction_typename in transaction_typenames:
+                self._config.class_id.append(transaction_typename)
+                self._class_ids.append(transaction_typename)
+        elif config is not None and len(config.transaction_typename):
+            self._transaction_typenames = [transaction_typename for transaction_typename in config.transaction_typename]
+
         self._dictionary_name = ''
         if dictionary is not None:
             dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
@@ -333,10 +346,6 @@ class PerplexityScore(BaseScore):
         return self._dictionary_name
 
     @property
-    def class_ids(self):
-        return self._class_ids
-
-    @property
     def class_id(self):
         raise KeyError('No class_id parameter')
 
@@ -347,6 +356,14 @@ class PerplexityScore(BaseScore):
     @property
     def topic_names(self):
         raise KeyError('No topic_names parameter')
+
+    @property
+    def class_ids(self):
+        return self._class_ids
+
+    @property
+    def transaction_typenames(self):
+        return self._transaction_typenames
 
     @dictionary.setter
     def dictionary(self, dictionary):
@@ -362,6 +379,10 @@ class PerplexityScore(BaseScore):
     @class_ids.setter
     def class_ids(self, class_ids):
         _reconfigure_field(self, class_ids, 'class_ids', 'class_id')
+
+    @transaction_typenames.setter
+    def transaction_typenames(self, transaction_typenames):
+        _reconfigure_field(self, transaction_typenames, 'transaction_typenames', 'transaction_typename')
 
     @class_id.setter
     def class_id(self, class_id):
@@ -422,8 +443,7 @@ class TopTokensScore(BaseScore):
     _config_message = messages.TopTokensScoreConfig
     _type = const.ScoreType_TopTokens
 
-    def __init__(self, name=None, class_id=None, topic_names=None,
-                 num_tokens=None, dictionary=None, config=None):
+    def __init__(self, name=None, class_id=None, topic_names=None, num_tokens=None, dictionary=None, config=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score
@@ -761,8 +781,7 @@ class BackgroundTokensRatioScore(BaseScore):
     _config_message = messages.BackgroundTokensRatioScoreConfig
     _type = const.ScoreType_BackgroundTokensRatio
 
-    def __init__(self, name=None, class_id=None, delta_threshold=None,
-                 save_tokens=None, direct_kl=None, config=None):
+    def __init__(self, name=None, class_id=None, delta_threshold=None, save_tokens=None, direct_kl=None, config=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score

@@ -12,16 +12,22 @@ set (GFLAGS_FLAGFILES_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 # ----------------------------------------------------------------------------
 # common include directories and link libraries
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories ("${gflags_SOURCE_DIR}/src")
+include_directories ("${gflags_BINARY_DIR}/include")
+include_directories ("${gflags_BINARY_DIR}/include/gflags")
 
 if (BUILD_SHARED_LIBS)
   set (type shared)
+  if (GFLAGS_IS_A_DLL)
+    add_definitions(-DGFLAGS_IS_A_DLL)
+  endif ()
 else ()
   set (type static)
 endif ()
 if (BUILD_gflags_LIB)
-  link_libraries (gflags-${type})
+  link_libraries (gflags_${type})
 else ()
-  link_libraries (gflags_nothreads-${type})
+  link_libraries (gflags_nothreads_${type})
 endif ()
 
 # ----------------------------------------------------------------------------
@@ -34,6 +40,7 @@ add_test (
   NAME strip_flags_binary
   COMMAND "${CMAKE_COMMAND}" "-DBINARY=$<TARGET_FILE:gflags_strip_flags_test>"
           -P "${CMAKE_CURRENT_SOURCE_DIR}/gflags_strip_flags_test.cmake"
+  CONFIGURATIONS Release MinSizeRel
 )
 
 # ----------------------------------------------------------------------------
@@ -162,24 +169,41 @@ add_test(NAME gflags_declare COMMAND gflags_declare_test --message "Hello gflags
 set_tests_properties(gflags_declare PROPERTIES PASS_REGULAR_EXPRESSION "Hello gflags!")
 
 # ----------------------------------------------------------------------------
-# (negative) compilation tests
-if (BUILD_NC_TESTS)
+# configure Python script which configures and builds a test project
+if (BUILD_NC_TESTS OR BUILD_CONFIG_TESTS)
   find_package (PythonInterp)
   if (NOT PYTHON_EXECUTABLE)
-    message (FATAL_ERROR "No Python installation found! It is required by the negative compilation tests."
-                         " Either install Python or set BUILD_NC_TESTS to FALSE and try again.")
+    message (FATAL_ERROR "No Python installation found! It is required by the (negative) compilation tests."
+                         " Either install Python or set BUILD_NC_TESTS and BUILD_CONFIG_TESTS to FALSE.")
   endif ()
-  set (SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/nc")
-  configure_file (gflags_nc.py.in "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nc.py" @ONLY)
-  macro (add_gflags_nc_test name)
+  set (TMPDIR "${PROJECT_BINARY_DIR}/Testing/Temporary")
+  configure_file (gflags_build.py.in "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/build.py" @ONLY)
+  function (add_gflags_build_test name srcdir expect_fail)
+    set (srcdir "${CMAKE_CURRENT_SOURCE_DIR}/${srcdir}")
     add_test (
-      NAME nc_${name}
-      COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nc.py" ${name}
+      NAME    "${name}"
+      COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/build.py" 
+                    ${name} ${srcdir} ${expect_fail}
     )
-  endmacro ()
-  add_gflags_nc_test (sanity)
-  add_gflags_nc_test (swapped_args)
-  add_gflags_nc_test (int_instead_of_bool)
-  add_gflags_nc_test (bool_in_quotes)
-  add_gflags_nc_test (define_string_with_0)
+  endfunction ()
+endif ()
+
+# ----------------------------------------------------------------------------
+# negative compilation tests
+option (BUILD_NC_TESTS "Request addition of negative compilation tests." OFF)
+mark_as_advanced (BUILD_NC_TESTS)
+if (BUILD_NC_TESTS)
+  add_gflags_build_test (nc_sanity               nc 0)
+  add_gflags_build_test (nc_swapped_args         nc 1)
+  add_gflags_build_test (nc_int_instead_of_bool  nc 1)
+  add_gflags_build_test (nc_bool_in_quotes       nc 1)
+  add_gflags_build_test (nc_define_string_with_0 nc 1)
+endif ()
+
+# ----------------------------------------------------------------------------
+# build configuration test
+option (BUILD_CONFIG_TESTS "Request addition of package configuration tests." OFF)
+mark_as_advanced (BUILD_CONFIG_TESTS)
+if (BUILD_CONFIG_TESTS)
+  add_gflags_build_test (cmake_config config 0)
 endif ()

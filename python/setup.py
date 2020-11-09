@@ -4,7 +4,6 @@ from setuptools import setup, find_packages
 
 import sys
 
-
 # name of artm shared library
 artm_library_name = 'libartm.so'
 if sys.platform.startswith('win'):

@@ -56,7 +56,7 @@ Return ``k`` (= requested number of top tokens) most probable tokens in each req
 
 The coherence formula for topic is defined as
 
-:math:`\mathcal{C}_t = \cfrac{2}{k(k - 1)} \sum_{i = 1}^{k - 1} \sum_{j = 1}^{k} \mathrm{value}(w_i, w_j)`,
+:math:`\mathcal{C}_t = \cfrac{2}{k(k - 1)} \sum_{i = 1}^{k - 1} \sum_{j = i + 1}^{k} \mathrm{value}(w_i, w_j)`,
 
 where value is some pairwise information about tokens in collection dictionary, which is provided by user according to his goals.
 

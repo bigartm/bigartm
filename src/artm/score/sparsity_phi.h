@@ -7,7 +7,8 @@
    Parameters:
    - topic_name (array with topic names to score)
    - eps
-   - class_id (class_id to score, default == DefaultClass)
+   - class_id (class_id to score, empty -> DefaultClass)
+   - transaction_typename (transaction typename to score, empty -> DefaultTransactionTypeName)
 
 */
 

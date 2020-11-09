@@ -4,12 +4,9 @@ Installation for Linux and Mac OS-X users
 
 BigARTM had been tested on several Linux and MAC distributions, and it is known to work well on
 
-* Ubuntu 16.04.1
-* Linux Mint 18
-* Ubuntu 14.04.5
-* Linux Mint 17.3
-* Arch Linux
-* Manjaro
+* Ubuntu 16.04.1, 14.04.5
+* Linux Mint 18, 17.3
+* Arch Linux, Manjaro
 * Fedora 24
 * openSUSE Leap 42.1
 
@@ -144,7 +141,9 @@ Next step is to run ``cmake``. The following options are available.
 
 * ``-DPYTHON=python3`` - to use Python 3 instead of Python 2;
 * ``-DCMAKE_INSTALL_PREFIX=xxx`` - for custom install location instead of default ``/usr/local``;
-* ``-DBoost_USE_STATIC_LIBS=ON`` — required on openSUSE.
+* ``-DBoost_USE_STATIC_LIBS=ON`` -- required on openSUSE;
+* ``-DBUILD_BIGARTM_CLI_STATIC=ON`` -- to use static versions of Boost, C and C++ libraries for ``bigartm`` executable.
+
 
 Example:
 

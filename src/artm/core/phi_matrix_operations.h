@@ -5,13 +5,17 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <string>
 
 #include "artm/core/common.h"
 #include "artm/core/phi_matrix.h"
 #include "artm/core/instance.h"
+#include "artm/core/token.h"
 
 namespace artm {
 namespace core {
+
+typedef std::unordered_map<ClassId, std::vector<float>> Normalizers;
 
 // PhiMatrixOperations contains helper methods to operate on PhiMatrix class.
 class PhiMatrixOperations {
@@ -32,8 +36,8 @@ class PhiMatrixOperations {
     const PhiMatrix& p_wt, const PhiMatrix& n_wt, PhiMatrix* r_wt);
 
   // For each ClassId finds a sum of all n_wt values for each topic with (optionally) regularizers r_wt
-  static std::map<ClassId, std::vector<float> > FindNormalizers(const PhiMatrix& n_wt);
-  static std::map<ClassId, std::vector<float> > FindNormalizers(const PhiMatrix& n_wt, const PhiMatrix& r_wt);
+  static Normalizers FindNormalizers(const PhiMatrix& n_wt);
+  static Normalizers FindNormalizers(const PhiMatrix& n_wt, const PhiMatrix& r_wt);
 
   // Produce normalized p_wt matrix from counters n_wt and (optionaly) regularizers r_wt
   static void FindPwt(const PhiMatrix& n_wt, PhiMatrix* p_wt);

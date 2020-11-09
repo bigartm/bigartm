@@ -1,20 +1,27 @@
 # Copyright 2017, Additive Regularization of Topic Models.
 
-import os
 import glob
-import uuid
+import os
 import shutil
+import uuid
+
 import numpy as np
 
-from six import iteritems, string_types
-from six.moves import range, zip
+from six import (
+    iteritems,
+    string_types,
+)
+from six.moves import (
+    range,
+    zip,
+)
 
 from . import wrapper
-from .wrapper import constants as const
-from .wrapper import messages_pb2 as messages
-
 from .dictionary import Dictionary
-
+from .wrapper import (
+    constants as const,
+    messages_pb2 as messages,
+)
 
 __all__ = [
     'BatchVectorizer'
@@ -40,6 +47,11 @@ class BatchVectorizer(object):
                  target_folder=None, batch_size=1000, batch_name_type='code', data_weight=1.0, n_wd=None,
                  vocabulary=None, gather_dictionary=True, class_ids=None, process_in_memory_model=None):
         """
+        :param batches: if process_in_memory_model is None -> list with non-full file names of\
+                              batches (necessary parameters are batches + data_path +\
+                              data_fromat=='batches' in this case)\
+                        else -> list of batches (messages.Batch objects), loaded in memory
+        :type batches: list of str
         :param str collection_name: the name of text collection (required if data_format == 'bow_uci')
         :param str data_path: 1) if data_format == 'bow_uci' => folder containing\
                                  'docword.collection_name.txt' and vocab.collection_name.txt files;\
@@ -54,11 +66,6 @@ class BatchVectorizer(object):
         :param int batch_size: number of documents to be stored in each batch
         :param str target_folder: full path to folder for future batches storing;\
                                   if not set, no batches will be produced for further work
-        :param batches: if process_in_memory_model is None -> list with non-full file names of\
-                              batches (necessary parameters are batches + data_path +\
-                              data_fromat=='batches' in this case)\
-                        else -> list of batches (messages.Batch objects), loaded in memory
-        :type batches: list of str
         :param str batch_name_type: name batches in natural order ('code') or using random guids (guid)
         :param float data_weight: weight for a group of batches from data_path;\
                               it can be a list of floats, then data_path (and\
@@ -266,6 +273,7 @@ class BatchVectorizer(object):
                     batch.token.append(token)
 
                 item.token_id.append(batch_vocab[token])
+                item.transaction_start_index.append(len(item.transaction_start_index))
                 item.token_weight.append(float(value))
 
             if ((item_id + 1) % self._batch_size == 0 and item_id != 0) or ((item_id + 1) == n_wd.shape[1]):

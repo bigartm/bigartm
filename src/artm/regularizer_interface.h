@@ -77,9 +77,13 @@ class RegularizerInterface {
   //    n_wt and result are guarantied to have the same shape (e.i. topics and tokens)
   //    n_wt and p_wt are guarantied to share topics
   //    p_wt may have another set of tokens than n_wt (!).
+  // Result should be added to r_wt values
+  // If tau != nullptr, it should be multiplied by regularizer values directly in regularizer code,
+  // otherwise tau multiplication will be done outside (in case of relative regularization)
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,
-                             ::artm::core::PhiMatrix* result) { return false; }
+                             ::artm::core::PhiMatrix* r_wt,
+                             const float* tau = nullptr) { return false; }
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize() {
     return google::protobuf::RepeatedPtrField<std::string>();

@@ -7,7 +7,9 @@
 #include <string>
 #include <vector>
 
-#if defined(WIN32)
+#include "artm/c_interface.h"
+
+#if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable: 4244 4267)
 #include "artm/messages.pb.h"
@@ -15,8 +17,6 @@
 #else
 #include "artm/messages.pb.h"
 #endif
-
-#include "artm/c_interface.h"
 
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&);   \
@@ -54,15 +54,15 @@ DEFINE_EXCEPTION_TYPE(InvalidOperationException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(DiskReadException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(DiskWriteException, std::runtime_error);
 
-int64_t HandleErrorCode(int64_t artm_error_code);
+DLL_PUBLIC int64_t HandleErrorCode(int64_t artm_error_code);
 
 #undef DEFINE_EXCEPTION_TYPE
 
-CollectionParserInfo ParseCollection(const CollectionParserConfig& config);
-void ConfigureLogging(const ConfigureLoggingArgs& args);
-Batch LoadBatch(std::string filename);
+DLL_PUBLIC CollectionParserInfo ParseCollection(const CollectionParserConfig& config);
+DLL_PUBLIC void ConfigureLogging(const ConfigureLoggingArgs& args);
+DLL_PUBLIC Batch LoadBatch(std::string filename);
 
-class Matrix {
+class DLL_PUBLIC Matrix {
  public:
   Matrix();
   explicit Matrix(int no_rows, int no_columns);
@@ -85,7 +85,7 @@ class Matrix {
   DISALLOW_COPY_AND_ASSIGN(Matrix);
 };
 
-class MasterModel {
+class DLL_PUBLIC MasterModel {
  public:
   explicit MasterModel(const MasterModelConfig& config);
   explicit MasterModel(int id);

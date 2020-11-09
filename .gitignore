@@ -6,6 +6,8 @@
 
 # python files
 *.pyc
+*python/bigartm10.egg-info*
+*python/.eggs*
 
 # Dependencies
 *.depends

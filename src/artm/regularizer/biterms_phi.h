@@ -16,6 +16,7 @@
    The parameters of the regularizer:
    - topic_names (the names of topics to regularize, empty == all)
    - class_ids (class ids to regularize, empty == all)
+   - transaction_typenames (transaction type names to regularize, empty == all)
    - dictionary_name (strongly required parameter)
 
 */
@@ -37,7 +38,8 @@ class BitermsPhi : public RegularizerInterface {
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,
-                             ::artm::core::PhiMatrix* result);
+                             ::artm::core::PhiMatrix* r_wt,
+                             const float* tau);
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
   virtual google::protobuf::RepeatedPtrField<std::string> class_ids_to_regularize();

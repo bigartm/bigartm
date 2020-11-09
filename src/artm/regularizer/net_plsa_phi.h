@@ -17,6 +17,8 @@
    - topic_names (the names of topics to regularize, empty == all)
    - class_id (the name of specific class_id, should be equal to one in
                documents and is required)
+   - transaction_typename (transaction typename to regularize,
+                           if empty -> == DefaultTransactionTypeName)
    - weights w_uv (sparce matrix of weights w_uv, required)
    - weights D_u (vector with weights D_u, if is not set, all weights should be 1.0)
    - symmetric_weights (flag that indicates if w_uv is a symmetric sparce matrix or not)
@@ -44,7 +46,8 @@ class NetPlsaPhi : public RegularizerInterface {
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,
-                             ::artm::core::PhiMatrix* result);
+                             ::artm::core::PhiMatrix* r_wt,
+                             const float* tau);
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
   virtual google::protobuf::RepeatedPtrField<std::string> class_ids_to_regularize();

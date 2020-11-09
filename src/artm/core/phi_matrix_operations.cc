@@ -7,9 +7,9 @@
 #include <algorithm>
 #include <utility>
 #include <string>
+#include <set>
 
 #include "boost/range/adaptor/map.hpp"
-#include "boost/range/algorithm/copy.hpp"
 
 #include "artm/core/check_messages.h"
 #include "artm/core/protobuf_helpers.h"
@@ -21,23 +21,92 @@
 namespace artm {
 namespace core {
 
+namespace {
+  std::unordered_map<ClassId, std::vector<float>> FindRelativeRegularizationCoefficients(
+          const std::shared_ptr<artm::RegularizerInterface>& regularizer,
+          const PhiMatrix& n_wt,
+          const DensePhiMatrix& local_r_wt,
+          const Normalizers& n_t_all,
+          const std::vector<bool>& topics_to_regularize,
+          int topic_size,
+          int token_size,
+          float gamma) {
+    std::unordered_map<ClassId, std::vector<float>> relative_coefficients;
+
+    std::vector<core::ClassId> class_ids;
+    if (!regularizer->class_ids_to_regularize().empty()) {
+      for (const auto& class_id : regularizer->class_ids_to_regularize()) {
+        class_ids.push_back(class_id);
+      }
+    } else {
+      for (const auto& n_t : n_t_all) {
+        class_ids.push_back(n_t.first);
+      }
+    }
+
+    std::vector<float> r_it = std::vector<float>(topic_size, 0.0f);
+    std::vector<float> coefficients = std::vector<float>(topic_size, 0.0f);
+    for (const auto& class_id : class_ids) {
+      auto iter = n_t_all.find(class_id);
+      if (iter != n_t_all.end()) {
+        double n = 0.0;
+        double r_i = 0.0;
+        std::vector<float> n_t = iter->second;
+
+        for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+          if (!topics_to_regularize[topic_id]) {
+            continue;
+          }
+          n += n_t[topic_id];
+
+          float r_it_current = 0.0f;
+          for (int token_id = 0; token_id < token_size; ++token_id) {
+            if (n_wt.token(token_id).class_id != iter->first) {
+              continue;
+            }
+
+            r_it_current += fabs(local_r_wt.get(token_id, topic_id));
+          }
+
+          r_it[topic_id] = r_it_current;
+          r_i += r_it_current;
+        }
+
+        for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+          if (!topics_to_regularize[topic_id]) {
+            continue;
+          }
+
+          coefficients[topic_id] = gamma * (n_t[topic_id] / r_it[topic_id]) +
+                                   (1 - gamma) * static_cast<float>(n / r_i);
+        }
+
+        relative_coefficients.insert(std::make_pair(iter->first, coefficients));
+      } else {
+        LOG(WARNING) << "No class_id " << class_id << " in model";
+      }
+    }
+    return relative_coefficients;
+  }
+}  // namespace
+
 void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix,
                                                      const ::artm::GetTopicModelArgs& get_model_args,
                                                      ::artm::TopicModel* topic_model) {
   const bool has_sparse_format = (get_model_args.matrix_layout() == MatrixLayout_Sparse);
+  const bool use_default_class = (get_model_args.class_id_size() == 0);
 
   std::vector<int> tokens_to_use;
   if (get_model_args.token_size() > 0) {
-    bool use_default_class = (get_model_args.class_id_size() == 0);
-
     if (!use_default_class && (get_model_args.token_size() != get_model_args.class_id_size())) {
       BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(
           "GetTopicModelArgs: token_size != class_id_size, both greater then zero"));
     }
 
     for (int i = 0; i < get_model_args.token_size(); ++i) {
-      Token token(use_default_class ? DefaultClass : get_model_args.class_id(i),
-                  get_model_args.token(i));
+      ClassId class_id = use_default_class ? DefaultClass : get_model_args.class_id(i);
+      Token token(class_id, get_model_args.token(i));
+
       int token_id = phi_matrix.token_index(token);
       if (token_id != -1) {
         assert(token_id >= 0 && token_id < phi_matrix.token_size());
@@ -45,16 +114,13 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
       }
     }
   } else {
-    if (get_model_args.class_id_size() > 0) {
-      // use all tokens from the specific classes
-      for (int i = 0; i < phi_matrix.token_size(); ++i) {
-        if (repeated_field_contains(get_model_args.class_id(), phi_matrix.token(i).class_id)) {
-          tokens_to_use.push_back(i);
-        }
+    for (int i = 0; i < phi_matrix.token_size(); ++i) {
+      bool use_token = true;
+      if (!use_default_class) {
+        use_token = repeated_field_contains(get_model_args.class_id(), phi_matrix.token(i).class_id);
       }
-    } else {
-      tokens_to_use.reserve(phi_matrix.token_size());
-      for (int i = 0; i < phi_matrix.token_size(); ++i) {
+
+      if (use_token) {
         tokens_to_use.push_back(i);
       }
     }
@@ -98,6 +164,7 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
 
   for (int token_index : tokens_to_use) {
     const Token& current_token = phi_matrix.token(token_index);
+
     topic_model->add_token(current_token.keyword);
     topic_model->add_class_id(current_token.class_id);
 
@@ -168,6 +235,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
   for (int token_index = 0; token_index < topic_model.token_size(); ++token_index) {
     const std::string& token_keyword = topic_model.token(token_index);
     const ClassId& class_id = topic_model.class_id(token_index);
+
     Token token(class_id, token_keyword);
     const ::artm::FloatArray& counters = topic_model.token_weights(token_index);
     const ::artm::IntArray* sparse_topic_indices =
@@ -210,33 +278,39 @@ void PhiMatrixOperations::InvokePhiRegularizers(
   int topic_size = n_wt.topic_size();
   int token_size = n_wt.token_size();
 
-  DensePhiMatrix local_r_wt(ModelName(), n_wt.topic_name());
-  local_r_wt.Reshape(n_wt);
-
   auto n_t_all = PhiMatrixOperations::FindNormalizers(n_wt);
 
-  for (auto reg_iterator = regularizer_settings.begin();
-       reg_iterator != regularizer_settings.end();
-       reg_iterator++) {
-    auto regularizer = instance->regularizers()->get(reg_iterator->name().c_str());
-
-    if (regularizer == nullptr) {
-      LOG(ERROR) << "Phi Regularizer with name <" << reg_iterator->name().c_str() << "> does not exist.\n";
-      continue;
+  bool use_any_relative_regularization = false;
+  for (const auto &reg_it : regularizer_settings) {
+    if (reg_it.has_gamma()) {
+      use_any_relative_regularization = true;
+      break;
     }
+  }
 
-    {
-      float tau = reg_iterator->tau();
-      bool relative_reg = reg_iterator->has_gamma();
+  if (use_any_relative_regularization) {
+    DensePhiMatrix local_r_wt(ModelName(), n_wt.topic_name(), instance->config()->min_sparsity_rate());
+    local_r_wt.Reshape(n_wt);
+
+    for (const auto &reg_it : regularizer_settings) {
+      auto regularizer = instance->regularizers()->get(reg_it.name().c_str());
+
+      if (regularizer == nullptr) {
+        LOG(ERROR) << "Phi Regularizer with name <" << reg_it.name().c_str() << "> does not exist.\n";
+        continue;
+      }
+
+      float tau = reg_it.tau();
+      bool use_relative_reg = reg_it.has_gamma();
 
       // p_wt.token_size() != n_wt.token_size() --- this is possible
       // if user chooses to change the number of topics in the model between calls to fit_offline.
       if (p_wt.topic_size() != n_wt.topic_size() ||
           local_r_wt.token_size() != n_wt.token_size() || local_r_wt.topic_size() != n_wt.topic_size()) {
         LOG(ERROR) << "Inconsistent matrix size: Pwt( "
-          << p_wt.token_size() << ", " << p_wt.topic_size() << ") vs Nwt("
-          << n_wt.token_size() << ", " << n_wt.topic_size() << ") vs Rwt("
-          << local_r_wt.token_size() << ", " << local_r_wt.topic_size() << ")";
+                   << p_wt.token_size() << ", " << p_wt.topic_size() << ") vs Nwt("
+                   << n_wt.token_size() << ", " << n_wt.topic_size() << ") vs Rwt("
+                   << local_r_wt.token_size() << ", " << local_r_wt.topic_size() << ")";
         continue;
       }
 
@@ -245,113 +319,80 @@ void PhiMatrixOperations::InvokePhiRegularizers(
         continue;
       }
 
-      // count n and r_i for relative regularization, if necessary
-      // prepare next structure with parameters:
-      // pair of pairs, first pair --- n and n_t, second one --- r_i and r_it
-      std::unordered_map<core::ClassId, std::pair<std::pair<double, std::vector<float> >,
-        std::pair<double, std::vector<float> > > > parameters;
       std::vector<bool> topics_to_regularize;
+      if (!regularizer->topics_to_regularize().empty()) {
+        topics_to_regularize = core::is_member(n_wt.topic_name(), regularizer->topics_to_regularize());
+      } else {
+        topics_to_regularize.assign(topic_size, true);
+      }
 
-      if (relative_reg) {
-        std::vector<core::ClassId> class_ids;
-        if (regularizer->class_ids_to_regularize().size() > 0) {
-          auto class_ids_to_regularize = regularizer->class_ids_to_regularize();
-          for (const auto& class_id : class_ids_to_regularize) {
-            class_ids.push_back(class_id);
-          }
-        } else {
-          boost::copy(n_t_all | boost::adaptors::map_keys, std::back_inserter(class_ids));
-        }
-
-        if (regularizer->topics_to_regularize().size() > 0) {
-          topics_to_regularize = core::is_member(n_wt.topic_name(), regularizer->topics_to_regularize());
-        } else {
-          topics_to_regularize.assign(topic_size, true);
-        }
-
-        for (const auto& class_id : class_ids) {
-          auto iter = n_t_all.find(class_id);
-          if (iter != n_t_all.end()) {
-            double n = 0.0;
-            double r_i = 0.0;
-            std::vector<float> r_it;
-            std::vector<float> n_t = iter->second;
-
-            for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-              if (!topics_to_regularize[topic_id]) {
-                r_it.push_back(-1.0f);
-                continue;
-              }
-              n += n_t[topic_id];
-
-              float r_it_current = 0.0f;
-              for (int token_id = 0; token_id < token_size; ++token_id) {
-                if (n_wt.token(token_id).class_id != iter->first) {
-                  continue;
-                }
-
-                r_it_current += fabs(local_r_wt.get(token_id, topic_id));
-              }
-
-              r_it.push_back(r_it_current);
-              r_i += r_it_current;
-            }
-
-            auto pair_n = std::pair<double, std::vector<float> >(n, n_t);
-            auto pair_r = std::pair<double, std::vector<float> >(r_i, r_it);
-            auto pair_data = std::pair<std::pair<double, std::vector<float> >,
-              std::pair<double, std::vector<float> > >(pair_n, pair_r);
-            auto pair_last = std::pair<core::ClassId,
-              std::pair<std::pair<double, std::vector<float> >,
-              std::pair<double, std::vector<float> > > >(iter->first, pair_data);
-            parameters.insert(pair_last);
-          }
-        }
+      std::unordered_map<ClassId, std::vector<float>> relative_coefficients;
+      if (use_relative_reg) {
+        relative_coefficients = FindRelativeRegularizationCoefficients(regularizer, n_wt, local_r_wt, n_t_all,
+                                                                       topics_to_regularize, topic_size,
+                                                                       token_size, reg_it.gamma());
       }
 
       for (int token_id = 0; token_id < token_size; ++token_id) {
-        auto iter = parameters.find(n_wt.token(token_id).class_id);
-        if (relative_reg) {
-          if (iter == parameters.end()) {
+        const auto& class_id = n_wt.token(token_id).class_id;
+        auto iter = relative_coefficients.find(class_id);
+
+        if (use_relative_reg && iter == relative_coefficients.end()) {
+          LOG(WARNING) << "No relative coefficients were provided for class_id " << class_id;
+          continue;
+        }
+
+        for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+          if (use_relative_reg && !topics_to_regularize[topic_id]) {
             continue;
           }
-        }
-        // ToDo (MelLain): move this loop outside the outer one
-        for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-          float coefficient = 1.0f;
-          if (relative_reg) {
-            if (!topics_to_regularize[topic_id]) {
-              continue;
-            }
 
-            float gamma = reg_iterator->gamma();
-            float n_t = iter->second.first.second[topic_id];
-            double n = iter->second.first.first;
-            float r_it = iter->second.second.second[topic_id];
-            double r_i = iter->second.second.first;
-            coefficient = gamma * (n_t / r_it) + (1 - gamma) * static_cast<float>(n / r_i);
-          }
           // update global r_wt using coefficient and tau
+          float coefficient = use_relative_reg ? iter->second[topic_id] : 1.0f;
           float increment = coefficient * tau * local_r_wt.get(token_id, topic_id);
           r_wt->increase(token_id, topic_id, increment);
         }
       }
       local_r_wt.Reset();
     }
+  } else {
+    for (const auto& reg_it : regularizer_settings) {
+      auto regularizer = instance->regularizers()->get(reg_it.name().c_str());
+
+      if (regularizer == nullptr) {
+        LOG(ERROR) << "Phi Regularizer with name <" << reg_it.name().c_str() << "> does not exist.\n";
+        continue;
+      }
+
+      float tau = reg_it.tau();
+
+      // p_wt.token_size() != n_wt.token_size() --- this is possible
+      // if user chooses to change the number of topics in the model between calls to fit_offline.
+      if (p_wt.topic_size() != n_wt.topic_size()) {
+        LOG(ERROR) << "Inconsistent matrix size: Pwt( "
+                   << p_wt.token_size() << ", " << p_wt.topic_size() << ") vs Nwt("
+                   << n_wt.token_size() << ", " << n_wt.topic_size() << ")";
+        continue;
+      }
+
+      regularizer->RegularizePhi(p_wt, n_wt, r_wt, &tau);
+    }
   }
 }
 
-static std::map<ClassId, std::vector<float> > FindNormalizersImpl(const PhiMatrix& n_wt, const PhiMatrix* r_wt) {
-  std::map<ClassId, std::vector<float> > retval;
+static Normalizers FindNormalizersImpl(const PhiMatrix& n_wt, const PhiMatrix* r_wt) {
+  Normalizers retval;
   assert((r_wt == nullptr) || (r_wt->token_size() == n_wt.token_size() && r_wt->topic_size() == n_wt.topic_size()));
 
   for (int token_id = 0; token_id < n_wt.token_size(); ++token_id) {
     const Token& token = n_wt.token(token_id);
+    auto normalizer_key = token.class_id;
+
     assert(r_wt == nullptr || r_wt->token(token_id) == token);
-    auto iter = retval.find(token.class_id);
+    auto iter = retval.find(normalizer_key);
     if (iter == retval.end()) {
-      retval.insert(std::pair<ClassId, std::vector<float> >(token.class_id, std::vector<float>(n_wt.topic_size(), 0)));
-      iter = retval.find(token.class_id);
+      retval.insert(std::make_pair(normalizer_key, std::vector<float>(n_wt.topic_size(), 0)));
+      iter = retval.find(normalizer_key);
     }
 
     for (int topic_id = 0; topic_id < n_wt.topic_size(); ++topic_id) {
@@ -377,7 +418,7 @@ static void FindPwtImpl(const PhiMatrix& n_wt, const PhiMatrix* r_wt, PhiMatrix*
   assert((r_wt == nullptr) || (r_wt->token_size() == n_wt.token_size() && r_wt->topic_size() == n_wt.topic_size()));
   assert(p_wt->token_size() == n_wt.token_size() && p_wt->topic_size() == n_wt.topic_size());
 
-  std::map<ClassId, std::vector<float> > n_t = FindNormalizersImpl(n_wt, r_wt);
+  Normalizers n_t = FindNormalizersImpl(n_wt, r_wt);
   for (int token_id = 0; token_id < token_size; ++token_id) {
     const Token& token = n_wt.token(token_id);
     assert(r_wt == nullptr || r_wt->token(token_id) == token);
@@ -385,13 +426,14 @@ static void FindPwtImpl(const PhiMatrix& n_wt, const PhiMatrix* r_wt, PhiMatrix*
     const std::vector<float>& nt = n_t[token.class_id];
     for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
       if (nt[topic_index] <= 0) {
+        p_wt->set(token_id, topic_index, 0.0f);
         continue;
       }
 
       float nwt_value = n_wt.get(token_id, topic_index);
       float rwt_value = (r_wt == nullptr) ? 0.0f : r_wt->get(token_id, topic_index);
       float value = std::max<float>(nwt_value + rwt_value, 0.0f) / nt[topic_index];
-      if (value < 1e-16) {
+      if (isZero(value)) {
         // Reset small values to 0.0 to avoid performance hit.
         // http://en.wikipedia.org/wiki/Denormal_number#Performance_issues
         // http://stackoverflow.com/questions/13964606/inconsistent-multiplication-performance-with-floats
@@ -403,12 +445,11 @@ static void FindPwtImpl(const PhiMatrix& n_wt, const PhiMatrix* r_wt, PhiMatrix*
   }
 }
 
-std::map<ClassId, std::vector<float> > PhiMatrixOperations::FindNormalizers(const PhiMatrix& n_wt) {
+Normalizers PhiMatrixOperations::FindNormalizers(const PhiMatrix& n_wt) {
   return FindNormalizersImpl(n_wt, nullptr);
 }
 
-std::map<ClassId, std::vector<float> > PhiMatrixOperations::FindNormalizers(const PhiMatrix& n_wt,
-                                                                            const PhiMatrix& r_wt) {
+Normalizers PhiMatrixOperations::FindNormalizers(const PhiMatrix& n_wt, const PhiMatrix& r_wt) {
   return FindNormalizersImpl(n_wt, &r_wt);
 }
 
@@ -459,6 +500,7 @@ void PhiMatrixOperations::ConvertTopicModelToPseudoBatch(::artm::TopicModel* top
 
   batch->mutable_token()->Swap(topic_model->mutable_token());
   batch->mutable_class_id()->Swap(topic_model->mutable_class_id());
+  batch->add_transaction_typename(DefaultTransactionTypeName);
   for (int topic_index = 0; topic_index < topic_model->topic_name_size(); topic_index++) {
     batch->add_item()->set_title(topic_model->topic_name(topic_index));
   }
@@ -477,7 +519,14 @@ void PhiMatrixOperations::ConvertTopicModelToPseudoBatch(::artm::TopicModel* top
       Item* item = batch->mutable_item(item_index);
       item->add_token_id(token_index);
       item->add_token_weight(token_weight);
+      item->add_transaction_start_index(value_index);
+      item->add_transaction_typename_id(0);
     }
+  }
+
+  for (int topic_index = 0; topic_index < topic_model->topic_name_size(); topic_index++) {
+    Item* item = batch->mutable_item(topic_index);
+    item->add_transaction_start_index(item->transaction_start_index_size());
   }
 }
 

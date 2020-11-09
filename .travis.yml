@@ -24,7 +24,6 @@ jobs:
         - CIBW_BUILD=cp3*
         - CIBW_SKIP="cp35-* *-manylinux_i686"
       services: docker
-
     # and a mac build
     - os: osx
       language: shell
@@ -43,22 +42,89 @@ jobs:
     #    - ln -s /c/Python38/python.exe /c/Python38/python3.exe
     #- CIBW_SKIP="*-win32 *-manylinux_i686"
 
-install:
-  - python3 -m pip install cibuildwheel==1.3.0
 
-script:
-  # build the wheels, put them into './wheelhouse'
-
-  # quick fix for
-  # "Invalid binary wheel, found the following shared library/libraries in purelib folder:"
-  # see github.com/pypa/auditwheel/pull/28#issuecomment-212082647
-  # TODO: maybe this is no longer needed because BigARTM is compiled as extension now
+before_install:
+  # we need latest pip to work with only-binary option
+  - pip install -U pip
+  - pip install -U pytest pep8 pytest-forked
   - |
     if [[ $TRAVIS_OS_NAME == linux ]]; then
-       echo $CIBW_MANYLINUX_X86_64_IMAGE
-       echo -e "[install]\ninstall_lib=" >> setup.cfg
+      if [[ $TRAVIS_COMMIT_MESSAGE == *"[TEST]"* ]]; then
+        # pip install -U wheel
+        pip install -U numpy scipy tqdm --only-binary numpy,scipy
+        # Right now we cannot use 1.1.0 version of Pandas
+        # because it introduces bug with series indexing using tuples:
+        # https://github.com/pandas-dev/pandas/issues/35534
+        pip install -U 'pandas<1.1.0' --only-binary pandas
+        pip install -U protobuf
+        # install boost
+        sudo add-apt-repository universe
+        sudo apt-get update
+        sudo apt-get install libboost-all-dev
+        # configure ccache
+        # code from https://github.com/urho3d/Urho3D/blob/master/.travis.yml
+        export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
+        export CXX=g++ CC=gcc PATH=$HOME:$PATH
+      fi
     fi
 
-  - python3 -m cibuildwheel --output-dir wheelhouse
+install:
+  - |
+    if [[ $TRAVIS_OS_NAME == linux ]]; then
+      if [[ $TRAVIS_COMMIT_MESSAGE == *"[TEST]"* ]]; then
+        set -e  # fail fast: https://github.com/travis-ci/travis-ci/issues/1066
+        mkdir build
+        pushd build && cmake .. && make -j2 && file ./bin/bigartm && popd
+        pushd python && python setup.py install && popd
+        set +e  # fail slow
+      fi
+    fi
+  - python3 -m pip install cibuildwheel==1.3.0
 
+before_script:
+  - |
+    if [[ $TRAVIS_COMMIT_MESSAGE == *"[TEST]"* ]]; then
+      if [[ $TRAVIS_OS_NAME == linux ]]; then
+        set -e  # fail fast: https://github.com/travis-ci/travis-ci/issues/1066
+        pushd test_data && ./download_datasets.sh && popd
+        set +e  # fail slow
+      fi
+    fi
+
+script:
+
+  - |
+    if [[ $TRAVIS_OS_NAME == linux ]]; then
+      if [[ $TRAVIS_COMMIT_MESSAGE == *"[TEST]"* ]]; then
+        set -e  # fail fast: https://github.com/travis-ci/travis-ci/issues/1066
+        export ARTM_SHARED_LIBRARY=`pwd`/build/lib/libartm.so
+        export BIGARTM_UNITTEST_DATA=`pwd`/test_data
+        pushd build && make test ARGS="-V" && popd
+        set +e  # fail slow
+      fi
+    fi
+
+  - |
+    if [[ $TRAVIS_COMMIT_MESSAGE == *"[WHL]"* ]]; then
+      # quick fix for
+      # "Invalid binary wheel, found the following shared library/libraries in purelib folder:"
+      # see github.com/pypa/auditwheel/pull/28#issuecomment-212082647
+      # TODO: maybe this is no longer needed because BigARTM is compiled as extension now
+      if [[ $TRAVIS_OS_NAME == linux ]]; then
+         echo $CIBW_MANYLINUX_X86_64_IMAGE
+         echo -e "[install]\ninstall_lib=" >> setup.cfg
+      fi
+
+      # build the wheels, put them into './wheelhouse'
+      python3 -m cibuildwheel --output-dir wheelhouse
+    fi
+
+
+# after_success:
+#   # if the release was tagged, upload them to PyPI
+#  - |
+#    if [[ $TRAVIS_TAG ]]; then
+#      python3 -m pip install twine
+#      python3 -m twine upload wheelhouse/*.whl
+#    fi
 

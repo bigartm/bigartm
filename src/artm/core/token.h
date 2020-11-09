@@ -3,30 +3,39 @@
 #pragma once
 
 #include <string>
+#include <sstream>
+#include <vector>
 
+#include "boost/algorithm/string.hpp"
 #include "boost/functional/hash.hpp"
+
+#include "artm/core/common.h"
 
 namespace artm {
 namespace core {
 
 typedef std::string ClassId;
-const std::string DefaultClass = "@default_class";
-const std::string DocumentsClass = "@documents_class";
+typedef std::string TransactionTypeName;
 
-// Token is a pair of keyword and its class_id (also known as tokens' modality).
+const ClassId DefaultClass = "@default_class";
+const ClassId DocumentsClass = "@documents_class";
+const TransactionTypeName DefaultTransactionTypeName = "@default_transaction";
+
+// Token is a tuple of keyword and its class_id (also known as tokens' modality).
 // Pay attention to the order of the arguments in the constructor.
 // For historical reasons ClassId goes first, followed by the keyword.
 struct Token {
  public:
   Token(const ClassId& _class_id, const std::string& _keyword)
-      : keyword(_keyword), class_id(_class_id)
-      , hash_(calcHash(_class_id, _keyword)) { }
+    : keyword(_keyword)
+    , class_id(_class_id)
+    , hash_(calcHash(_class_id, _keyword)) { }
 
-  Token& operator=(const Token &rhs) {
-    if (this != &rhs) {
-      const_cast<std::string&>(keyword) = rhs.keyword;
-      const_cast<ClassId&>(class_id) = rhs.class_id;
-      const_cast<size_t&>(hash_) = rhs.hash_;
+  Token& operator=(const Token &token) {
+    if (this != &token) {
+      const_cast<std::string&>(keyword) = token.keyword;
+      const_cast<ClassId&>(class_id) = token.class_id;
+      const_cast<size_t&>(hash_) = token.hash_;
     }
 
     return *this;
@@ -36,6 +45,7 @@ struct Token {
     if (keyword != token.keyword) {
       return keyword < token.keyword;
     }
+
     return class_id < token.class_id;
   }
 
@@ -50,11 +60,12 @@ struct Token {
     return !(*this == token);
   }
 
+  size_t hash() const { return hash_; }
+
   const std::string keyword;
   const ClassId class_id;
 
  private:
-  friend struct TokenHasher;
   const size_t hash_;
 
   static size_t calcHash(const ClassId& class_id, const std::string& keyword) {
@@ -67,7 +78,7 @@ struct Token {
 
 struct TokenHasher {
   size_t operator()(const Token& token) const {
-    return token.hash_;
+    return token.hash();
   }
 };
 
