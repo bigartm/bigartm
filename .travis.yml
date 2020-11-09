@@ -92,17 +92,6 @@ before_script:
     fi
 
 script:
-  # build the wheels, put them into './wheelhouse'
-
-  # quick fix for
-  # "Invalid binary wheel, found the following shared library/libraries in purelib folder:"
-  # see github.com/pypa/auditwheel/pull/28#issuecomment-212082647
-  # TODO: maybe this is no longer needed because BigARTM is compiled as extension now
-  - |
-    if [[ $TRAVIS_OS_NAME == linux ]]; then
-       echo $CIBW_MANYLINUX_X86_64_IMAGE
-       echo -e "[install]\ninstall_lib=" >> setup.cfg
-    fi
 
   - |
     if [[ $TRAVIS_OS_NAME == linux ]]; then
@@ -115,7 +104,20 @@ script:
       fi
     fi
 
-  - python3 -m cibuildwheel --output-dir wheelhouse
+  - |
+    if [[ $TRAVIS_COMMIT_MESSAGE == *"[WHL]"* ]]; then
+      # quick fix for
+      # "Invalid binary wheel, found the following shared library/libraries in purelib folder:"
+      # see github.com/pypa/auditwheel/pull/28#issuecomment-212082647
+      # TODO: maybe this is no longer needed because BigARTM is compiled as extension now
+      if [[ $TRAVIS_OS_NAME == linux ]]; then
+         echo $CIBW_MANYLINUX_X86_64_IMAGE
+         echo -e "[install]\ninstall_lib=" >> setup.cfg
+      fi
+
+      # build the wheels, put them into './wheelhouse'
+      python3 -m cibuildwheel --output-dir wheelhouse
+    fi
 
 
 # after_success:
