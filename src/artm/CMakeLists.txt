@@ -38,7 +38,7 @@ add_custom_target(proto_generation ALL
 # The version number
 set(ARTM_VERSION_MAJOR 0)
 set(ARTM_VERSION_MINOR 10)
-set(ARTM_VERSION_PATCH 1)
+set(ARTM_VERSION_PATCH 2)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
@@ -254,6 +254,7 @@ target_compile_definitions(artm
     PUBLIC PROTOBUF_USE_DLLS
     PRIVATE LIBPROTOBUF_EXPORTS)
 
+# see 7738315e64eb1577cc1dec1eb872983fdedc7b3e for black magic that might be relevant
 if (WIN32)
     set_target_properties(artm PROPERTIES PREFIX "")
 endif (WIN32)

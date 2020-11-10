@@ -6,13 +6,20 @@ if (BUILD_INTERNAL_PYTHON_API)
   if (BUILD_TESTS)
     add_subdirectory(tests)
   endif (BUILD_TESTS)
+  add_custom_target(python_generate_proto ALL
+    ${PYTHON} ${CMAKE_CURRENT_LIST_DIR}/gen_proto.py --protoc_executable=$<TARGET_FILE:protoc>
+    COMMENT "Generating python protobuf files"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+  add_dependencies(python_generate_proto protoc)
+
+
 
   # perform "python setup.py build" during executing make
   add_custom_target(python_bigartm_build ALL
-    ${PYTHON} ${CMAKE_CURRENT_LIST_DIR}/setup.py build --protoc_executable=$<TARGET_FILE:protoc>
+    ${PYTHON} ${CMAKE_CURRENT_LIST_DIR}/setup.py build
     COMMENT "Building python package bigartm"
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-  add_dependencies(python_bigartm_build protoc)
+  add_dependencies(python_bigartm_build python_generate_proto)
   add_custom_target(python_bigartm_wheel ALL
     ${CMAKE_COMMAND} -E env ARTM_SHARED_LIBRARY=$<TARGET_FILE:artm> ${PYTHON} setup.py bdist_wheel -d ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Building wheel bigartm"

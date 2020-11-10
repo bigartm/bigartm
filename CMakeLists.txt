@@ -21,7 +21,9 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 enable_testing()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+endif()
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 set(3RD_PARTY_DIR ${CMAKE_SOURCE_DIR}/3rdparty)
@@ -45,11 +47,25 @@ else (MSVC)
   message("-- Build type: ${CMAKE_BUILD_TYPE}")
 endif (MSVC)
 
-option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
-option(BUILD_BIGARTM_CLI "Indicates whether to build bigartm-CLI executable" ON)
-option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
-
 set(PYTHON python CACHE INTERNAL "Python command")
+
+if (BUILD_PIP_DIST)
+  message("BUILD_PIP_DIST")
+  add_custom_target(python_generate_proto ALL
+    ${PYTHON} ${CMAKE_CURRENT_LIST_DIR}/python/gen_proto.py --protoc_executable=$<TARGET_FILE:protoc>
+    COMMENT "Generating python protobuf files"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  add_dependencies(python_generate_proto protoc)
+else (BUILD_PIP_DIST)
+  option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
+  option(BUILD_BIGARTM_CLI "Indicates whether to build bigartm-CLI executable" ON)
+  option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
+endif (BUILD_PIP_DIST)
+
+
+if (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
+  option(BUILD_BIGARTM_CLI_STATIC "Request build of static executable bigartm (for Linux only)" ON)
+endif (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
 
 # Describe necessary options for static version of `bigartm` executable
 
@@ -112,7 +128,7 @@ check_include_files(unistd.h HAVE_UNISTD_H)
 if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang") OR
     ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
     ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread -fPIC")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fPIC")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -Wall")
   set(GFLAGS_INTTYPES_FORMAT "C99")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")

@@ -8,7 +8,6 @@ licenses(["notice"])
 
 COPTS = [
     "-DHAVE_PTHREAD",
-    "-Wall",
     "-Wwrite-strings",
     "-Woverloaded-virtual",
     "-Wno-sign-compare",
