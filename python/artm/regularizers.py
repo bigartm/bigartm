@@ -902,7 +902,9 @@ class TopicSegmentationPtdwRegularizer(BaseRegularizer):
     _config_message = messages.TopicSegmentationPtdwConfig
     _type = const.RegularizerType_TopicSegmentationPtdw
 
-    def __init__(self, name=None, window=None, threshold=None, background_topic_names=None, config=None):
+    def __init__(self, name=None, tau=1.0, window=1, threshold=None,
+                 background_topic_names=None,
+                 merge_into_segments=False, merge_threshold=0.5, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param int window: a number of words to the one side over which smoothing will be performed
@@ -916,7 +918,7 @@ class TopicSegmentationPtdwRegularizer(BaseRegularizer):
 
         BaseRegularizer.__init__(self,
                                  name=name,
-                                 tau=1.0,
+                                 tau=tau,
                                  gamma=None,
                                  config=config)
         if window is not None:
@@ -938,6 +940,16 @@ class TopicSegmentationPtdwRegularizer(BaseRegularizer):
                 self._config.background_topic_names.append(topic_name)
         elif config is not None and len(config.background_topic_names):
             self._background_topic_names = [name for name in config.background_topic_names]
+
+        self._config.merge_threshold = 0.0
+        self._merge_into_segments = False
+        if merge_into_segments:
+            self._merge_into_segments = True
+            self._config.merge_into_segments = True
+            self._config.merge_threshold = merge_threshold
+        elif config is not None and config.HasField('merge_into_segments'):
+            self._merge_into_segments = config.merge_into_segments
+            self._merge_threshold = config.merge_threshold
 
 
 class SmoothTimeInTopicsPhiRegularizer(BaseRegularizerPhi):

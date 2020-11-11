@@ -1,6 +1,7 @@
 // Copyright 2017, Additive Regularization of Topic Models.
 
 #include <memory>
+#include <vector>
 
 #include "gtest/gtest.h"
 
@@ -57,7 +58,7 @@ TEST(Regularizer, TopicSegmentationPtdw) {
   ::artm::RegularizerConfig* regularizer_config = master_config.add_regularizer_config();
   regularizer_config->set_name("TopicSegmentationPtdwRegularizer");
   regularizer_config->set_type(::artm::RegularizerType_TopicSegmentationPtdw);
-  regularizer_config->set_tau(0.0);
+  regularizer_config->set_tau(5.0);
   ::artm::TopicSegmentationPtdwConfig internal_config;
 
   internal_config.set_window(3);
@@ -92,22 +93,20 @@ TEST(Regularizer, TopicSegmentationPtdw) {
     std::cout << "\n";
   }
 
-  for (int i = 0; i < 7; ++i) {
+  std::vector<std::vector<float>> true_vals = {
+    {0.343, 0.2338, 0, 0.4232, 0},
+    {0.2224, 0.0869635, 0.226979, 0.463658, 0},
+    {0.131376, 0.167947, 0.192536, 0.508141, 0},
+    {0.343, 0.2338, 0, 0.4232, 0},
+    {0.0815341, 0.246345, 0.543888, 0.128233, 0},
+    {0.131376, 0.167947, 0.192536, 0.508141, 0},
+    {0.2224, 0.0869635, 0.226979, 0.463658, 0},
+    {0.213356, 0.283642, 0, 0.503002, 0},
+    {0.111557, 0.29259, 0.0069649, 0.588888, 0}
+  };
+  for (int i = 0; i < 9; ++i) {
     for (int k = 0; k < 5; ++k) {
-      if (k == 0) {
-        ASSERT_EQ(ptdw_1.item_weights(i).value(k), 1.0);
-      } else {
-        ASSERT_EQ(ptdw_1.item_weights(i).value(k), 0.0);
-      }
-    }
-  }
-  for (int i = 7; i < 9; ++i) {
-    for (int k = 0; k < 5; ++k) {
-      if (k < 4) {
-        ASSERT_EQ(ptdw_1.item_weights(i).value(k), 0.0);
-      } else {
-        ASSERT_EQ(ptdw_1.item_weights(i).value(k), 1.0);
-      }
+      ASSERT_TRUE(std::abs(ptdw_1.item_weights(i).value(k) - true_vals[i][k]) < 0.01);
     }
   }
 }

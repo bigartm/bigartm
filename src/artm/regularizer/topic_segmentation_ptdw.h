@@ -1,6 +1,6 @@
-/* Copyright 2017, Additive Regularization of Topic Models.
+/* Copyright 2018, Additive Regularization of Topic Models.
 
-   Author: Anastasia Bayandina (anast.bayandina@gmail.com)
+   Author: Nikolay Skachkov (nikolaj-skachkov@yandex.ru)
 
    ToDo: Description will be updated later
 */
@@ -9,6 +9,7 @@
 
 #include <string>
 #include <vector>
+#include <list>
 
 #include "artm/regularizer_interface.h"
 
@@ -20,18 +21,24 @@ class TopicSegmentationPtdwAgent : public RegularizePtdwAgent {
   friend class TopicSegmentationPtdw;
   TopicSegmentationPtdwConfig config_;
   ProcessBatchesArgs args_;
+  float tau_;
+  mutable std::vector<std::list<int>> dot_positions_;
 
  public:
-  TopicSegmentationPtdwAgent(const TopicSegmentationPtdwConfig& config, const ProcessBatchesArgs& args, float tau)
-      : config_(config)
-      , args_(args) { }
+  TopicSegmentationPtdwAgent(const TopicSegmentationPtdwConfig& config, const ProcessBatchesArgs& args,
+    double tau, std::vector< std::list<int> > dot_positions)
+    : config_(config),
+    args_(args),
+    tau_(tau),
+    dot_positions_(dot_positions) { }
 
   virtual void Apply(int item_index, int inner_iter, ::artm::utility::LocalPhiMatrix<float>* ptdw) const;
 };
 
 class TopicSegmentationPtdw : public RegularizerInterface {
  public:
-  explicit TopicSegmentationPtdw(const TopicSegmentationPtdwConfig& config) : config_(config) { }
+  explicit TopicSegmentationPtdw(const TopicSegmentationPtdwConfig& config)
+  : config_(config) { }
 
   virtual std::shared_ptr<RegularizePtdwAgent>
   CreateRegularizePtdwAgent(const Batch& batch, const ProcessBatchesArgs& args, float tau);
