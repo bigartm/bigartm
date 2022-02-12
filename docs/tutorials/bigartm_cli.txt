@@ -60,7 +60,7 @@ Also you can look at launchable examples and common mistakes in `bigartm-book <h
                                             cooccurrences
       --dictionary-min-df arg               filter out tokens present in less than 
                                             N documents / less than P% of documents
-      --dictionary-max-df arg               filter out tokens present in less than 
+      --dictionary-max-df arg               filter out tokens present in higher than 
                                             N documents / less than P% of documents
       --dictionary-size arg (=0)            limit dictionary size by filtering out 
                                             tokens with high document frequency
