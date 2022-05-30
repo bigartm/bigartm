@@ -231,7 +231,7 @@ class BatchVectorizer(object):
             return batch, {}
 
         try:
-            from scipy.sparse.base import spmatrix
+            from scipy.sparse import spmatrix
         except ImportError:
             spmatrix = tuple()
 
