@@ -118,7 +118,7 @@ from numpy import array
 
 cv = CountVectorizer(max_features=1000, stop_words='english')
 n_wd = array(cv.fit_transform(fetch_20newsgroups().data).todense()).T
-vocabulary = cv.get_feature_names()
+vocabulary = cv.get_feature_names_out()
 
 bv = artm.BatchVectorizer(data_format='bow_n_wd',
                           n_wd=n_wd,
