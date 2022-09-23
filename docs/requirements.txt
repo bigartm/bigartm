@@ -1,2 +1,2 @@
-protobuf==3.0.0
+protobuf==3.18.3
 Sphinx>=1.4.3
